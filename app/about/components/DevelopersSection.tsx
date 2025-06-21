@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Github, Linkedin } from "lucide-react";
+import Image from "next/image";
 
 interface Developer {
   name: string;
@@ -22,7 +23,7 @@ export function DevelopersSection() {
     {
       name: "Akshay Kumar",
       role: "Full Stack Developer",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/images/developers/akshay.jpg",
       description: "Architecting the core platform with modern web technologies and best practices.",
       badge: "Full Stack",
       socials: {
@@ -33,7 +34,7 @@ export function DevelopersSection() {
     {
       name: "Aditya Sharma",
       role: "Frontend Developer",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/images/developers/akshay.jpg",
       description: "Crafting beautiful and intuitive user interfaces with cutting-edge frontend technologies.",
       badge: "Frontend",
       socials: {
@@ -93,14 +94,19 @@ export function DevelopersSection() {
                               }}
                           >
                               <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full group">
-                                  <div className="relative h-64 overflow-hidden">
-                                      <motion.img
-                                          src={developer.image}
-                                          alt={developer.name}
-                                          className="w-full h-full object-cover"
+                                  <div className="relative h-64 overflow-hidden bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                      <motion.div
                                           whileHover={{ scale: 1.1 }}
                                           transition={{ duration: 0.6 }}
-                                      />
+                                      >
+                                          <Image
+                                              src={developer.image}
+                                              alt={developer.name}
+                                              fill
+                                              className="object-cover object-top"
+                                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          />
+                                      </motion.div>
                                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                                       <div className="absolute bottom-4 left-4 right-4">
                                           <h3 className="text-white font-bold text-lg">
@@ -155,4 +161,4 @@ export function DevelopersSection() {
           </div>
       </section>
   );
-} 
+}
