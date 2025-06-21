@@ -94,7 +94,7 @@ export function SponsorsSection() {
                                           src={sponsor.logo}
                                           alt={sponsor.name}
                                           fill
-                                          className="object-cover"
+                                          className={sponsor.name === "Unstop" ? "object-contain p-4" : "object-cover"}
                                       />
                                   </div>
                                   <div className="text-center">
@@ -123,7 +123,7 @@ export function SponsorsSection() {
                                           src={sponsor.logo}
                                           alt={sponsor.name}
                                           fill
-                                          className="object-cover"
+                                          className={sponsor.name === "Unstop" ? "object-contain p-4" : "object-cover"}
                                       />
                                   </div>
                                   <div className="text-center">
