@@ -11,6 +11,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { getBlogPostBySlug } from "@/components/data/blog-posts"
 import ReactMarkdown from 'react-markdown'
+import rehypeRaw from 'rehype-raw'
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -214,7 +215,7 @@ export default function BlogPostPage() {
               <div className="space-y-6">
                 {/* full content for authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-                  <ReactMarkdown>
+                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>
                     {post.content}
                   </ReactMarkdown>
                 </div>
@@ -232,7 +233,7 @@ export default function BlogPostPage() {
               <div className="space-y-6">
                 {/* preview content for non-authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-                  <ReactMarkdown>
+                  <ReactMarkdown rehypePlugins={[rehypeRaw]}>
                     {post.content.split('\n\n').slice(0, 3).join('\n\n')}
                   </ReactMarkdown>
                 </div>

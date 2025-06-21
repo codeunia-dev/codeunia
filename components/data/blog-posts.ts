@@ -35,6 +35,8 @@ export interface BlogPost {
   
   In this comprehensive guide, we'll explore the best practices for building robust and scalable APIs using Node.js and Express. We'll cover everything from basic setup to advanced techniques that will help your API handle millions of requests efficiently.
   
+<img src="/images/developers/akshay.jpg" alt="API Diagram" width="200" height="200" />
+  
   ## Getting Started
   
   First, let's set up our project structure and install the necessary dependencies...
