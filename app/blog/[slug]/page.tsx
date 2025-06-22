@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, Lock, Heart, Share2, BookOpen, User, Calendar, Eye } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { getBlogPostBySlug } from "@/components/data/blog-posts"
+import { BlogPost } from "@/components/data/blog-posts"
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 
@@ -19,20 +19,44 @@ import Footer from "@/components/footer";
 export default function BlogPostPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [post, setPost] = useState<BlogPost | null>(null)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const params = useParams()
   
   const slug = params?.slug as string
-  const post = getBlogPostBySlug(slug)
 
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setIsAuthenticated(!!user)
-      setIsLoading(false)
     }
     checkAuth()
   }, [])
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      setIsLoading(true)
+      setFetchError(null)
+      const supabase = createClient()
+      const { data, error } = await supabase.from('blogs').select('*').eq('slug', slug).single()
+      if (error || !data) {
+        setFetchError('Blog post not found.')
+        setPost(null)
+      } else {
+        setPost({
+          ...data,
+          tags: Array.isArray(data.tags)
+            ? data.tags
+            : (typeof data.tags === 'string' && data.tags
+                ? (data.tags as string).split(',').map((t: string) => t.trim())
+                : []),
+        })
+      }
+      setIsLoading(false)
+    }
+    if (slug) fetchPost()
+  }, [slug])
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -64,7 +88,7 @@ export default function BlogPostPage() {
     )
   }
 
-  if (!post) {
+  if (fetchError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
         <motion.div 
@@ -77,8 +101,7 @@ export default function BlogPostPage() {
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto" />
             <div className="absolute inset-0 w-16 h-16 bg-primary/10 rounded-full blur-xl animate-pulse mx-auto"></div>
           </div>
-          <h1 className="text-2xl font-bold">Blog post not found</h1>
-          <p className="text-muted-foreground">The blog post you&apos;re looking for doesn&apos;t exist.</p>
+          <h1 className="text-2xl font-bold">{fetchError}</h1>
           <Button asChild className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90">
             <Link href="/blog">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -137,10 +160,10 @@ export default function BlogPostPage() {
             className="space-y-6 mb-12"
           >
             <div className="flex items-center space-x-4">
-              <Badge className={`${getCategoryColor(post.category)} shadow-lg`} variant="secondary">
-                {post.category}
+              <Badge className={`${getCategoryColor(post?.category || '')} shadow-lg`} variant="secondary">
+                {post?.category}
               </Badge>
-              {post.featured && (
+              {post?.featured && (
                 <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
                   ⭐ Featured
                 </Badge>
@@ -148,21 +171,21 @@ export default function BlogPostPage() {
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
-              {post.title}
+              {post?.title}
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-              {post.excerpt}
+              {post?.excerpt}
             </p>
             
             <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <User className="h-4 w-4" />
-                <span>{post.author}</span>
+                <span>{post?.author}</span>
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(post.date).toLocaleDateString('en-US', { 
+                <span>{new Date(post?.date || '').toLocaleDateString('en-US', { 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric' 
@@ -170,15 +193,15 @@ export default function BlogPostPage() {
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Clock className="h-4 w-4" />
-                <span>{post.readTime}</span>
+                <span>{post?.readTime}</span>
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Eye className="h-4 w-4" />
-                <span>{post.views} views</span>
+                <span>{post?.views} views</span>
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Heart className="h-4 w-4" />
-                <span>{post.likes} likes</span>
+                <span>{post?.likes} likes</span>
               </div>
             </div>
           </motion.div>
@@ -216,13 +239,13 @@ export default function BlogPostPage() {
                 {/* full content for authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
                   <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                    {post.content}
+                    {post?.content}
                   </ReactMarkdown>
                 </div>
                 
                 {/* tags */}
                 <div className="flex flex-wrap gap-2 pt-8 border-t border-primary/10">
-                  {post.tags.map((tag) => (
+                  {post?.tags.map((tag: string) => (
                     <Badge key={tag} variant="outline" className="text-sm bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
                       #{tag}
                     </Badge>
@@ -234,7 +257,7 @@ export default function BlogPostPage() {
                 {/* preview content for non-authenticated users */}
                 <div className="prose prose-lg dark:prose-invert bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
                   <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                    {post.content.split('\n\n').slice(0, 3).join('\n\n')}
+                    {post?.content.split('\n\n').slice(0, 3).join('\n\n')}
                   </ReactMarkdown>
                 </div>
                 
