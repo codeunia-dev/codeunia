@@ -10,7 +10,7 @@ import { Search, Clock, ArrowRight, BookOpen, Star, TrendingUp, Lock, Sparkles, 
 import { cn } from "@/lib/utils"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { blogPosts, categories } from "@/components/data/blog-posts"
+import { categories, BlogPost } from "@/components/data/blog-posts"
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -19,24 +19,50 @@ export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   useEffect(() => {
     const checkAuth = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       setIsAuthenticated(!!user)
-      setIsLoading(false)
     }
     checkAuth()
+  }, [])
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true)
+      setFetchError(null)
+      const supabase = createClient()
+      const { data, error } = await supabase.from('blogs').select('*').order('date', { ascending: false })
+      if (error) {
+        setFetchError('Failed to fetch blog posts.')
+        setBlogPosts([])
+      } else {
+       
+        const posts = data.map((post: BlogPost) => ({
+          ...post,
+          tags: Array.isArray(post.tags)
+            ? post.tags
+            : (typeof post.tags === 'string' && post.tags
+                ? (post.tags as string).split(',').map((t) => t.trim())
+                : []),
+        }))
+        setBlogPosts(posts)
+      }
+      setIsLoading(false)
+    }
+    fetchPosts()
   }, [])
 
   const filteredPosts = blogPosts.filter((post) => {
     const matchesSearch =
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      post.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     const matchesCategory = selectedCategory === "All" || post.category === selectedCategory
-
     return matchesSearch && matchesCategory
   })
 
@@ -87,6 +113,18 @@ export default function BlogPage() {
         <div className="relative">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
           <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
+        <div className="text-center space-y-4">
+          <BookOpen className="h-16 w-16 text-muted-foreground mx-auto" />
+          <h1 className="text-2xl font-bold">{fetchError}</h1>
+          <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-primary to-purple-600">Retry</Button>
         </div>
       </div>
     )
