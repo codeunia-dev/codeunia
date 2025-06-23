@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Rocket, Users, Sparkles, Code, Globe } from "lucide-react"
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import Link from "next/link"
 
 const World = dynamic(() => import("@/components/ui/globe").then(mod => mod.World), { 
   ssr: false,
@@ -475,23 +476,29 @@ export function HeroSection2() {
               <Button
                 size="lg"
                 className="px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg font-semibold shadow-2xl hover:shadow-3xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-purple-600/90 backdrop-blur-sm relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:-translate-y-1 w-full sm:w-auto"
+                asChild
               >
+                <Link href="/events">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <Rocket className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 relative z-10 group-hover:animate-pulse" />
-                <span className="relative z-10">Explore Projects</span>
+                <span className="relative z-10">Explore Events</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-700" />
+                </Link>
               </Button>
 
               <Button
                 size="lg"
                 variant="outline"
                 className="px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg font-semibold hover:bg-primary/10 bg-background/95 backdrop-blur-md border border-primary/30 hover:border-primary/50 relative overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 hover:-translate-y-1 w-full sm:w-auto"
+                asChild
               >
+                <Link href="/auth/signup">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <Users className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 relative z-10 group-hover:animate-pulse" />
                 <span className="relative z-10 bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent group-hover:from-primary group-hover:to-purple-600">
                   Join Community
                 </span>
+                </Link>
               </Button>
             </div>
 

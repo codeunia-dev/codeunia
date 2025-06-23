@@ -23,7 +23,7 @@ import {
     Trophy,
     Users,
 } from "lucide-react";
-import { DevelopersSection } from "./components/DevelopersSection";
+
 import { SponsorsSection } from "./components/SponsorsSection";
 import { TeamSection } from "./components/TeamSection";
 
@@ -390,9 +390,6 @@ export default function AboutPage() {
 
             {/* Team Section */}
             <TeamSection />
-
-            {/* Developers Section */}
-            <DevelopersSection />
 
             <SponsorsSection />
 

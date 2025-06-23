@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Github, Linkedin, Users } from "lucide-react";
+import Image from "next/image";
 
 interface TeamMember {
   name: string;
@@ -20,9 +21,9 @@ interface TeamMember {
 export function TeamSection() {
   const team: TeamMember[] = [
     {
-      name: "Deepak Pandey",
+      name: "Deepak",
       role: "Founder",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/images/team/deepak.jpeg",
       description: "Leading the vision and direction of Codeunia, bringing innovation to coding education.",
       badge: "Leadership",
       socials: {
@@ -31,9 +32,9 @@ export function TeamSection() {
       }
     },
     {
-      name: "Parisha Rani",
+      name: "Parisha",
       role: "Co-Founder and Operations Lead",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+      image: "/images/team/parisha.jpeg",
       description: "Driving operational excellence and strategic initiatives at Codeunia.",
       badge: "Leadership",
       socials: {
@@ -44,7 +45,7 @@ export function TeamSection() {
     {
       name: "Aayush Bhardwaj",
       role: "Strategy & Outreach Lead",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/images/team/aayush.jpeg",
       description: "Developing strategic partnerships and expanding our reach in the coding education space.",
       badge: "Strategy",
       socials: {
@@ -53,20 +54,20 @@ export function TeamSection() {
       }
     },
     {
-      name: "Keshav Datta",
-      role: "Community Operations Lead",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      description: "Coordinating and managing community operations to foster engagement and growth.",
-      badge: "Community",
+      name: "Akshay Kumar",
+      role: "Web Development Lead",
+      image: "/images/team/akshay.jpg",
+      description: "Leading the development of our web platform, ensuring scalable architecture and seamless user experience through modern technologies.",
+      badge: "Web Dev",
       socials: {
-        github: "https://github.com/Keshav-datta",
-        linkedin: "https://www.linkedin.com/in/keshav-datta-3b3623289"
+        github: "https://github.com/akshay0611",
+        linkedin: "https://www.linkedin.com/in/akshaykumar0611/"
       }
     },
     {
       name: "Anurag Shekhawat",
       role: "Technical Lead",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      image: "/images/team/anurag.jpeg",
       description: "Leading technical innovation and development at Codeunia.",
       badge: "Technology",
       socials: {
@@ -75,20 +76,20 @@ export function TeamSection() {
       }
     },
     {
-      name: "Nidhi Gupta",
-      role: "Resource and Finance Coordinator",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-      description: "Managing resources and financial operations to ensure sustainable growth.",
-      badge: "Operations",
+      name: "Keshav Datta",
+      role: "Community Operations Lead",
+      image: "/images/team/keshav.jpeg",
+      description: "Coordinating and managing community operations to foster engagement and growth.",
+      badge: "Community",
       socials: {
-        github: "https://github.com/NidhiiiGupta",
-        linkedin: "https://www.linkedin.com/in/nidhi-gupta15/"
+        github: "https://github.com/Keshav-datta",
+        linkedin: "https://www.linkedin.com/in/keshav-datta-3b3623289"
       }
     },
     {
       name: "Tanvi Sharma",
       role: "Marketing and Communications Lead",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
+     image: "/images/team/tanvi.jpeg",
       description: "Crafting our brand story and driving engagement through strategic communications.",
       badge: "Marketing",
       socials: {
@@ -98,8 +99,8 @@ export function TeamSection() {
     },
     {
       name: "Sahil",
-      role: "Project Development Coordinator",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+      role: "Project Development Lead",
+       image: "/images/team/sahil.jpeg",
       description: "Coordinating project development and ensuring successful delivery of learning initiatives.",
       badge: "Development",
       socials: {
@@ -108,36 +109,14 @@ export function TeamSection() {
       }
     },
     {
-      name: "Mehakpreet Kaur",
-      role: "Design Lead",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-      description: "Creating beautiful and intuitive user experiences through thoughtful design.",
-      badge: "Design",
+      name: "Nidhi Gupta",
+      role: "Finance & Resource Lead",
+      image: "/images/team/nidhi.jpeg",
+      description: "Managing resources and financial operations to ensure sustainable growth.",
+      badge: "Operations",
       socials: {
-        github: "https://github.com/Cybexpmehakpreetkaur",
-        linkedin: "https://www.linkedin.com/in/mehakpreet-kaur-769b08315?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
-      }
-    },
-    {
-      name: "Ayush Chauhan",
-      role: "Video Editor",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      description: "Crafting engaging video content to enhance our learning experience.",
-      badge: "Content",
-      socials: {
-        github: "https://github.com/ayushmgg",
-        linkedin: "https://www.linkedin.com/in/ayush-chauh%C3%A0n-0065b1289?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
-      }
-    },
-    {
-      name: "Spandan Sarkar",
-      role: "Video Editor",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
-      description: "Creating compelling visual stories to make learning more engaging.",
-      badge: "Content",
-      socials: {
-        github: "https://github.com/spandan0002",
-        linkedin: "https://www.linkedin.com/in/spandan-sarkar-ab346b28a/"
+        github: "https://github.com/NidhiiiGupta",
+        linkedin: "https://www.linkedin.com/in/nidhi-gupta15/"
       }
     },
   ];
@@ -192,20 +171,25 @@ export function TeamSection() {
                               }}
                           >
                               <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full group">
-                                  <div className="relative h-64 overflow-hidden">
-                                      <motion.img
-                                          src={member.image}
-                                          alt={member.name}
-                                          className="w-full h-full object-cover"
+                                  <div className="relative h-64 overflow-hidden bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
+                                      <motion.div
                                           whileHover={{ scale: 1.1 }}
                                           transition={{ duration: 0.6 }}
-                                      />
+                                      >
+                                          <Image
+                                              src={member.image}
+                                              alt={member.name}
+                                              fill
+                                              className="object-cover object-top"
+                                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          />
+                                      </motion.div>
                                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                                       <div className="absolute bottom-4 left-4 right-4">
                                           <h3 className="text-white font-bold text-lg">
                                               {member.name}
                                           </h3>
-                                          <p className="text-primary-foreground/80 text-sm">
+                                          <p className="text-white text-sm">
                                               {member.role}
                                           </p>
                                       </div>
