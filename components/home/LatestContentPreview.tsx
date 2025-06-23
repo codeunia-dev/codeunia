@@ -1,11 +1,47 @@
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowRight, Calendar, Users, Trophy, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
+import { createClient } from "@/lib/supabase/client"
+import { BlogPost } from "@/components/data/blog-posts"
 
 export function LatestContentPreview() {
+  const [latestBlogs, setLatestBlogs] = useState<BlogPost[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchLatestBlogs = async () => {
+      setIsLoading(true)
+      setFetchError(null)
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('*')
+        .order('date', { ascending: false })
+        .limit(2)
+      if (error) {
+        setFetchError('Failed to fetch latest blogs.')
+        setLatestBlogs([])
+      } else {
+        const posts = data.map((post: BlogPost) => ({
+          ...post,
+          tags: Array.isArray(post.tags)
+            ? post.tags
+            : (typeof post.tags === 'string' && post.tags
+                ? (post.tags as string).split(',').map((t) => t.trim())
+                : []),
+        }))
+        setLatestBlogs(posts)
+      }
+      setIsLoading(false)
+    }
+    fetchLatestBlogs()
+  }, [])
+
   return (
     <section className="py-24 bg-gradient-to-b from-muted/30 via-background to-background relative overflow-hidden">
      
@@ -76,84 +112,59 @@ export function LatestContentPreview() {
               </motion.div>
             </div>
             <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="border-0 shadow-xl card-hover hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-white/80 via-white/60 to-muted/30 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/30 backdrop-blur-sm relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 hover:scale-105 transition-all duration-300 shadow-md"
-                        >
-                          Tutorial
-                        </Badge>
-                        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">5 min read</span>
-                      </div>
-                      <h4 className="font-bold text-lg hover:text-primary cursor-pointer transition-colors duration-300 group">
-                        Building Scalable APIs with Node.js
-                        <span className="block h-0.5 w-0 bg-gradient-to-r from-primary to-purple-600 group-hover:w-full transition-all duration-500" />
-                      </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Learn best practices for building robust and scalable APIs that can handle millions of
-                        requests...
-                      </p>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-full flex items-center justify-center mr-3 transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl">
-                          <span className="text-white text-sm font-bold">AK</span>
+              {isLoading ? (
+                <div className="flex justify-center items-center py-10">
+                  <span className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></span>
+                </div>
+              ) : fetchError ? (
+                <div className="text-center text-red-500 py-10">{fetchError}</div>
+              ) : latestBlogs.length === 0 ? (
+                <div className="text-center text-muted-foreground py-10">No latest blogs found.</div>
+              ) : (
+                latestBlogs.map((post, index) => (
+                  <motion.div
+                    key={post.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 + index * 0.2 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <Card className="border-0 shadow-xl card-hover hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-white/80 via-white/60 to-muted/30 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/30 backdrop-blur-sm relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <CardContent className="pt-6 relative z-10">
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-2">
+                            <Badge
+                              variant="secondary"
+                              className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 dark:from-blue-900 dark:to-blue-800 dark:text-blue-200 hover:scale-105 transition-all duration-300 shadow-md"
+                            >
+                              {post.category}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">{post.readTime}</span>
+                          </div>
+                          <h4 className="font-bold text-lg hover:text-primary cursor-pointer transition-colors duration-300 group">
+                            <Link href={`/blog/${post.slug}`}>
+                              {post.title}
+                            </Link>
+                            <span className="block h-0.5 w-0 bg-gradient-to-r from-primary to-purple-600 group-hover:w-full transition-all duration-500" />
+                          </h4>
+                          <p className="text-muted-foreground leading-relaxed">
+                            {post.excerpt}
+                          </p>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-600 to-pink-600 rounded-full flex items-center justify-center mr-3 transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl">
+                              <span className="text-white text-sm font-bold">{post.author.split(' ').map((n) => n[0]).join('')}</span>
+                            </div>
+                            <span>By {post.author}</span>
+                            <span className="mx-2">•</span>
+                            <span>{new Date(post.date).toLocaleDateString()}</span>
+                          </div>
                         </div>
-                        <span>By Akshay Kumar</span>
-                        <span className="mx-2">•</span>
-                        <span>2 days ago</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.0 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="border-0 shadow-xl card-hover hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br from-white/80 via-white/60 to-muted/30 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/30 backdrop-blur-sm relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-emerald-100 to-teal-200 text-emerald-800 dark:from-emerald-900 dark:to-teal-800 dark:text-emerald-200 hover:scale-105 transition-all duration-300 shadow-md"
-                        >
-                          Guide
-                        </Badge>
-                        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">8 min read</span>
-                      </div>
-                      <h4 className="font-bold text-lg hover:text-primary cursor-pointer transition-colors duration-300 group">
-                        Next.js Features You Should Know
-                        <span className="block h-0.5 w-0 bg-gradient-to-r from-primary to-purple-600 group-hover:w-full transition-all duration-500" />
-                      </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Explore the latest features in Next.js and how to use them in your next project...
-                      </p>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 rounded-full flex items-center justify-center mr-3 transform hover:scale-110 transition-all duration-300 shadow-lg hover:shadow-xl">
-                          <span className="text-white text-sm font-bold">AK</span>
-                        </div>
-                        <span>By Akshay Kumar</span>
-                        <span className="mx-2">•</span>
-                        <span>5 days ago</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
 
