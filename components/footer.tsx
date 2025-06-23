@@ -34,7 +34,7 @@ export default function Footer() {
                 <Instagram className="h-5 w-5" />
               </Link>
               <Link
-                href="#"
+                href="https://x.com/codeunia"
                 className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg hover:shadow-primary/20"
               >
                 <Twitter className="h-5 w-5" />
@@ -84,25 +84,25 @@ export default function Footer() {
             <h4 className="text-lg font-bold text-foreground">Community</h4>
             <div className="space-y-3">
               <Link
-                href="#"
+                href="https://github.com/Codeunia"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 GitHub Projects
               </Link>
               <Link
-                href="#"
+                href="https://discord.gg/Mhn3tXnJ"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 Discord Server
               </Link>
               <Link
-                href="#"
+                href="https://x.com/codeunia"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 Twitter Community
               </Link>
               <Link
-                href="#"
+                href="https://www.linkedin.com/company/codeunia"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 LinkedIn Network

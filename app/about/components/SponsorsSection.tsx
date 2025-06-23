@@ -8,32 +8,44 @@ const sponsors = [
   {
     name: "Webytes",
     title: "Community Engagement Partner",
-    logo: "/images/sponsors/webytes.png"
+    logo: "/images/sponsors/webytes.png",
+    link: "https://www.webytes.club/"
   },
     {
         name: "GeeksforGeeks",
         title: "Knowledge & Learning Partner",
-        logo: "/images/sponsors/geekforgeeks.png"
+        logo: "/images/sponsors/geekforgeeks.png",
+        link: "https://www.geeksforgeeks.org/"
     },
     {
         name: "GeeksforGeeks Student Chapter- Chandigarh University",
         title: "Community Engagement Partner",
-        logo: "/images/sponsors/studentchaptercu.png"
+        logo: "/images/sponsors/studentchaptercu.png",
+        link: "https://www.linkedin.com/company/gfgstudentchaptercu/"
     },
     {
         name: "Alexa Developer Community- Chandigarh University",
         title: "Community Engagement Partner",
-        logo: "/images/sponsors/alexadevcommunity.png"
+        logo: "/images/sponsors/alexadevcommunity.png",
+        link: "https://www.linkedin.com/company/alexa-developer-community-cu/"
     },
     {
         name: "Rotaract - Chandigarh University",
-        title: "Youth Leadership Partner",
-        logo: "/images/sponsors/rotaract.png"
+        title: "Community Engagement Partner",
+        logo: "/images/sponsors/rotaract.png",
+        link: "https://www.instagram.com/rotaract.cu/"
     },
     {
         name: "Unstop",
         title: "Technology Partner",
-        logo: "/images/sponsors/unstop.png"
+        logo: "/images/sponsors/unstop.png",
+        link: "https://unstop.com/"
+    },
+    {
+        name: "Code Crafters",
+        title: "Upskilling Partner",
+        logo: "/images/sponsors/codecrafter.png",
+        link: "https://codecrafters.io/"
     },
 ];
 
@@ -80,61 +92,157 @@ export function SponsorsSection() {
                   <div className="relative w-full overflow-hidden">
                       <div className="flex animate-scroll gap-8 py-4">
                           {sponsors.map((sponsor, idx) => (
-                              <motion.div
+                              sponsor.link ? (
+                                <a
+                                  key={`first-${idx}`}
+                                  href={sponsor.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="no-underline"
+                                >
+                                  <motion.div
+                                    className="flex-shrink-0 w-[300px] h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-2 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
+                                    whileHover={{ y: -5 }}
+                                  >
+                                    <div
+                                      className={
+                                        "relative w-full h-48 flex items-center justify-center"
+                                      }
+                                    >
+                                      <Image
+                                        src={sponsor.logo}
+                                        alt={sponsor.name}
+                                        fill
+                                        className={
+                                          sponsor.name === "Unstop"
+                                            ? "object-contain p-4"
+                                            : sponsor.name === "Code Crafters"
+                                              ? "object-contain w-32 h-16 mx-auto"
+                                              : "object-cover"
+                                        }
+                                      />
+                                    </div>
+                                    <div className="text-center">
+                                      <h3 className="font-semibold text-lg">
+                                        {sponsor.name}
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground">
+                                        {sponsor.title}
+                                      </p>
+                                    </div>
+                                  </motion.div>
+                                </a>
+                              ) : (
+                                <motion.div
                                   key={`first-${idx}`}
                                   className="flex-shrink-0 w-[300px] h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-2 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
                                   whileHover={{ y: -5 }}
-                              >
+                                >
                                   <div
                                     className={
                                       "relative w-full h-48 flex items-center justify-center"
                                     }
                                   >
-                                      <Image
-                                          src={sponsor.logo}
-                                          alt={sponsor.name}
-                                          fill
-                                          className={sponsor.name === "Unstop" ? "object-contain p-4" : "object-cover"}
-                                      />
+                                    <Image
+                                      src={sponsor.logo}
+                                      alt={sponsor.name}
+                                      fill
+                                      className={
+                                        sponsor.name === "Unstop"
+                                          ? "object-contain p-4"
+                                          : sponsor.name === "Code Crafters"
+                                            ? "object-contain w-32 h-16 mx-auto"
+                                            : "object-cover"
+                                      }
+                                    />
                                   </div>
                                   <div className="text-center">
-                                      <h3 className="font-semibold text-lg">
-                                          {sponsor.name}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground">
-                                          {sponsor.title}
-                                      </p>
+                                    <h3 className="font-semibold text-lg">
+                                      {sponsor.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {sponsor.title}
+                                    </p>
                                   </div>
-                              </motion.div>
+                                </motion.div>
+                              )
                           ))}
 
                           {sponsors.map((sponsor, idx) => (
-                              <motion.div
+                              sponsor.link ? (
+                                <a
+                                  key={`second-${idx}`}
+                                  href={sponsor.link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="no-underline"
+                                >
+                                  <motion.div
+                                    className="flex-shrink-0 w-[300px] h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-2 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
+                                    whileHover={{ y: -5 }}
+                                  >
+                                    <div
+                                      className={
+                                        "relative w-full h-48 flex items-center justify-center"
+                                      }
+                                    >
+                                      <Image
+                                        src={sponsor.logo}
+                                        alt={sponsor.name}
+                                        fill
+                                        className={
+                                          sponsor.name === "Unstop"
+                                            ? "object-contain p-4"
+                                            : sponsor.name === "Code Crafters"
+                                              ? "object-contain w-32 h-16 mx-auto"
+                                              : "object-cover"
+                                        }
+                                      />
+                                    </div>
+                                    <div className="text-center">
+                                      <h3 className="font-semibold text-lg">
+                                        {sponsor.name}
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground">
+                                        {sponsor.title}
+                                      </p>
+                                    </div>
+                                  </motion.div>
+                                </a>
+                              ) : (
+                                <motion.div
                                   key={`second-${idx}`}
                                   className="flex-shrink-0 w-[300px] h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-2 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
                                   whileHover={{ y: -5 }}
-                              >
+                                >
                                   <div
                                     className={
                                       "relative w-full h-48 flex items-center justify-center"
                                     }
                                   >
-                                      <Image
-                                          src={sponsor.logo}
-                                          alt={sponsor.name}
-                                          fill
-                                          className={sponsor.name === "Unstop" ? "object-contain p-4" : "object-cover"}
-                                      />
+                                    <Image
+                                      src={sponsor.logo}
+                                      alt={sponsor.name}
+                                      fill
+                                      className={
+                                        sponsor.name === "Unstop"
+                                          ? "object-contain p-4"
+                                          : sponsor.name === "Code Crafters"
+                                            ? "object-contain w-32 h-16 mx-auto"
+                                            : "object-cover"
+                                      }
+                                    />
                                   </div>
                                   <div className="text-center">
-                                      <h3 className="font-semibold text-lg">
-                                          {sponsor.name}
-                                      </h3>
-                                      <p className="text-sm text-muted-foreground">
-                                          {sponsor.title}
-                                      </p>
+                                    <h3 className="font-semibold text-lg">
+                                      {sponsor.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {sponsor.title}
+                                    </p>
                                   </div>
-                              </motion.div>
+                                </motion.div>
+                              )
                           ))}
                       </div>
                   </div>
