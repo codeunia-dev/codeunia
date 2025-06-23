@@ -29,5 +29,5 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [supabase.auth])
 
-  return { user, loading }
+  return { user, loading, isAdmin: user?.user_metadata?.role === 'admin' }
 } 
