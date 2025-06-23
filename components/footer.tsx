@@ -23,24 +23,32 @@ export default function Footer() {
             <div className="flex items-center space-x-4">
               <Link
                 href="https://github.com/Codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gradient-to-br from-gray-800 to-gray-900 dark:from-gray-700 dark:to-gray-800 rounded-lg flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg hover:shadow-primary/20"
               >
                 <Github className="h-5 w-5" />
               </Link>
               <Link
                 href="https://www.instagram.com/codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg hover:shadow-primary/20"
               >
                 <Instagram className="h-5 w-5" />
               </Link>
               <Link
                 href="https://x.com/codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-lg flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg hover:shadow-primary/20"
               >
                 <Twitter className="h-5 w-5" />
               </Link>
               <Link
                 href="https://www.linkedin.com/company/codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-gradient-to-br from-blue-700 to-blue-800 rounded-lg flex items-center justify-center text-white hover:scale-110 transition-transform shadow-lg hover:shadow-primary/20"
               >
                 <Linkedin className="h-5 w-5" />
@@ -85,24 +93,32 @@ export default function Footer() {
             <div className="space-y-3">
               <Link
                 href="https://github.com/Codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 GitHub Projects
               </Link>
               <Link
                 href="https://discord.gg/Mhn3tXnJ"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 Discord Server
               </Link>
               <Link
                 href="https://x.com/codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 Twitter Community
               </Link>
               <Link
                 href="https://www.linkedin.com/company/codeunia"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="block text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
               >
                 LinkedIn Network

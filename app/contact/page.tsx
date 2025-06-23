@@ -149,8 +149,11 @@ export default function ContactPage() {
                                       <Button
                                           variant="outline"
                                           className="w-full hover:scale-105 transition-all duration-300"
+                                          asChild
                                       >
-                                          codeunia@gmail.com
+                                          <a href="mailto:connect@codeunia.com" className="w-full h-full flex items-center justify-center">
+                                              connect@codeunia.com
+                                          </a>
                                       </Button>
                                   </CardContent>
                               </Card>
