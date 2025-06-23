@@ -280,7 +280,7 @@ export default function BlogPostPage() {
                             This article is available to authenticated users only. Sign in to access the complete content.
                           </p>
                           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <Button asChild className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg">
+                            <Button variant="outline" asChild className="border-primary/20 hover:bg-primary/10 transition-colors">
                               <Link href={`/auth/signin?returnUrl=${encodeURIComponent(`/blog/${params.slug}`)}`}>
                                 Sign In to Continue
                               </Link>
