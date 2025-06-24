@@ -146,6 +146,17 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-60 select-none" aria-hidden>
+        <svg width="100%" height="100%" className="w-full h-full">
+          <defs>
+            <radialGradient id="bgPattern" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#a5b4fc" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#818cf8" stopOpacity="0.04" />
+            </radialGradient>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bgPattern)" />
+        </svg>
+      </div>
       <div className="flex items-center gap-3 pb-6 border-b border-zinc-800/60 relative z-10 mt-2 mb-4">
         <span className="inline-block w-2 h-6 sm:h-8 bg-gradient-to-b from-blue-400 to-pink-400 rounded-full mr-2" />
         <div>
