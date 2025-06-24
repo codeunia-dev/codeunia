@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Code2,
   Bell,
@@ -28,7 +29,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarProvider,
-    SidebarTrigger,
   } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -56,6 +56,7 @@ interface SidebarProps {
 export function Sidebar({ avatar, name, email, role, sidebarItems, children }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeSidebar = () => setMobileOpen(false);
+  const pathname = usePathname();
   return (
     <SidebarProvider>
       <div className="w-full bg-zinc-900">
@@ -93,7 +94,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                         <Link
                           key={item.title}
                           href={item.url}
-                          className="flex items-center gap-3 px-4 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 text-zinc-200 hover:text-white font-medium"
+                          className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${pathname === item.url ? "bg-purple-800/30 text-white" : ""}`}
                           onClick={closeSidebar}
                         >
                           <span className="text-purple-400">
@@ -193,7 +194,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                   <SidebarMenu>
                     {group.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild className="group flex items-center gap-3 px-6 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium">
+                        <SidebarMenuButton asChild className={`group flex items-center gap-3 px-6 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${pathname === item.url ? "bg-purple-800/30 text-white" : ""}`}>
                           <Link href={item.url} className="flex items-center w-full">
                             <span className="mr-3 text-purple-400 group-hover:text-purple-300">
                               {React.createElement(item.icon, { className: "size-5" })}
@@ -270,7 +271,6 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
           <SidebarInset>
             <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 pl-14 md:pl-0 border-b border-zinc-800 bg-[#10172a]">
               <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1 hidden md:block" />
                 <div className="h-4 w-px bg-sidebar-border hidden md:block" />
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-white">Admin Dashboard</span>
