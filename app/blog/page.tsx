@@ -1,18 +1,18 @@
 "use client" 
 
-import { useState, useEffect } from "react"
-import { createClient } from "@/lib/supabase/client"
+import { BlogPost, categories } from "@/components/data/blog-posts"
+import Footer from "@/components/footer"
+import Header from "@/components/header"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Clock, ArrowRight, BookOpen, Star, TrendingUp, Lock, Sparkles, Eye, Heart } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import Link from "next/link"
 import { motion } from "framer-motion"
-import { categories, BlogPost } from "@/components/data/blog-posts"
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import { ArrowRight, BookOpen, Clock, Lock, Search, Sparkles, Star, TrendingUp } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -406,78 +406,56 @@ export default function BlogPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="flex flex-col h-96 border-0 shadow-xl card-hover overflow-hidden group relative bg-gradient-to-br from-background to-muted/20">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
+                <Card className="flex flex-col h-96 w-80 md:w-96 border-0 shadow-xl card-hover overflow-hidden group relative bg-gradient-to-br from-background to-muted/20">
+                  <div className="h-32 w-full bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden flex items-center justify-center">
                     <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(post.category)}`}></div>
                     <div className="absolute top-3 left-3 z-10">
                       <Badge className={`${getCategoryColor(post.category)} shadow-lg`} variant="secondary">
                         {post.category}
                       </Badge>
                     </div>
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between z-10">
-                      <div className="flex items-center text-sm text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {post.readTime}
-                      </div>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <span className="flex items-center bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full">
-                          <Eye className="h-4 w-4 mr-1" />
-                          {post.views}
-                        </span>
-                        <span className="flex items-center bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full">
-                          <Heart className="h-4 w-4 mr-1" />
-                          {post.likes}
-                        </span>
-                      </div>
-                    </div>
                   </div>
-                  <CardHeader className="relative z-10">
-                    <CardTitle className="text-lg hover:text-primary cursor-pointer line-clamp-2 transition-colors group-hover:scale-105 transform duration-300">
-                      {post.title}
-                    </CardTitle>
-                    <CardDescription className="line-clamp-3">{post.excerpt}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="relative z-10 flex-1">
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-col flex-1 justify-between p-4">
+                    <div>
+                      <CardTitle className="text-lg font-bold hover:text-primary cursor-pointer line-clamp-2 transition-colors group-hover:scale-105 transform duration-300">
+                        {post.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-3 mt-1 text-sm text-muted-foreground">{post.excerpt}</CardDescription>
+                      <div className="flex flex-wrap gap-1 mt-2">
                         {post.tags.slice(0, 3).map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs bg-background/50 backdrop-blur-sm">
                             {tag}
                           </Badge>
                         ))}
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xs font-bold">
-                              {post.author
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{post.author}</p>
-                            <p className="text-xs text-muted-foreground">{new Date(post.date).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                        {isAuthenticated ? (
-                          <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
-                            <Link href={`/blog/${post.slug}`}>
-                              Read More <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
-                            <Link href={`/auth/signin?returnUrl=${encodeURIComponent('/blog')}`}>
-                              Sign in to read <Lock className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
                     </div>
-                  </CardContent>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xs font-bold">
+                            {post.author.split(" ").map((n) => n[0]).join("")}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{post.author}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(post.date).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      {isAuthenticated ? (
+                        <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
+                          <Link href={`/blog/${post.slug}`}>
+                            Read More <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
+                          <Link href={`/auth/signin?returnUrl=${encodeURIComponent('/blog')}`}>
+                            Sign in to read <Lock className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </Card>
               </motion.div>
             ))}
