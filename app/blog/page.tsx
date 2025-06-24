@@ -395,7 +395,9 @@ export default function BlogPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+{/* All blogs */}
+          <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {regularPosts.map((post, index) => (
               <motion.div
                 key={post.id}
@@ -404,7 +406,7 @@ export default function BlogPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="flex flex-col h-full border-0 shadow-xl card-hover overflow-hidden group relative bg-gradient-to-br from-background to-muted/20">
+                <Card className="flex flex-col h-96 border-0 shadow-xl card-hover overflow-hidden group relative bg-gradient-to-br from-background to-muted/20">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
                     <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(post.category)}`}></div>
