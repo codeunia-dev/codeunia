@@ -110,7 +110,7 @@ export default function EventsPage() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4"
             >
-              Discover exciting hackathons, workshops, and tech events hosted by CodeUnia.
+              Discover exciting hackathons, workshops, and tech events hosted by Codeunia.
             </motion.p>
           </div>
         </motion.div>
@@ -135,7 +135,7 @@ export default function EventsPage() {
                         <Code className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl sm:text-2xl">RealityCode by CodeUnia</CardTitle>
+                        <CardTitle className="text-xl sm:text-2xl">RealityCode by Codeunia</CardTitle>
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2">
                           <Badge className="bg-primary/90 text-white border-0 w-fit">
                             <Sparkles className="w-3 h-3 mr-1" />
@@ -168,7 +168,7 @@ export default function EventsPage() {
                         </div>
                         <div>
                           <p className="font-semibold text-foreground text-sm sm:text-base">Date</p>
-                          <p className="text-muted-foreground text-sm sm:text-base">December 15-17, 2024</p>
+                          <p className="text-muted-foreground text-sm sm:text-base">August 16-17, 2025</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
@@ -344,7 +344,7 @@ export default function EventsPage() {
                 asChild
               >
                 <Link href="/about">
-                  About CodeUnia
+                  About Codeunia
                 </Link>
               </Button>
             </div>

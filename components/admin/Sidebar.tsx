@@ -6,6 +6,7 @@ import {
   LogOut,
   User,
   ChevronDown,
+  Menu,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ import {
   } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 
 export type SidebarGroupType = {
@@ -56,7 +58,111 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
   return (
     <SidebarProvider>
       <div className="w-full bg-zinc-900">
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#10172a] via-[#181f36] to-[#10172a] border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30">
+        {/* mobile sidebar */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="md:hidden fixed top-4 left-4 z-50 border-zinc-700 bg-zinc-900 hover:bg-purple-700/10">
+              <Menu className="h-4 w-4 text-purple-400" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0 bg-gradient-to-b from-[#10172a] via-[#181f36] to-[#10172a] border-r border-zinc-800">
+            <div className="flex flex-col h-full">
+              {/* mobile header */}
+              <div className="p-4 border-b border-zinc-800">
+                <div className="flex items-center gap-3">
+                  <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
+                    <Code2 className="size-5" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Admin</span>
+                    <span className="truncate text-xs text-zinc-400">Management Portal</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* mobile navigation */}
+              <div className="flex-1 overflow-y-auto py-4">
+                {sidebarItems.map((group) => (
+                  <div key={group.title} className="mb-6">
+                    <div className="uppercase text-xs font-semibold text-purple-400 tracking-wider px-4 py-2">
+                      {group.title}
+                    </div>
+                    <div className="space-y-1">
+                      {group.items.map((item) => (
+                        <Link
+                          key={item.title}
+                          href={item.url}
+                          className="flex items-center gap-3 px-4 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 text-zinc-200 hover:text-white font-medium"
+                        >
+                          <span className="text-purple-400">
+                            {React.createElement(item.icon, { className: "size-5" })}
+                          </span>
+                          <span className="text-base">{item.title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* mobile footer */}
+              <div className="p-4 border-t border-zinc-800">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors"
+                    >
+                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md">
+                        {avatar}
+                      </div>
+                      <div className="grid flex-1 text-left text-sm leading-tight">
+                        <span className="truncate font-semibold text-white">{name}</span>
+                        <span className="truncate text-xs text-purple-300">{role}</span>
+                      </div>
+                      <ChevronDown className="size-4 text-zinc-400" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg bg-[#181f36] border border-zinc-700 shadow-lg"
+                    side="top"
+                    align="end"
+                    sideOffset={4}
+                  >
+                    <DropdownMenuLabel className="p-0 font-normal">
+                      <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white font-semibold">
+                          {avatar}
+                        </div>
+                        <div className="grid flex-1 text-left text-sm leading-tight">
+                          <span className="truncate font-semibold">{name}</span>
+                          <span className="truncate text-xs text-zinc-400">{email}</span>
+                        </div>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <User className="size-4 text-purple-400" />
+                      <span>Account</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <Bell className="size-4 text-purple-400" />
+                      <span>Notifications</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => { window.location.href = "/auth/signin" }} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
+                      <LogOut className="size-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        {/* desktop sidebar */}
+        <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#10172a] via-[#181f36] to-[#10172a] border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30 overflow-y-auto">
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -156,12 +262,14 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
             </SidebarMenu>
           </SidebarFooter>
         </aside>
-        <div className="ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
+        
+        {/* main content */}
+        <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 border-b border-zinc-800 bg-[#10172a]">
+            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 pl-14 md:pl-0 border-b border-zinc-800 bg-[#10172a]">
               <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1" />
-                <div className="h-4 w-px bg-sidebar-border" />
+                <SidebarTrigger className="-ml-1 hidden md:block" />
+                <div className="h-4 w-px bg-sidebar-border hidden md:block" />
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-white">Admin Dashboard</span>
                 </div>

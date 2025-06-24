@@ -124,8 +124,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="text-center max-w-md">
           <h1 className="text-2xl font-bold mb-2">Unauthorized</h1>
           <p className="text-muted-foreground mb-4">You do not have access to this page.</p>
           <Button asChild>
