@@ -145,14 +145,19 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 md:space-y-8">
-     
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
+      <div className="flex items-center gap-3 pb-6 border-b border-zinc-800/60 relative z-10 mt-2 mb-4">
+        <span className="inline-block w-2 h-6 sm:h-8 bg-gradient-to-b from-blue-400 to-pink-400 rounded-full mr-2" />
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">Manage and monitor all platform users</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white drop-shadow-sm flex items-center gap-3">
+            User Management
+          </h1>
+          <p className="text-zinc-400 mt-1 font-medium text-sm sm:text-base">Manage and monitor all platform users</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex gap-3">
           <Button variant="outline" className="text-sm">
             <Download className="h-4 w-4 mr-2" />
             Export
@@ -206,18 +211,37 @@ export default function UsersPage() {
         </div>
       </div>
 
-     
+      {/* User Stats Section Header */}
+      <div className="flex items-center gap-3 mt-8 md:mt-10 mb-2 relative z-10">
+        <span className="inline-block w-1.5 h-6 bg-gradient-to-b from-blue-400 to-emerald-400 rounded-full" />
+        <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white tracking-tight">User Stats</h2>
+      </div>
+
+      {/* Stats Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {userStats.map((stat) => (
-          <Card key={stat.title} className="border-0 shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium">{stat.title}</CardTitle>
-              <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+          <Card key={stat.title} className={
+            `border-0 shadow-2xl rounded-2xl transition-transform duration-300 hover:-translate-y-2 ` +
+            (
+              stat.title === "Total Users"
+                ? "bg-gradient-to-br from-blue-100/80 to-blue-200/60 dark:from-blue-900/60 dark:to-blue-800/40"
+                : stat.title === "Active This Month"
+                ? "bg-gradient-to-br from-emerald-100/80 to-emerald-200/60 dark:from-emerald-900/60 dark:to-emerald-800/40"
+                : stat.title === "New Signups"
+                ? "bg-gradient-to-br from-green-100/80 to-green-200/60 dark:from-green-900/60 dark:to-green-800/40"
+                : stat.title === "Suspended"
+                ? "bg-gradient-to-br from-red-100/80 to-red-200/60 dark:from-red-900/60 dark:to-red-800/40"
+                : "bg-white/10 dark:bg-zinc-900/60"
+            )
+          }>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
+              <CardTitle className="text-xs sm:text-sm font-medium text-zinc-900 dark:text-zinc-100 flex items-center gap-2 tracking-tight">{stat.title}</CardTitle>
+              <div className="p-2 rounded-lg bg-gradient-to-br from-white/80 to-zinc-100/40 dark:from-zinc-800/80 dark:to-zinc-900/40 shadow-lg flex items-center justify-center">
                 <stat.icon className={`h-4 w-4 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">{stat.value}</div>
+              <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">{stat.value}</div>
               <p className="text-xs text-muted-foreground">
                 <span className={stat.change.startsWith("+") ? "text-green-500" : "text-red-500"}>{stat.change}</span>{" "}
                 from last month
@@ -227,11 +251,20 @@ export default function UsersPage() {
         ))}
       </div>
 
-     
-      <Card className="border-0 shadow-lg">
+      {/* User Directory Section Header */}
+      <div className="flex items-center gap-3 mt-8 md:mt-10 mb-2 relative z-10">
+        <span className="inline-block w-1.5 h-6 bg-gradient-to-b from-cyan-400 to-purple-400 rounded-full" />
+        <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white tracking-tight">User Directory</h2>
+      </div>
+
+      {/* User Directory Card */}
+      <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-cyan-100/80 to-cyan-200/60 dark:from-cyan-900/60 dark:to-cyan-800/40 relative overflow-hidden group">
         <CardHeader>
-          <CardTitle className="text-lg sm:text-xl">User Directory</CardTitle>
-          <CardDescription className="text-sm">Search and filter through all platform users</CardDescription>
+          <CardTitle className="text-lg sm:text-xl text-zinc-900 dark:text-zinc-100 font-bold flex items-center">
+            <Users className="h-5 w-5 mr-2 text-blue-400" />
+            User Directory
+          </CardTitle>
+          <CardDescription className="text-zinc-500 dark:text-zinc-300 font-medium text-sm">Search and filter through all platform users</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4 mb-6">
@@ -270,7 +303,6 @@ export default function UsersPage() {
             </div>
           </div>
 
-         
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -287,14 +319,14 @@ export default function UsersPage() {
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.id} className="hover:bg-purple-700/10 transition-colors">
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                           {user.avatar}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate">{user.name}</p>
+                          <p className="font-medium text-sm truncate text-zinc-900 dark:text-zinc-100">{user.name}</p>
                           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                           <div className="flex items-center gap-2 mt-1 sm:hidden">
                             {getRoleBadge(user.role)}
@@ -313,7 +345,7 @@ export default function UsersPage() {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-purple-700/20 text-purple-400 font-semibold text-xs sm:text-sm">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
