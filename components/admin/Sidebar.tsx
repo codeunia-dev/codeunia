@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import {
   Code2,
@@ -31,7 +31,6 @@ import {
     SidebarTrigger,
   } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { ThemeToggle } from "@/components/theme-toggle"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
 
@@ -55,11 +54,13 @@ interface SidebarProps {
 }
 
 export function Sidebar({ avatar, name, email, role, sidebarItems, children }: SidebarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeSidebar = () => setMobileOpen(false);
   return (
     <SidebarProvider>
       <div className="w-full bg-zinc-900">
         {/* mobile sidebar */}
-        <Sheet>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden fixed top-4 left-4 z-50 border-zinc-700 bg-zinc-900 hover:bg-purple-700/10">
               <Menu className="h-4 w-4 text-purple-400" />
@@ -93,6 +94,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                           key={item.title}
                           href={item.url}
                           className="flex items-center gap-3 px-4 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 text-zinc-200 hover:text-white font-medium"
+                          onClick={closeSidebar}
                         >
                           <span className="text-purple-400">
                             {React.createElement(item.icon, { className: "size-5" })}
@@ -278,7 +280,6 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                 <Button variant="outline" size="icon" className="border-zinc-700 bg-zinc-900 hover:bg-purple-700/10">
                   <Bell className="h-4 w-4 text-purple-400" />
                 </Button>
-                <ThemeToggle />
               </div>
             </header>
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
