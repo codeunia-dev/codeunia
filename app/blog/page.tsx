@@ -168,7 +168,7 @@ export default function BlogPage() {
             >
               <div className="flex flex-col items-center justify-center gap-4">
                 <motion.button 
-                  className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block"
+                  className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -396,7 +396,6 @@ export default function BlogPage() {
           </motion.div>
 
 
-{/* All blogs */}
           <div className="grid  grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {regularPosts.map((post, index) => (
               <motion.div
