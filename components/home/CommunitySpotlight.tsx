@@ -4,22 +4,16 @@ import { Megaphone } from "lucide-react"
 export function CommunitySpotlight() {
   const testimonials = [
     {
-      quote: "Codeunia completely transformed my career! The real-world projects gave me the experience I needed to land my dream job at Google.",
-      name: "Alex Smith",
-      designation: "Full Stack Developer at Google",
-      src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop"
+      quote: "Codeunia is not just another platform — it’s a movement. A new-age community that's bringing hackathons and innovation culture right down to the grassroots. It’s inspiring to see this kind of impact in real time!",
+      name: "Ankul Kumar",
+      designation: "President at Rotaract Club of Chandigarh University",
+      src: "/images/testimonials/anshul.jpeg"
     },
     {
-      quote: "The mentorship program is incredible. I learned more in 3 months than I did in a year of self-study. The community support is unmatched!",
-      name: "Maria Johnson",
-      designation: "Frontend Developer at Stripe",
-      src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop"
-    },
-    {
-      quote: "Won my first hackathon through Codeunia! The community support was amazing throughout the event. Now I'm working at Meta!",
-      name: "David Lee",
-      designation: "Backend Engineer at Meta",
-      src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"
+        quote: "Won my first hackathon through Codeunia! The community support was amazing throughout the event. Now I'm working at Meta!",
+        name: "David Lee",
+        designation: "Backend Engineer at Meta",
+        src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"
     }
   ];
 

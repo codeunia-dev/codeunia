@@ -88,10 +88,10 @@ export default function AboutPage() {
 
     const testimonials = [
         {
-            quote: "Codeunia transformed my career. The hands-on projects and community support helped me land my dream job.",
-            name: "Alex Thompson",
-            designation: "Full Stack Developer at Google",
-            src: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop",
+            quote: "Interning at Codeunia was a turning point in my journey. The hands-on projects, mentorship, and startup exposure helped me grow both technically and professionally.",
+            name: "Aditya Sharma",
+            designation: "Frontend Developer",
+            src: "/images/testimonials/aditya.jpeg"
         },
         {
             quote: "The structured learning paths and real-world projects made learning to code enjoyable and effective.",
