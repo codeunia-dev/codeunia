@@ -11,4 +11,3 @@
 - 🧰 Curated Tools and Resources for Developers
 - 📬 Newsletter Subscription
 - 📊 Community Polls and Discussions (Coming Soon)
-adi
