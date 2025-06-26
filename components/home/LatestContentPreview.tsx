@@ -13,7 +13,7 @@ export function LatestContentPreview() {
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchLatestBlogs = async () => {
       setIsLoading(true)
       setFetchError(null)
@@ -83,10 +83,18 @@ export function LatestContentPreview() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  <Badge variant="outline" className="px-4 py-2 rounded-full  hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary/15 to-purple-500/15 border-primary/30 backdrop-blur-sm shadow-lg">
-                    <Sparkles className="w-3 h-3 mr-2 animate-pulse" />
-                    Latest Articles
-                  </Badge>
+                  <div className="flex flex-col items-start gap-2">
+                    <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                      <span className="absolute inset-0 overflow-hidden rounded-full">
+                        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      </span>
+                      <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10 cursor-default">
+                        <span>Latest Articles</span>
+                        <Sparkles className="w-3 h-3" />
+                      </div>
+                      <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                    </button>
+                  </div>
                 </motion.div>
                 <motion.h3 
                   initial={{ opacity: 0, x: -20 }}
@@ -181,10 +189,18 @@ export function LatestContentPreview() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.6, delay: 0.5 }}
                 >
-                  <Badge variant="outline" className="px-4 py-2 hover:scale-105 rounded-full  transition-all duration-300 bg-gradient-to-r from-primary/15 to-purple-500/15 border-primary/30 backdrop-blur-sm shadow-lg">
-                    <Sparkles className="w-3 h-3 mr-2 animate-pulse" />
-                    Upcoming Events
-                  </Badge>
+                  <div className="flex flex-col items-start gap-2">
+                    <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                      <span className="absolute inset-0 overflow-hidden rounded-full">
+                        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      </span>
+                      <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10 cursor-default">
+                        <span>Upcoming Events</span>
+                        <Sparkles className="w-3 h-3" />
+                      </div>
+                      <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                    </button>
+                  </div>
                 </motion.div>
                 <motion.h3 
                   initial={{ opacity: 0, x: -20 }}

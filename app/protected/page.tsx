@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { InfoIcon, Sparkles, Rocket, Shield, User } from "lucide-react";
-
+import Link from "next/link";
 export default async function ProtectedPage() {
   const supabase = await createClient();
 
@@ -16,7 +16,11 @@ export default async function ProtectedPage() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8 p-6 max-w-4xl mx-auto">
-     
+     <div>
+        <Link href="/" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 transition-colors shadow">
+          ← Go Back
+        </Link>
+      </div>
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-2xl"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent rounded-2xl"></div>
