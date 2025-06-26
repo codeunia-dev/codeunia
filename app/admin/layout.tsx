@@ -150,7 +150,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       role={role}
       sidebarItems={sidebarItems}
     >
-      {children}
+      <div className="bg-black min-h-screen w-full">
+        {children}
+      </div>
     </Sidebar>
   )
 }

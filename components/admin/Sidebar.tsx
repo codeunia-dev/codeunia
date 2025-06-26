@@ -32,6 +32,7 @@ import {
   } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import AdminHeader from "./AdminHeader";
 
 
 export type SidebarGroupType = {
@@ -59,7 +60,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
   const pathname = usePathname();
   return (
     <SidebarProvider>
-      <div className="w-full bg-zinc-900">
+      <div className="w-full bg-black">
         {/* mobile sidebar */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
@@ -67,7 +68,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
               <Menu className="h-4 w-4 text-purple-400" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-0 bg-gradient-to-b from-[#10172a] via-[#181f36] to-[#10172a] border-r border-zinc-800">
+          <SheetContent side="left" className="w-80 p-0 bg-black border-r border-zinc-800">
             <div className="flex flex-col h-full">
               {/* mobile header */}
               <div className="p-4 border-b border-zinc-800">
@@ -165,7 +166,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
         </Sheet>
 
         {/* desktop sidebar */}
-        <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#10172a] via-[#181f36] to-[#10172a] border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30 overflow-y-auto">
+        <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 bg-black border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30 overflow-y-auto">
           <SidebarHeader>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -269,19 +270,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
         {/* main content */}
         <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
           <SidebarInset>
-            <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12 px-4 pl-14 md:pl-0 border-b border-zinc-800 bg-[#10172a]">
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-px bg-sidebar-border hidden md:block" />
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-white">Admin Dashboard</span>
-                </div>
-              </div>
-              <div className="ml-auto flex items-center gap-2">
-                <Button variant="outline" size="icon" className="border-zinc-700 bg-zinc-900 hover:bg-purple-700/10">
-                  <Bell className="h-4 w-4 text-purple-400" />
-                </Button>
-              </div>
-            </header>
+            <AdminHeader />
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
               {children}
             </div>

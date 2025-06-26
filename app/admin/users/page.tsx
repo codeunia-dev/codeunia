@@ -145,7 +145,7 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
+    <div className="bg-black space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
       <div className="pointer-events-none fixed inset-0 z-0 opacity-60 select-none" aria-hidden>
         <svg width="100%" height="100%" className="w-full h-full">
           <defs>
