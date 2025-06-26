@@ -188,7 +188,7 @@ function SignInForm() {
           transition={{ duration: 0.5, delay: 0.2 }}
         >
           <BackgroundGradient>
-            <Card className="shadow-2xl transition-all duration-300 relative overflow-hidden bg-background">
+          <Card className="shadow-2xl transition-all duration-300 relative overflow-hidden bg-background rounded-3xl">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 pointer-events-none" />
               <CardHeader className="space-y-1 relative">
                 <CardTitle className="text-2xl text-center font-bold">Sign In</CardTitle>
