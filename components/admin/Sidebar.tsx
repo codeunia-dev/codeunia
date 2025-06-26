@@ -268,8 +268,10 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
         </aside>
         
         {/* main content */}
+        {/* <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-black text-white z-0 relative [&_*]:bg-transparent"> forcing bg to be transparent for children components */}
+        {/* <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-red-600 text-white relative z-0"> alt fix  */}
         <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
-          <SidebarInset>
+        <SidebarInset className="bg-black">
             <AdminHeader />
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
               {children}
