@@ -10,10 +10,10 @@ export function CommunitySpotlight() {
       src: "/images/testimonials/anshul.jpeg"
     },
     {
-        quote: "Won my first hackathon through Codeunia! The community support was amazing throughout the event. Now I'm working at Meta!",
-        name: "David Lee",
-        designation: "Backend Engineer at Meta",
-        src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop"
+        quote: "Participated into my first hackathon through Codeunia! The community support was amazing throughout the event.",
+        name: "Simran",
+        designation: "Student at Chitkara",
+       src: "/images/testimonials/simran.jpeg"
     }
   ];
 

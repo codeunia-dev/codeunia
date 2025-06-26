@@ -31,7 +31,7 @@ export default function Home() {
             <DialogTitle>Special Announcement!</DialogTitle>
             <DialogDescription>
               <div className="flex flex-col items-center gap-4">
-                <img src="/images/colab/collabtest.jpg" alt="Orbo AI Collaboration" className="rounded-lg w-full max-w-xs object-cover" />
+                <img src="/images/colab/orbo.jpeg" alt="Orbo AI Collaboration" className="rounded-lg w-full max-w-xs object-cover" />
                 <div className="text-base text-center">
                   <b>We are thrilled to announce a special collaboration with Orbo AI!</b><br/>
                   Manoj, co-founder of Orbo AI (as seen on Shark Tank India), will be joining RealityCode for an exclusive online session and fireside chat. Gain unique insights into startup journeys and co-founder alignment, straight from the innovators themselves!<br/><br/>
