@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { User, Settings, LogOut, Shield, UserCircle } from "lucide-react"
+import {LogOut, Shield, UserCircle } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
 export function UserIcon() {
@@ -51,18 +51,18 @@ export function UserIcon() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/protected")}>
+        {/* <DropdownMenuItem onClick={() => router.push("/protected")}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem onClick={() => router.push("/protected")}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Dashboard</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/protected")}>
+        {/* <DropdownMenuItem onClick={() => router.push("/protected")}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
           <LogOut className="mr-2 h-4 w-4" />
