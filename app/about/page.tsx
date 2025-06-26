@@ -388,10 +388,11 @@ export default function AboutPage() {
                 </div>
             </section>
 
+            <SponsorsSection />
+
             {/* Team Section */}
             <TeamSection />
 
-            <SponsorsSection />
 
             {/* Vision & Roadmap Section */}
             <section className="py-20 relative overflow-hidden">
