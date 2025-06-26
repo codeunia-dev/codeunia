@@ -215,6 +215,31 @@ const BlogPostForm = ({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="views">Views</Label>
+          <Input
+            id="views"
+            placeholder="e.g., 0"
+            value={formData.views}
+            onChange={handleInputChange('views')}
+            className="text-sm"
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="likes">Likes</Label>
+          <Input
+            id="likes"
+            type="number"
+            placeholder="e.g., 0"
+            value={formData.likes}
+            onChange={handleInputChange('likes')}
+            className="text-sm"
+          />
+        </div>
+      </div>
+
       <div className="grid gap-2">
         <Label htmlFor="tags">Tags</Label>
         <Input
