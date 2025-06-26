@@ -430,50 +430,48 @@ export default function BlogPage() {
                       </div>
                     </div>
                   </div>
-                  <CardHeader className="relative z-10">
+                  <CardHeader className="relative z-10 flex-shrink-0">
                     <CardTitle className="text-lg hover:text-primary cursor-pointer line-clamp-2 transition-colors group-hover:scale-105 transform duration-300">
                       {post.title}
                     </CardTitle>
                     <CardDescription className="line-clamp-3">{post.excerpt}</CardDescription>
                   </CardHeader>
-                  <CardContent className="relative z-10 flex-1">
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-1">
-                        {post.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs bg-background/50 backdrop-blur-sm">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xs font-bold">
-                              {post.author
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{post.author}</p>
-                            <p className="text-xs text-muted-foreground">{new Date(post.date).toLocaleDateString()}</p>
-                          </div>
+                  <CardContent className="relative z-10 flex-1 flex flex-col">
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {post.tags.slice(0, 3).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs bg-background/50 backdrop-blur-sm">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between mt-auto">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                          <span className="text-white text-xs font-bold">
+                            {post.author
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
                         </div>
-                        {isAuthenticated ? (
-                          <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
-                            <Link href={`/blog/${post.slug}`}>
-                              Read More <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        ) : (
-                          <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
-                            <Link href={`/auth/signin?returnUrl=${encodeURIComponent('/blog')}`}>
-                              Sign in to read <Lock className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                        )}
+                        <div>
+                          <p className="text-sm font-medium">{post.author}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(post.date).toLocaleDateString()}</p>
+                        </div>
                       </div>
+                      {isAuthenticated ? (
+                        <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
+                          <Link href={`/blog/${post.slug}`}>
+                            Read More <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="sm" className="hover:scale-105 transition-transform bg-gradient-to-r from-primary/10 to-purple-500/10 hover:from-primary/20 hover:to-purple-500/20" asChild>
+                          <Link href={`/auth/signin?returnUrl=${encodeURIComponent('/blog')}`}>
+                            Sign in to read <Lock className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
