@@ -28,6 +28,7 @@ export default function Header() {
     { href: "/about", label: "About" },
     { href: "/events", label: "Events" },
     { href: "/blog", label: "Blog" },
+    { href: "/join", label: "Join Codeunia" },
     { href: "/contact", label: "Contact Us" },
   ]
 
