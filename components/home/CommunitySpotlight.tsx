@@ -4,7 +4,7 @@ import { Megaphone } from "lucide-react"
 export function CommunitySpotlight() {
   const testimonials = [
     {
-      quote: "Codeunia is not just another platform — it’s a movement. A new-age community that's bringing hackathons and innovation culture right down to the grassroots. It’s inspiring to see this kind of impact in real time!",
+      quote: "Codeunia is not just another platform — it's a movement. A new-age community that's bringing hackathons and innovation culture right down to the grassroots. It's inspiring to see this kind of impact in real time!",
       name: "Ankul Kumar",
       designation: "President at Rotaract Club of Chandigarh University",
       src: "/images/testimonials/anshul.jpeg"
@@ -21,7 +21,7 @@ export function CommunitySpotlight() {
       <section className="py-16 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10"></div>
           <div className="container px-4 relative z-10 mx-auto">
-              <div className="text-center space-y-4 mb-12">
+              <div className="text-center space-y-4 mb-4 md:mb-12">
                   <div className="flex flex-col items-center justify-center gap-2">
                       <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
                           <span className="absolute inset-0 overflow-hidden rounded-full">

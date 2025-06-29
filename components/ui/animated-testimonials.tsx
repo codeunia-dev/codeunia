@@ -45,10 +45,10 @@ export const AnimatedTestimonials = ({
   };
 
   return (
-    <div className="mx-auto max-w-sm px-4 py-20 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
-      <div className="relative grid grid-cols-1 gap-20 md:grid-cols-2">
-        <div>
-          <div className="relative h-80 w-full">
+    <div className="mx-auto max-w-sm px-2 py-8 font-sans antialiased md:max-w-4xl md:px-8 lg:px-12">
+      <div className="relative flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-20">
+        <div className="mb-4 md:mb-0">
+          <div className="relative aspect-[1/1] md:aspect-[4/3] w-full md:h-80">
             <AnimatePresence>
               {testimonials.map((testimonial, index) => (
                 <motion.div
@@ -88,7 +88,7 @@ export const AnimatedTestimonials = ({
                       width={500}
                       height={500}
                       draggable={false}
-                      className="h-full w-full object-cover object-center transition-transform duration-500 hover:scale-110"
+                      className="h-full w-full object-contain md:object-cover object-center transition-transform duration-500 hover:scale-110"
                     />
                   </div>
                 </motion.div>
@@ -96,7 +96,7 @@ export const AnimatedTestimonials = ({
             </AnimatePresence>
           </div>
         </div>
-        <div className="flex flex-col justify-between py-4">
+        <div className="flex flex-col justify-between py-2 md:py-4">
           <motion.div
             key={active}
             initial={{
@@ -118,13 +118,13 @@ export const AnimatedTestimonials = ({
             className="relative"
           >
             <div className="absolute -left-4 top-0 h-12 w-1 bg-gradient-to-b from-primary to-purple-500 rounded-full" />
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+            <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
               {testimonials[active].name}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs md:text-sm text-muted-foreground">
               {testimonials[active].designation}
             </p>
-            <motion.p className="mt-8 text-lg text-muted-foreground">
+            <motion.p className="mt-4 md:mt-8 text-base md:text-lg text-muted-foreground">
               {testimonials[active].quote.split(" ").map((word, index) => (
                 <motion.span
                   key={index}
@@ -150,7 +150,7 @@ export const AnimatedTestimonials = ({
               ))}
             </motion.p>
           </motion.div>
-          <div className="flex gap-4 pt-12 md:pt-0">
+          <div className="flex gap-4 pt-4 md:pt-0">
             <motion.button
               onClick={handlePrev}
               whileHover={{ scale: 1.1 }}
