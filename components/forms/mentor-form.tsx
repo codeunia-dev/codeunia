@@ -255,7 +255,7 @@ export function MentorForm() {
                             <h3 className="text-lg font-semibold border-b pb-2">Professional Information</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="occupation">Current Position *</Label>
+                                    <Label htmlFor="occupation">Current Role *</Label>
                                     <Input
                                         id="occupation"
                                         value={formData.occupation}
