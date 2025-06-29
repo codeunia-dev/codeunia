@@ -92,19 +92,7 @@ export default function AboutPage() {
             name: "Aditya Sharma",
             designation: "Frontend Developer",
             src: "/images/testimonials/aditya.jpeg"
-        },
-        {
-            quote: "The structured learning paths and real-world projects made learning to code enjoyable and effective.",
-            name: "Maria Garcia",
-            designation: "Frontend Developer at Meta",
-            src: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-        },
-        {
-            quote: "The community here is amazing. I've made friends and found mentors who've helped me grow as a developer.",
-            name: "David Kim",
-            designation: "Backend Developer at Netflix",
-            src: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop",
-        },
+        }
     ];
 
     const containerVariants = {

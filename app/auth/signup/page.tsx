@@ -3,7 +3,7 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import type React from "react"
-import Typewriter from 'typewriter-effect';
+import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -266,15 +266,14 @@ function SignUpForm() {
           transition={{ duration: 0.3 }}
           className="text-center"
         >
-          <h2 className="mt-6 text-4xl font-bold tracking-tight"><Typewriter
-              options={{
-                strings: ['Join Our Community'],
-                autoStart: true,
-                loop: true,
-
-              }}
-              />
-              </h2>
+          <TypewriterEffect
+            words={[
+              { text: "Join" },
+              { text: "Our" },
+              { text: "Community" }
+            ]}
+            className="mt-6 text-4xl font-bold tracking-tight whitespace-nowrap"
+          />
           <p className="mt-3 text-muted-foreground text-lg">Create your account and start your coding journey with us</p>
         </motion.div>
 

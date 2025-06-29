@@ -442,7 +442,7 @@ export function HeroSection2() {
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <span className="mr-2 text-base sm:text-lg">🚀</span>
                 <span className="relative z-10 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent font-semibold">
-                  Next-Gen Coding Community
+                Fueling Devs. Driving Ideas.
                 </span>
               </Badge>
             </div>

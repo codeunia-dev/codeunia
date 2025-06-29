@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { InfoIcon, Sparkles, Rocket, Shield, User } from "lucide-react";
+import { Sparkles, Rocket, Shield, User } from "lucide-react";
 import Link from "next/link";
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -25,7 +25,7 @@ export default async function ProtectedPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-2xl"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-transparent rounded-2xl"></div>
         
-        <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-6 rounded-2xl shadow-lg">
+        {/* <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 p-6 rounded-2xl shadow-lg">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
               <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
@@ -41,7 +41,7 @@ export default async function ProtectedPage() {
               This is a protected page that you can only see as an authenticated user. Your session is secure and verified.
             </p>
           </div>
-        </div>
+        </div> */}
       </div>
 
       
