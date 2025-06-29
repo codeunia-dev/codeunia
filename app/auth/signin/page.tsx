@@ -32,7 +32,7 @@ function SignInForm() {
   })
 
   // Get the return URL from query parameters
-  const returnUrl = searchParams.get('returnUrl') || '/protected'
+  const returnUrl = searchParams.get('returnUrl') || '/'
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -79,7 +79,7 @@ function SignInForm() {
         provider: 'google',
         options: {
           redirectTo: typeof window !== "undefined"
-            ? `${window.location.origin}/protected`
+            ? `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
             : undefined,
         },
       });

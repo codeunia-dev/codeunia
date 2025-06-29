@@ -8,7 +8,7 @@ import { toast } from "sonner";
 function OAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || "/protected";
+  const returnUrl = searchParams.get("returnUrl") || "/";
 
   useEffect(() => {
     const checkSession = async () => {
