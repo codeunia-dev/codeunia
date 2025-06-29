@@ -24,10 +24,10 @@ export default function JoinPage() {
     const joinOptions = [
         {
             icon: Handshake,
-            title: "Codeunia Partnership Form",
-            description: "Partner with us to create innovative learning experiences and expand your reach in the developer community.",
+            title: "Codeunia Collaboration Form",
+            description: "Collaborate with us to create innovative learning experiences and expand your reach in the developer community.",
             gradient: "from-blue-500 to-cyan-500",
-            href: "/join/partnership",
+            href: "/join/collaboration",
             color: "text-blue-500",
         },
         {
@@ -67,7 +67,7 @@ export default function JoinPage() {
     const stats = [
         {
             number: "500+",
-            label: "Partners",
+            label: "Collaborators",
             icon: Handshake,
             color: "text-blue-500",
         },
