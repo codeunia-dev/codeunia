@@ -31,13 +31,20 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const protectedPaths = ["/protected", "/dashboard"];
+  const authPaths = ["/auth/signin", "/auth/signup", "/auth/confirm", "/auth/error"];
+  
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
+  
+  const isAuthPath = authPaths.some((path) =>
+    request.nextUrl.pathname.startsWith(path)
+  );
 
-  if (isProtected && !user) {
+  // Don't redirect if user is accessing auth paths
+  if (isProtected && !user && !isAuthPath) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/auth/signin";
     return NextResponse.redirect(url);
   }
 

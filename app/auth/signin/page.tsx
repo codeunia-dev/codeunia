@@ -49,14 +49,10 @@ function SignInForm() {
       setIsLoading(true)
       const supabase = createClient()
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       })
-
-      if (error) {
-        throw error
-      }
 
       if (data?.user) {
         toast.success("Signed in successfully!")
@@ -74,6 +70,26 @@ function SignInForm() {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: typeof window !== "undefined"
+            ? `${window.location.origin}/protected`
+            : undefined,
+        },
+      });
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      toast.error("Google sign in failed");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-br from-background via-muted/30 to-muted/50 relative overflow-hidden">
@@ -206,6 +222,8 @@ function SignInForm() {
                   <Button 
                     variant="outline" 
                     className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Google

@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import type React from "react"
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -20,10 +20,12 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { AuthError } from "@supabase/supabase-js"
 import { BackgroundGradient } from "@/components/ui/background-gradient"
+import { useAuth } from "@/lib/hooks/useAuth"
 
 function SignUpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -37,6 +39,14 @@ function SignUpForm() {
 
   // Get the return URL from query parameters
   const returnUrl = searchParams.get('returnUrl') || '/protected'
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    if (user) {
+      // User is already authenticated, redirect to protected page
+      router.push(returnUrl);
+    }
+  }, [user, router, returnUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -57,7 +67,7 @@ function SignUpForm() {
       setIsLoading(true)
       const supabase = createClient()
 
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -72,11 +82,9 @@ function SignUpForm() {
         throw error
       }
 
-      if (data?.user) {
-        toast.success("Account created successfully! Please check your email for verification.")
-        // Pass the return URL to the signin page
-        router.push(`/auth/signin?returnUrl=${encodeURIComponent(returnUrl)}`)
-      }
+      toast.success("Account created successfully! Please check your email for verification.")
+      // Pass the return URL to the signin page
+      router.push(`/auth/signin?returnUrl=${encodeURIComponent(returnUrl)}`)
     } catch (error) {
       if (error instanceof AuthError) {
         toast.error(error.message)
@@ -87,6 +95,41 @@ function SignUpForm() {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
+            : undefined,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      // Show success message while redirecting
+      toast.success("Redirecting to Google...");
+      
+      // The OAuth flow will redirect the user to Google
+      // After successful authentication, they'll be redirected back to /auth/callback
+      // which will then redirect them to the returnUrl
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      toast.error("Google sign in failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const passwordRequirements = [
     { text: "At least 8 characters", met: formData.password.length >= 8 },
@@ -298,9 +341,23 @@ function SignUpForm() {
                     <Github className="mr-2 h-4 w-4" />
                     GitHub
                   </Button>
-                  <Button variant="outline" className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Google
+                  <Button 
+                    variant="outline" 
+                    className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
+                        Connecting...
+                      </div>
+                    ) : (
+                      <>
+                        <Mail className="mr-2 h-4 w-4" />
+                        Google
+                      </>
+                    )}
                   </Button>
                 </div>
 
