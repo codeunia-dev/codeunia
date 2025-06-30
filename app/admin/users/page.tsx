@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,98 +25,118 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, Search, MoreHorizontal, UserPlus, Mail, Shield, Ban, Eye, Edit, Download } from "lucide-react"
+import { Users, Search, MoreHorizontal, UserPlus, Mail, Ban, Eye, Edit, Download } from "lucide-react"
 
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  joinDate: string;
+  lastActive: string | null;
+  avatar: string | null;
+  avatarUrl: string | null;
+};
 
-const users = [
-  {
-    id: 1,
-    name: "Akshay Kumar",
-    email: "akshay@gmail.com",
-    role: "Developer",
-    status: "active",
-    joinDate: "2025-06-23",
-    lastActive: "2025-06-23",
-    projects: 5,
-    contributions: 23,
-    avatar: "AK",
-  },
-  {
-    id: 1,
-    name: "Akshay Kumar",
-    email: "akshay@gmail.com",
-    role: "Developer",
-    status: "suspended",
-    joinDate: "2025-06-23",
-    lastActive: "2025-06-23",
-    projects: 5,
-    contributions: 23,
-    avatar: "AK",
-  },
-  {
-    id: 1,
-    name: "Akshay Kumar",
-    email: "akshay@gmail.com",
-    role: "Developer",
-    status: "inactive",
-    joinDate: "2025-06-23",
-    lastActive: "2025-06-23",
-    projects: 5,
-    contributions: 23,
-    avatar: "AK",
-  },
-  
-]
-
-const userStats = [
-  {
-    title: "Total Users",
-    value: "52,431",
-    change: "+12.5%",
-    icon: Users,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50 dark:bg-blue-950/20",
-  },
-  {
-    title: "Active This Month",
-    value: "38,294",
-    change: "+8.2%",
-    icon: Users,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
-  },
-  {
-    title: "New Signups",
-    value: "1,247",
-    change: "+15.3%",
-    icon: UserPlus,
-    color: "text-green-600",
-    bgColor: "bg-green-50 dark:bg-green-950/20",
-  },
-  {
-    title: "Suspended",
-    value: "23",
-    change: "-5.1%",
-    icon: Ban,
-    color: "text-red-600",
-    bgColor: "bg-red-50 dark:bg-red-950/20",
-  },
-]
+// type for supabase user
+type SupabaseUser = {
+  id: string;
+  email: string;
+  user_metadata?: {
+    full_name?: string;
+    avatar_url?: string;
+  };
+  banned?: boolean;
+  created_at: string;
+  last_sign_in_at: string | null;
+};
 
 export default function UsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [roleFilter, setRoleFilter] = useState("all")
+
+  useEffect(() => {
+    fetch("/api/admin-users")
+      .then(res => res.json())
+      .then(data => {
+        if (data.users) {
+          setUsers(data.users.map((user: SupabaseUser) => {
+            const meta = user.user_metadata || {};
+            return {
+              id: user.id,
+              name: meta.full_name || user.email,
+              email: user.email,
+              status: user.banned ? "suspended" : "active",
+              joinDate: user.created_at,
+              lastActive: user.last_sign_in_at,
+              avatar: meta.avatar_url ? null : user.email[0]?.toUpperCase() || null,
+              avatarUrl: meta.avatar_url || null,
+            };
+          }));
+        }
+      });
+  }, []);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter
 
-    return matchesSearch && matchesStatus && matchesRole
+    return matchesSearch && matchesStatus
   })
+
+  // stats from users
+  const now = new Date();
+  const thisMonth = now.getMonth();
+  const thisYear = now.getFullYear();
+  const totalUsers = users.length;
+  const suspendedUsers = users.filter(u => u.status === "suspended").length;
+  const newSignups = users.filter(u => {
+    const d = new Date(u.joinDate);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  }).length;
+  const activeThisMonth = users.filter(u => {
+    if (!u.lastActive) return false;
+    const d = new Date(u.lastActive);
+    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  }).length;
+
+  const userStats = [
+    {
+      title: "Total Users",
+      value: totalUsers.toLocaleString(),
+      change: "",
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-950/20",
+    },
+    {
+      title: "Active This Month",
+      value: activeThisMonth.toLocaleString(),
+      change: "",
+      icon: Users,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/20",
+    },
+    {
+      title: "New Signups",
+      value: newSignups.toLocaleString(),
+      change: "",
+      icon: UserPlus,
+      color: "text-green-600",
+      bgColor: "bg-green-50 dark:bg-green-950/20",
+    },
+    {
+      title: "Suspended",
+      value: suspendedUsers.toLocaleString(),
+      change: "",
+      icon: Ban,
+      color: "text-red-600",
+      bgColor: "bg-red-50 dark:bg-red-950/20",
+    },
+  ]
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -128,19 +148,6 @@ export default function UsersPage() {
         return <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs">Suspended</Badge>
       default:
         return <Badge variant="outline" className="text-xs">Unknown</Badge>
-    }
-  }
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case "Admin":
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs">Admin</Badge>
-      case "Mentor":
-        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs">Mentor</Badge>
-      case "Developer":
-        return <Badge variant="outline" className="text-xs">Developer</Badge>
-      default:
-        return <Badge variant="outline" className="text-xs">{role}</Badge>
     }
   }
 
@@ -197,21 +204,6 @@ export default function UsersPage() {
                     Email
                   </Label>
                   <Input id="email" type="email" placeholder="Email address" className="col-span-1 sm:col-span-3 text-sm" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-                  <Label htmlFor="role" className="text-right text-sm">
-                    Role
-                  </Label>
-                  <Select>
-                    <SelectTrigger className="col-span-1 sm:col-span-3 text-sm">
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="developer">Developer</SelectItem>
-                      <SelectItem value="mentor">Mentor</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <DialogFooter>
@@ -300,17 +292,6 @@ export default function UsersPage() {
                   <SelectItem value="suspended">Suspended</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-full sm:w-40 text-sm">
-                  <SelectValue placeholder="Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="developer">Developer</SelectItem>
-                  <SelectItem value="mentor">Mentor</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -319,12 +300,9 @@ export default function UsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs sm:text-sm">User</TableHead>
-                  <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Role</TableHead>
                   <TableHead className="text-xs sm:text-sm">Status</TableHead>
                   <TableHead className="text-xs sm:text-sm hidden md:table-cell">Join Date</TableHead>
                   <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Last Active</TableHead>
-                  <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Projects</TableHead>
-                  <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Contributions</TableHead>
                   <TableHead className="text-right text-xs sm:text-sm">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -340,19 +318,14 @@ export default function UsersPage() {
                           <p className="font-medium text-sm truncate text-zinc-900 dark:text-zinc-100">{user.name}</p>
                           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                           <div className="flex items-center gap-2 mt-1 sm:hidden">
-                            {getRoleBadge(user.role)}
-                            <span className="text-xs text-muted-foreground">•</span>
                             <span className="text-xs text-muted-foreground">{new Date(user.joinDate).toLocaleDateString()}</span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{getRoleBadge(user.role)}</TableCell>
                     <TableCell>{getStatusBadge(user.status)}</TableCell>
                     <TableCell className="hidden md:table-cell text-xs">{new Date(user.joinDate).toLocaleDateString()}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs">{new Date(user.lastActive).toLocaleDateString()}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs">{user.projects}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs">{user.contributions}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-xs">{new Date(user.lastActive || "").toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -375,10 +348,6 @@ export default function UsersPage() {
                             Send Message
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-xs">
-                            <Shield className="mr-2 h-4 w-4" />
-                            Change Role
-                          </DropdownMenuItem>
                           <DropdownMenuItem className="text-red-600 text-xs">
                             <Ban className="mr-2 h-4 w-4" />
                             Suspend User
