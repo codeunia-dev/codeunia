@@ -20,6 +20,10 @@ import {
   ArrowDownRight,
 } from "lucide-react"
 
+type SupabaseUser = {
+  created_at: string;
+};
+
 const dashboardStats = [
   {
     title: "Total Users",
@@ -151,16 +155,51 @@ const systemHealth = [
 export default function AdminDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
   const [animatedStats, setAnimatedStats] = useState(dashboardStats.map(() => 0))
+  const [totalUsers, setTotalUsers] = useState<string | null>(null)
+  const [totalUsersChange, setTotalUsersChange] = useState<string>("")
+  const [totalUsersTrend, setTotalUsersTrend] = useState<"up" | "down">("up")
 
   useEffect(() => {
-   
-    localStorage.setItem("isAdmin", "true")
+    // Fetch real total users and previous month users
+    fetch("/api/admin-users")
+      .then(res => res.json())
+      .then(data => {
+        if (data.users) {
+          const users: SupabaseUser[] = data.users;
+          setTotalUsers(users.length.toLocaleString());
 
+          // Calculate previous month user count
+          const now = new Date();
+          const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+          const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+          const prevMonthUsers = users.filter((u) => {
+            const d = new Date(u.created_at);
+            return d.getMonth() === prevMonth && d.getFullYear() === prevYear;
+          }).length;
+
+          // Calculate change percentage
+          const thisMonthUsers = users.filter((u) => {
+            const d = new Date(u.created_at);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          }).length;
+
+          if (prevMonthUsers > 0) {
+            const change = ((thisMonthUsers - prevMonthUsers) / prevMonthUsers) * 100;
+            setTotalUsersChange(`${change > 0 ? "+" : ""}${change.toFixed(1)}%`);
+            setTotalUsersTrend(change >= 0 ? "up" : "down");
+          } else {
+            setTotalUsersChange("N/A");
+            setTotalUsersTrend("up");
+          }
+        }
+      })
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("isAdmin", "true")
     const timer = setInterval(() => {
       setCurrentTime(new Date())
     }, 1000)
-
-   
     dashboardStats.forEach((stat, i) => {
       const value = parseInt(stat.value.replace(/[^\d]/g, ""))
       const step = Math.ceil(value / 30)
@@ -173,7 +212,6 @@ export default function AdminDashboard() {
       }, 20)
       setTimeout(() => clearInterval(interval), 600)
     })
-
     return () => clearInterval(timer)
   }, [])
 
@@ -202,6 +240,13 @@ export default function AdminDashboard() {
         return <Badge variant="outline">Unknown</Badge>
     }
   }
+
+  // When rendering dashboardStats, override Total Users value if totalUsers is available
+  const statsToShow = dashboardStats.map(stat =>
+    stat.title === "Total Users"
+      ? { ...stat, value: totalUsers ?? stat.value, change: totalUsersChange, trend: totalUsersTrend }
+      : stat
+  )
 
   return (
     <div className="bg-black space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
@@ -237,7 +282,7 @@ export default function AdminDashboard() {
 
       
       <div className="grid gap-4 sm:gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
-        {dashboardStats.map((stat, i) => (
+        {statsToShow.map((stat, i) => (
           <div className="group" key={stat.title}>
             <Card
               className={
@@ -265,7 +310,9 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white flex items-end gap-2 tracking-tight">
-                  {stat.value.match(/\d/) ? (
+                  {stat.title === "Total Users" && totalUsers ? (
+                    <span>{totalUsers}</span>
+                  ) : stat.value.match(/\d/) ? (
                     <span>{animatedStats[i].toLocaleString()}</span>
                   ) : (
                     <span>{stat.value}</span>

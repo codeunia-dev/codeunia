@@ -70,7 +70,7 @@ export default function UsersPage() {
               status: user.banned ? "suspended" : "active",
               joinDate: user.created_at,
               lastActive: user.last_sign_in_at,
-              avatar: meta.avatar_url ? null : user.email[0]?.toUpperCase() || null,
+              avatar: user.email[0]?.toUpperCase() || "",
               avatarUrl: meta.avatar_url || null,
             };
           }));
@@ -311,8 +311,11 @@ export default function UsersPage() {
                   <TableRow key={user.id} className="hover:bg-purple-700/10 transition-colors">
                     <TableCell>
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                        {/* <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                           {user.avatar}
+                        </div> */}
+                        <div className="w-8 h-8 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                        {user.avatar}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-sm truncate text-zinc-900 dark:text-zinc-100">{user.name}</p>
