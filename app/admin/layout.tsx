@@ -15,6 +15,11 @@ import {
   MessageSquare,
   Trophy,
   Database,
+  Handshake,
+  Target,
+  GraduationCap,
+  Gavel,
+  HandHeart,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -56,6 +61,36 @@ const sidebarItems: SidebarGroupType[] = [
         title: "Events",
         url: "/admin/events",
         icon: Calendar,
+      },
+    ],
+  },
+  {
+    title: "Form Entries",
+    items: [
+      {
+        title: "Collaboration",
+        url: "/admin/forms/collaboration",
+        icon: Handshake,
+      },
+      {
+        title: "Sponsorship",
+        url: "/admin/forms/sponsorship",
+        icon: Target,
+      },
+      {
+        title: "Mentor",
+        url: "/admin/forms/mentor",
+        icon: GraduationCap,
+      },
+      {
+        title: "Judges",
+        url: "/admin/forms/judges",
+        icon: Gavel,
+      },
+      {
+        title: "Volunteer",
+        url: "/admin/forms/volunteer",
+        icon: HandHeart,
       },
     ],
   },
