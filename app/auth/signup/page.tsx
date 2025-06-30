@@ -38,7 +38,7 @@ function SignUpForm() {
   })
 
   // Get the return URL from query parameters
-  const returnUrl = searchParams.get('returnUrl') || '/protected'
+  const returnUrl = searchParams.get('returnUrl') || '/'
 
   // Check if user is already authenticated
   useEffect(() => {
