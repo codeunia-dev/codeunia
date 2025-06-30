@@ -113,6 +113,7 @@ export function SponsorshipForm() {
                     marketing_goals: formData.marketingGoals,
                     target_audience: formData.targetAudience,
                     specific_requirements: formData.specificRequirements,
+                    status: 'pending',
                     created_at: new Date().toISOString(),
                 }]);
 
