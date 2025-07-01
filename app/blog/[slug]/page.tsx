@@ -12,9 +12,81 @@ import { motion } from "framer-motion"
 import { BlogPost } from "@/components/data/blog-posts"
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+
+function LikeButton({ slug, isAuthenticated }: { slug: string, isAuthenticated: boolean }) {
+  const [likeCount, setLikeCount] = useState(0);
+  const [likedByUser, setLikedByUser] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLikeData() {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/blog/${slug}/like`);
+        if (res.ok) {
+          const data = await res.json();
+          setLikeCount(data.count);
+          setLikedByUser(data.likedByUser);
+        }
+      } catch {}
+      setLoading(false);
+    }
+    if (slug) fetchLikeData();
+  }, [slug]);
+
+  const handleLike = async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+    setLoading(true);
+    if (!likedByUser) {
+      // Like the post
+      const res = await fetch(`/api/blog/${slug}/like`, { method: "POST" });
+      if (res.ok) {
+        setLikeCount((c) => c + 1);
+        setLikedByUser(true);
+      }
+    } else {
+      // Unlike the post
+      const res = await fetch(`/api/blog/${slug}/like`, { method: "DELETE" });
+      if (res.ok) {
+        setLikeCount((c) => c - 1);
+        setLikedByUser(false);
+      }
+    }
+    setLoading(false);
+  };
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>
+          <Button
+            onClick={handleLike}
+            disabled={loading || !isAuthenticated}
+            variant={likedByUser ? "default" : "ghost"}
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            {likedByUser ? (
+              <Heart className="h-4 w-4 text-red-500 fill-red-500" />
+            ) : (
+              <Heart className="h-4 w-4" />
+            )}
+            <span>{likeCount}</span>
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent sideOffset={8}>
+        {isAuthenticated ? (likedByUser ? "Unlike" : "Like") : "Login to like posts"}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export default function BlogPostPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -141,9 +213,7 @@ export default function BlogPostPage() {
               <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
                 <Share2 className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
-                <Heart className="h-4 w-4" />
-              </Button>
+              <LikeButton slug={slug} isAuthenticated={isAuthenticated} />
             </motion.div>
           </div>
         </div>
