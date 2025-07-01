@@ -41,8 +41,8 @@ export default function BlogPage() {
         setFetchError('Failed to fetch blog posts.')
         setBlogPosts([])
       } else {
-       
-        const posts = data.map((post: BlogPost) => ({
+        // Fetch like counts for all posts
+        const postsWithTags = data.map((post: BlogPost) => ({
           ...post,
           tags: Array.isArray(post.tags)
             ? post.tags
@@ -50,6 +50,17 @@ export default function BlogPage() {
                 ? (post.tags as string).split(',').map((t) => t.trim())
                 : []),
         }))
+        // Fetch like counts in parallel
+        const likeCounts = await Promise.all(
+          postsWithTags.map(async (post) => {
+            const { count } = await supabase
+              .from('blog_likes')
+              .select('*', { count: 'exact', head: true })
+              .eq('blog_slug', post.slug)
+            return count ?? 0
+          })
+        )
+        const posts = postsWithTags.map((post, i) => ({ ...post, likes: likeCounts[i] }))
         setBlogPosts(posts)
       }
       setIsLoading(false)

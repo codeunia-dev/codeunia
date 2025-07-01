@@ -17,26 +17,15 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
-function LikeButton({ slug, isAuthenticated }: { slug: string, isAuthenticated: boolean }) {
-  const [likeCount, setLikeCount] = useState(0);
-  const [likedByUser, setLikedByUser] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchLikeData() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/blog/${slug}/like`);
-        if (res.ok) {
-          const data = await res.json();
-          setLikeCount(data.count);
-          setLikedByUser(data.likedByUser);
-        }
-      } catch {}
-      setLoading(false);
-    }
-    if (slug) fetchLikeData();
-  }, [slug]);
+function LikeButton({ slug, isAuthenticated, likeCount, setLikeCount, likedByUser, setLikedByUser }: {
+  slug: string,
+  isAuthenticated: boolean,
+  likeCount: number,
+  setLikeCount: React.Dispatch<React.SetStateAction<number>>,
+  likedByUser: boolean,
+  setLikedByUser: React.Dispatch<React.SetStateAction<boolean>>
+}) {
+  const [loading, setLoading] = useState(false);
 
   const handleLike = async () => {
     if (!isAuthenticated) {
@@ -93,6 +82,8 @@ export default function BlogPostPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [post, setPost] = useState<BlogPost | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [likeCount, setLikeCount] = useState(0);
+  const [likedByUser, setLikedByUser] = useState(false);
   const params = useParams()
   
   const slug = params?.slug as string
@@ -129,6 +120,18 @@ export default function BlogPostPage() {
     }
     if (slug) fetchPost()
   }, [slug])
+
+  useEffect(() => {
+    async function fetchLikeData() {
+      const res = await fetch(`/api/blog/${slug}/like`);
+      if (res.ok) {
+        const data = await res.json();
+        setLikeCount(data.count);
+        setLikedByUser(data.likedByUser);
+      }
+    }
+    if (slug) fetchLikeData();
+  }, [slug]);
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -213,7 +216,7 @@ export default function BlogPostPage() {
               <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
                 <Share2 className="h-4 w-4" />
               </Button>
-              <LikeButton slug={slug} isAuthenticated={isAuthenticated} />
+              <LikeButton slug={slug} isAuthenticated={isAuthenticated} likeCount={likeCount} setLikeCount={setLikeCount} likedByUser={likedByUser} setLikedByUser={setLikedByUser} />
             </motion.div>
           </div>
         </div>
@@ -271,7 +274,7 @@ export default function BlogPostPage() {
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Heart className="h-4 w-4" />
-                <span>{post?.likes} likes</span>
+                <span>{likeCount} likes</span>
               </div>
             </div>
           </motion.div>
