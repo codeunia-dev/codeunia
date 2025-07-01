@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -156,6 +156,53 @@ const BlogPostForm = ({
     onFormChange({ featured: checked })
   }
 
+  // ref for the content textarea
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // image upload handler with auto-insert HTML <img> tag
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const supabase = createClient();
+    const filePath = `public/${Date.now()}-${file.name}`;
+
+    // upload to supabase storage
+    const { error } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, file);
+
+    if (error) {
+      alert("Image upload failed: " + error.message);
+      return;
+    }
+
+    // Get public url
+    const { data: publicUrlData } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    if (publicUrlData?.publicUrl) {
+      onFormChange({ image: publicUrlData.publicUrl });
+
+      // insert html <img> tag at cursor in content
+      if (contentRef.current) {
+        const textarea = contentRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const before = formData.content.slice(0, start);
+        const after = formData.content.slice(end);
+        const htmlImg = `<img src="${publicUrlData.publicUrl}" alt="Alt text" style="max-width:100%;height:auto;" />\n`;
+        const newContent = before + htmlImg + after;
+        onFormChange({ content: newContent });
+        setTimeout(() => {
+          textarea.focus();
+          textarea.selectionStart = textarea.selectionEnd = start + htmlImg.length;
+        }, 0);
+      }
+    }
+  }
+
   return (
     <div className="grid gap-4 py-4">
       <div className="grid gap-2">
@@ -184,6 +231,7 @@ const BlogPostForm = ({
         <Label htmlFor="content">Content *</Label>
         <Textarea
           id="content"
+          ref={contentRef}
           placeholder="Write your blog post content here..."
           value={formData.content}
           onChange={handleInputChange('content')}
@@ -268,15 +316,24 @@ const BlogPostForm = ({
         </Select>
       </div>
 
+      {/* Image upload section */}
       <div className="grid gap-2">
-        <Label htmlFor="image">Image URL</Label>
+        <Label htmlFor="image">Image</Label>
         <Input
           id="image"
-          placeholder="https://example.com/image.jpg"
-          value={formData.image}
-          onChange={handleInputChange('image')}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
           className="text-sm"
         />
+        {formData.image && (
+          <div>
+            <img src={formData.image} alt="Preview" className="mt-2 max-h-32" />
+            <div className="mt-2 flex items-center gap-2">
+              <Input value={formData.image} readOnly className="text-xs" />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center space-x-2">
