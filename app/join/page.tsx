@@ -293,34 +293,37 @@ export default function JoinPage() {
 
             {/* cta section */}
             <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-purple-500/5">
-                <div className="container px-4 mx-auto text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="max-w-3xl mx-auto space-y-8"
-                    >
-                        <h2 className="text-3xl md:text-4xl font-bold">
-                            Ready to Make a Difference?
-                        </h2>
-                        <p className="text-xl text-muted-foreground">
-                            Join our community of passionate individuals who are shaping the future of developer education and community building.
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Button size="lg" className="glow-effect">
-                                <Mail className="mr-2 h-5 w-5" />
-                                Contact Us
-                            </Button>
-                            <Button size="lg" variant="outline">
-                                <Users className="mr-2 h-5 w-5" />
-                                Learn More
-                            </Button>
-                        </div>
-                    </motion.div>
-                </div>
-            </section>
-
+  <div className="container px-4 mx-auto text-center">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="max-w-3xl mx-auto space-y-8"
+    >
+      <h2 className="text-3xl md:text-4xl font-bold">
+        Have Questions or Want to Explore More?
+      </h2>
+      <p className="text-xl text-muted-foreground">
+        Whether you&apos;re looking to get in touch or learn more about our mission, we&apos;re here to help you get started.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button size="lg" className="glow-effect" asChild>
+          <a href="/contact" className="flex items-center justify-center">
+            <Mail className="mr-2 h-5 w-5" />
+            Contact Us
+          </a>
+        </Button>
+        <Button size="lg" variant="outline" asChild>
+          <a href="/about" className="flex items-center justify-center">
+            <Users className="mr-2 h-5 w-5" />
+            Learn More
+          </a>
+        </Button>
+      </div>
+    </motion.div>
+  </div>
+</section>
             <Footer />
         </div>
     );
