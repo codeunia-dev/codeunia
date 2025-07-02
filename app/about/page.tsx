@@ -3,14 +3,12 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
-    ArrowRight,
     Code2,
     Globe,
     Heart,
@@ -22,10 +20,12 @@ import {
     Target,
     Trophy,
     Users,
+    UserPlus,
 } from "lucide-react";
 
 import { SponsorsSection } from "./components/SponsorsSection";
 import { TeamSection } from "./components/TeamSection";
+import { SparklesCore } from "@/components/ui/sparkles"
 
 export default function AboutPage() {
     const features = [
@@ -654,184 +654,109 @@ export default function AboutPage() {
 
             {/* Enhanced CTA Section */}
             <section className="py-24 relative overflow-hidden bg-gradient-to-br from-primary/10 via-purple-500/10 to-background dark:from-primary/20 dark:via-purple-500/20 dark:to-background">
-                <div className="absolute inset-0">
-                    <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 dark:bg-primary/30 rounded-full blur-xl animate-float"></div>
-                    <div
-                        className="absolute bottom-10 right-10 w-48 h-48 bg-purple-500/20 dark:bg-purple-500/30 rounded-full blur-xl animate-float"
-                        style={{ animationDelay: "3s" }}
-                    ></div>
-                </div>
+              <div className="absolute inset-0">
+                  <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 dark:bg-primary/30 rounded-full blur-xl animate-float"></div>
+                  <div
+                      className="absolute bottom-10 right-10 w-48 h-48 bg-purple-500/20 dark:bg-purple-500/30 rounded-full blur-xl animate-float"
+                      style={{ animationDelay: "3s" }}
+                  ></div>
+              </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    viewport={{ once: true }}
-                    className="container px-4 mx-auto text-center relative z-10"
-                >
-                    <motion.div
-                        className="max-w-3xl mx-auto space-y-8 p-8 rounded-3xl bg-background/50 dark:bg-background/80 backdrop-blur-md border border-primary/10 dark:border-primary/20 shadow-2xl relative overflow-hidden group"
-                        whileHover={{
-                            y: -8,
-                            transition: { duration: 0.3 },
-                        }}
-                    >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        <motion.div
-                            className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-purple-500 to-primary"
-                            initial={{ scaleX: 0 }}
-                            whileInView={{ scaleX: 1 }}
-                            transition={{ duration: 1.5, delay: 0.3 }}
-                            viewport={{ once: true }}
-                            style={{ originX: 0 }}
-                        />
+              {/* Sparkles effect */}
+              <div className="absolute inset-0 h-full w-full">
+                  <SparklesCore
+                      id="tsparticlesfullpage"
+                      background="transparent"
+                      minSize={0.6}
+                      maxSize={1.4}
+                      particleDensity={100}
+                      className="w-full h-full"
+                      particleColor="#6366f1"
+                  />
+              </div>
 
-                        <motion.div
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            whileInView={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            viewport={{ once: true }}
-                        >
-                            <Badge
-                                variant="secondary"
-                                className="bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary/90 border-primary/20 dark:border-primary/30 px-6 py-3 text-sm font-semibold"
-                            >
-                                <Rocket className="w-4 h-4 mr-2" />
-                                Start Your Journey
-                            </Badge>
-                        </motion.div>
+              <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  viewport={{ once: true }}
+                  className="container px-4 mx-auto text-center relative z-10"
+              >
+                  <div className="max-w-3xl mx-auto space-y-8 p-8 rounded-3xl bg-background/50 dark:bg-background/80 backdrop-blur-md border border-primary/10 dark:border-primary/20 shadow-xl">
+                      <div className="flex flex-col items-center justify-center gap-4">
+                          <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                              <span className="absolute inset-0 overflow-hidden rounded-full">
+                                  <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                              </span>
+                              <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-1 px-4 ring-1 ring-white/10">
+                                  <span>Start Your Journey 🚀</span>
+                              </div>
+                              <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                          </button>
+                      </div>
+                      <motion.h1
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: 0.2 }}
+                          className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+                      >
+                          Ready to Begin Your{" "}
+                          <motion.span
+                              className="gradient-text inline-block"
+                              animate={{
+                                  backgroundPosition: [
+                                      "0% 50%",
+                                      "100% 50%",
+                                      "0% 50%",
+                                  ],
+                              }}
+                              transition={{
+                                  duration: 4,
+                                  repeat: Infinity,
+                                  ease: "linear",
+                              }}
+                              style={{
+                                  background:
+                                      "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                                  backgroundSize: "300% 100%",
+                                  WebkitBackgroundClip: "text",
+                                  WebkitTextFillColor: "transparent",
+                              }}
+                          >
+                              Coding Adventure?
+                          </motion.span>
+                      </motion.h1>
+                      <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
+                      Join thousands of developers who are already learning and growing with Codeunia. Transform your career with our comprehensive learning platform.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+  <Button
+    size="sm"
+    variant="default"
+    className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
+    asChild
+  >
+    <a href="/auth/signup" className="h-full flex items-center justify-center gap-2">
+      <UserPlus className="w-5 h-5" />
+      Get Started
+    </a>
+  </Button>
 
-                        <motion.h2
-                            className="text-4xl md:text-6xl font-bold text-foreground dark:text-foreground/90 leading-tight"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.4 }}
-                            viewport={{ once: true }}
-                        >
-                            Ready to Begin Your{" "}
-                            <motion.span
-                                className="gradient-text inline-block"
-                                animate={{
-                                    backgroundPosition: [
-                                        "0% 50%",
-                                        "100% 50%",
-                                        "0% 50%",
-                                    ],
-                                }}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                }}
-                                style={{
-                                    background:
-                                        "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
-                                    backgroundSize: "300% 100%",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                }}
-                            >
-                                Coding Adventure?
-                            </motion.span>
-                        </motion.h2>
-
-                        <motion.p
-                            className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.6 }}
-                            viewport={{ once: true }}
-                        >
-                            Join thousands of developers who are already
-                            learning and growing with Codeunia. Transform your
-                            career with our comprehensive learning platform.
-                        </motion.p>
-
-                        <motion.div
-                            className="flex flex-col sm:flex-row gap-4 justify-center"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.8 }}
-                            viewport={{ once: true }}
-                        >
-                            <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Button
-                                    size="lg"
-                                    variant="default"
-                                    className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 relative overflow-hidden group"
-                                >
-                                    <motion.div
-                                        className="absolute inset-0 bg-white/20"
-                                        initial={{ x: "-100%" }}
-                                        whileHover={{ x: "100%" }}
-                                        transition={{ duration: 0.6 }}
-                                    />
-                                    <span className="relative z-10 flex items-center">
-                                        Get Started
-                                        <ArrowRight className="ml-2 h-5 w-5" />
-                                    </span>
-                                </Button>
-                            </motion.div>
-
-                            <motion.div
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Button
-                                    size="lg"
-                                    variant="outline"
-                                    className="px-8 py-6 text-lg font-semibold border-2 hover:bg-primary/5 transition-all duration-300 relative overflow-hidden group"
-                                >
-                                    <motion.div
-                                        className="absolute inset-0 bg-primary/5"
-                                        initial={{ scale: 0 }}
-                                        whileHover={{ scale: 1 }}
-                                        transition={{ duration: 0.3 }}
-                                    />
-                                    <span className="relative z-10 flex items-center">
-                                        Contact Us
-                                        <Mail className="ml-2 h-5 w-5" />
-                                    </span>
-                                </Button>
-                            </motion.div>
-                        </motion.div>
-
-                        {/* Floating particles */}
-                        <div className="absolute inset-0 pointer-events-none">
-                            <motion.div
-                                className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary/30 rounded-full"
-                                animate={{
-                                    y: [0, -20, 0],
-                                    x: [0, 10, 0],
-                                    opacity: [0, 1, 0],
-                                }}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                }}
-                            />
-                            <motion.div
-                                className="absolute top-3/4 right-1/4 w-3 h-3 bg-purple-500/30 rounded-full"
-                                animate={{
-                                    y: [0, 15, 0],
-                                    x: [0, -15, 0],
-                                    opacity: [0, 1, 0],
-                                }}
-                                transition={{
-                                    duration: 5,
-                                    repeat: Infinity,
-                                    ease: "easeInOut",
-                                    delay: 2,
-                                }}
-                            />
-                        </div>
-                    </motion.div>
-                </motion.div>
-            </section>
+  <Button
+    size="sm"
+    variant="outline"
+    className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
+    asChild
+  >
+    <a href="/contact" className="h-full flex items-center justify-center gap-2">
+      <Mail className="w-5 h-5" />
+      Contact Us
+    </a>
+  </Button>
+</div>
+                  </div>
+              </motion.div>
+          </section>
             <Footer />
         </div>
     );

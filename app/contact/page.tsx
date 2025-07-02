@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
-  Mail,
   Users,
   Globe,
   ArrowRight,
   Linkedin,
   Instagram,
   MessageSquare,
+  UserPlus
 } from "lucide-react"
 import { motion } from "framer-motion"
 import { SparklesCore } from "@/components/ui/sparkles"
@@ -131,32 +131,33 @@ export default function ContactPage() {
                               className="space-y-8"
                           >
                               <Card className="border-0 shadow-lg card-hover">
-                                  <CardHeader>
-                                      <div className="flex items-center space-x-3">
-                                          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                                              <Mail className="h-6 w-6 text-white" />
-                                          </div>
-                                          <CardTitle className="text-xl">
-                                              Email Us
-                                          </CardTitle>
-                                      </div>
-                                  </CardHeader>
-                                  <CardContent className="space-y-4">
-                                      <p className="text-muted-foreground">
-                                          Have a question or want to
-                                          collaborate? Drop us an email at:
-                                      </p>
-                                      <Button
-                                          variant="outline"
-                                          className="w-full hover:scale-105 transition-all duration-300"
-                                          asChild
-                                      >
-                                          <a href="mailto:connect@codeunia.com" className="w-full h-full flex items-center justify-center">
-                                              connect@codeunia.com
-                                          </a>
-                                      </Button>
-                                  </CardContent>
-                              </Card>
+  <CardHeader>
+    <div className="flex items-center space-x-3">
+      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+        <UserPlus className="h-6 w-6 text-white" />
+      </div>
+      <CardTitle className="text-xl">
+        Join Us
+      </CardTitle>
+    </div>
+  </CardHeader>
+
+  <CardContent className="space-y-4">
+    <p className="text-muted-foreground">
+      Want to collaborate or become a part of CodeUnia? Click below to get started.
+    </p>
+    <Button
+      variant="default"
+      className="w-full hover:scale-105 transition-all duration-300"
+      asChild
+    >
+      <a href="/join" className="w-full h-full flex items-center justify-center gap-2">
+        <UserPlus className="w-5 h-5" />
+        Join CodeUnia
+      </a>
+    </Button>
+  </CardContent>
+</Card>
 
                               <Card className="border-0 shadow-lg card-hover">
                                   <CardHeader>
@@ -490,20 +491,26 @@ export default function ContactPage() {
                           Join our community of tech enthusiasts and start
                           building real-world projects today.
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
                           <Button
-                              size="lg"
+                              size="sm"
                               variant="default"
-                              className="px-8 py-6 text-lg font-semibold hover:scale-105 transition-all duration-300"
+                              className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
+                              asChild
                           >
-                              Join Codeunia
+                              <a href="/auth/signup" className="h-full flex items-center justify-center">
+                                  Join Codeunia
+                              </a>
                           </Button>
                           <Button
-                              size="lg"
+                              size="sm"
                               variant="outline"
-                              className="px-8 py-6 text-lg font-semibold hover:scale-105 transition-transform duration-300"
+                              className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
+                              asChild
                           >
-                              Learn More
+                              <a href="/about" className="h-full flex items-center justify-center">
+                                  Learn More
+                              </a>
                           </Button>
                       </div>
                   </div>
