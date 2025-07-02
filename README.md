@@ -8,6 +8,6 @@
 - 🧠 Latest News in Artificial Intelligence & Machine Learning
 - ✍ Developer-Focused Blog Posts
 - 📅 Event Calendar and Reminders
-- 🧰 Curated Tools and Resources for Developers
-- 📬 Newsletter Subscription
+- 🧰 Curated Tools and Resources for Developers (Coming Soon)
+- 📬 Newsletter Subscription (Coming Soon)
 - 📊 Community Polls and Discussions (Coming Soon)
