@@ -6,13 +6,14 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Clock, Lock, Heart, Share2, BookOpen, User, Calendar, Eye } from "lucide-react"
+import { ArrowLeft, Clock, Lock, Heart, BookOpen, User, Calendar, Eye } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { BlogPost } from "@/components/data/blog-posts"
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { ShareButton } from "@/components/ui/share-button"
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -213,9 +214,12 @@ export default function BlogPostPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
-                <Share2 className="h-4 w-4" />
-              </Button>
+              <ShareButton 
+                url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${slug}`}
+                title={post?.title || ''}
+                description={post?.excerpt || ''}
+                hashtags={post?.tags || []}
+              />
               <LikeButton slug={slug} isAuthenticated={isAuthenticated} likeCount={likeCount} setLikeCount={setLikeCount} likedByUser={likedByUser} setLikedByUser={setLikedByUser} />
             </motion.div>
           </div>
