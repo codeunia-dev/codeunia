@@ -85,6 +85,7 @@ export default function BlogPostPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [likeCount, setLikeCount] = useState(0);
   const [likedByUser, setLikedByUser] = useState(false);
+  const [views, setViews] = useState<number>(0);
   const params = useParams()
   
   const slug = params?.slug as string
@@ -132,6 +133,44 @@ export default function BlogPostPage() {
       }
     }
     if (slug) fetchLikeData();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!slug) return;
+    const viewedKey = `viewed_${slug}`;
+    if (!localStorage.getItem(viewedKey)) {
+      // Increment views only if not viewed in this session
+      fetch(`/api/blog/${slug}/views`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+          if (typeof data.views === 'number') setViews(data.views);
+        });
+      localStorage.setItem(viewedKey, 'true');
+    } else {
+      // Just fetch the current count
+      fetch(`/api/blog/${slug}/views`)
+        .then(res => res.json())
+        .then(data => {
+          if (typeof data.views === 'number') setViews(data.views);
+        });
+    }
+    // Subscribe to realtime updates
+    const supabase = createClient();
+    const channel = supabase.channel('blogs-views')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'blogs',
+        filter: `slug=eq.${slug}`,
+      }, (payload) => {
+        if (payload.new && typeof payload.new.views === 'number') {
+          setViews(payload.new.views);
+        }
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [slug]);
 
   const getCategoryColor = (category: string) => {
@@ -274,7 +313,7 @@ export default function BlogPostPage() {
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Eye className="h-4 w-4" />
-                <span>{post?.views} views</span>
+                <span>{views} views</span>
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Heart className="h-4 w-4" />
