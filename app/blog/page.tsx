@@ -240,7 +240,7 @@ export default function BlogPage() {
         <div className="container px-4 mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
             <div className="relative w-full lg:w-96 group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white z-10 group-focus-within:text-primary transition-colors" />
               <Input
                 placeholder="Search articles..."
                 value={searchTerm}
@@ -293,9 +293,29 @@ export default function BlogPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
+              {/* <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
                 ⭐ Featured Articles
-              </Badge>
+              </Badge> */}
+              <div className="flex flex-col items-center justify-center gap-4">
+  <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+    {/* Glow on hover */}
+    <span className="absolute inset-0 overflow-hidden rounded-full">
+      <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    </span>
+
+    {/* Inner content */}
+    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+      <span>Featured Articles</span>
+      <span>
+        <Sparkles className="w-3 h-3 text-cyan-300" />
+      </span>
+    </div>
+
+    {/* Underline glow */}
+    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+  </button>
+</div>
+
               <h2 className="text-4xl md:text-5xl font-bold">
                 Editor&apos;s <span className="gradient-text">Picks</span>
               </h2>
@@ -394,9 +414,29 @@ export default function BlogPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="space-y-2">
-              <Badge variant="outline" className="px-3 py-1 bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20">
+              {/* <Badge variant="outline" className="px-3 py-1 bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20">
                 📖 All Articles
-              </Badge>
+              </Badge> */}
+             <div className="flex flex-col items-start gap-4"> {/* Changed from items-center to items-start */}
+  <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+    {/* Glow on hover */}
+    <span className="absolute inset-0 overflow-hidden rounded-full">
+      <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+    </span>
+
+    {/* Inner content */}
+    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+      <span>All Articles</span>
+      <span>
+        <Sparkles className="w-3 h-3 text-cyan-300" />
+      </span>
+    </div>
+
+    {/* Underline glow */}
+    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+  </button>
+</div>
+
               <h2 className="text-4xl md:text-5xl font-bold">
                 Latest <span className="gradient-text">Stories</span>
               </h2>
