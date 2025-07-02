@@ -14,6 +14,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { ShareButton } from "@/components/ui/share-button"
+import Image from "next/image";
 
 import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -329,18 +330,30 @@ export default function BlogPostPage() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="mb-12"
           >
-            <div className="aspect-video bg-gradient-to-br from-muted to-muted/50 rounded-2xl overflow-hidden shadow-2xl relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/10"></div>
-              <div className="w-full h-full flex items-center justify-center relative z-10">
-                <div className="text-center space-y-4">
-                  <div className="relative">
-                    <BookOpen className="h-16 w-16 text-muted-foreground mx-auto" />
-                    <div className="absolute inset-0 w-16 h-16 bg-primary/10 rounded-full blur-xl animate-pulse mx-auto"></div>
-                  </div>
-                  <p className="text-muted-foreground">Blog post image placeholder</p>
-                </div>
-              </div>
-            </div>
+            <div className="h-[900px] bg-gradient-to-br from-muted to-muted/50 rounded-2xl overflow-hidden shadow-2xl relative">
+  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/10"></div>
+  <div className="w-full h-full flex items-center justify-center relative z-10">
+    {post?.image ? (
+      <Image
+        src={post.image}
+        alt={post.title || 'Blog post image'}
+        fill
+        className="object-cover w-full h-full"
+        style={{ objectFit: 'cover' }}
+        priority
+      />
+    ) : (
+      <div className="text-center space-y-4">
+        <div className="relative">
+          <BookOpen className="h-16 w-16 text-muted-foreground mx-auto" />
+          <div className="absolute inset-0 w-16 h-16 bg-primary/10 rounded-full blur-xl animate-pulse mx-auto"></div>
+        </div>
+        <p className="text-muted-foreground">Blog post image placeholder</p>
+      </div>
+    )}
+  </div>
+</div>
+
           </motion.div>
 
           {/* article content */}
