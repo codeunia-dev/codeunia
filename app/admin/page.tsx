@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,9 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import type { BlogPost } from "@/components/data/blog-posts"
+import { RealtimeChannel } from "@supabase/supabase-js"
 
 type SupabaseUser = {
   created_at: string;
@@ -94,37 +97,6 @@ const recentActivities = [
   }
 ]
 
-const topContent = [
-  {
-    title: "Building Scalable APIs with Node.js",
-    views: "12.5K",
-    engagement: "94%",
-    author: "Akshay Kumar",
-    status: "published",
-  },
-  {
-    title: "React 18 Features You Should Know",
-    views: "8.2K",
-    engagement: "87%",
-    author: "Akshay Kumar",
-    status: "published",
-  },
-  {
-    title: "Advanced TypeScript Patterns",
-    views: "6.8K",
-    engagement: "91%",
-    author: "Akshay Kumar",
-    status: "draft",
-  },
-  {
-    title: "Machine Learning with Python",
-    views: "9.1K",
-    engagement: "89%",
-    author: "Akshay Kumar",
-    status: "published",
-  },
-]
-
 const systemHealth = [
   {
     service: "API Server",
@@ -158,6 +130,12 @@ export default function AdminDashboard() {
   const [totalUsers, setTotalUsers] = useState<string | null>(null)
   const [totalUsersChange, setTotalUsersChange] = useState<string>("")
   const [totalUsersTrend, setTotalUsersTrend] = useState<"up" | "down">("up")
+  const [pageViews, setPageViews] = useState<string | null>(null)
+  const [pageViewsChange, setPageViewsChange] = useState<string>("")
+  const [pageViewsTrend, setPageViewsTrend] = useState<"up" | "down">("up")
+  const [topContent, setTopContent] = useState<BlogPost[]>([])
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
+  const likesChannelRef = useRef<RealtimeChannel | null>(null)
 
   useEffect(() => {
     // Fetch real total users and previous month users
@@ -193,6 +171,70 @@ export default function AdminDashboard() {
           }
         }
       })
+    // Fetch total page views and previous month views
+    fetch("/api/admin-page-views")
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.totalViews === "number") {
+          setPageViews(data.totalViews.toLocaleString());
+          // Optionally, you can fetch previous month views for change/trend
+          // For now, just set as N/A
+          setPageViewsChange("N/A");
+          setPageViewsTrend("up");
+        }
+      })
+    // Fetch top performing content (top 4 by views)
+    const fetchTopContentWithLikes = async () => {
+      const supabase = createClient();
+      // Get top 4 blogs by views
+      const { data: blogs, error } = await supabase
+        .from("blogs")
+        .select("id, title, author, views, slug")
+        .order("views", { ascending: false })
+        .limit(4);
+      if (!error && blogs) {
+        const slugs: string[] = (blogs as Pick<BlogPost, "slug">[])?.map((b) => b.slug)
+        const { data: likesData } = await supabase
+          .from("blog_likes")
+          .select("blog_slug")
+          .in("blog_slug", slugs)
+        const likesCount: Record<string, number> = {}
+        if (Array.isArray(likesData)) {
+          likesData.forEach((like: { blog_slug: string }) => {
+            likesCount[like.blog_slug] = (likesCount[like.blog_slug] || 0) + 1
+          })
+        }
+        setTopContent(
+          (blogs as (Pick<BlogPost, "id" | "title" | "author" | "views" | "slug">)[]).map((b) => ({
+            ...b,
+            excerpt: "",
+            content: "",
+            date: "",
+            readTime: "",
+            category: "",
+            tags: [],
+            featured: false,
+            image: "",
+            likes: likesCount[b.slug] || 0,
+          }))
+        )
+      }
+    }
+    fetchTopContentWithLikes()
+    // Setup realtime subscription
+    const supabase = createClient()
+    supabaseRef.current = supabase
+    const channel = supabase.channel('realtime:blog_likes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'blog_likes' }, () => {
+        fetchTopContentWithLikes()
+      })
+      .subscribe()
+    likesChannelRef.current = channel
+    return () => {
+      if (likesChannelRef.current) {
+        supabase.removeChannel(likesChannelRef.current)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -241,12 +283,16 @@ export default function AdminDashboard() {
     }
   }
 
-  // When rendering dashboardStats, override Total Users value if totalUsers is available
-  const statsToShow = dashboardStats.map(stat =>
-    stat.title === "Total Users"
-      ? { ...stat, value: totalUsers ?? stat.value, change: totalUsersChange, trend: totalUsersTrend }
-      : stat
-  )
+  // When rendering dashboardStats, override Total Users and Page Views value if available
+  const statsToShow = dashboardStats.map(stat => {
+    if (stat.title === "Total Users") {
+      return { ...stat, value: totalUsers ?? stat.value, change: totalUsersChange, trend: totalUsersTrend }
+    }
+    if (stat.title === "Page Views") {
+      return { ...stat, value: pageViews ?? stat.value, change: pageViewsChange, trend: pageViewsTrend }
+    }
+    return stat
+  })
 
   return (
     <div className="bg-black space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
@@ -312,6 +358,8 @@ export default function AdminDashboard() {
                 <div className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white flex items-end gap-2 tracking-tight">
                   {stat.title === "Total Users" && totalUsers ? (
                     <span>{totalUsers}</span>
+                  ) : stat.title === "Page Views" && pageViews ? (
+                    <span>{pageViews}</span>
                   ) : stat.value.match(/\d/) ? (
                     <span>{animatedStats[i].toLocaleString()}</span>
                   ) : (
@@ -421,14 +469,12 @@ export default function AdminDashboard() {
                   <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm">Title</TableHead>
                   <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm hidden sm:table-cell">Author</TableHead>
                   <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm">Views</TableHead>
-                  <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm hidden md:table-cell">Engagement</TableHead>
-                  <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm">Status</TableHead>
-                  <TableHead className="text-right text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm">Actions</TableHead>
+                  <TableHead className="text-zinc-700 dark:text-zinc-200 font-semibold text-xs sm:text-sm hidden md:table-cell">Likes</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {topContent.map((content, index) => (
-                  <TableRow key={index} className="hover:bg-purple-700/10 transition-colors">
+                {topContent.map((content) => (
+                  <TableRow key={content.id} className="hover:bg-purple-700/10 transition-colors">
                     <TableCell className="font-semibold text-zinc-900 dark:text-zinc-100 text-xs sm:text-sm">
                       <div className="max-w-[150px] sm:max-w-none">
                         <div className="truncate">{content.title}</div>
@@ -437,24 +483,7 @@ export default function AdminDashboard() {
                     </TableCell>
                     <TableCell className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm hidden sm:table-cell">{content.author}</TableCell>
                     <TableCell className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm">{content.views}</TableCell>
-                    <TableCell className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm hidden md:table-cell">{content.engagement}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={content.status === "published" ? "default" : "secondary"}
-                        className={
-                          content.status === "published"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs"
-                            : "bg-zinc-700 text-zinc-200 text-xs"
-                        }
-                      >
-                        {content.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="hover:bg-purple-700/20 text-purple-400 font-semibold text-xs sm:text-sm h-8 px-2 sm:px-3">
-                        Edit
-                      </Button>
-                    </TableCell>
+                    <TableCell className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm hidden md:table-cell">{content.likes}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
