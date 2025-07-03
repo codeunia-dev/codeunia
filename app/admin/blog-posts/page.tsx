@@ -159,8 +159,36 @@ const BlogPostForm = ({
   // ref for the content textarea
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
-  // image upload handler with auto-insert HTML <img> tag
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Article image upload handler (for main blog image)
+  const handleArticleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const supabase = createClient();
+    const filePath = `public/${Date.now()}-article-${file.name}`;
+
+    // upload to supabase storage
+    const { error } = await supabase.storage
+      .from('blog-images')
+      .upload(filePath, file);
+
+    if (error) {
+      alert("Article image upload failed: " + error.message);
+      return;
+    }
+
+    // Get public url
+    const { data: publicUrlData } = supabase.storage
+      .from('blog-images')
+      .getPublicUrl(filePath);
+
+    if (publicUrlData?.publicUrl) {
+      onFormChange({ image: publicUrlData.publicUrl });
+    }
+  }
+
+  // image upload handler for inserting into content
+  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -183,8 +211,6 @@ const BlogPostForm = ({
       .getPublicUrl(filePath);
 
     if (publicUrlData?.publicUrl) {
-      onFormChange({ image: publicUrlData.publicUrl });
-
       // insert html <img> tag at cursor in content
       if (contentRef.current) {
         const textarea = contentRef.current;
@@ -205,6 +231,26 @@ const BlogPostForm = ({
 
   return (
     <div className="grid gap-4 py-4">
+      {/* Article Image upload section */}
+      <div className="grid gap-2">
+        <Label htmlFor="article-image">Article Image</Label>
+        <Input
+          id="article-image"
+          type="file"
+          accept="image/*"
+          onChange={handleArticleImageUpload}
+          className="text-sm"
+        />
+        {formData.image && (
+          <div>
+            <img src={formData.image} alt="Article Preview" className="mt-2 max-h-32" />
+            <div className="mt-2 flex items-center gap-2">
+              <Input value={formData.image} readOnly className="text-xs" />
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="grid gap-2">
         <Label htmlFor="title">Title *</Label>
         <Input
@@ -227,6 +273,7 @@ const BlogPostForm = ({
         />
       </div>
 
+      {/* Content image upload button */}
       <div className="grid gap-2">
         <Label htmlFor="content">Content *</Label>
         <Textarea
@@ -237,6 +284,14 @@ const BlogPostForm = ({
           onChange={handleInputChange('content')}
           className="text-sm min-h-[120px]"
         />
+        <Input
+          id="content-image"
+          type="file"
+          accept="image/*"
+          onChange={handleContentImageUpload}
+          className="text-sm mt-2"
+        />
+        <span className="text-xs text-muted-foreground">Upload and insert image at cursor in content</span>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -314,26 +369,6 @@ const BlogPostForm = ({
             ))}
           </SelectContent>
         </Select>
-      </div>
-
-      {/* Image upload section */}
-      <div className="grid gap-2">
-        <Label htmlFor="image">Image</Label>
-        <Input
-          id="image"
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="text-sm"
-        />
-        {formData.image && (
-          <div>
-            <img src={formData.image} alt="Preview" className="mt-2 max-h-32" />
-            <div className="mt-2 flex items-center gap-2">
-              <Input value={formData.image} readOnly className="text-xs" />
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="flex items-center space-x-2">
