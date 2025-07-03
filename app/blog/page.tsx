@@ -13,6 +13,7 @@ import { motion } from "framer-motion"
 import { categories, BlogPost } from "@/components/data/blog-posts"
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import Image from "next/image";
 
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -333,6 +334,20 @@ export default function BlogPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     <div className="h-48 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-500/10"></div>
+                      {post.image ? (
+                        <Image
+                          src={post.image}
+                          alt={post.title || 'Blog post image'}
+                          fill
+                          className="object-cover w-full h-full"
+                          style={{ zIndex: 1 }}
+                          priority={index < 2}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full">
+                          <BookOpen className="h-16 w-16 text-muted-foreground opacity-40" />
+                        </div>
+                      )}
                       <div className="absolute top-4 left-4 z-10">
                         <Badge className={`${getCategoryColor(post.category)} shadow-lg`} variant="secondary">
                           {post.category}
@@ -459,6 +474,20 @@ export default function BlogPage() {
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   <div className="h-40 bg-gradient-to-br from-muted to-muted/50 relative overflow-hidden">
                     <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(post.category)}`}></div>
+                    {post.image ? (
+                      <Image
+                        src={post.image}
+                        alt={post.title || 'Blog post image'}
+                        fill
+                        className="object-cover w-full h-full"
+                        style={{ zIndex: 1 }}
+                        priority={index < 3}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full">
+                        <BookOpen className="h-12 w-12 text-muted-foreground opacity-40" />
+                      </div>
+                    )}
                     <div className="absolute top-3 left-3 z-10">
                       <Badge className={`${getCategoryColor(post.category)} shadow-lg`} variant="secondary">
                         {post.category}
