@@ -30,7 +30,7 @@ interface BlogFormData {
   featured: boolean;
   image: string;
   views: string;
-  likes: number;
+  likes?: number; // Optional since it's calculated from blog_likes table
 }
 
 interface ApiError {
@@ -67,7 +67,7 @@ const getEmptyPost = (): BlogFormData => ({
   featured: false,
   image: "",
   views: "0",
-  likes: 0,
+  likes: 0, // This will be calculated automatically from blog_likes table
 })
 
 // custom hooks
@@ -87,7 +87,8 @@ const useBlogPosts = () => {
       setIsLoading(true)
       setError(null)
       
-      const { data, error: fetchError } = await supabase
+      // First, fetch all blog posts
+      const { data: postsData, error: fetchError } = await supabase
         .from("blogs")
         .select("*")
         .order("date", { ascending: false })
@@ -96,8 +97,26 @@ const useBlogPosts = () => {
         throw new Error(fetchError.message)
       }
       
-      if (data) {
-        setBlogPosts(data as BlogPost[])
+      if (postsData) {
+        // Fetch real like counts for each blog post
+        const postsWithRealLikes = await Promise.all(
+          postsData.map(async (post) => {
+            // Get the real like count from blog_likes table
+            const { count: likeCount, error: likeError } = await supabase
+              .from('blog_likes')
+              .select('*', { count: 'exact', head: true })
+              .eq('blog_slug', post.slug || post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''))
+            
+            if (likeError) {
+              console.error('Error fetching likes for post:', post.title, likeError)
+              return { ...post, likes: 0 }
+            }
+            
+            return { ...post, likes: likeCount || 0 }
+          })
+        )
+        
+        setBlogPosts(postsWithRealLikes as BlogPost[])
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch blog posts"
@@ -318,29 +337,15 @@ const BlogPostForm = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="views">Views</Label>
-          <Input
-            id="views"
-            placeholder="e.g., 0"
-            value={formData.views}
-            onChange={handleInputChange('views')}
-            className="text-sm"
-          />
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="likes">Likes</Label>
-          <Input
-            id="likes"
-            type="number"
-            placeholder="e.g., 0"
-            value={formData.likes}
-            onChange={handleInputChange('likes')}
-            className="text-sm"
-          />
-        </div>
+      <div className="grid gap-2">
+        <Label htmlFor="views">Views</Label>
+        <Input
+          id="views"
+          placeholder="e.g., 0"
+          value={formData.views}
+          onChange={handleInputChange('views')}
+          className="text-sm"
+        />
       </div>
 
       <div className="grid gap-2">
@@ -493,7 +498,6 @@ export default function AdminBlogPage() {
         featured: Boolean(formData.featured),
         image: formData.image.trim(),
         views: formData.views.toString(),
-        likes: parseInt(formData.likes.toString()) || 0,
         // Generate slug from title if needed
         slug: formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
       }
@@ -550,7 +554,6 @@ export default function AdminBlogPage() {
         featured: Boolean(formData.featured),
         image: formData.image.trim(),
         views: formData.views.toString(),
-        likes: parseInt(formData.likes.toString()) || 0,
       }
 
       console.log('Update data:', updateData) // Debug log
