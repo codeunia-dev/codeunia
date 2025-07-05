@@ -29,7 +29,7 @@ interface BlogFormData {
   tags: string;
   featured: boolean;
   image: string;
-  views: string;
+  views?: string; // Optional since it's managed by the views API
   likes?: number; // Optional since it's calculated from blog_likes table
 }
 
@@ -66,8 +66,7 @@ const getEmptyPost = (): BlogFormData => ({
   tags: "",
   featured: false,
   image: "",
-  views: "0",
-  likes: 0, // This will be calculated automatically from blog_likes table
+  // views and likes are managed automatically
 })
 
 // custom hooks
@@ -98,8 +97,8 @@ const useBlogPosts = () => {
       }
       
       if (postsData) {
-        // Fetch real like counts for each blog post
-        const postsWithRealLikes = await Promise.all(
+        // Fetch real like counts and ensure views are up-to-date for each blog post
+        const postsWithRealCounts = await Promise.all(
           postsData.map(async (post) => {
             // Get the real like count from blog_likes table
             const { count: likeCount, error: likeError } = await supabase
@@ -109,14 +108,28 @@ const useBlogPosts = () => {
             
             if (likeError) {
               console.error('Error fetching likes for post:', post.title, likeError)
-              return { ...post, likes: 0 }
             }
             
-            return { ...post, likes: likeCount || 0 }
+            // Get the most up-to-date view count from blogs table
+            const { data: viewData, error: viewError } = await supabase
+              .from('blogs')
+              .select('views')
+              .eq('id', post.id)
+              .single()
+            
+            if (viewError) {
+              console.error('Error fetching views for post:', post.title, viewError)
+            }
+            
+            return { 
+              ...post, 
+              likes: likeCount || 0,
+              views: viewData?.views?.toString() || post.views || '0'
+            }
           })
         )
         
-        setBlogPosts(postsWithRealLikes as BlogPost[])
+        setBlogPosts(postsWithRealCounts as BlogPost[])
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch blog posts"
@@ -337,16 +350,7 @@ const BlogPostForm = ({
         </div>
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="views">Views</Label>
-        <Input
-          id="views"
-          placeholder="e.g., 0"
-          value={formData.views}
-          onChange={handleInputChange('views')}
-          className="text-sm"
-        />
-      </div>
+      {/* Views are managed automatically by the views API */}
 
       <div className="grid gap-2">
         <Label htmlFor="tags">Tags</Label>
@@ -497,7 +501,6 @@ export default function AdminBlogPage() {
         tags: parseTags(formData.tags),
         featured: Boolean(formData.featured),
         image: formData.image.trim(),
-        views: formData.views.toString(),
         // Generate slug from title if needed
         slug: formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
       }
@@ -553,7 +556,6 @@ export default function AdminBlogPage() {
         tags: parseTags(formData.tags),
         featured: Boolean(formData.featured),
         image: formData.image.trim(),
-        views: formData.views.toString(),
       }
 
       console.log('Update data:', updateData) // Debug log
