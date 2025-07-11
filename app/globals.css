@@ -185,16 +185,12 @@
   /* Dark mode glowing effect */
 
   @keyframes scroll {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(calc(-300px * 6 - 2rem * 6));
-    }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   .animate-scroll {
-    animation: scroll 40s linear infinite;
+    animation: scroll 30s linear infinite;
   }
 
   .animate-scroll:hover {
