@@ -5,6 +5,10 @@ export interface Event {
   excerpt: string;
   description: string;
   organizer: string;
+  organizer_contact?: {
+    phone?: string;
+    email?: string;
+  };
   date: string;
   time: string;
   duration: string;
@@ -66,6 +70,10 @@ export const mockEvents: Event[] = [
     excerpt: "India's Smartest Innovation Showdown - A reality-show-style hackathon where entertainment meets engineering",
     description: "India's first reality-show-style hackathon where entertainment meets engineering. Compete in live eliminations, technical battles, and collaborative problem-solving across 5 adrenaline-filled rounds. Join 5,000+ participants for a prize pool of ₹1,00,000+ and experience innovation, adaptability, and showmanship like never before.",
     organizer: "Codeunia",
+    organizer_contact: {
+      phone: "+91 86990 25107",
+      email: "codeunia@gmail.com"
+    },
     date: "2025-08-25",
     time: "12:00 AM",
     duration: "Multi-round",
@@ -133,6 +141,10 @@ export const mockEvents: Event[] = [
     excerpt: "Your weekly coding showdown – Compete, Learn, and Win!",
     description: "Join CodeRush Weekly – a fair, proctored, and competitive coding challenge that tests your aptitude, DSA, and interview readiness in a real hiring simulation. Solve curated problems, compete with top coders, and climb the leaderboard with weekly challenges. Rankings, certificates, and exclusive rewards await the best minds.",
     organizer: "Codeunia & Devantra Community",
+    organizer_contact: {
+      phone: "+91 86990 25107",
+      email: "codeunia@gmail.com"
+    },
     date: "2025-07-13", // You can update this weekly
     time: "7:00 PM",
     duration: "2 hrs",
