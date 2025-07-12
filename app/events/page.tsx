@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Clock, ArrowRight, Calendar, Star, Users, MapPin, DollarSign, Filter, Link as LinkIcon, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { mockEvents, Event } from "@/components/data/events"
+import { Event } from "@/components/data/events"
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import "keen-slider/keen-slider.min.css"
 import { useKeenSlider } from "keen-slider/react"
 import { cn } from "@/lib/utils";
+import { useEvents, useFeaturedEvents } from "@/hooks/useEvents"
 
 // Event categories for dropdown
 const eventCategories = [
@@ -35,8 +36,6 @@ const eventCategories = [
 
 export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [isLoading, setIsLoading] = useState(true)
-  const [events, setEvents] = useState<Event[]>([])
   const [dateFilter] = useState("Upcoming")
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
@@ -48,6 +47,19 @@ export default function EventsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
   const [copiedEventId, setCopiedEventId] = useState<string | null>(null)
+
+  // Use custom hooks for data fetching
+  const { data: eventsData, loading: eventsLoading } = useEvents({
+    search: searchTerm,
+    category: selectedCategory,
+    dateFilter: dateFilter === "Upcoming" ? "upcoming" : "all"
+  })
+
+  const { loading: featuredLoading } = useFeaturedEvents(5)
+
+  // Extract events from the response
+  const events = eventsData?.events || []
+  const isLoading = eventsLoading || featuredLoading
 
   // Unique values for filters
   const allStatuses = ["Live", "Expired", "Closed", "Recent"]
@@ -85,7 +97,7 @@ export default function EventsPage() {
     return matchesSearch && matchesStatus && matchesLocation && matchesEventType && matchesTeamSize && matchesPayment && matchesUserType && matchesCategory && matchesDate && matchesDropdownCategory
   })
 
-  const featuredEvents = filteredEvents.filter((event) => event.featured)
+  const filteredFeaturedEvents = filteredEvents.filter((event) => event.featured)
   const regularEvents = filteredEvents.filter((event) => !event.featured)
 
   // Add keen-slider hook for featured events with autoplay and navigation
@@ -97,13 +109,13 @@ export default function EventsPage() {
       "(min-width: 640px)": { slides: { perView: 1.5, spacing: 24 } },
       "(min-width: 1024px)": { slides: { perView: 2.2, spacing: 32 } },
     },
-    loop: featuredEvents.length > 1,
+    loop: filteredFeaturedEvents.length > 1,
   })
 
   // Autoplay effect
   useEffect(() => {
     if (!slider) return
-    if (featuredEvents.length > 1) {
+    if (filteredFeaturedEvents.length > 1) {
       const autoplay = () => {
         slider.current?.next()
       }
@@ -127,25 +139,9 @@ export default function EventsPage() {
       // If less than 2, clear any existing interval
       if (sliderTimer.current) clearInterval(sliderTimer.current)
     }
-  }, [slider, featuredEvents.length])
+  }, [slider, filteredFeaturedEvents.length])
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      setIsLoading(true)
-      
-      // For now, using mock data since events table doesn't exist yet
-      // In a real app, this would fetch from Supabase
-      try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setEvents(mockEvents)
-      } catch {
-        setEvents([])
-      }
-      setIsLoading(false)
-    }
-    fetchEvents()
-  }, [])
+
 
   // Date filter logic
   function isDateMatch(event: Event) {
@@ -525,7 +521,7 @@ export default function EventsPage() {
       </section>
 
       {/* Featured Events - Redesigned */}
-      {featuredEvents.length > 0 && (
+      {filteredFeaturedEvents.length > 0 && (
         <section className="py-16 relative">
           <div className="container px-4 mx-auto relative">
             <motion.div 
@@ -593,7 +589,7 @@ export default function EventsPage() {
               }}
               className="keen-slider"
             >
-              {(featuredEvents.length > 2 ? [...featuredEvents, ...featuredEvents] : featuredEvents).map((event, index) => (
+              {(filteredFeaturedEvents.length > 2 ? [...filteredFeaturedEvents, ...filteredFeaturedEvents] : filteredFeaturedEvents).map((event, index) => (
                 <motion.div
                   key={event.id + '-' + index}
                   className="keen-slider__slide"
