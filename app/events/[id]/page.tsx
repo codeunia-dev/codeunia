@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, Calendar, Users, DollarSign, Star, Sparkles} from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Event, mockEvents } from "@/components/data/events"
 import Image from "next/image";
 import { Tabs as AnimatedTabs } from "@/components/ui/tabs";
 import React from "react";
+import { useEvent } from "@/hooks/useEvents"
 
 // import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -67,12 +67,12 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
 
 export default function EventDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [event, setEvent] = useState<Event | null>(null)
-  const [fetchError, setFetchError] = useState<string | null>(null)
   const params = useParams()
   
   const slug = params?.id as string
+
+  // Use custom hook for fetching event
+  const { event, loading: isLoading, error: fetchError } = useEvent(slug)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,32 +82,6 @@ export default function EventDetailPage() {
     }
     checkAuth()
   }, [])
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      setIsLoading(true)
-      setFetchError(null)
-      
-      // For now, using mock data since events table doesn't exist yet
-      // In a real app, this would fetch from Supabase
-      try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        const foundEvent = mockEvents.find(e => e.slug === slug)
-        if (foundEvent) {
-          setEvent(foundEvent)
-        } else {
-          setFetchError('Event not found.')
-          setEvent(null)
-        }
-      } catch {
-        setFetchError('Failed to fetch event.')
-        setEvent(null)
-      }
-      setIsLoading(false)
-    }
-    if (slug) fetchEvent()
-  }, [slug])
 
   const getCategoryColor = (category: string) => {
     switch (category) {
