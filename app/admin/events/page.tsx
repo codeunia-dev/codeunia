@@ -64,6 +64,21 @@ export default function AdminEventsPage() {
   const [formData, setFormData] = useState<Omit<Event, 'id'>>(getEmptyEvent());
   const [formError, setFormError] = useState<string | null>(null);
 
+  // --- Add new state for dynamic fields ---
+  const [scheduleItems, setScheduleItems] = useState<{ date: string; label: string }[]>([]);
+  const [faqItems, setFaqItems] = useState<{ question: string; answer: string }[]>([]);
+  const [socials, setSocials] = useState<{ instagram?: string; facebook?: string; twitter?: string; linkedin?: string; website?: string }>({});
+  const [sponsorItems, setSponsorItems] = useState<{ name: string; logo: string; type: string }[]>([]);
+  const [markingTotal, setMarkingTotal] = useState<number>(0);
+  const [markingBreakdown, setMarkingBreakdown] = useState<{ difficulty: string; count: number; marks_each: number }[]>([]);
+  const [markingNotes, setMarkingNotes] = useState<string[]>([]);
+
+  // Add new state for input strings
+  const [categoriesInput, setCategoriesInput] = useState("");
+  const [tagsInput, setTagsInput] = useState("");
+  const [locationsInput, setLocationsInput] = useState("");
+  const [userTypesInput, setUserTypesInput] = useState("");
+
   // Data hooks
   const { data, loading, error, refetch } = useEvents({ search: searchTerm, category: categoryFilter });
   const { createEvent, loading: creating } = useCreateAdminEvent();
@@ -79,10 +94,22 @@ export default function AdminEventsPage() {
     setFormError(null);
   };
 
+  // --- Update openCreate to reset new states ---
   const openCreate = () => {
     setShowCreate(true);
     setFormData(getEmptyEvent());
     setFormError(null);
+    setScheduleItems([]);
+    setFaqItems([]);
+    setSocials({});
+    setSponsorItems([]);
+    setMarkingTotal(0);
+    setMarkingBreakdown([]);
+    setMarkingNotes([]);
+    setCategoriesInput("");
+    setTagsInput("");
+    setLocationsInput("");
+    setUserTypesInput("");
   };
   const closeCreate = () => {
     setShowCreate(false);
@@ -103,14 +130,29 @@ export default function AdminEventsPage() {
   const closeDelete = () => setShowDelete(null);
 
   // Form submit handlers
+  // --- Update handleCreate to assemble new fields ---
   const handleCreate = async () => {
-    // Basic validation
     if (!formData.title.trim() || !formData.slug.trim()) {
       setFormError("Title and slug are required");
       return;
     }
     try {
-      await createEvent(formData);
+      await createEvent({
+        ...formData,
+        categories: categoriesInput.split(",").map(s => s.trim()).filter(Boolean),
+        tags: tagsInput.split(",").map(s => s.trim()).filter(Boolean),
+        locations: locationsInput.split(",").map(s => s.trim()).filter(Boolean),
+        userTypes: userTypesInput.split(",").map(s => s.trim()).filter(Boolean),
+        schedule: scheduleItems,
+        faq: faqItems,
+        socials,
+        sponsors: sponsorItems,
+        marking_scheme: markingBreakdown.length || markingNotes.length || markingTotal ? {
+          total_marks: markingTotal,
+          breakdown: markingBreakdown,
+          notes: markingNotes,
+        } : undefined,
+      });
       closeCreate();
       refetch();
     } catch (err) {
@@ -259,7 +301,7 @@ export default function AdminEventsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Event</DialogTitle>
             <DialogDescription>Fill in the details to create a new event.</DialogDescription>
@@ -331,12 +373,12 @@ export default function AdminEventsPage() {
             {/* Categories (array) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
               <Label htmlFor="categories" className="text-right text-sm">Categories (comma separated)</Label>
-              <Input id="categories" value={formData.categories.join(", ")} onChange={e => handleFormChange("categories", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
+              <Input id="categories" value={categoriesInput} onChange={e => setCategoriesInput(e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             {/* Tags (array) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
               <Label htmlFor="tags" className="text-right text-sm">Tags (comma separated)</Label>
-              <Input id="tags" value={formData.tags.join(", ")} onChange={e => handleFormChange("tags", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
+              <Input id="tags" value={tagsInput} onChange={e => setTagsInput(e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             {/* Featured */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
@@ -356,7 +398,7 @@ export default function AdminEventsPage() {
             {/* Locations (array) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
               <Label htmlFor="locations" className="text-right text-sm">Locations (comma separated)</Label>
-              <Input id="locations" value={formData.locations.join(", ")} onChange={e => handleFormChange("locations", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
+              <Input id="locations" value={locationsInput} onChange={e => setLocationsInput(e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             {/* Capacity */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
@@ -422,7 +464,7 @@ export default function AdminEventsPage() {
             {/* User Types (array) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
               <Label htmlFor="userTypes" className="text-right text-sm">User Types (comma separated)</Label>
-              <Input id="userTypes" value={formData.userTypes.join(", ")} onChange={e => handleFormChange("userTypes", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
+              <Input id="userTypes" value={userTypesInput} onChange={e => setUserTypesInput(e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             {/* Registration Required */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
@@ -439,16 +481,19 @@ export default function AdminEventsPage() {
               <Label htmlFor="rules" className="text-right text-sm">Rules (one per line)</Label>
               <Textarea id="rules" value={formData.rules?.join("\n") || ""} onChange={e => handleFormChange("rules", e.target.value.split("\n").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
-            {/* Schedule (array of objects) */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="schedule" className="text-right text-sm">Schedule (JSON array)</Label>
-              <Textarea id="schedule" value={formData.schedule && formData.schedule.length ? JSON.stringify(formData.schedule, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("schedule", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+            {/* Schedule (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4 mb-4">
+              <Label className="text-right text-sm pt-2">Schedule</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {scheduleItems.map((item, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <Input placeholder="Date" value={item.date} onChange={e => setScheduleItems(items => items.map((it, i) => i === idx ? { ...it, date: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Input placeholder="Label" value={item.label} onChange={e => setScheduleItems(items => items.map((it, i) => i === idx ? { ...it, label: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setScheduleItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setScheduleItems(items => [...items, { date: '', label: '' }])}>Add Schedule Item</Button>
+              </div>
             </div>
             {/* Prize */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
@@ -460,49 +505,80 @@ export default function AdminEventsPage() {
               <Label htmlFor="prize_details" className="text-right text-sm">Prize Details</Label>
               <Textarea id="prize_details" value={formData.prize_details || ""} onChange={e => handleFormChange("prize_details", e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
-            {/* FAQ (array of objects) */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="faq" className="text-right text-sm">FAQ (JSON array)</Label>
-              <Textarea id="faq" value={formData.faq && formData.faq.length ? JSON.stringify(formData.faq, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("faq", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+            {/* FAQ (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4 mb-4">
+              <Label className="text-right text-sm pt-2">FAQ</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {faqItems.map((item, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <Input placeholder="Question" value={item.question} onChange={e => setFaqItems(items => items.map((it, i) => i === idx ? { ...it, question: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Textarea placeholder="Answer" value={item.answer} onChange={e => setFaqItems(items => items.map((it, i) => i === idx ? { ...it, answer: e.target.value } : it))} className="text-sm w-full sm:w-auto" rows={2} />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setFaqItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setFaqItems(items => [...items, { question: '', answer: '' }])}>Add FAQ</Button>
+              </div>
             </div>
-            {/* Socials (object) */}
+            {/* Socials (fields) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="socials" className="text-right text-sm">Socials (JSON object)</Label>
-              <Textarea id="socials" value={formData.socials ? JSON.stringify(formData.socials, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("socials", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Instagram</Label>
+              <Input value={socials.instagram || ''} onChange={e => setSocials(s => ({ ...s, instagram: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
-            {/* Sponsors (array of objects) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="sponsors" className="text-right text-sm">Sponsors (JSON array)</Label>
-              <Textarea id="sponsors" value={formData.sponsors && formData.sponsors.length ? JSON.stringify(formData.sponsors, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("sponsors", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Facebook</Label>
+              <Input value={socials.facebook || ''} onChange={e => setSocials(s => ({ ...s, facebook: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
-            {/* Marking Scheme (object) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="marking_scheme" className="text-right text-sm">Marking Scheme (JSON object)</Label>
-              <Textarea id="marking_scheme" value={formData.marking_scheme ? JSON.stringify(formData.marking_scheme, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("marking_scheme", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Twitter</Label>
+              <Input value={socials.twitter || ''} onChange={e => setSocials(s => ({ ...s, twitter: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+              <Label className="text-right text-sm">LinkedIn</Label>
+              <Input value={socials.linkedin || ''} onChange={e => setSocials(s => ({ ...s, linkedin: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+              <Label className="text-right text-sm">Website</Label>
+              <Input value={socials.website || ''} onChange={e => setSocials(s => ({ ...s, website: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
+            </div>
+            {/* Sponsors (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4 mb-4">
+              <Label className="text-right text-sm pt-2">Sponsors</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {sponsorItems.map((item, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <Input placeholder="Name" value={item.name} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, name: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Input placeholder="Logo URL" value={item.logo} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, logo: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Input placeholder="Type" value={item.type} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, type: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setSponsorItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setSponsorItems(items => [...items, { name: '', logo: '', type: '' }])}>Add Sponsor</Button>
+              </div>
+            </div>
+            {/* Marking Scheme (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4 mb-4">
+              <Label className="text-right text-sm pt-2">Marking Scheme</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center mb-2">
+                  <Input placeholder="Total Marks" type="number" value={markingTotal} onChange={e => setMarkingTotal(Number(e.target.value))} className="text-sm w-full sm:w-auto" />
+                </div>
+                <div className="mb-2">
+                  <div className="font-semibold text-xs mb-1">Breakdown</div>
+                  {markingBreakdown.map((item, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center mb-1">
+                      <Input placeholder="Difficulty" value={item.difficulty} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, difficulty: e.target.value } : it))} className="text-sm w-full sm:w-auto" />
+                      <Input placeholder="Count" type="number" value={item.count} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, count: Number(e.target.value) } : it))} className="text-sm w-full sm:w-auto" />
+                      <Input placeholder="Marks Each" type="number" value={item.marks_each} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, marks_each: Number(e.target.value) } : it))} className="text-sm w-full sm:w-auto" />
+                      <Button type="button" variant="destructive" size="icon" onClick={() => setMarkingBreakdown(items => items.filter((_, i) => i !== idx))}>-</Button>
+                    </div>
+                  ))}
+                  <Button type="button" size="sm" onClick={() => setMarkingBreakdown(items => [...items, { difficulty: '', count: 0, marks_each: 0 }])}>Add Breakdown</Button>
+                </div>
+                <div className="mb-2">
+                  <div className="font-semibold text-xs mb-1">Notes (one per line)</div>
+                  <Textarea value={markingNotes.join("\n")} onChange={e => setMarkingNotes(e.target.value.split("\n").map(s => s.trim()).filter(Boolean))} className="text-sm w-full" rows={2} />
+                </div>
+              </div>
             </div>
           </div>
           {formError && <div className="text-red-500 mb-2">{formError}</div>}
@@ -668,15 +744,19 @@ export default function AdminEventsPage() {
               <Label htmlFor="rules-edit" className="text-right text-sm">Rules (one per line)</Label>
               <Textarea id="rules-edit" value={formData.rules?.join("\n") || ""} onChange={e => handleFormChange("rules", e.target.value.split("\n").map(s => s.trim()).filter(Boolean))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="schedule-edit" className="text-right text-sm">Schedule (JSON array)</Label>
-              <Textarea id="schedule-edit" value={formData.schedule && formData.schedule.length ? JSON.stringify(formData.schedule, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("schedule", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+            {/* Schedule (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+              <Label className="text-right text-sm pt-2">Schedule</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {scheduleItems.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Date" value={item.date} onChange={e => setScheduleItems(items => items.map((it, i) => i === idx ? { ...it, date: e.target.value } : it))} className="text-sm" />
+                    <Input placeholder="Label" value={item.label} onChange={e => setScheduleItems(items => items.map((it, i) => i === idx ? { ...it, label: e.target.value } : it))} className="text-sm" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setScheduleItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setScheduleItems(items => [...items, { date: '', label: '' }])}>Add Schedule Item</Button>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
               <Label htmlFor="prize-edit" className="text-right text-sm">Prize</Label>
@@ -686,45 +766,70 @@ export default function AdminEventsPage() {
               <Label htmlFor="prize_details-edit" className="text-right text-sm">Prize Details</Label>
               <Textarea id="prize_details-edit" value={formData.prize_details || ""} onChange={e => handleFormChange("prize_details", e.target.value)} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
+            {/* FAQ (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+              <Label className="text-right text-sm pt-2">FAQ</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {faqItems.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Question" value={item.question} onChange={e => setFaqItems(items => items.map((it, i) => i === idx ? { ...it, question: e.target.value } : it))} className="text-sm" />
+                    <Input placeholder="Answer" value={item.answer} onChange={e => setFaqItems(items => items.map((it, i) => i === idx ? { ...it, answer: e.target.value } : it))} className="text-sm" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setFaqItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setFaqItems(items => [...items, { question: '', answer: '' }])}>Add FAQ</Button>
+              </div>
+            </div>
+            {/* Socials (fields) */}
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="faq-edit" className="text-right text-sm">FAQ (JSON array)</Label>
-              <Textarea id="faq-edit" value={formData.faq && formData.faq.length ? JSON.stringify(formData.faq, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("faq", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Instagram</Label>
+              <Input value={socials.instagram || ''} onChange={e => setSocials(s => ({ ...s, instagram: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="socials-edit" className="text-right text-sm">Socials (JSON object)</Label>
-              <Textarea id="socials-edit" value={formData.socials ? JSON.stringify(formData.socials, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("socials", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Facebook</Label>
+              <Input value={socials.facebook || ''} onChange={e => setSocials(s => ({ ...s, facebook: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="sponsors-edit" className="text-right text-sm">Sponsors (JSON array)</Label>
-              <Textarea id="sponsors-edit" value={formData.sponsors && formData.sponsors.length ? JSON.stringify(formData.sponsors, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("sponsors", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">Twitter</Label>
+              <Input value={socials.twitter || ''} onChange={e => setSocials(s => ({ ...s, twitter: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
-              <Label htmlFor="marking_scheme-edit" className="text-right text-sm">Marking Scheme (JSON object)</Label>
-              <Textarea id="marking_scheme-edit" value={formData.marking_scheme ? JSON.stringify(formData.marking_scheme, null, 2) : ""} onChange={e => {
-                try {
-                  handleFormChange("marking_scheme", JSON.parse(e.target.value));
-                } catch {
-                  // ignore parse error
-                }
-              }} className="col-span-1 sm:col-span-3 text-sm font-mono" />
+              <Label className="text-right text-sm">LinkedIn</Label>
+              <Input value={socials.linkedin || ''} onChange={e => setSocials(s => ({ ...s, linkedin: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
+              <Label className="text-right text-sm">Website</Label>
+              <Input value={socials.website || ''} onChange={e => setSocials(s => ({ ...s, website: e.target.value }))} className="col-span-1 sm:col-span-3 text-sm" />
+            </div>
+            {/* Sponsors (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+              <Label className="text-right text-sm pt-2">Sponsors</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {sponsorItems.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Name" value={item.name} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, name: e.target.value } : it))} className="text-sm" />
+                    <Input placeholder="Logo URL" value={item.logo} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, logo: e.target.value } : it))} className="text-sm" />
+                    <Input placeholder="Type" value={item.type} onChange={e => setSponsorItems(items => items.map((it, i) => i === idx ? { ...it, type: e.target.value } : it))} className="text-sm" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setSponsorItems(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setSponsorItems(items => [...items, { name: '', logo: '', type: '' }])}>Add Sponsor</Button>
+              </div>
+            </div>
+            {/* Marking Scheme (dynamic) */}
+            <div className="grid grid-cols-1 sm:grid-cols-4 items-start gap-4">
+              <Label className="text-right text-sm pt-2">Marking Scheme</Label>
+              <div className="col-span-1 sm:col-span-3 space-y-2">
+                {markingBreakdown.map((item, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <Input placeholder="Difficulty" value={item.difficulty} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, difficulty: e.target.value } : it))} className="text-sm" />
+                    <Input placeholder="Count" type="number" value={item.count} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, count: Number(e.target.value) } : it))} className="text-sm" />
+                    <Input placeholder="Marks Each" type="number" value={item.marks_each} onChange={e => setMarkingBreakdown(items => items.map((it, i) => i === idx ? { ...it, marks_each: Number(e.target.value) } : it))} className="text-sm" />
+                    <Button type="button" variant="destructive" size="icon" onClick={() => setMarkingBreakdown(items => items.filter((_, i) => i !== idx))}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" size="sm" onClick={() => setMarkingBreakdown(items => [...items, { difficulty: '', count: 0, marks_each: 0 }])}>Add Breakdown</Button>
+              </div>
             </div>
           </div>
           {formError && <div className="text-red-500 mb-2">{formError}</div>}
