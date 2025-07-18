@@ -30,6 +30,12 @@ const sponsors = [
         link: "https://www.linkedin.com/company/alexa-developer-community-cu/"
     },
     {
+      name: "Innovxus",
+      title: "Community Partner",
+      logo: "/images/sponsors/Innovxus.png",
+      link: "https://www.innovxus.com/"
+    },
+    {
         name: "Rotaract - Chandigarh University",
         title: "Community Engagement Partner",
         logo: "/images/sponsors/rotaract.png",
