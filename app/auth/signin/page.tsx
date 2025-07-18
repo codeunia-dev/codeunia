@@ -91,6 +91,30 @@ function SignInForm() {
     }
   };
 
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
+            : undefined,
+        },
+      });
+      if (error) {
+        throw error;
+      }
+      toast.success("Redirecting to GitHub...");
+    } catch (error) {
+      console.error('GitHub sign in error:', error);
+      toast.error("GitHub sign in failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-br from-background via-muted/30 to-muted/50 relative overflow-hidden">
       
@@ -215,9 +239,20 @@ function SignInForm() {
                   <Button 
                     variant="outline" 
                     className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20"
+                    onClick={handleGitHubSignIn}
+                    disabled={isLoading}
                   >
-                    <Github className="mr-2 h-4 w-4" />
-                    GitHub
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
+                        Connecting...
+                      </div>
+                    ) : (
+                      <>
+                        <Github className="mr-2 h-4 w-4" />
+                        GitHub
+                      </>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 

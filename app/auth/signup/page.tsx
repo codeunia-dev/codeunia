@@ -131,6 +131,30 @@ function SignUpForm() {
     }
   };
 
+  const handleGitHubSignIn = async () => {
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: typeof window !== "undefined"
+            ? `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
+            : undefined,
+        },
+      });
+      if (error) {
+        throw error;
+      }
+      toast.success("Redirecting to GitHub...");
+    } catch (error) {
+      console.error('GitHub sign in error:', error);
+      toast.error("GitHub sign in failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const passwordRequirements = [
     { text: "At least 8 characters", met: formData.password.length >= 8 },
     { text: "Contains uppercase letter", met: /[A-Z]/.test(formData.password) },
@@ -337,9 +361,23 @@ function SignUpForm() {
               <CardContent className="space-y-6 relative">
                 {/* socials login */}
                 <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20">
-                    <Github className="mr-2 h-4 w-4" />
-                    GitHub
+                  <Button 
+                    variant="outline" 
+                    className="w-full hover:bg-background/80 transition-colors backdrop-blur-sm border-white/10 hover:border-primary/20"
+                    onClick={handleGitHubSignIn}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent mr-2"></div>
+                        Connecting...
+                      </div>
+                    ) : (
+                      <>
+                        <Github className="mr-2 h-4 w-4" />
+                        GitHub
+                      </>
+                    )}
                   </Button>
                   <Button 
                     variant="outline" 
