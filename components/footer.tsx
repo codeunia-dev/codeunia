@@ -1,7 +1,8 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Code2, Github, Twitter, Linkedin, ArrowRight, Instagram } from "lucide-react"
+import { Github, Twitter, Linkedin, ArrowRight, Instagram } from "lucide-react"
+import { CodeuniaLogo } from "./codeunia-logo";
 
 export default function Footer() {
   return (
@@ -10,11 +11,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
        {/* codeunia branding */}
           <div className="space-y-6">
-            <Link href="/" className="flex items-center space-x-2 hover:scale-105 transition-transform">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary/90 to-purple-600/90 rounded-xl flex items-center justify-center shadow-lg">
-                <Code2 className="h-6 w-6 text-white" />
+            <Link href="/" className="hover:scale-105 transition-transform">
+              <div className="flex items-center gap-0">
+                <CodeuniaLogo size={40} />
+                <span className="text-lg font-bold gradient-text">Codeunia</span>
               </div>
-              <span className="text-lg font-bold gradient-text">Codeunia</span>
             </Link>
             <p className="text-foreground/80 leading-relaxed">
               Empowering the next generation of coders through real-world projects, vibrant community, and continuous
