@@ -61,19 +61,19 @@ export default function AboutPage() {
 
     const stats = [
         {
-            number: "10K+",
+            number: "600+",
             label: "Active Learners",
             icon: Users,
             color: "text-blue-500",
         },
         {
-            number: "500+",
+            number: "10+",
             label: "Coding Challenges",
             icon: Code2,
             color: "text-green-500",
         },
         {
-            number: "50+",
+            number: "20+",
             label: "Learning Paths",
             icon: Target,
             color: "text-purple-500",

@@ -66,25 +66,25 @@ export default function JoinPage() {
 
     const stats = [
         {
-            number: "500+",
+            number: "100+",
             label: "Collaborators",
             icon: Handshake,
             color: "text-blue-500",
         },
         {
-            number: "100+",
+            number: "10+",
             label: "Mentors",
             icon: Lightbulb,
             color: "text-green-500",
         },
         {
-            number: "50+",
+            number: "5+",
             label: "Judges",
             icon: Award,
             color: "text-purple-500",
         },
         {
-            number: "200+",
+            number: "50+",
             label: "Volunteers",
             icon: HandHeart,
             color: "text-orange-500",
