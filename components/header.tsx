@@ -6,8 +6,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 // import { ThemeToggle } from "@/components/theme-toggle"
 import { UserIcon } from "@/components/user-icon"
-import { Menu, X, Code2 } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
+import { CodeuniaLogo } from "./codeunia-logo";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -37,11 +38,11 @@ export default function Header() {
       <div className="container flex h-16 items-center justify-between px-4">
         {/* logo section - left */}
         <div className="flex items-center">
-          <Link href="/" className="flex items-center space-x-2 hover:scale-105 transition-transform duration-200">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Code2 className="h-6 w-6 text-white" />
+          <Link href="/" className="hover:scale-105 transition-transform duration-200">
+            <div className="flex items-center gap-0">
+              <CodeuniaLogo size={40} />
+              <span className="text-2xl font-bold gradient-text">Codeunia</span>
             </div>
-            <span className="text-xl font-bold gradient-text">Codeunia</span>
           </Link>
         </div>
 
