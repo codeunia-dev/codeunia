@@ -144,7 +144,7 @@ export default function ContactPage() {
 
   <CardContent className="space-y-4">
     <p className="text-muted-foreground">
-      Want to collaborate or become a part of CodeUnia? Click below to get started.
+      Want to collaborate or become a part of Codeunia? Click below to get started.
     </p>
     <Button
       variant="default"
@@ -153,7 +153,7 @@ export default function ContactPage() {
     >
       <a href="/join" className="w-full h-full flex items-center justify-center gap-2">
         <UserPlus className="w-5 h-5" />
-        Join CodeUnia
+        Join Codeunia
       </a>
     </Button>
   </CardContent>
