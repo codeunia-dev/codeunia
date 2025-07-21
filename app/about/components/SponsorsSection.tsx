@@ -96,7 +96,9 @@ export function SponsorsSection() {
                   </motion.div>
 
                   <div className="relative w-full overflow-hidden">
-                      <div className="flex animate-scroll gap-8 py-4">
+                  <div
+  className="flex animate-scroll gap-8 py-4"
+  style={{ minWidth: `${sponsors.length * 2 * 332}px` }} >
                           {sponsors.map((sponsor, idx) => (
                               sponsor.link ? (
                                 <a
@@ -124,7 +126,9 @@ export function SponsorsSection() {
                                             ? "object-contain p-4"
                                             : sponsor.name === "Code Crafters"
                                               ? "object-contain w-32 h-16 mx-auto"
-                                              : "object-cover"
+                                              : sponsor.name === "Innovxus"
+                                                ? "object-contain w-24 h-10 mx-auto flex items-center justify-center"
+                                                : "object-cover"
                                         }
                                       />
                                     </div>
@@ -158,7 +162,9 @@ export function SponsorsSection() {
                                           ? "object-contain p-4"
                                           : sponsor.name === "Code Crafters"
                                             ? "object-contain w-32 h-16 mx-auto"
-                                            : "object-cover"
+                                            : sponsor.name === "Innovxus"
+                                              ? "object-contain w-24 h-10 mx-auto flex items-center justify-center"
+                                              : "object-cover"
                                       }
                                     />
                                   </div>
@@ -201,7 +207,9 @@ export function SponsorsSection() {
                                             ? "object-contain p-4"
                                             : sponsor.name === "Code Crafters"
                                               ? "object-contain w-32 h-16 mx-auto"
-                                              : "object-cover"
+                                              : sponsor.name === "Innovxus"
+                                                ? "object-contain w-24 h-10 mx-auto flex items-center justify-center"
+                                                : "object-cover"
                                         }
                                       />
                                     </div>
@@ -235,7 +243,9 @@ export function SponsorsSection() {
                                           ? "object-contain p-4"
                                           : sponsor.name === "Code Crafters"
                                             ? "object-contain w-32 h-16 mx-auto"
-                                            : "object-cover"
+                                            : sponsor.name === "Innovxus"
+                                              ? "object-contain w-24 h-10 mx-auto flex items-center justify-center"
+                                              : "object-cover"
                                       }
                                     />
                                   </div>
