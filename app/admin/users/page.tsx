@@ -36,6 +36,7 @@ type AdminUser = {
   lastActive: string | null;
   avatar: string | null;
   avatarUrl: string | null;
+  provider?: string;
 };
 
 // type for supabase user
@@ -49,12 +50,20 @@ type SupabaseUser = {
   banned?: boolean;
   created_at: string;
   last_sign_in_at: string | null;
+  app_metadata?: {
+    provider?: string;
+  };
+  identities?: {
+    provider: string;
+  }[];
 };
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [viewUser, setViewUser] = useState<AdminUser | null>(null)
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
 
   useEffect(() => {
     fetch("/api/admin-users")
@@ -63,6 +72,13 @@ export default function UsersPage() {
         if (data.users) {
           setUsers(data.users.map((user: SupabaseUser) => {
             const meta = user.user_metadata || {};
+            // Try to get provider from app_metadata or identities
+            let provider = undefined;
+            if (user.app_metadata && user.app_metadata.provider) {
+              provider = user.app_metadata.provider;
+            } else if (user.identities && user.identities.length > 0) {
+              provider = user.identities[0].provider;
+            }
             return {
               id: user.id,
               name: meta.full_name || user.email,
@@ -72,6 +88,7 @@ export default function UsersPage() {
               lastActive: user.last_sign_in_at,
               avatar: user.email[0]?.toUpperCase() || "",
               avatarUrl: meta.avatar_url || null,
+              provider,
             };
           }));
         }
@@ -328,7 +345,11 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell>{getStatusBadge(user.status)}</TableCell>
                     <TableCell className="hidden md:table-cell text-xs">{new Date(user.joinDate).toLocaleDateString()}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs">{new Date(user.lastActive || "").toLocaleDateString()}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-xs">{
+                      user.lastActive && !isNaN(new Date(user.lastActive).getTime())
+                        ? new Date(user.lastActive).toLocaleDateString()
+                        : "—"
+                    }</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -338,7 +359,10 @@ export default function UsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel className="text-xs">Actions</DropdownMenuLabel>
-                          <DropdownMenuItem className="text-xs">
+                          <DropdownMenuItem className="text-xs" onClick={() => {
+                            setViewUser(user);
+                            setIsProfileDialogOpen(true);
+                          }}>
                             <Eye className="mr-2 h-4 w-4" />
                             View Profile
                           </DropdownMenuItem>
@@ -373,6 +397,56 @@ export default function UsersPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* User Profile Dialog */}
+      <Dialog open={isProfileDialogOpen} onOpenChange={setIsProfileDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>User Profile</DialogTitle>
+            <DialogDescription>Details for the selected user.</DialogDescription>
+          </DialogHeader>
+          {viewUser && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-primary to-purple-600 rounded-full flex items-center justify-center text-white text-lg font-semibold">
+                  {viewUser.avatar}
+                </div>
+                <div>
+                  <div className="font-bold text-lg text-zinc-900 dark:text-zinc-100">{viewUser.name}</div>
+                  <div className="text-xs text-muted-foreground">{viewUser.email}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <Label className="text-xs text-muted-foreground">UID</Label>
+                  <div className="break-all font-mono">{viewUser.id}</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <div>{getStatusBadge(viewUser.status)}</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Provider</Label>
+                  <div>{viewUser.provider ? viewUser.provider.charAt(0).toUpperCase() + viewUser.provider.slice(1) : "—"}</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Created at</Label>
+                  <div>{new Date(viewUser.joinDate).toLocaleString()}</div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Last sign in at</Label>
+                  <div>{viewUser.lastActive && !isNaN(new Date(viewUser.lastActive).getTime()) ? new Date(viewUser.lastActive).toLocaleString() : "—"}</div>
+                </div>
+                <div className="sm:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Email</Label>
+                  <div>{viewUser.email}</div>
+                </div>
+                {/* Add more fields as needed, e.g. Providers, Phone, etc. */}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
