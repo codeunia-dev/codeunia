@@ -108,17 +108,6 @@ export function TeamSection() {
         linkedin: "https://www.linkedin.com/in/sahil4k00"
       }
     },
-    {
-      name: "Nidhi Gupta",
-      role: "Finance & Resource Lead",
-      image: "/images/team/nidhi.jpeg",
-      description: "Managing resources and financial operations to ensure sustainable growth.",
-      badge: "Operations",
-      socials: {
-        github: "https://github.com/NidhiiiGupta",
-        linkedin: "https://www.linkedin.com/in/nidhi-gupta15/"
-      }
-    },
   ];
 
   return (

@@ -55,7 +55,7 @@ export default function ContactPage() {
                           transition={{ duration: 0.3 }}
                       >
                           <div className="flex flex-col items-center justify-center gap-4">
-                              <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                              <button className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
                                   <span className="absolute inset-0 overflow-hidden rounded-full">
                                       <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                                   </span>
@@ -445,7 +445,7 @@ export default function ContactPage() {
               >
                   <div className="max-w-3xl mx-auto space-y-8 p-8 rounded-3xl bg-background/50 dark:bg-background/80 backdrop-blur-md border border-primary/10 dark:border-primary/20 shadow-xl">
                       <div className="flex flex-col items-center justify-center gap-4">
-                          <button className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                          <button className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
                               <span className="absolute inset-0 overflow-hidden rounded-full">
                                   <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                               </span>
