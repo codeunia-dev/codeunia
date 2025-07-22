@@ -17,8 +17,189 @@ import {
 import { motion } from "framer-motion"
 import { SparklesCore } from "@/components/ui/sparkles"
 import { ContactForm } from "./contact-form"
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function ContactPage() {
+  const { user, loading } = useAuth();
+
+  const ctaSection = (
+    <section className="py-24 relative overflow-hidden bg-gradient-to-br from-primary/10 via-purple-500/10 to-background dark:from-primary/20 dark:via-purple-500/20 dark:to-background">
+      <div className="absolute inset-0">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 dark:bg-primary/30 rounded-full blur-xl animate-float"></div>
+        <div
+          className="absolute bottom-10 right-10 w-48 h-48 bg-purple-500/20 dark:bg-purple-500/30 rounded-full blur-xl animate-float"
+          style={{ animationDelay: "3s" }}
+        ></div>
+      </div>
+      {/* Sparkles effect */}
+      <div className="absolute inset-0 h-full w-full">
+        <SparklesCore
+          id="tsparticlesfullpage"
+          background="transparent"
+          minSize={0.6}
+          maxSize={1.4}
+          particleDensity={100}
+          className="w-full h-full"
+          particleColor="#6366f1"
+        />
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+        className="container px-4 mx-auto text-center relative z-10"
+      >
+        <div className="max-w-3xl mx-auto space-y-8 p-8 rounded-3xl bg-background/50 dark:bg-background/80 backdrop-blur-md border border-primary/10 dark:border-primary/20 shadow-xl">
+          {loading ? null : user ? (
+            <>
+              <div className="flex flex-col items-center justify-center gap-4">
+                <button className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-1 px-4 ring-1 ring-white/10">
+                    <span>Welcome Back 🚀</span>
+                  </div>
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+              >
+                Make the most of your {" "}
+                <motion.span
+                  className="gradient-text inline-block"
+                  animate={{
+                    backgroundPosition: [
+                      "0% 50%",
+                      "100% 50%",
+                      "0% 50%",
+                    ],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  Codeunia Experience
+                </motion.span>
+              </motion.h1>
+              <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
+                Dive into new projects, connect with fellow members, and explore everything our community has to offer.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
+                  asChild
+                >
+                  <a href="/protected" className="h-full flex items-center justify-center">
+                    Go to Dashboard
+                  </a>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
+                  asChild
+                >
+                  <a href="/about" className="h-full flex items-center justify-center">
+                    Explore Community
+                  </a>
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-center justify-center gap-4">
+                <button className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-1 px-4 ring-1 ring-white/10">
+                    <span>Join Our Community 🚀</span>
+                  </div>
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+              >
+                Be a part of something{" "}
+                <motion.span
+                  className="gradient-text inline-block"
+                  animate={{
+                    backgroundPosition: [
+                      "0% 50%",
+                      "100% 50%",
+                      "0% 50%",
+                    ],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                  style={{
+                    background:
+                      "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  Amazing
+                </motion.span>
+              </motion.h1>
+              <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
+                Join our community of tech enthusiasts and start
+                building real-world projects today.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
+                  asChild
+                >
+                  <a href="/auth/signup" className="h-full flex items-center justify-center">
+                    Join Codeunia
+                  </a>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
+                  asChild
+                >
+                  <a href="/about" className="h-full flex items-center justify-center">
+                    Learn More
+                  </a>
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+      </motion.div>
+    </section>
+  );
+
   return (
       <div className="flex flex-col overflow-hidden">
           {/* hero */}
@@ -414,108 +595,7 @@ export default function ContactPage() {
           </section>
 
           {/* cta */}
-          <section className="py-24 relative overflow-hidden bg-gradient-to-br from-primary/10 via-purple-500/10 to-background dark:from-primary/20 dark:via-purple-500/20 dark:to-background">
-              <div className="absolute inset-0">
-                  <div className="absolute top-10 left-10 w-32 h-32 bg-primary/20 dark:bg-primary/30 rounded-full blur-xl animate-float"></div>
-                  <div
-                      className="absolute bottom-10 right-10 w-48 h-48 bg-purple-500/20 dark:bg-purple-500/30 rounded-full blur-xl animate-float"
-                      style={{ animationDelay: "3s" }}
-                  ></div>
-              </div>
-
-              {/* Sparkles effect */}
-              <div className="absolute inset-0 h-full w-full">
-                  <SparklesCore
-                      id="tsparticlesfullpage"
-                      background="transparent"
-                      minSize={0.6}
-                      maxSize={1.4}
-                      particleDensity={100}
-                      className="w-full h-full"
-                      particleColor="#6366f1"
-                  />
-              </div>
-
-              <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className="container px-4 mx-auto text-center relative z-10"
-              >
-                  <div className="max-w-3xl mx-auto space-y-8 p-8 rounded-3xl bg-background/50 dark:bg-background/80 backdrop-blur-md border border-primary/10 dark:border-primary/20 shadow-xl">
-                      <div className="flex flex-col items-center justify-center gap-4">
-                          <button className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block">
-                              <span className="absolute inset-0 overflow-hidden rounded-full">
-                                  <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                              </span>
-                              <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-1 px-4 ring-1 ring-white/10">
-                                  <span>Join Our Community 🚀</span>
-                              </div>
-                              <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-                          </button>
-                      </div>
-                      <motion.h1
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, delay: 0.2 }}
-                          className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
-                      >
-                          Be a part of something{" "}
-                          <motion.span
-                              className="gradient-text inline-block"
-                              animate={{
-                                  backgroundPosition: [
-                                      "0% 50%",
-                                      "100% 50%",
-                                      "0% 50%",
-                                  ],
-                              }}
-                              transition={{
-                                  duration: 4,
-                                  repeat: Infinity,
-                                  ease: "linear",
-                              }}
-                              style={{
-                                  background:
-                                      "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
-                                  backgroundSize: "300% 100%",
-                                  WebkitBackgroundClip: "text",
-                                  WebkitTextFillColor: "transparent",
-                              }}
-                          >
-                              Amazing
-                          </motion.span>
-                      </motion.h1>
-                      <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
-                          Join our community of tech enthusiasts and start
-                          building real-world projects today.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
-                          <Button
-                              size="sm"
-                              variant="default"
-                              className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
-                              asChild
-                          >
-                              <a href="/auth/signup" className="h-full flex items-center justify-center">
-                                  Join Codeunia
-                              </a>
-                          </Button>
-                          <Button
-                              size="sm"
-                              variant="outline"
-                              className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
-                              asChild
-                          >
-                              <a href="/about" className="h-full flex items-center justify-center">
-                                  Learn More
-                              </a>
-                          </Button>
-                      </div>
-                  </div>
-              </motion.div>
-          </section>
+          {ctaSection}
           <Footer />
       </div>
   );
