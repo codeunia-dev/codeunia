@@ -58,6 +58,11 @@ const sidebarItems: SidebarGroupType[] = [
         icon: FileText,
       },
       {
+        title: "Hackathons",
+        url: "/admin/hackathons",
+        icon: Calendar,
+      },
+      {
         title: "Events",
         url: "/admin/events",
         icon: Calendar,
