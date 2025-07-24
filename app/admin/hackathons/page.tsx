@@ -38,7 +38,7 @@ export default function AdminHackathons() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [statusFilter] = useState<string>("all")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(null)
   const [formData, setFormData] = useState<Partial<Hackathon>>({
