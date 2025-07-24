@@ -2,80 +2,57 @@
 import { createClient } from '@/lib/supabase/server'
 
 export interface Hackathon {
-  id?: string
+  id?: number
   slug: string
   title: string
   excerpt: string
   description: string
   organizer: string
-  organizer_contact: {
-    email: string
+  organizer_contact?: {
+    email?: string
     phone?: string
+    [key: string]: string | undefined
   }
   date: string
   time: string
-  duration?: string
+  duration: string
   registration_deadline?: string
+  category: string
   categories: string[]
   tags: string[]
-  locations: string[]
-  user_types: string[]
-  schedule?: Array<{
-    time: string
-    activity: string
-    description?: string
-  }>
-  faq?: Array<{
-    question: string
-    answer: string
-  }>
-  sponsors?: Array<{
-    name: string
-    logo: string
-    tier: string
-    website?: string
-  }>
-  mentors?: Array<{
-    name: string
-    bio: string
-    avatar?: string
-    expertise: string[]
-  }>
-  judges?: Array<{
-    name: string
-    bio: string
-    avatar?: string
-    expertise: string[]
-  }>
   featured: boolean
   image?: string
   location: string
-  capacity?: number
-  registered?: number
-  price?: number
-  payment?: string
-  status: 'draft' | 'published' | 'cancelled' | 'completed'
-  event_type: string
+  locations: string[]
+  capacity: number
+  registered: number
   team_size?: {
-    min: number
-    max: number
+    min?: number
+    max?: number
+    [key: string]: number | undefined
   }
+  user_types: string[]
+  price: string
+  payment: string
+  status: 'live' | 'draft' | 'published' | 'cancelled' | 'completed'
+  event_type: string[]
   registration_required: boolean
-  rules?: string
+  rules?: string[]
+  schedule?: Record<string, unknown>
   prize?: string
-  prize_details?: Array<{
-    position: string
-    amount: string
-    description?: string
-  }>
+  prize_details?: string
+  faq?: Record<string, unknown>
   socials?: {
+    email?: string
     website?: string
     twitter?: string
     discord?: string
     linkedin?: string
+    whatsapp?: string
+    instagram?: string
+    [key: string]: string | undefined
   }
-  themes?: string[]
-  technologies?: string[]
+  sponsors?: Record<string, unknown>
   created_at?: string
   updated_at?: string
 }

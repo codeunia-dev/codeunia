@@ -29,6 +29,7 @@ import { toast } from "sonner"
 
 const statusColors = {
   draft: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+  live: "bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-300",
   published: "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-300",
   cancelled: "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-300",
   completed: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-300"
@@ -47,20 +48,48 @@ export default function AdminHackathons() {
     excerpt: "",
     description: "",
     organizer: "",
-    date: "",
-    time: "",
-    location: "",
-    status: "draft",
-    featured: false,
-    registration_required: true,
-    categories: [],
-    tags: [],
-    locations: [],
-    user_types: [],
     organizer_contact: {
       email: "",
       phone: ""
-    }
+    },
+    date: "",
+    time: "",
+    duration: "",
+    registration_deadline: "",
+    category: "",
+    categories: [],
+    tags: [],
+    featured: false,
+    image: "",
+    location: "",
+    locations: [],
+    capacity: 0,
+    registered: 0,
+    team_size: {
+      min: 1,
+      max: 4
+    },
+    user_types: [],
+    price: "Free",
+    payment: "Not Required",
+    status: "draft",
+    event_type: [],
+    registration_required: true,
+    rules: [],
+    schedule: {},
+    prize: "",
+    prize_details: "",
+    faq: {},
+    socials: {
+      email: "",
+      website: "",
+      twitter: "",
+      discord: "",
+      linkedin: "",
+      whatsapp: "",
+      instagram: ""
+    },
+    sponsors: {}
   })
 
   const fetchHackathons = async () => {
@@ -150,20 +179,48 @@ export default function AdminHackathons() {
       excerpt: "",
       description: "",
       organizer: "",
-      date: "",
-      time: "",
-      location: "",
-      status: "draft",
-      featured: false,
-      registration_required: true,
-      categories: [],
-      tags: [],
-      locations: [],
-      user_types: [],
       organizer_contact: {
         email: "",
         phone: ""
-      }
+      },
+      date: "",
+      time: "",
+      duration: "",
+      registration_deadline: "",
+      category: "",
+      categories: [],
+      tags: [],
+      featured: false,
+      image: "",
+      location: "",
+      locations: [],
+      capacity: 0,
+      registered: 0,
+      team_size: {
+        min: 1,
+        max: 4
+      },
+      user_types: [],
+      price: "Free",
+      payment: "Not Required",
+      status: "draft",
+      event_type: [],
+      registration_required: true,
+      rules: [],
+      schedule: {},
+      prize: "",
+      prize_details: "",
+      faq: {},
+      socials: {
+        email: "",
+        website: "",
+        twitter: "",
+        discord: "",
+        linkedin: "",
+        whatsapp: "",
+        instagram: ""
+      },
+      sponsors: {}
     })
   }
 
@@ -174,7 +231,20 @@ export default function AdminHackathons() {
       organizer_contact: {
         email: hackathon.organizer_contact?.email || "",
         phone: hackathon.organizer_contact?.phone || ""
-      }
+      },
+      team_size: hackathon.team_size || { min: 1, max: 4 },
+      socials: hackathon.socials || {
+        email: "",
+        website: "",
+        twitter: "",
+        discord: "",
+        linkedin: "",
+        whatsapp: "",
+        instagram: ""
+      },
+      schedule: hackathon.schedule || {},
+      faq: hackathon.faq || {},
+      sponsors: hackathon.sponsors || {}
     })
     setIsCreateDialogOpen(true)
   }
@@ -236,6 +306,7 @@ export default function AdminHackathons() {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Basic Information */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="title">Title</Label>
@@ -263,6 +334,7 @@ export default function AdminHackathons() {
                     />
                   </div>
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="excerpt">Excerpt</Label>
                   <Textarea
@@ -272,6 +344,7 @@ export default function AdminHackathons() {
                     rows={2}
                   />
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
                   <Textarea
@@ -281,6 +354,8 @@ export default function AdminHackathons() {
                     rows={4}
                   />
                 </div>
+
+                {/* Organizer Information */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="organizer">Organizer</Label>
@@ -292,15 +367,50 @@ export default function AdminHackathons() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="image">Image URL</Label>
                     <Input
-                      id="location"
-                      value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      id="image"
+                      value={formData.image}
+                      onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                      placeholder="https://example.com/image.jpg"
                     />
                   </div>
                 </div>
+
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Contact Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.organizer_contact?.email}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        organizer_contact: { 
+                          ...prev.organizer_contact,
+                          email: e.target.value
+                        }
+                      }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Contact Phone</Label>
+                    <Input
+                      id="phone"
+                      value={formData.organizer_contact?.phone}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        organizer_contact: { 
+                          ...prev.organizer_contact,
+                          phone: e.target.value
+                        }
+                      }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Date and Time */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="date">Date</Label>
                     <Input
@@ -320,47 +430,360 @@ export default function AdminHackathons() {
                       onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Duration</Label>
+                    <Input
+                      id="duration"
+                      value={formData.duration}
+                      onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
+                      placeholder="e.g., 48 hours"
+                    />
+                  </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="registration_deadline">Registration Deadline</Label>
+                  <Input
+                    id="registration_deadline"
+                    type="date"
+                    value={formData.registration_deadline}
+                    onChange={(e) => setFormData(prev => ({ ...prev, registration_deadline: e.target.value }))}
+                  />
+                </div>
+
+                {/* Location and Capacity */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Contact Email</Label>
+                    <Label htmlFor="location">Primary Location</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={formData.organizer_contact?.email}
+                      id="location"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="locations">Additional Locations (comma-separated)</Label>
+                    <Input
+                      id="locations"
+                      value={formData.locations?.join(', ')}
                       onChange={(e) => setFormData(prev => ({ 
                         ...prev, 
-                        organizer_contact: { 
-                          email: e.target.value,
-                          phone: prev.organizer_contact?.phone || ""
+                        locations: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      }))}
+                      placeholder="Online, New York, San Francisco"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="capacity">Capacity</Label>
+                    <Input
+                      id="capacity"
+                      type="number"
+                      min="0"
+                      value={formData.capacity}
+                      onChange={(e) => setFormData(prev => ({ ...prev, capacity: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="registered">Registered Count</Label>
+                    <Input
+                      id="registered"
+                      type="number"
+                      min="0"
+                      value={formData.registered}
+                      onChange={(e) => setFormData(prev => ({ ...prev, registered: parseInt(e.target.value) || 0 }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Categories and Tags */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Primary Category</Label>
+                    <Input
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder="e.g., Technology, Healthcare"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="categories">Categories (comma-separated)</Label>
+                    <Input
+                      id="categories"
+                      value={formData.categories?.join(', ')}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        categories: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                      }))}
+                      placeholder="AI, Web Development, Mobile"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags (comma-separated)</Label>
+                  <Input
+                    id="tags"
+                    value={formData.tags?.join(', ')}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    }))}
+                    placeholder="hackathon, coding, competition"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="event_type">Event Types (comma-separated)</Label>
+                  <Input
+                    id="event_type"
+                    value={formData.event_type?.join(', ')}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      event_type: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    }))}
+                    placeholder="in-person, virtual, hybrid"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="user_types">User Types (comma-separated)</Label>
+                  <Input
+                    id="user_types"
+                    value={formData.user_types?.join(', ')}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      user_types: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    }))}
+                    placeholder="students, professionals, beginners"
+                  />
+                </div>
+
+                {/* Team Size */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="team_min">Min Team Size</Label>
+                    <Input
+                      id="team_min"
+                      type="number"
+                      min="1"
+                      value={formData.team_size?.min || 1}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        team_size: { 
+                          ...prev.team_size, 
+                          min: parseInt(e.target.value) || 1 
                         }
                       }))}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Contact Phone</Label>
+                    <Label htmlFor="team_max">Max Team Size</Label>
                     <Input
-                      id="phone"
-                      value={formData.organizer_contact?.phone}
+                      id="team_max"
+                      type="number"
+                      min="1"
+                      value={formData.team_size?.max || 4}
                       onChange={(e) => setFormData(prev => ({ 
                         ...prev, 
-                        organizer_contact: { 
-                          email: prev.organizer_contact?.email || "",
-                          phone: e.target.value
+                        team_size: { 
+                          ...prev.team_size, 
+                          max: parseInt(e.target.value) || 4 
                         }
                       }))}
                     />
                   </div>
                 </div>
+
+                {/* Pricing */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price</Label>
+                    <Input
+                      id="price"
+                      value={formData.price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                      placeholder="Free, $50, $100"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="payment">Payment Info</Label>
+                    <Input
+                      id="payment"
+                      value={formData.payment}
+                      onChange={(e) => setFormData(prev => ({ ...prev, payment: e.target.value }))}
+                      placeholder="Not Required, Stripe, PayPal"
+                    />
+                  </div>
+                </div>
+
+                {/* Prize Information */}
+                <div className="space-y-2">
+                  <Label htmlFor="prize">Prize</Label>
+                  <Input
+                    id="prize"
+                    value={formData.prize}
+                    onChange={(e) => setFormData(prev => ({ ...prev, prize: e.target.value }))}
+                    placeholder="$10,000 in total prizes"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="prize_details">Prize Details</Label>
+                  <Textarea
+                    id="prize_details"
+                    value={formData.prize_details}
+                    onChange={(e) => setFormData(prev => ({ ...prev, prize_details: e.target.value }))}
+                    rows={3}
+                    placeholder="1st Place: $5000, 2nd Place: $3000, 3rd Place: $2000"
+                  />
+                </div>
+
+                {/* Rules */}
+                <div className="space-y-2">
+                  <Label htmlFor="rules">Rules (comma-separated)</Label>
+                  <Textarea
+                    id="rules"
+                    value={formData.rules?.join(', ')}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      rules: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
+                    }))}
+                    rows={3}
+                    placeholder="Team size 1-4, Original code only, No external APIs"
+                  />
+                </div>
+
+                {/* Social Links */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={formData.socials?.website}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          website: e.target.value 
+                        }
+                      }))}
+                      placeholder="https://hackathon.example.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="twitter">Twitter</Label>
+                    <Input
+                      id="twitter"
+                      value={formData.socials?.twitter}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          twitter: e.target.value 
+                        }
+                      }))}
+                      placeholder="@hackathon2024"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="discord">Discord</Label>
+                    <Input
+                      id="discord"
+                      value={formData.socials?.discord}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          discord: e.target.value 
+                        }
+                      }))}
+                      placeholder="https://discord.gg/..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin">LinkedIn</Label>
+                    <Input
+                      id="linkedin"
+                      value={formData.socials?.linkedin}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          linkedin: e.target.value 
+                        }
+                      }))}
+                      placeholder="https://linkedin.com/company/..."
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="social_email">Social Email</Label>
+                    <Input
+                      id="social_email"
+                      type="email"
+                      value={formData.socials?.email}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          email: e.target.value 
+                        }
+                      }))}
+                      placeholder="contact@hackathon.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp">WhatsApp</Label>
+                    <Input
+                      id="whatsapp"
+                      value={formData.socials?.whatsapp}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          whatsapp: e.target.value 
+                        }
+                      }))}
+                      placeholder="https://wa.me/1234567890 or +1234567890"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">Instagram</Label>
+                    <Input
+                      id="instagram"
+                      value={formData.socials?.instagram}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        socials: { 
+                          ...prev.socials, 
+                          instagram: e.target.value 
+                        }
+                      }))}
+                      placeholder="@hackathon2024 or https://instagram.com/..."
+                    />
+                  </div>
+                </div>
+
+                {/* Status and Options */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'published' | 'cancelled' | 'completed' }))}>
+                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'live' | 'draft' | 'published' | 'cancelled' | 'completed' }))}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="live">Live</SelectItem>
                         <SelectItem value="published">Published</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
