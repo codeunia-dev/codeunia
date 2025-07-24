@@ -27,7 +27,7 @@ export default function Header() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    { href: "/events", label: "Events" },
+    { href: "/opportunities", label: "Opportunities" },
     { href: "/blog", label: "Blog" },
     { href: "/join", label: "Join Codeunia" },
     { href: "/contact", label: "Contact Us" },
