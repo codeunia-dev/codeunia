@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Sparkles, Rocket, Shield, User } from "lucide-react";
+import { Sparkles, Rocket, Shield, User, Settings } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import MembershipCard from "@/components/MembershipCard";
 export default async function ProtectedPage() {
   const supabase = await createClient();
 
@@ -61,6 +64,11 @@ export default async function ProtectedPage() {
           </div>
         </div>
 
+        {/* Membership Card Section */}
+        <div className="flex justify-center my-8">
+          <MembershipCard uid={data.user.id} />
+        </div>
+
        
         <div className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
@@ -96,6 +104,27 @@ export default async function ProtectedPage() {
         </div>
 
        
+        {/* Profile Settings Card */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Customize Your Profile
+            </CardTitle>
+            <CardDescription>
+              Add your information, social links, and customize how others see you
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/protected/profile" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Manage Profile
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+
         <div className="grid md:grid-cols-3 gap-6 mt-12">
           <div className="group p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300">
             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
