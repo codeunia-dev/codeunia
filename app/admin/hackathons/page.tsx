@@ -81,10 +81,6 @@ export default function AdminHackathons() {
     prize_details: "",
     faq: {},
     socials: {
-      email: "",
-      website: "",
-      twitter: "",
-      discord: "",
       linkedin: "",
       whatsapp: "",
       instagram: ""
@@ -212,10 +208,6 @@ export default function AdminHackathons() {
       prize_details: "",
       faq: {},
       socials: {
-        email: "",
-        website: "",
-        twitter: "",
-        discord: "",
         linkedin: "",
         whatsapp: "",
         instagram: ""
@@ -234,10 +226,6 @@ export default function AdminHackathons() {
       },
       team_size: hackathon.team_size || { min: 1, max: 4 },
       socials: hackathon.socials || {
-        email: "",
-        website: "",
-        twitter: "",
-        discord: "",
         linkedin: "",
         whatsapp: "",
         instagram: ""
@@ -273,8 +261,6 @@ export default function AdminHackathons() {
 
   const stats = {
     total: hackathons.length,
-    published: hackathons.filter(h => h.status === 'published').length,
-    draft: hackathons.filter(h => h.status === 'draft').length,
     featured: hackathons.filter(h => h.featured).length
   }
 
@@ -657,56 +643,48 @@ export default function AdminHackathons() {
                   />
                 </div>
 
-                {/* Social Links */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="website">Website</Label>
-                    <Input
-                      id="website"
-                      value={formData.socials?.website}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        socials: { 
-                          ...prev.socials, 
-                          website: e.target.value 
-                        }
-                      }))}
-                      placeholder="https://hackathon.example.com"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter</Label>
-                    <Input
-                      id="twitter"
-                      value={formData.socials?.twitter}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        socials: { 
-                          ...prev.socials, 
-                          twitter: e.target.value 
-                        }
-                      }))}
-                      placeholder="@hackathon2024"
-                    />
-                  </div>
+                {/* Schedule */}
+                <div className="space-y-2">
+                  <Label htmlFor="schedule">Schedule (JSON format)</Label>
+                  <Textarea
+                    id="schedule"
+                    value={typeof formData.schedule === 'object' ? JSON.stringify(formData.schedule, null, 2) : ''}
+                    onChange={(e) => {
+                      try {
+                        const parsed = JSON.parse(e.target.value || '{}')
+                        setFormData(prev => ({ ...prev, schedule: parsed }))
+                      } catch {
+                        // If invalid JSON, set as empty object to maintain type compatibility
+                        // The user can continue typing and it will parse when valid
+                      }
+                    }}
+                    rows={6}
+                    placeholder='{"day1": "Registration and Opening", "day2": "Hacking begins", "day3": "Final presentations"}'
+                  />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="discord">Discord</Label>
-                    <Input
-                      id="discord"
-                      value={formData.socials?.discord}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        socials: { 
-                          ...prev.socials, 
-                          discord: e.target.value 
-                        }
-                      }))}
-                      placeholder="https://discord.gg/..."
-                    />
-                  </div>
+                {/* FAQ */}
+                <div className="space-y-2">
+                  <Label htmlFor="faq">FAQ (JSON format)</Label>
+                  <Textarea
+                    id="faq"
+                    value={typeof formData.faq === 'object' ? JSON.stringify(formData.faq, null, 2) : ''}
+                    onChange={(e) => {
+                      try {
+                        const parsed = JSON.parse(e.target.value || '{}')
+                        setFormData(prev => ({ ...prev, faq: parsed }))
+                      } catch {
+                        // If invalid JSON, set as empty object to maintain type compatibility
+                        // The user can continue typing and it will parse when valid
+                      }
+                    }}
+                    rows={6}
+                    placeholder='{"What is this hackathon about?": "This is a 48-hour coding competition...", "Who can participate?": "Students and professionals are welcome"}'
+                  />
+                </div>
+
+                {/* Social Links */}
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="linkedin">LinkedIn</Label>
                     <Input
@@ -720,25 +698,6 @@ export default function AdminHackathons() {
                         }
                       }))}
                       placeholder="https://linkedin.com/company/..."
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="social_email">Social Email</Label>
-                    <Input
-                      id="social_email"
-                      type="email"
-                      value={formData.socials?.email}
-                      onChange={(e) => setFormData(prev => ({ 
-                        ...prev, 
-                        socials: { 
-                          ...prev.socials, 
-                          email: e.target.value 
-                        }
-                      }))}
-                      placeholder="contact@hackathon.com"
                     />
                   </div>
                   <div className="space-y-2">
@@ -777,14 +736,12 @@ export default function AdminHackathons() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'live' | 'draft' | 'published' | 'cancelled' | 'completed' }))}>
+                    <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'live' | 'cancelled' | 'completed' }))}>  
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="draft">Draft</SelectItem>
                         <SelectItem value="live">Live</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
                         <SelectItem value="completed">Completed</SelectItem>
                       </SelectContent>
@@ -831,7 +788,7 @@ export default function AdminHackathons() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Hackathons</CardTitle>
@@ -839,24 +796,6 @@ export default function AdminHackathons() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Published</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.published}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Draft</CardTitle>
-            <Edit className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-600">{stats.draft}</div>
           </CardContent>
         </Card>
         <Card>
