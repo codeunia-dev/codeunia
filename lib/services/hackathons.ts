@@ -38,10 +38,10 @@ export interface Hackathon {
   event_type: string[]
   registration_required: boolean
   rules?: string[]
-  schedule?: Record<string, unknown>
+  schedule?: Record<string, unknown> | { date: string; label: string }[]
   prize?: string
   prize_details?: string
-  faq?: Record<string, unknown>
+  faq?: Record<string, unknown> | { question: string; answer: string }[]
   socials?: {
     email?: string
     website?: string
