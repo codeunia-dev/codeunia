@@ -76,10 +76,10 @@ export default function AdminHackathons() {
     event_type: [],
     registration_required: true,
     rules: [],
-    schedule: {},
+    schedule: [] as { date: string; label: string }[], // Array of { date: string, label: string }
     prize: "",
     prize_details: "",
-    faq: {},
+    faq: [] as { question: string; answer: string }[], // Array of { question: string, answer: string }
     socials: {
       linkedin: "",
       whatsapp: "",
@@ -130,6 +130,13 @@ export default function AdminHackathons() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const scheduleObj = Array.isArray(formData.schedule)
+        ? Object.fromEntries(formData.schedule.filter(item => item.date && item.label).map(item => [item.date, item.label]))
+        : {};
+      const faqObj = Array.isArray(formData.faq)
+        ? Object.fromEntries(formData.faq.filter(item => item.question && item.answer).map(item => [item.question, item.answer]))
+        : {};
+
       if (editingHackathon) {
         const response = await fetch('/api/admin/hackathons', {
           method: 'PUT',
@@ -138,7 +145,7 @@ export default function AdminHackathons() {
           },
           body: JSON.stringify({
             slug: editingHackathon.slug,
-            data: formData
+            data: { ...formData, schedule: scheduleObj, faq: faqObj }
           })
         })
         if (!response.ok) {
@@ -152,7 +159,7 @@ export default function AdminHackathons() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify({ ...formData, schedule: scheduleObj, faq: faqObj })
         })
         if (!response.ok) {
           throw new Error('Failed to create hackathon')
@@ -203,10 +210,10 @@ export default function AdminHackathons() {
       event_type: [],
       registration_required: true,
       rules: [],
-      schedule: {},
+      schedule: [] as { date: string; label: string }[],
+      faq: [] as { question: string; answer: string }[],
       prize: "",
       prize_details: "",
-      faq: {},
       socials: {
         linkedin: "",
         whatsapp: "",
@@ -230,8 +237,12 @@ export default function AdminHackathons() {
         whatsapp: "",
         instagram: ""
       },
-      schedule: hackathon.schedule || {},
-      faq: hackathon.faq || {},
+      schedule: (hackathon.schedule && typeof hackathon.schedule === 'object' && !Array.isArray(hackathon.schedule)
+        ? Object.entries(hackathon.schedule).map(([date, label]) => ({ date, label: String(label) }))
+        : []) as { date: string; label: string }[],
+      faq: (hackathon.faq && typeof hackathon.faq === 'object' && !Array.isArray(hackathon.faq)
+        ? Object.entries(hackathon.faq).map(([question, answer]) => ({ question, answer: String(answer) }))
+        : []) as { question: string; answer: string }[],
       sponsors: Array.isArray(hackathon.sponsors) ? hackathon.sponsors : []
     })
     setIsCreateDialogOpen(true)
@@ -668,42 +679,86 @@ export default function AdminHackathons() {
 
                 {/* Schedule */}
                 <div className="space-y-2">
-                  <Label htmlFor="schedule">Schedule (JSON format)</Label>
-                  <Textarea
-                    id="schedule"
-                    value={typeof formData.schedule === 'object' ? JSON.stringify(formData.schedule, null, 2) : ''}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value || '{}')
-                        setFormData(prev => ({ ...prev, schedule: parsed }))
-                      } catch {
-                        // If invalid JSON, set as empty object to maintain type compatibility
-                        // The user can continue typing and it will parse when valid
-                      }
-                    }}
-                    rows={6}
-                    placeholder='{"day1": "Registration and Opening", "day2": "Hacking begins", "day3": "Final presentations"}'
-                  />
+                  <Label>Schedule</Label>
+                  {Array.isArray(formData.schedule) && formData.schedule.length > 0 && (
+                    <div className="space-y-2">
+                      {formData.schedule.map((item, idx) => (
+                        <div key={idx} className="grid grid-cols-2 gap-2 items-end">
+                          <Input
+                            placeholder="Date"
+                            value={item.date}
+                            onChange={e => setFormData(prev => {
+                              const schedule = Array.isArray(prev.schedule) ? [...prev.schedule] : [];
+                              schedule[idx] = { ...schedule[idx], date: e.target.value };
+                              return { ...prev, schedule };
+                            })}
+                          />
+                          <Input
+                            placeholder="Label"
+                            value={item.label}
+                            onChange={e => setFormData(prev => {
+                              const schedule = Array.isArray(prev.schedule) ? [...prev.schedule] : [];
+                              schedule[idx] = { ...schedule[idx], label: e.target.value };
+                              return { ...prev, schedule };
+                            })}
+                          />
+                          <Button type="button" variant="destructive" onClick={() => setFormData(prev => {
+                            const schedule = Array.isArray(prev.schedule) ? [...prev.schedule] : [];
+                            schedule.splice(idx, 1);
+                            return { ...prev, schedule };
+                          })}>-</Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Button type="button" variant="outline" onClick={() => setFormData(prev => ({
+                    ...prev,
+                    schedule: Array.isArray(prev.schedule) ? [...prev.schedule, { date: '', label: '' }] : [{ date: '', label: '' }]
+                  }))}>
+                    Add Schedule Item
+                  </Button>
                 </div>
 
                 {/* FAQ */}
                 <div className="space-y-2">
-                  <Label htmlFor="faq">FAQ (JSON format)</Label>
-                  <Textarea
-                    id="faq"
-                    value={typeof formData.faq === 'object' ? JSON.stringify(formData.faq, null, 2) : ''}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value || '{}')
-                        setFormData(prev => ({ ...prev, faq: parsed }))
-                      } catch {
-                        // If invalid JSON, set as empty object to maintain type compatibility
-                        // The user can continue typing and it will parse when valid
-                      }
-                    }}
-                    rows={6}
-                    placeholder='{"What is this hackathon about?": "This is a 48-hour coding competition...", "Who can participate?": "Students and professionals are welcome"}'
-                  />
+                  <Label>FAQ</Label>
+                  {Array.isArray(formData.faq) && formData.faq.length > 0 && (
+                    <div className="space-y-2">
+                      {formData.faq.map((item, idx) => (
+                        <div key={idx} className="grid grid-cols-2 gap-2 items-end">
+                          <Input
+                            placeholder="Question"
+                            value={item.question}
+                            onChange={e => setFormData(prev => {
+                              const faq = Array.isArray(prev.faq) ? [...prev.faq] : [];
+                              faq[idx] = { ...faq[idx], question: e.target.value };
+                              return { ...prev, faq };
+                            })}
+                          />
+                          <Input
+                            placeholder="Answer"
+                            value={item.answer}
+                            onChange={e => setFormData(prev => {
+                              const faq = Array.isArray(prev.faq) ? [...prev.faq] : [];
+                              faq[idx] = { ...faq[idx], answer: e.target.value };
+                              return { ...prev, faq };
+                            })}
+                          />
+                          <Button type="button" variant="destructive" onClick={() => setFormData(prev => {
+                            const faq = Array.isArray(prev.faq) ? [...prev.faq] : [];
+                            faq.splice(idx, 1);
+                            return { ...prev, faq };
+                          })}>-</Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Button type="button" variant="outline" onClick={() => setFormData(prev => ({
+                    ...prev,
+                    faq: Array.isArray(prev.faq) ? [...prev.faq, { question: '', answer: '' }] : [{ question: '', answer: '' }]
+                  }))}>
+                    Add FAQ
+                  </Button>
                 </div>
 
                 {/* Social Links */}
