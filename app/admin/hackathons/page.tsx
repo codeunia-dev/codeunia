@@ -299,15 +299,22 @@ export default function AdminHackathons() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 md:space-y-14 min-h-screen px-4 py-8 md:px-8 lg:px-16 relative overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-center gap-3 pb-6 border-b border-zinc-800/60 relative z-10 mt-2 mb-4">
+        <span className="inline-block w-2 h-6 sm:h-8 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full mr-2" />
         <div>
-          <h1 className="text-3xl font-bold text-white">Hackathons Management</h1>
-          <p className="text-gray-400 mt-1">Manage all hackathons, events and competitions</p>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-zinc-900 dark:text-white drop-shadow-sm flex items-center gap-3">
+            Hackathons Management
+          </h1>
+          <p className="text-zinc-400 mt-1 font-medium text-sm sm:text-base">Manage all hackathons, events and competitions</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex gap-3">
+          <Button variant="outline" className="text-sm">
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
@@ -318,7 +325,7 @@ export default function AdminHackathons() {
                 Create Hackathon
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>{editingHackathon ? 'Edit Hackathon' : 'Create New Hackathon'}</DialogTitle>
                 <DialogDescription>
@@ -711,7 +718,7 @@ export default function AdminHackathons() {
                       ))}
                     </div>
                   )}
-                  <Button type="button" variant="outline" onClick={() => setFormData(prev => ({
+                  <Button type="button" size="sm" onClick={() => setFormData(prev => ({
                     ...prev,
                     schedule: Array.isArray(prev.schedule) ? [...prev.schedule, { date: '', label: '' }] : [{ date: '', label: '' }]
                   }))}>
@@ -753,7 +760,7 @@ export default function AdminHackathons() {
                       ))}
                     </div>
                   )}
-                  <Button type="button" variant="outline" onClick={() => setFormData(prev => ({
+                  <Button type="button" size="sm" onClick={() => setFormData(prev => ({
                     ...prev,
                     faq: Array.isArray(prev.faq) ? [...prev.faq, { question: '', answer: '' }] : [{ question: '', answer: '' }]
                   }))}>
@@ -886,7 +893,7 @@ export default function AdminHackathons() {
                       ))}
                     </div>
                   )}
-                  <Button type="button" variant="outline" onClick={handleAddSponsor}>
+                  <Button type="button" size="sm" onClick={handleAddSponsor}>
                     Add Sponsor
                   </Button>
                 </div>
@@ -906,6 +913,9 @@ export default function AdminHackathons() {
               </form>
             </DialogContent>
           </Dialog>
+        </div>
+        <div className="text-sm text-muted-foreground">
+          {filteredHackathons.length} hackathons
         </div>
       </div>
 
