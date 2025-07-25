@@ -52,7 +52,7 @@ export interface Hackathon {
     instagram?: string
     [key: string]: string | undefined
   }
-  sponsors?: Record<string, unknown>
+  sponsors?: { logo: string; name: string; type: string }[]
   created_at?: string
   updated_at?: string
 }

@@ -85,7 +85,7 @@ export default function AdminHackathons() {
       whatsapp: "",
       instagram: ""
     },
-    sponsors: {}
+    sponsors: []
   })
 
   const fetchHackathons = async () => {
@@ -212,7 +212,7 @@ export default function AdminHackathons() {
         whatsapp: "",
         instagram: ""
       },
-      sponsors: {}
+      sponsors: []
     })
   }
 
@@ -232,7 +232,7 @@ export default function AdminHackathons() {
       },
       schedule: hackathon.schedule || {},
       faq: hackathon.faq || {},
-      sponsors: hackathon.sponsors || {}
+      sponsors: Array.isArray(hackathon.sponsors) ? hackathon.sponsors : []
     })
     setIsCreateDialogOpen(true)
   }
@@ -263,6 +263,29 @@ export default function AdminHackathons() {
     total: hackathons.length,
     featured: hackathons.filter(h => h.featured).length
   }
+
+  const handleSponsorChange = (index: number, field: string, value: string) => {
+    setFormData(prev => {
+      const sponsors = Array.isArray(prev.sponsors) ? [...prev.sponsors] : [];
+      sponsors[index] = { ...sponsors[index], [field]: value };
+      return { ...prev, sponsors };
+    });
+  };
+
+  const handleAddSponsor = () => {
+    setFormData(prev => ({
+      ...prev,
+      sponsors: Array.isArray(prev.sponsors) ? [...prev.sponsors, { logo: '', name: '', type: '' }] : [{ logo: '', name: '', type: '' }]
+    }));
+  };
+
+  const handleRemoveSponsor = (index: number) => {
+    setFormData(prev => {
+      const sponsors = Array.isArray(prev.sponsors) ? [...prev.sponsors] : [];
+      sponsors.splice(index, 1);
+      return { ...prev, sponsors };
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -769,6 +792,50 @@ export default function AdminHackathons() {
                     </div>
                   </div>
                 </div>
+
+                {/* Sponsors Section */}
+                <div className="space-y-2">
+                  <Label>Sponsors</Label>
+                  {Array.isArray(formData.sponsors) && formData.sponsors.length > 0 && (
+                    <div className="space-y-4">
+                      {formData.sponsors.map((sponsor, idx) => (
+                        <div key={idx} className="grid grid-cols-4 gap-2 items-end border p-2 rounded-md bg-muted">
+                          <div className="space-y-1">
+                            <Label>Logo URL</Label>
+                            <Input
+                              value={sponsor.logo}
+                              onChange={e => handleSponsorChange(idx, 'logo', e.target.value)}
+                              placeholder="/images/sponsors/example.png"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label>Name</Label>
+                            <Input
+                              value={sponsor.name}
+                              onChange={e => handleSponsorChange(idx, 'name', e.target.value)}
+                              placeholder="Sponsor Name"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label>Type</Label>
+                            <Input
+                              value={sponsor.type}
+                              onChange={e => handleSponsorChange(idx, 'type', e.target.value)}
+                              placeholder="e.g., Technology Partner"
+                            />
+                          </div>
+                          <Button type="button" variant="destructive" onClick={() => handleRemoveSponsor(idx)}>
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <Button type="button" variant="outline" onClick={handleAddSponsor}>
+                    Add Sponsor
+                  </Button>
+                </div>
+
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => {
                     setIsCreateDialogOpen(false)
