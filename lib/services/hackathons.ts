@@ -43,10 +43,6 @@ export interface Hackathon {
   prize_details?: string
   faq?: Record<string, unknown> | { question: string; answer: string }[]
   socials?: {
-    email?: string
-    website?: string
-    twitter?: string
-    discord?: string
     linkedin?: string
     whatsapp?: string
     instagram?: string

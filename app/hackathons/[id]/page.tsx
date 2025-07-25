@@ -158,24 +158,32 @@ export default function HackathonDetailPage() {
     </div>
   )
 
-  const renderSchedule = () => (
-    <div className="space-y-6">
-      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Clock className="h-6 w-6 text-primary" />
-          Hackathon Schedule
-        </h2>
-        <ul className="divide-y divide-primary/10">
-          {hackathon?.schedule?.map((item: { date: string, label: string }) => (
-            <li key={item.date} className="py-3 flex flex-col md:flex-row md:items-center md:gap-4">
-              <span className="font-medium min-w-[120px] text-primary">{item.date}</span>
-              <span className="text-muted-foreground">{item.label}</span>
-            </li>
-          ))}
-        </ul>
+  const renderSchedule = () => {
+    let scheduleArray: { date: string, label: string }[] = [];
+    if (Array.isArray(hackathon?.schedule)) {
+      scheduleArray = hackathon.schedule;
+    } else if (hackathon?.schedule && typeof hackathon.schedule === 'object') {
+      scheduleArray = Object.entries(hackathon.schedule).map(([date, label]) => ({ date, label: String(label) }));
+    }
+    return (
+      <div className="space-y-6">
+        <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Clock className="h-6 w-6 text-primary" />
+            Hackathon Schedule
+          </h2>
+          <ul className="divide-y divide-primary/10">
+            {scheduleArray.map((item) => (
+              <li key={item.date} className="py-3 flex flex-col md:flex-row md:items-center md:gap-4">
+                <span className="font-medium min-w-[120px] text-primary">{item.date}</span>
+                <span className="text-muted-foreground">{item.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
-  )
+    );
+  };
 
   const renderPrizes = () => (
     <div className="space-y-6">
@@ -190,24 +198,32 @@ export default function HackathonDetailPage() {
     </div>
   )
 
-  const renderFAQ = () => (
-    <div className="space-y-6">
-      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Sparkles className="h-6 w-6 text-primary" />
-          Frequently Asked Questions
-        </h2>
-        <ul className="space-y-4">
-          {hackathon?.faq?.map((q: { question: string, answer: string }) => (
-            <li key={q.question}>
-              <div className="font-semibold">{q.question}</div>
-              <div className="text-muted-foreground">{q.answer}</div>
-            </li>
-          ))}
-        </ul>
+  const renderFAQ = () => {
+    let faqArray: { question: string, answer: string }[] = [];
+    if (Array.isArray(hackathon?.faq)) {
+      faqArray = hackathon.faq;
+    } else if (hackathon?.faq && typeof hackathon.faq === 'object') {
+      faqArray = Object.entries(hackathon.faq).map(([question, answer]) => ({ question, answer: String(answer) }));
+    }
+    return (
+      <div className="space-y-6">
+        <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            Frequently Asked Questions
+          </h2>
+          <ul className="space-y-4">
+            {faqArray.map((q) => (
+              <li key={q.question}>
+                <div className="font-semibold">{q.question}</div>
+                <div className="text-muted-foreground">{q.answer}</div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-    </div>
-  )
+    );
+  };
 
   const hackathonTabs = [
     {
