@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Search, Clock, ArrowRight, Calendar, Star, Users, MapPin, DollarSign, Filter, Link as LinkIcon, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Event } from "@/components/data/events"
+import { Hackathon } from "@/lib/services/hackathons"
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import Image from "next/image";
@@ -144,7 +144,7 @@ export default function HackathonsPage() {
 
 
   // Date filter logic
-  function isDateMatch(hackathon: Event) {
+  function isDateMatch(hackathon: Hackathon) {
     const today = new Date();
     const hackathonDate = new Date(hackathon.date);
     if (dateFilter === "All") return true;
