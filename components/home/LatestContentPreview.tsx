@@ -3,15 +3,19 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Calendar, Users, Trophy, Sparkles } from "lucide-react"
+import { ArrowRight, Calendar, Users, Trophy, Sparkles, MapPin, Clock } from "lucide-react"
 import { motion } from "framer-motion"
 import { createClient } from "@/lib/supabase/client"
 import { BlogPost } from "@/components/data/blog-posts"
+import { Hackathon } from "@/lib/services/hackathons"
 
 export function LatestContentPreview() {
   const [latestBlogs, setLatestBlogs] = useState<BlogPost[]>([])
+  const [latestHackathons, setLatestHackathons] = useState<Hackathon[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [hackathonsLoading, setHackathonsLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [hackathonsFetchError, setHackathonsFetchError] = useState<string | null>(null)
 
   useEffect(() => { 
     const fetchLatestBlogs = async () => {
@@ -39,7 +43,28 @@ export function LatestContentPreview() {
       }
       setIsLoading(false)
     }
+
+    const fetchLatestHackathons = async () => {
+      setHackathonsLoading(true)
+      setHackathonsFetchError(null)
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('hackathons')
+        .select('*')
+        .gte('date', new Date().toISOString().split('T')[0]) // Only upcoming hackathons
+        .order('date', { ascending: true })
+        .limit(2)
+      if (error) {
+        setHackathonsFetchError('Failed to fetch hackathons.')
+        setLatestHackathons([])
+      } else {
+        setLatestHackathons(data || [])
+      }
+      setHackathonsLoading(false)
+    }
+
     fetchLatestBlogs()
+    fetchLatestHackathons()
   }, [])
 
   return (
@@ -176,7 +201,7 @@ export function LatestContentPreview() {
             </div>
           </motion.div>
 
-          {/* upcoming events */}
+          {/* upcoming hackathons */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -195,7 +220,7 @@ export function LatestContentPreview() {
                         <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                       </span>
                       <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10 cursor-default">
-                        <span>Upcoming Events</span>
+                        <span>Upcoming Hackathons</span>
                         <Sparkles className="w-3 h-3" />
                       </div>
                       <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
@@ -208,7 +233,7 @@ export function LatestContentPreview() {
                   transition={{ duration: 0.8, delay: 0.7 }}
                   className="text-4xl font-bold animate-fade-in"
                 >
-                  Join the <span className="gradient-text bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-pink-600 animate-gradient">Action</span>
+                  Join the <span className="gradient-text bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-600 to-pink-600 animate-gradient">Hackathons</span>
                 </motion.h3>
               </div>
               <motion.div
@@ -217,7 +242,7 @@ export function LatestContentPreview() {
                 transition={{ duration: 0.6, delay: 0.9 }}
               >
                 <Button variant="ghost" asChild className="hover:scale-105 transition-all duration-300 hover:text-primary group relative overflow-hidden">
-                  <Link href="/events">
+                  <Link href="/hackathons">
                     <span className="relative z-10">View All</span>
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform relative z-10" />
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -226,57 +251,82 @@ export function LatestContentPreview() {
               </motion.div>
             </div>
             <div className="space-y-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.1 }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="border-0 shadow-xl card-hover bg-gradient-to-br from-purple-50/80 via-pink-50/60 to-purple-50/30 dark:from-purple-950/40 dark:via-pink-950/30 dark:to-purple-950/20 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 backdrop-blur-sm relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="h-5 w-5 text-primary transform hover:scale-110 transition-transform duration-300 animate-pulse" />
-                        <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">June 16, 2025</span>
-                      </div>
-                      <h4 className="font-bold text-xl hover:text-primary transition-colors duration-300 group">
-                      RealityCode - Powered by Unstop
-                        <span className="block h-0.5 w-0 bg-gradient-to-r from-primary to-purple-600 group-hover:w-full transition-all duration-500" />
-                      </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        24-hour hackathon focused on AI and machine learning projects. Build innovative solutions and
-                        compete for ₹ 6,00,000 in prizes...
-                      </p>
-                      <div className="flex flex-col gap-3 items-stretch lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-                          <span className="flex items-center bg-muted/50 px-3 py-1 rounded-full">
-                            <Users className="h-4 w-4 mr-1 transform hover:scale-110 transition-transform duration-300" />
-                            500 participants
-                          </span>
-                          <span className="flex items-center bg-muted/50 px-3 py-1 rounded-full">
-                            <Trophy className="h-4 w-4 mr-1 text-yellow-500 transform hover:scale-110 transition-transform duration-300" />
-                            ₹ 6,00,000 prize
-                          </span>
+              {hackathonsLoading ? (
+                <div className="flex justify-center items-center py-10">
+                  <span className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></span>
+                </div>
+              ) : hackathonsFetchError ? (
+                <div className="text-center text-red-500 py-10">{hackathonsFetchError}</div>
+              ) : latestHackathons.length === 0 ? (
+                <div className="text-center text-muted-foreground py-10">No upcoming hackathons found.</div>
+              ) : (
+                latestHackathons.map((hackathon, index) => (
+                  <motion.div
+                    key={hackathon.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.1 + index * 0.2 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <Card className="border-0 shadow-xl card-hover bg-gradient-to-br from-purple-50/80 via-pink-50/60 to-purple-50/30 dark:from-purple-950/40 dark:via-pink-950/30 dark:to-purple-950/20 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 backdrop-blur-sm relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <CardContent className="pt-6 relative z-10">
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Calendar className="h-4 w-4 text-primary" />
+                              <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                {new Date(hackathon.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </div>
+                            <Badge className="bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 dark:from-orange-900 dark:to-orange-800 dark:text-orange-200">
+                              {hackathon.category}
+                            </Badge>
+                          </div>
+                          <h4 className="font-bold text-xl hover:text-primary transition-colors duration-300 group cursor-pointer">
+                            <Link href={`/hackathons/${hackathon.slug}`}>
+                              {hackathon.title}
+                            </Link>
+                            <span className="block h-0.5 w-0 bg-gradient-to-r from-primary to-purple-600 group-hover:w-full transition-all duration-500" />
+                          </h4>
+                          <p className="text-muted-foreground leading-relaxed line-clamp-2">
+                            {hackathon.excerpt}
+                          </p>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              {hackathon.duration}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-4 w-4" />
+                              {hackathon.location}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-3 items-stretch lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                              <span className="flex items-center bg-muted/50 px-3 py-1 rounded-full text-sm">
+                                <Users className="h-4 w-4 mr-1 transform hover:scale-110 transition-transform duration-300" />
+                                {hackathon.registered}/{hackathon.capacity}
+                              </span>
+                              {hackathon.prize && (
+                                <span className="flex items-center bg-muted/50 px-3 py-1 rounded-full text-sm">
+                                  <Trophy className="h-4 w-4 mr-1 text-yellow-500 transform hover:scale-110 transition-transform duration-300" />
+                                  {hackathon.prize}
+                                </span>
+                              )}
+                            </div>
+                            <Button size="sm" className="glow-effect hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl w-full sm:w-auto" asChild>
+                              <Link href={`/hackathons/${hackathon.slug}`}>
+                                Join Now
+                              </Link>
+                            </Button>
+                          </div>
                         </div>
-                        <Button size="sm" className="glow-effect hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary via-purple-600 to-pink-600 text-white shadow-lg hover:shadow-xl w-full sm:w-auto" asChild>
-                          <Link href="https://unstop.com/p/realitycode-by-codeunia-codeunia-1488383" target="_blank" rel="noopener noreferrer">
-                            Register Now
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 1.3 }}
-                whileHover={{ y: -5 }}
-              >
-              </motion.div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>
