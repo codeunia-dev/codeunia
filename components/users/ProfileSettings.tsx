@@ -46,8 +46,13 @@ const validationRules: Record<string, ValidationRule> = {
   email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   phone: { pattern: /^[\+]?[1-9][\d]{0,15}$/ },
   github_url: { pattern: /^https?:\/\/github\.com\/[a-zA-Z0-9-]+$/ },
-  linkedin_url: { pattern: /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+$/ },
-  twitter_url: { pattern: /^https?:\/\/(www\.)?twitter\.com\/[a-zA-Z0-9_]+$/ }
+ linkedin_url: {
+    pattern: /^https:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9_-]+\/?$/
+  },
+
+  twitter_url: {
+    pattern: /^https:\/\/(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+$/
+  }
 }
 
 export function ProfileSettings() {
@@ -502,7 +507,7 @@ export function ProfileSettings() {
                 id="linkedin_url"
                 value={formData.linkedin_url || ''}
                 onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-                placeholder="https://linkedin.com/in/username"
+               placeholder="https://www.linkedin.com/in/username/"
                 className={validationErrors.linkedin_url ? 'border-red-500' : ''}
               />
               {validationErrors.linkedin_url && (
@@ -520,7 +525,7 @@ export function ProfileSettings() {
               id="twitter_url"
               value={formData.twitter_url || ''}
               onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-              placeholder="https://twitter.com/username"
+             placeholder="https://x.com/username"
               className={validationErrors.twitter_url ? 'border-red-500' : ''}
             />
             {validationErrors.twitter_url && (

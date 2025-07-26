@@ -290,15 +290,15 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}
       >
         {/* PDF Header */}
-        <div className="text-center mb-8 max-w-4xl">
-          <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center mr-4">
-              <div className="w-4 h-4 bg-white rounded-full"></div>
-            </div>
-            <h1 className="text-4xl font-bold text-purple-600">CodeUnia</h1>
-          </div>
-          <p className="text-xl text-blue-600 font-semibold mb-2">CodeUnia members achieve great things</p>
+      <div className="text-center mb-4 max-w-4xl">
+        <div className="flex items-center justify-center gap-3 mb-2">
+         <CodeuniaLogo size={40} />
+         <h1 className="text-3xl font-bold text-purple-600">CodeUnia</h1>
         </div>
+        <p className="text-lg text-blue-600 font-semibold">
+         Codeunia members achieve great things
+        </p>
+     </div>     
 
         {/* Thank You Section */}
         <div className="mb-8 text-center max-w-3xl">
@@ -405,21 +405,19 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 
         {/* Validity Info */}
         <div className="text-[10px] text-gray-600 space-y-1">
-          <div>Valued Codeunia Member for {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
+          <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
           <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div>
         </div>
       </div>
 
       {/* Right Section - Purple Background with Logo */}
       <div className="w-36 bg-gradient-to-br from-purple-600 to-purple-800 p-4 flex flex-col items-center justify-center text-white relative rounded-r-lg">
-        {/* Logo Circle */}
-        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-        </div>
+        {/* Logo */}
+        <CodeuniaLogo size={48} className="mb-3" />
 
         {/* CodeUnia Text */}
         <div className="text-center mb-4">
-          <h2 className="text-sm font-bold tracking-wide">CodeUnia</h2>
+          <h2 className="text-sm font-bold tracking-wide">Codeunia</h2>
           <p className="text-xs text-purple-200 mt-1">Empowering Coders</p>
         </div>
 
@@ -526,7 +524,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
               <div className="text-xs text-gray-600 mb-2 flex items-center gap-2">
                 <Calendar className="h-3 w-3" />
                 <div>
-                  <div>Valued Codeunia Member for {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
+                  <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
                   <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div>
                 </div>
               </div>
@@ -537,7 +535,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   {/* Logo */}
   <div className="flex flex-col items-center">
     <CodeuniaLogo size={64} className="mb-2" />
-    <h2 className="text-xl font-bold tracking-wide mt-1">CodeUnia</h2>
+    <h2 className="text-xl font-bold tracking-wide mt-1">Codeunia</h2>
     <p className="text-sm text-purple-200 mt-1">Empowering Coders</p>
   </div>
 
