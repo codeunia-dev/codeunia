@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CodeuniaLogo from '@/components/codeunia-logo';
+import PdfLogo from '@/components/PdfLogo';
 
 interface MembershipCardProps {
   uid: string;
@@ -292,68 +293,61 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         {/* PDF Header */}
       <div className="text-center mb-4 max-w-4xl">
         <div className="flex items-center justify-center gap-3 mb-2">
-         <CodeuniaLogo size={40} />
-         <h1 className="text-3xl font-bold text-purple-600">CodeUnia</h1>
+         <PdfLogo size={40} />
+         <h1 className="text-3xl font-bold text-purple-600">Codeunia</h1>
         </div>
         <p className="text-lg text-blue-600 font-semibold">
-         Codeunia members achieve great things
+         Empowering the Next Generation of Coders
         </p>
-     </div>     
+      </div>     
 
         {/* Thank You Section */}
         <div className="mb-8 text-center max-w-3xl">
           <h2 className="text-2xl font-bold text-blue-600 mb-2">THANK YOU</h2>
-          <p className="text-sm text-yellow-600 font-semibold mb-4">FOR YOUR MEMBERSHIP</p>
+          <p className="text-sm text-yellow-600 font-semibold mb-4">FOR BEING A VALUED MEMBER</p>
           
           <p className="text-sm text-gray-700 mb-4">
-            You are a valued member of the CodeUnia Community.
+            You are now an official Codeunia Member! Welcome to our global, student-led tech community focused on real-world collaboration, innovation, and learning.
           </p>
           
           <p className="text-sm text-gray-700 mb-6">
-            Below is a digital version of your membership card for easy access to your membership 
-            information. You can also access this in your CodeUnia Profile or in the CodeUnia app anytime!
+            This digital card serves as proof of your active membership and access to exclusive benefits.
           </p>
         </div>
 
         {/* Benefits Grid */}
-        <div className="grid grid-cols-2 gap-6 mb-8 text-sm max-w-5xl">
+       <div className="grid grid-cols-2 gap-6 mb-8 text-sm max-w-5xl">
           <div>
-            <h3 className="font-bold text-blue-600 mb-2">Local CodeUnia Community</h3>
+            <h3 className="font-bold text-blue-600 mb-2">Open Community Network</h3>
             <p className="text-gray-700 mb-4">
-              Get involved with colleagues at your local CodeUnia Community, 
-              who can help connect you to professionals who can advance your goals.
+              Connect with students and professionals globally. Build teams, collaborate on projects, and develop lasting professional relationships across borders.
             </p>
             
-            <h4 className="font-bold text-blue-600 mb-1">Technical Publications</h4>
+            <h4 className="font-bold text-blue-600 mb-1">Real-World Project Experience</h4>
             <p className="text-gray-700 mb-4">
-              Take advantage of discounts and access to cutting-edge journals, magazines, and 
-              digital publications.
+              Gain hands-on experience through live projects, open-source contributions, and startup collaborations. Turn learning into practical impact.
             </p>
             
-            <h4 className="font-bold text-blue-600 mb-1">Professional Network</h4>
+            <h4 className="font-bold text-blue-600 mb-1">Learning Tracks & Tech Events</h4>
             <p className="text-gray-700">
-              Build a professional network from the wealth of university expertise and connections 
-              found within CodeUnia.
+              Access curated paths in AI, web development, and cybersecurity. Join workshops and bootcamps for all skill levels.
             </p>
           </div>
           
           <div>
-            <h3 className="font-bold text-blue-600 mb-2">Local CodeUnia Student Branch</h3>
+            <h3 className="font-bold text-blue-600 mb-2">Career Readiness Programs</h3>
             <p className="text-gray-700 mb-4">
-              Join and enjoy exciting technical competitions, expert speakers, 
-              professional networking, and colleagues for life.
+              Get mock interviews, resume reviews, and job board access. Bridge the gap between your skills and industry opportunities.
             </p>
             
-            <h4 className="font-bold text-blue-600 mb-1">Career Opportunities</h4>
+            <h4 className="font-bold text-blue-600 mb-1">Innovation Challenges & Hackathons</h4>
             <p className="text-gray-700 mb-4">
-              Drive your career goals forward with online learning, 
-              job listings, a consultants network, and more!
+              Participate in global hackathons and challenges. Push your creativity and teamwork while earning recognition.
             </p>
             
-            <h4 className="font-bold text-blue-600 mb-1">Local Activities</h4>
+            <h4 className="font-bold text-blue-600 mb-1">Recognition, Rewards & Growth Paths</h4>
             <p className="text-gray-700">
-              Through your local CodeUnia community, events and conferences - 
-              there are many ways to become involved.
+              Earn badges and leadership roles. Grow as a community ambassador or event lead.
             </p>
           </div>
         </div>
@@ -406,7 +400,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         {/* Validity Info */}
         <div className="text-[10px] text-gray-600 space-y-1">
           <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
-          <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div>
+          {/* <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div> */}
         </div>
       </div>
 
@@ -432,12 +426,12 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 </div>
 
         {/* Footer Info */}
-        <div className="text-center text-xs text-gray-600 mt-8">
+        {/* <div className="text-center text-xs text-gray-600 mt-8">
           <p className="mb-2">
             <span className="font-semibold">Make the Most of Your Membership.</span> Learn about these and all CodeUnia member benefits at{' '}
             <span className="text-blue-600 font-semibold">codeunia.com/benefits</span>
           </p>
-        </div>
+        </div> */}
       </div>
 
       {/* Visible Card for Display */}
