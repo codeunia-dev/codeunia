@@ -142,8 +142,8 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
-                      <Link href="/protected/profile" className="flex items-center w-full">
+                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile/view'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <Link href="/protected/profile/view" className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>Profile</span>
                       </Link>
@@ -247,8 +247,8 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
-                      <Link href="/protected/profile" className="flex items-center w-full">
+                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile/view'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <Link href="/protected/profile/view" className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>Profile</span>
                       </Link>
