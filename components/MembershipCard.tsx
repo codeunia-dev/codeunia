@@ -355,7 +355,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 
         {/* Membership Card in PDF */}
         <div className="flex justify-center mb-8">
-  <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '280px' }}>
+  <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '300px' }}>
     <div className="flex h-full">
       {/* Left Section - Member Info */}
       <div className="flex-1 p-4 bg-gradient-to-br from-gray-50 to-white rounded-l-lg">
@@ -392,7 +392,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         <div className="mb-4 flex items-center gap-3">
           <div className="bg-white p-1 border border-gray-200 rounded">
             <QRCode 
-              value={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify/${memberId}`}
+              value={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.codeunia.com'}/verify/${memberId}`}
               size={48}
               level="H"
               fgColor="#4f46e5"
