@@ -6,6 +6,7 @@ import html2canvas from 'html2canvas';
 import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import QRCode from 'react-qr-code';
 import { 
   Loader2, 
   Download, 
@@ -387,6 +388,22 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
           </div>
         </div>
 
+        {/* QR Code for Verification */}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="bg-white p-1 border border-gray-200 rounded">
+            <QRCode 
+              value={`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/verify/${memberId}`}
+              size={48}
+              level="H"
+              fgColor="#4f46e5"
+              bgColor="#ffffff"
+            />
+          </div>
+          <div className="text-xs text-gray-500">
+            Scan to verify membership
+          </div>
+        </div>
+
         {/* Status and Year */}
         <div className="flex items-center gap-3 mb-4">
           <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded border border-green-200">
@@ -519,7 +536,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
                 <Calendar className="h-3 w-3" />
                 <div>
                   <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
-                  <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div>
+                  {/* <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div> */}
                 </div>
               </div>
             </div>
