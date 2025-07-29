@@ -289,10 +289,10 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       <div 
         ref={pdfContentRef} 
         className="fixed -left-[9999px] top-0 bg-white flex flex-col items-center"
-        style={{ width: '210mm', minHeight: '297mm', padding: '20mm' }}
+        style={{ width: '210mm', minHeight: '297mm', padding: '10mm' }}
       >
         {/* PDF Header */}
-      <div className="text-center mb-4 max-w-4xl">
+      <div className="text-center mb-6 max-w-4xl pt-2">
         <div className="flex items-center justify-center gap-3 mb-2">
          <PdfLogo size={40} />
          <h1 className="text-3xl font-bold text-purple-600">Codeunia</h1>
@@ -355,7 +355,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 
         {/* Membership Card in PDF */}
         <div className="flex justify-center mb-8">
-  <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '300px' }}>
+  <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '330px' }}>
     <div className="flex h-full">
       {/* Left Section - Member Info */}
       <div className="flex-1 p-4 bg-gradient-to-br from-gray-50 to-white rounded-l-lg">
@@ -405,7 +405,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         </div>
 
         {/* Status and Year */}
-        <div className="flex items-center gap-3 mb-4">
+         <div className="flex items-center gap-3 mb-2">
           <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded border border-green-200">
             {userData?.membershipStatus === 'active' ? 'Active Member' : 'Inactive Member'}
           </span>
@@ -415,9 +415,8 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         </div>
 
         {/* Validity Info */}
-        <div className="text-[10px] text-gray-600 space-y-1">
+        <div className="text-[10px] text-gray-600">
           <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
-          {/* <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div> */}
         </div>
       </div>
 
