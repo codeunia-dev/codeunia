@@ -1,5 +1,27 @@
-import { AnimatedTestimonials } from "@/components/ui/animated-testimonials"
+import dynamic from "next/dynamic"
 import { Megaphone } from "lucide-react"
+
+// Lazy load the heavy animated testimonials component
+const AnimatedTestimonials = dynamic(() => import("@/components/ui/animated-testimonials").then(mod => ({ default: mod.AnimatedTestimonials })), {
+  loading: () => (
+    <div className="mx-auto max-w-sm px-2 py-8 md:max-w-4xl md:px-8 lg:px-12">
+      <div className="relative flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-20">
+        <div className="mb-4 md:mb-0">
+          <div className="relative aspect-[1/1] md:aspect-[4/3] w-full md:h-80">
+            <div className="animate-pulse bg-gray-200 rounded-3xl h-full w-full"></div>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false
+})
 
 export function CommunitySpotlight() {
   const testimonials = [

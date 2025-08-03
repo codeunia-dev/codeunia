@@ -1,0 +1,17 @@
+{
+  "webpack": {
+    "maxAge": 86400000,
+    "compression": "gzip",
+    "compressionLevel": 6,
+    "maxMemoryGenerations": 1,
+    "allowCollectingMemory": true,
+    "memoryCacheUnaffected": true
+  },
+  "next": {
+    "maxAge": 86400000,
+    "compression": true,
+    "optimizeCss": true,
+    "workerThreads": false,
+    "cpus": 1
+  }
+}

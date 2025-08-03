@@ -309,16 +309,16 @@ export default function JoinPage() {
       </p>
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button size="lg" className="glow-effect" asChild>
-          <a href="/contact" className="flex items-center justify-center">
+          <Link href="/contact" className="flex items-center justify-center">
             <Mail className="mr-2 h-5 w-5" />
             Contact Us
-          </a>
+          </Link>
         </Button>
         <Button size="lg" variant="outline" asChild>
-          <a href="/about" className="flex items-center justify-center">
+          <Link href="/about" className="flex items-center justify-center">
             <Users className="mr-2 h-5 w-5" />
             Learn More
-          </a>
+          </Link>
         </Button>
       </div>
     </motion.div>

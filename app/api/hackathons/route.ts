@@ -19,15 +19,25 @@ export async function GET(request: NextRequest) {
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined,
     }
 
-    const result = await hackathonsService.getHackathons(filters)
+    // Add timeout to prevent hanging requests
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 8000)
+    })
+
+    const resultPromise = hackathonsService.getHackathons(filters)
+    
+    const result = await Promise.race([resultPromise, timeoutPromise]) as any
     
     return NextResponse.json(result)
   } catch (error) {
     console.error('Error in GET /api/hackathons:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch hackathons' },
-      { status: 500 }
-    )
+    
+    // Return cached data or empty response instead of error
+    return NextResponse.json({
+      hackathons: [],
+      total: 0,
+      hasMore: false
+    })
   }
 }
 

@@ -35,7 +35,7 @@ interface UserData {
   joinDate: string;
   avatar: string;
   membershipStatus: 'active' | 'expired' | 'pending';
-  memberType: 'student' | 'professional' | 'alumni';
+  memberType: 'student' | 'professional' | 'alumni' | 'premium';
 }
 
 const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
@@ -55,7 +55,6 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
     const requiredFields = [
       'first_name',
       'last_name',
-      'display_name',
       'bio',
       'phone',
       'github_url',
@@ -82,7 +81,6 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
     const requiredFields = [
       'first_name',
       'last_name',
-      'display_name',
       'bio',
       'phone',
       'github_url',
@@ -104,8 +102,8 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   };
   
 
-  // Generate member ID from user data
-  const memberId = `CU-${uid.slice(-4)}`;
+  // Use the dedicated codeunia_id from profile instead of UUID slice
+  const memberId = profile?.codeunia_id ? profile.codeunia_id : `CU-${uid.slice(-4)}`;
 
 
   // Calculate membership duration
@@ -183,9 +181,15 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       if (user && profile && hasCompletedProfile) {
         const name = profile.first_name && profile.last_name 
           ? `${profile.first_name} ${profile.last_name}`
-          : profile.display_name || user.email?.split('@')[0] || 'Member';
+          : profile.username || user.email?.split('@')[0] || 'Member';
         
         const joinDate = profile.created_at || user.created_at || new Date().toISOString();
+        
+        // Check if user has premium status
+        const isPremium = profile.is_premium && profile.premium_expires_at && 
+          new Date(profile.premium_expires_at) > new Date();
+        
+
         
         setUserData({
           name,
@@ -193,7 +197,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
           joinDate,
           avatar: name.charAt(0).toUpperCase(),
           membershipStatus: 'active',
-          memberType: 'student'
+          memberType: isPremium ? 'premium' : 'student'
         });
       }
       setIsLoading(false);
@@ -205,8 +209,8 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   // Loading state
   if (loading || isLoading) {
     return (
-      <div className="flex flex-col items-center p-8">
-        <div className="w-[500px] h-[300px] bg-gray-100 rounded-3xl flex items-center justify-center">
+      <div className="flex flex-col items-center p-4 sm:p-8">
+        <div className="w-full max-w-[500px] h-[300px] bg-gray-100 rounded-3xl flex items-center justify-center">
           <div className="flex flex-col items-center space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
             <p className="text-gray-600 font-medium">Loading membership card...</p>
@@ -219,8 +223,8 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   // Profile completion prompt for users without completed profiles
   if (!hasCompletedProfile) {
     return (
-      <div className="flex flex-col items-center p-8">
-        <div className="w-[500px] h-[370px] bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-2xl border border-gray-200 flex items-center justify-center relative overflow-hidden">
+      <div className="flex flex-col items-center p-4 sm:p-8">
+        <div className="w-full max-w-[500px] h-[370px] bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-2xl border border-gray-200 flex items-center justify-center relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full translate-y-12 -translate-x-12 opacity-50"></div>
@@ -353,16 +357,22 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
           </div>
         </div>
 
+
+        
         {/* Membership Card in PDF */}
         <div className="flex justify-center mb-8">
   <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '330px' }}>
     <div className="flex h-full">
       {/* Left Section - Member Info */}
       <div className="flex-1 p-4 bg-gradient-to-br from-gray-50 to-white rounded-l-lg">
-        {/* Student Member Badge */}
+        {/* Member Type Badge */}
         <div className="mb-3">
-          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full border border-blue-200">
-            {userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
+          <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full border ${
+            userData?.memberType === 'premium' 
+              ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-300 shadow-md' 
+              : 'bg-blue-100 text-blue-800 border-blue-200'
+          }`}>
+            {userData?.memberType === 'premium' ? 'PREMIUM' : userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
           </span>
         </div>
 
@@ -377,14 +387,22 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         {/* Member Name */}
         <div className="mb-3">
           <div className="text-sm text-gray-600">Member: 
-            <span className="text-blue-600 font-semibold ml-1">{userData?.name}</span>
+            <span className={`font-semibold ml-1 ${
+              userData?.memberType === 'premium' 
+                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent' 
+                : 'text-blue-600'
+            }`}>{userData?.name}</span>
           </div>
         </div>
 
         {/* Member ID */}
         <div className="mb-3">
           <div className="text-sm text-gray-600">Member ID: 
-            <span className="text-blue-600 font-mono font-bold">{memberId}</span>
+            <span className={`font-mono font-bold ${
+              userData?.memberType === 'premium' 
+                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent' 
+                : 'text-blue-600'
+            }`}>{memberId}</span>
           </div>
         </div>
 
@@ -423,7 +441,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       {/* Right Section - Purple Background with Logo */}
       <div className="w-36 bg-gradient-to-br from-purple-600 to-purple-800 p-4 flex flex-col items-center justify-center text-white relative rounded-r-lg">
         {/* Logo */}
-        <CodeuniaLogo size={48} className="mb-3" />
+        <CodeuniaLogo size="lg" showText={false} className="mb-3" />
 
         {/* CodeUnia Text */}
         <div className="text-center mb-4">
@@ -451,7 +469,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       </div>
 
       {/* Visible Card for Display */}
-      <div className="flex flex-col items-center p-8">
+      <div className="flex flex-col items-center p-4 sm:p-8">
         {/* Status Alerts */}
         {downloadStatus === 'success' && (
           <Alert className="mb-4 w-full max-w-md">
@@ -471,20 +489,24 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         <div className="relative transform hover:scale-[1.02] transition-all duration-300 ease-out">
           <div
             ref={cardRef}
-            className="flex bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden w-[500px] h-[300px]"
+            className="flex bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden w-full max-w-[500px] h-[300px]"
           >
             {/* Left Section - Member Info */}
-            <div className="flex-1 p-6 bg-gradient-to-br from-gray-50 to-white">
+            <div className="flex-1 p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
               {/* Member Type Badge */}
               <div className="mb-4">
-                <span className="inline-block px-4 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full border border-blue-200">
-                  {userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
+                <span className={`inline-block px-4 py-1 text-xs font-bold rounded-full border ${
+                  userData?.memberType === 'premium'
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-300 shadow-md'
+                    : 'bg-blue-100 text-blue-800 border-blue-200'
+                }`}>
+                  {userData?.memberType === 'premium' ? 'PREMIUM' : userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
                 </span>
               </div>
 
               {/* Organization Title */}
-              <div className="mb-6">
-                <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+              <div className="mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
                   CODEUNIA
                 </h1>
                 <p className="text-xs text-gray-500 font-medium">ORGANIZATION</p>
@@ -494,14 +516,22 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
               <div className="mb-4">
                 <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  <span>Member: <span className="text-blue-600 font-semibold">{userData?.name}</span></span>
+                  <span>Member: <span className={`font-semibold ${
+                    userData?.memberType === 'premium'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent'
+                      : 'text-blue-600'
+                  }`}>{userData?.name}</span></span>
                 </div>
               </div>
 
               {/* Member ID with Copy Function */}
               <div className="mb-4">
                 <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                  <span>Member ID: <span className="text-blue-600 font-mono font-bold">{memberId}</span></span>
+                  <span>Member ID: <span className={`font-mono font-bold ${
+                    userData?.memberType === 'premium'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent'
+                      : 'text-blue-600'
+                  }`}>{memberId}</span></span>
                   <button
                     onClick={copyMemberId}
                     className="p-1 hover:bg-gray-100 rounded transition-colors"
@@ -540,13 +570,13 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
               </div>
             </div>
 {/* Right Section - Purple Background with Logo */}
-<div className="w-48 bg-gradient-to-br from-purple-600 to-purple-800 p-4 text-white flex flex-col justify-between items-center">
+<div className="w-32 sm:w-48 bg-gradient-to-br from-purple-600 to-purple-800 p-2 sm:p-4 text-white flex flex-col justify-between items-center">
   
   {/* Logo */}
   <div className="flex flex-col items-center">
-    <CodeuniaLogo size={64} className="mb-2" />
-    <h2 className="text-xl font-bold tracking-wide mt-1">Codeunia</h2>
-    <p className="text-sm text-purple-200 mt-1">Empowering Coders</p>
+    <CodeuniaLogo size="md" showText={false} className="mb-2" />
+    <h2 className="text-sm sm:text-xl font-bold tracking-wide mt-1">Codeunia</h2>
+    <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders</p>
   </div>
 
   {/* Footer */}
@@ -554,7 +584,8 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
     <div className="text-xs text-purple-200">Powered by Codeunia</div>
     <div className="text-xs text-purple-300 flex items-center justify-center gap-1 mt-1">
       <Mail className="h-3 w-3" />
-      connect@codeunia.com
+      <span className="hidden sm:inline">connect@codeunia.com</span>
+      <span className="sm:hidden">@codeunia.com</span>
     </div>
   </div>
 </div>

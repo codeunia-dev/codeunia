@@ -1,0 +1,54 @@
+import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function POST(request: NextRequest) {
+  try {
+    const { certId, qrCodeDataUrl } = await request.json();
+
+    if (!certId || !qrCodeDataUrl) {
+      return NextResponse.json(
+        { error: 'Certificate ID and QR code data URL are required' },
+        { status: 400 }
+      );
+    }
+
+    // Convert data URL to blob
+    const qrCodeBlob = await fetch(qrCodeDataUrl).then(r => r.blob());
+    const qrFileName = `qr-codes/${certId}.png`;
+    
+    // Upload QR code to storage
+    const { error: uploadError } = await supabase.storage
+      .from('certificates')
+      .upload(qrFileName, qrCodeBlob);
+
+    if (uploadError) {
+      console.error('QR upload error:', uploadError);
+      return NextResponse.json(
+        { error: 'Failed to upload QR code' },
+        { status: 500 }
+      );
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('certificates')
+      .getPublicUrl(qrFileName);
+
+    return NextResponse.json({
+      success: true,
+      qrCodeUrl: publicUrl
+    });
+
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+} 

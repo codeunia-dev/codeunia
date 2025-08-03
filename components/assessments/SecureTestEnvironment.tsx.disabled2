@@ -1,0 +1,369 @@
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Clock, 
+  AlertTriangle, 
+  CheckCircle, 
+  XCircle,
+  Eye,
+  EyeOff,
+  Fullscreen,
+  Minimize
+} from "lucide-react";
+import { toast } from "sonner";
+import type { TestSession, TestQuestion } from "@/types/test-management";
+
+interface SecureTestEnvironmentProps {
+  session: TestSession;
+  onAnswerChange: (questionId: string, answers: number[]) => void;
+  onSubmit: () => void;
+  onViolation: () => void;
+}
+
+// Temporarily disabled due to build issues
+export function SecureTestEnvironment({
+  session,
+  onAnswerChange,
+  onSubmit,
+  onViolation
+}: SecureTestEnvironmentProps) {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [violations, setViolations] = useState(0);
+  const [showWarning, setShowWarning] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(session.timeRemaining);
+  const [isPaused, setIsPaused] = useState(false);
+  const warningTimeoutRef = useRef<NodeJS.Timeout>();
+  const violationTimeoutRef = useRef<NodeJS.Timeout>();
+
+  const currentQuestion = session.questions[session.currentQuestionIndex];
+  const totalQuestions = session.questions.length;
+  const progress = ((session.currentQuestionIndex + 1) / totalQuestions) * 100;
+
+  // Fullscreen management
+  const enterFullscreen = useCallback(async () => {
+    try {
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+        setIsFullscreen(true);
+      }
+    } catch (error) {
+      console.error('Failed to enter fullscreen:', error);
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Failed to exit fullscreen:', error);
+    }
+  }, []);
+
+  // Security monitoring
+  const handleVisibilityChange = useCallback(() => {
+    if (document.hidden && !isPaused) {
+      setViolations(prev => {
+        const newViolations = prev + 1;
+        if (newViolations >= 3) {
+          onViolation();
+          return prev;
+        }
+        return newViolations;
+      });
+      setShowWarning(true);
+      
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+      warningTimeoutRef.current = setTimeout(() => setShowWarning(false), 5000);
+    }
+  }, [isPaused, onViolation]);
+
+  const handleBlur = useCallback(() => {
+    if (!isPaused) {
+      setViolations(prev => {
+        const newViolations = prev + 1;
+        if (newViolations >= 3) {
+          onViolation();
+          return prev;
+        }
+        return newViolations;
+      });
+      setShowWarning(true);
+    }
+  }, [isPaused, onViolation]);
+
+  // Prevent right-click
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setViolations(prev => {
+      const newViolations = prev + 1;
+      if (newViolations >= 3) {
+        onViolation();
+        return prev;
+      }
+      return newViolations;
+    });
+    setShowWarning(true);
+  }, [onViolation]);
+
+  // Prevent keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const forbiddenKeys = ['F11', 'F12', 'F5', 'F4'];
+    const forbiddenCombos = [
+      { key: 'F12', ctrl: false, alt: false, shift: false },
+      { key: 'F5', ctrl: false, alt: false, shift: false },
+      { key: 'r', ctrl: true, alt: false, shift: false },
+      { key: 'u', ctrl: true, alt: false, shift: false },
+      { key: 's', ctrl: true, alt: false, shift: false },
+      { key: 'p', ctrl: true, alt: false, shift: false },
+    ];
+
+    const isForbidden = forbiddenKeys.includes(e.key) || 
+      forbiddenCombos.some(combo => 
+        e.key.toLowerCase() === combo.key.toLowerCase() &&
+        e.ctrlKey === combo.ctrl &&
+        e.altKey === combo.alt &&
+        e.shiftKey === combo.shift
+      );
+
+    if (isForbidden) {
+      e.preventDefault();
+      setViolations(prev => {
+        const newViolations = prev + 1;
+        if (newViolations >= 3) {
+          onViolation();
+          return prev;
+        }
+        return newViolations;
+      });
+      setShowWarning(true);
+    }
+  }, [onViolation]);
+
+  // Timer
+  useEffect(() => {
+    if (isPaused) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          onSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isPaused, onSubmit]);
+
+  // Event listeners
+  useEffect(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('fullscreenchange', () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    });
+
+    // Enter fullscreen on mount
+    enterFullscreen();
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('fullscreenchange', () => {});
+      
+      if (warningTimeoutRef.current) {
+        clearTimeout(warningTimeoutRef.current);
+      }
+      if (violationTimeoutRef.current) {
+        clearTimeout(violationTimeoutRef.current);
+      }
+    };
+  }, [handleVisibilityChange, handleBlur, handleKeyDown, enterFullscreen]);
+
+  // Format time
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleAnswerChange = (optionIndex: number) => {
+    const currentAnswers = session.answers[currentQuestion.id] || [];
+    let newAnswers: number[];
+
+    if (currentQuestion.question_type === 'single_choice') {
+      newAnswers = [optionIndex];
+    } else {
+      // Multiple choice
+      if (currentAnswers.includes(optionIndex)) {
+        newAnswers = currentAnswers.filter(i => i !== optionIndex);
+      } else {
+        newAnswers = [...currentAnswers, optionIndex];
+      }
+    }
+
+    onAnswerChange(currentQuestion.id, newAnswers);
+  };
+
+  const isOptionSelected = (optionIndex: number) => {
+    const currentAnswers = session.answers[currentQuestion.id] || [];
+    return currentAnswers.includes(optionIndex);
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 bg-background z-50 overflow-hidden"
+      onContextMenu={handleContextMenu}
+    >
+      {/* Header */}
+      <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-lg font-semibold">{session.assessment.title}</h1>
+          <div className="flex items-center space-x-2">
+            <Clock className="w-4 h-4" />
+            <span className="font-mono">{formatTime(timeRemaining)}</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <span>Question {session.currentQuestionIndex + 1} of {totalQuestions}</span>
+            <Progress value={progress} className="w-20" />
+          </div>
+          
+          {violations > 0 && (
+            <div className="flex items-center space-x-2 text-yellow-300">
+              <AlertTriangle className="w-4 h-4" />
+              <span>Violations: {violations}/3</span>
+            </div>
+          )}
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={isFullscreen ? exitFullscreen : enterFullscreen}
+          >
+                            {isFullscreen ? <Minimize className="w-4 h-4" /> : <Fullscreen className="w-4 h-4" />}
+          </Button>
+        </div>
+      </div>
+
+      {/* Warning Alert */}
+      <AnimatePresence>
+        {showWarning && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="absolute top-20 left-1/2 transform -translate-x-1/2 z-10"
+          >
+            <Alert className="bg-red-500 text-white border-red-600">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Warning: Tab switching detected! This is a violation. 
+                {violations >= 2 && ` One more violation will auto-submit your test.`}
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        <Card className="max-w-4xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Question {session.currentQuestionIndex + 1}</span>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                <span>{currentQuestion.question_type === 'single_choice' ? 'Single Choice' : 'Multiple Choice'}</span>
+                <span>•</span>
+                <span>{currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          
+          <CardContent className="space-y-6">
+            {/* Question */}
+            <div className="text-lg leading-relaxed">
+              {currentQuestion.question_text}
+            </div>
+
+            {/* Options */}
+            <div className="space-y-3">
+              {currentQuestion.options.map((option, index) => (
+                <div
+                  key={index}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    isOptionSelected(index)
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  onClick={() => handleAnswerChange(index)}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      isOptionSelected(index)
+                        ? 'border-primary bg-primary'
+                        : 'border-border'
+                    }`}>
+                      {isOptionSelected(index) && (
+                        <div className="w-2 h-2 rounded-full bg-primary-foreground" />
+                      )}
+                    </div>
+                    <span className="flex-1">{option.text}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center justify-between pt-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (session.currentQuestionIndex > 0) {
+                    // Handle previous question
+                  }
+                }}
+                disabled={session.currentQuestionIndex === 0}
+              >
+                Previous
+              </Button>
+
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPaused(!isPaused)}
+                >
+                  {isPaused ? 'Resume' : 'Pause'}
+                </Button>
+                
+                <Button
+                  onClick={onSubmit}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Submit Test
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+} 

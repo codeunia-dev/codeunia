@@ -1,6 +1,20 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileView } from "@/components/users/ProfileView";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+// Dynamic import with loading fallback
+const ProfileView = dynamic(
+  () => import("@/components/users/ProfileView").then(mod => ({ default: mod.ProfileView })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <span className="ml-4 text-lg text-muted-foreground">Loading profile...</span>
+      </div>
+    )
+  }
+);
 
 export default async function ProfileViewPage() {
   const supabase = await createClient();
@@ -32,9 +46,16 @@ export default async function ProfileViewPage() {
           </div>
         </div>
 
-        {/* Profile View Component */}
+        {/* Profile View Component with Suspense */}
         <div className="relative">
-          <ProfileView />
+          <Suspense fallback={
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+              <span className="ml-4 text-lg text-muted-foreground">Loading profile...</span>
+            </div>
+          }>
+            <ProfileView />
+          </Suspense>
         </div>
       </div>
     </div>

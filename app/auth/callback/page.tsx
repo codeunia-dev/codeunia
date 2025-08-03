@@ -29,6 +29,29 @@ function OAuthCallbackContent() {
         }
 
         if (session?.user) {
+          // User is authenticated, ensure profile exists
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('id', session.user.id)
+              .single();
+              
+            if (!profile) {
+              // Create profile for OAuth user
+              const provider = session.user.app_metadata?.provider || 'google';
+              await supabase.rpc('create_oauth_profile', {
+                user_id: session.user.id,
+                email: session.user.email || '',
+                auth_provider: provider,
+                user_metadata: session.user.user_metadata || {}
+              });
+            }
+          } catch (profileError) {
+            console.error('Error creating profile for OAuth user:', profileError);
+            // Continue anyway, the user can still proceed
+          }
+          
           // User is authenticated, redirect to return URL
           console.log('User authenticated, redirecting to:', returnUrl);
           toast.success("Signed in successfully!");
@@ -64,6 +87,29 @@ function OAuthCallbackContent() {
             }
 
             if (retrySession?.user) {
+              // User is authenticated, ensure profile exists
+              try {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('id')
+                  .eq('id', retrySession.user.id)
+                  .single();
+                  
+                if (!profile) {
+                  // Create profile for OAuth user
+                  const provider = retrySession.user.app_metadata?.provider || 'google';
+                  await supabase.rpc('create_oauth_profile', {
+                    user_id: retrySession.user.id,
+                    email: retrySession.user.email || '',
+                    auth_provider: provider,
+                    user_metadata: retrySession.user.user_metadata || {}
+                  });
+                }
+              } catch (profileError) {
+                console.error('Error creating profile for OAuth user:', profileError);
+                // Continue anyway, the user can still proceed
+              }
+              
               console.log('User authenticated on retry, redirecting to:', returnUrl);
               toast.success("Signed in successfully!");
               router.replace(returnUrl);
@@ -74,6 +120,29 @@ function OAuthCallbackContent() {
                 const { data: { session: finalSession } } = await supabase.auth.getSession();
                 console.log('Final session check:', { session: !!finalSession });
                 if (finalSession?.user) {
+                  // User is authenticated, ensure profile exists
+                  try {
+                    const { data: profile } = await supabase
+                      .from('profiles')
+                      .select('id')
+                      .eq('id', finalSession.user.id)
+                      .single();
+                      
+                    if (!profile) {
+                      // Create profile for OAuth user
+                      const provider = finalSession.user.app_metadata?.provider || 'google';
+                      await supabase.rpc('create_oauth_profile', {
+                        user_id: finalSession.user.id,
+                        email: finalSession.user.email || '',
+                        auth_provider: provider,
+                        user_metadata: finalSession.user.user_metadata || {}
+                      });
+                    }
+                  } catch (profileError) {
+                    console.error('Error creating profile for OAuth user:', profileError);
+                    // Continue anyway, the user can still proceed
+                  }
+                  
                   console.log('User authenticated on final try, redirecting to:', returnUrl);
                   toast.success("Signed in successfully!");
                   router.replace(returnUrl);

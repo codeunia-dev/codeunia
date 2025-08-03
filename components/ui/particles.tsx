@@ -25,4 +25,6 @@ export function Particles() {
       ))}
     </div>
   )
-} 
+}
+
+export default Particles; 

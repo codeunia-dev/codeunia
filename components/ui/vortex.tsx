@@ -238,3 +238,5 @@ export const Vortex = (props: VortexProps) => {
     </div>
   );
 };
+
+export default Vortex;

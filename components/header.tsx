@@ -8,7 +8,20 @@ import { Button } from "@/components/ui/button"
 import { UserIcon } from "@/components/user-icon"
 import { Menu, X } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
-import { CodeuniaLogo } from "./codeunia-logo";
+import { createClient } from "@/lib/supabase/client"
+import CodeuniaLogo from "./codeunia-logo";
+import dynamic from "next/dynamic";
+
+// Lazy load non-critical components
+const PremiumButton = dynamic(() => import("./PremiumButton"), {
+  loading: () => <div className="w-8 h-8 bg-gray-200 rounded animate-pulse" />,
+  ssr: false
+});
+
+const UserDisplay = dynamic(() => import("./UserDisplay"), {
+  loading: () => <div className="w-24 h-6 bg-gray-200 rounded animate-pulse" />,
+  ssr: false
+});
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -40,7 +53,7 @@ export default function Header() {
         <div className="flex items-center">
           <Link href="/" className="hover:scale-105 transition-transform duration-200">
             <div className="flex items-center gap-0">
-              <CodeuniaLogo size={40} />
+              <CodeuniaLogo size="lg" noLink={true} />
               <span className="text-2xl font-bold gradient-text">Codeunia</span>
             </div>
           </Link>
@@ -73,19 +86,34 @@ export default function Header() {
         {/* desktop auth & theme - right */}
         <div className="hidden md:flex items-center space-x-4">
           {/* <ThemeToggle /> */}
-          {!loading && (
-            user ? (
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading...</div>
+          ) : user ? (
+            <div className="flex items-center space-x-2">
+              <PremiumButton user={user} />
+              <UserDisplay userId={user.id} showCodeuniaId={false} />
               <UserIcon />
-            ) : (
-              <>
-                <Button variant="ghost" asChild className="hover:scale-105 transition-transform">
-                  <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
-                </Button>
-                <Button asChild className="glow-effect hover:scale-105 transition-all duration-300">
-                  <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
-                </Button>
-              </>
-            )
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={async () => {
+                  const supabase = createClient()
+                  await supabase.auth.signOut()
+                  window.location.reload()
+                }}
+              >
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button variant="ghost" asChild className="hover:scale-105 transition-transform">
+                <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
+              </Button>
+              <Button asChild className="glow-effect hover:scale-105 transition-all duration-300">
+                <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
+              </Button>
+            </>
           )}
         </div>
 

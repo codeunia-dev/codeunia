@@ -1,5 +1,5 @@
 'use client'
-import type React from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -20,6 +20,8 @@ import {
   GraduationCap,
   Gavel,
   HandHeart,
+  ClipboardCheck,
+  Award,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -58,6 +60,11 @@ const sidebarItems: SidebarGroupType[] = [
         icon: FileText,
       },
       {
+        title: "Tests",
+        url: "/admin/test",
+        icon: ClipboardCheck,
+      },
+      {
         title: "Hackathons",
         url: "/admin/hackathons",
         icon: Calendar,
@@ -66,6 +73,11 @@ const sidebarItems: SidebarGroupType[] = [
         title: "Events",
         url: "/admin/events",
         icon: Calendar,
+      },
+      {
+        title: "Certificates",
+        url: "/admin/certificates",
+        icon: Award,
       },
     ],
   },
@@ -152,12 +164,41 @@ const sidebarItems: SidebarGroupType[] = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, isAdmin } = useAuth()
+  const { user, loading, error, isAdmin } = useAuth()
+
+  // Prevent hydration mismatch by using a consistent initial state
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-2 text-red-600">Authentication Error</h1>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button asChild>
+            <Link href="/auth/signin">Sign In</Link>
+          </Button>
+        </div>
       </div>
     )
   }
@@ -175,7 +216,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     )
   }
-
 
   const avatar = user?.user_metadata?.first_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "A"
   const name = user?.user_metadata?.first_name || user?.email || "Admin"

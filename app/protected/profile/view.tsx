@@ -24,7 +24,7 @@ export default function ProfileView() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            {profile.display_name || `${profile.first_name} ${profile.last_name}`}
+            {`${profile.first_name} ${profile.last_name}`}
           </CardTitle>
           <CardDescription>Your public profile information</CardDescription>
         </CardHeader>

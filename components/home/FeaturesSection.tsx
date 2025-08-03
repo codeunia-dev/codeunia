@@ -2,7 +2,7 @@
 
 import { Code2, Trophy, BookOpen, MessageSquare, Users, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { motion} from "framer-motion"
+import { motion } from "framer-motion"
 
 export function FeaturesSection() {
   const features = [

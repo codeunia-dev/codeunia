@@ -18,6 +18,7 @@ import { motion } from "framer-motion"
 import { SparklesCore } from "@/components/ui/sparkles"
 import { ContactForm } from "./contact-form"
 import { useAuth } from "@/lib/hooks/useAuth";
+import Link from "next/link";
 
 export default function ContactPage() {
   const { user, loading } = useAuth();
@@ -106,9 +107,9 @@ export default function ContactPage() {
                   className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
                   asChild
                 >
-                  <a href="/protected" className="h-full flex items-center justify-center">
+                  <Link href="/protected" className="h-full flex items-center justify-center">
                     Go to Dashboard
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   size="sm"
@@ -116,9 +117,9 @@ export default function ContactPage() {
                   className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
                   asChild
                 >
-                  <a href="/about" className="h-full flex items-center justify-center">
+                  <Link href="/about" className="h-full flex items-center justify-center">
                     Explore Community
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </>
@@ -178,9 +179,9 @@ export default function ContactPage() {
                   className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
                   asChild
                 >
-                  <a href="/auth/signup" className="h-full flex items-center justify-center">
+                  <Link href="/auth/signup" className="h-full flex items-center justify-center">
                     Join Codeunia
-                  </a>
+                  </Link>
                 </Button>
                 <Button
                   size="sm"
@@ -188,9 +189,9 @@ export default function ContactPage() {
                   className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
                   asChild
                 >
-                  <a href="/about" className="h-full flex items-center justify-center">
+                  <Link href="/about" className="h-full flex items-center justify-center">
                     Learn More
-                  </a>
+                  </Link>
                 </Button>
               </div>
             </>
@@ -332,10 +333,10 @@ export default function ContactPage() {
       className="w-full hover:scale-105 transition-all duration-300"
       asChild
     >
-      <a href="/join" className="w-full h-full flex items-center justify-center gap-2">
+      <Link href="/join" className="w-full h-full flex items-center justify-center gap-2">
         <UserPlus className="w-5 h-5" />
         Join Codeunia
-      </a>
+      </Link>
     </Button>
   </CardContent>
 </Card>
@@ -443,13 +444,13 @@ export default function ContactPage() {
                                               className="hover:scale-105 transition-all duration-300"
                                               asChild
                                           >
-                                              <a
+                                              <Link
                                                   href="/about"
                                                   className="flex items-center gap-2"
                                               >
                                                   Learn More About Us
                                                   <ArrowRight className="h-4 w-4" />
-                                              </a>
+                                              </Link>
                                           </Button>
                                       </div>
                                   </div>

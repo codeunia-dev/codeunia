@@ -32,6 +32,7 @@ function SignUpForm() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -63,17 +64,46 @@ function SignUpForm() {
       return
     }
 
+    // Validate username format
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/
+    if (!usernameRegex.test(formData.username)) {
+      toast.error("Username can only contain letters, numbers, hyphens, and underscores")
+      return
+    }
+
+    if (formData.username.length < 3 || formData.username.length > 20) {
+      toast.error("Username must be between 3 and 20 characters")
+      return
+    }
+
     try {
       setIsLoading(true)
       const supabase = createClient()
 
-      const { error } = await supabase.auth.signUp({
+      // Check username availability
+      const { data: isAvailable, error: availabilityError } = await supabase.rpc('check_username_availability', {
+        username_param: formData.username
+      })
+
+      if (availabilityError) {
+        console.error('Username availability check error:', availabilityError)
+        toast.error("Error checking username availability")
+        return
+      }
+
+      if (!isAvailable) {
+        toast.error("Username is already taken. Please choose a different one.")
+        return
+      }
+
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             first_name: formData.firstName,
             last_name: formData.lastName,
+            username: formData.username,
           },
         },
       })
@@ -81,6 +111,9 @@ function SignUpForm() {
       if (error) {
         throw error
       }
+
+      // Profile will be created automatically via database trigger
+      // No need to manually create it here
 
       toast.success("Account created successfully! Please check your email for verification.")
       // Pass the return URL to the signin page
@@ -449,6 +482,26 @@ function SignUpForm() {
                       required
                       className="h-11 focus:ring-2 focus:ring-primary/20 bg-background/30 backdrop-blur-sm border-white/10 hover:border-primary/20 transition-colors"
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-sm font-medium">Username</Label>
+                    <Input
+                      id="username"
+                      name="username"
+                      placeholder="johndoe123"
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      required
+                      minLength={3}
+                      maxLength={20}
+                      pattern="[a-zA-Z0-9_-]+"
+                      title="Username can only contain letters, numbers, hyphens, and underscores"
+                      className="h-11 focus:ring-2 focus:ring-primary/20 bg-background/30 backdrop-blur-sm border-white/10 hover:border-primary/20 transition-colors"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      3-20 characters, letters, numbers, hyphens, and underscores only
+                    </p>
                   </div>
 
                   <div className="space-y-2">
