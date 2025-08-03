@@ -8,10 +8,17 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+// Initialize Razorpay only if environment variables are available
+const getRazorpayClient = () => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    throw new Error('Razorpay configuration is missing');
+  }
+  
+  return new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+};
 
 // POST: Create payment order for a round
 export async function POST(request: NextRequest) {
@@ -96,6 +103,7 @@ export async function POST(request: NextRequest) {
       }
     };
 
+    const razorpay = getRazorpayClient();
     const order = await razorpay.orders.create(orderData);
 
     // Store pending payment

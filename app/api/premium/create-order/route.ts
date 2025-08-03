@@ -24,20 +24,29 @@ export async function POST(request: NextRequest) {
     // Initialize Razorpay client
     const Razorpay = (await import('razorpay')).default;
     const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: process.env.RAZORPAY_KEY_ID || '',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || '',
     });
 
     // Create Razorpay order
-    const order = await razorpay.orders.create({
-      amount: amount,
-      currency: currency,
-      receipt: `prem_${Date.now()}`,
-      notes: {
-        userId: userId,
-        planId: planId,
-      },
-    });
+    let order;
+    try {
+      order = await razorpay.orders.create({
+        amount: amount,
+        currency: currency,
+        receipt: `prem_${Date.now()}`,
+        notes: {
+          userId: userId,
+          planId: planId,
+        },
+      });
+    } catch (razorpayError) {
+      console.error('Razorpay order creation error:', razorpayError);
+      return NextResponse.json(
+        { error: 'Payment service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
 
     // Track pending payment in database
     const supabase = await createClient();
