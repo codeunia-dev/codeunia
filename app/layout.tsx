@@ -50,10 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/codeunia-favicon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)" />
-        <link rel="icon" href="/codeunia-favicon-light.svg" type="image/svg+xml" media="(prefers-color-scheme: light)" />
-        <link rel="shortcut icon" href="/codeunia-favicon-dark.svg" />
-        <link rel="apple-touch-icon" href="/codeunia-favicon-dark.svg" />
+        {/* Favicon will be managed dynamically by ThemeAwareFavicon component */}
       </head>
       <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
         <ThemeProvider

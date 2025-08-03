@@ -9,7 +9,7 @@ import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Star, Sparkles, Zap, Shield, Users, Gift } from 'lucide-react';
+import { Check, Crown, Star, Sparkles, Zap, Shield, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 interface PremiumPlan {
   id: string;
@@ -20,6 +20,7 @@ interface PremiumPlan {
   features: string[];
   popular?: boolean;
   pointsMultiplier: number;
+  savings?: string;
 }
 
 const premiumPlans: PremiumPlan[] = [
@@ -42,10 +43,11 @@ const premiumPlans: PremiumPlan[] = [
     id: 'biannual',
     name: 'Biannual',
     price: 199,
-    originalPrice: 294, // 6 * 49
+    originalPrice: 294,
     duration: '6 months',
     pointsMultiplier: 3,
     popular: true,
+    savings: 'Save 32%',
     features: [
       'Golden username & Codeunia ID',
       'Triple leaderboard points',
@@ -61,9 +63,10 @@ const premiumPlans: PremiumPlan[] = [
     id: 'yearly',
     name: 'Yearly',
     price: 349,
-    originalPrice: 588, // 12 * 49
+    originalPrice: 588,
     duration: '12 months',
     pointsMultiplier: 3,
+    savings: 'Save 41%',
     features: [
       'Golden username & Codeunia ID',
       'Triple leaderboard points',
@@ -82,7 +85,8 @@ export default function PremiumPage() {
   const { user, loading } = useAuth();
   const [isPremium, setIsPremium] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-  const [processingPayment, setProcessingPayment] = useState(false);
+  const [processingPlans, setProcessingPlans] = useState<Set<string>>(new Set());
+  const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -102,13 +106,14 @@ export default function PremiumPage() {
       if (profile?.is_premium && profile?.premium_expires_at) {
         const expiresAt = new Date(profile.premium_expires_at);
         setIsPremium(expiresAt > new Date());
+        if (expiresAt > new Date()) {
+          setPremiumExpiry(profile.premium_expires_at);
+        }
       }
     } catch (error) {
       console.error('Error checking premium status:', error);
     }
   };
-
-
 
   const handlePayment = async (planId: string) => {
     if (!user) {
@@ -122,7 +127,8 @@ export default function PremiumPage() {
       return;
     }
 
-    setProcessingPayment(true);
+    // Set processing state for this specific plan
+    setProcessingPlans(prev => new Set(prev).add(planId));
 
     try {
       // Create order
@@ -133,7 +139,7 @@ export default function PremiumPage() {
         },
         body: JSON.stringify({
           planId: plan.id,
-          amount: plan.price * 100, // Razorpay expects amount in paise
+          amount: plan.price * 100,
           currency: 'INR',
           userId: user.id,
         }),
@@ -182,12 +188,24 @@ export default function PremiumPage() {
                 toast.success('Premium activated successfully! 🎉');
                 setIsPremium(true);
                 setSelectedPlan(null);
+                await checkPremiumStatus(); // Refresh premium status
               } else {
                 throw new Error(verifyData.error || 'Payment verification failed');
               }
             } catch (error) {
               console.error('Payment verification error:', error);
-              toast.error('Payment verification failed. Please contact support.');
+              const errorMessage = error instanceof Error ? error.message : 'Payment verification failed';
+              toast.error(`Payment failed: ${errorMessage}. Please try again or contact support.`);
+            }
+          },
+          modal: {
+            ondismiss: function() {
+              // Remove processing state when modal is dismissed
+              setProcessingPlans(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(planId);
+                return newSet;
+              });
             }
           },
           prefill: {
@@ -202,12 +220,30 @@ export default function PremiumPage() {
         razorpay.open();
       };
 
+      script.onerror = () => {
+        throw new Error('Failed to load payment gateway');
+      };
+
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Failed to initiate payment. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Failed to initiate payment. Please try again.');
     } finally {
-      setProcessingPayment(false);
+      // Remove processing state for this plan
+      setProcessingPlans(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(planId);
+        return newSet;
+      });
     }
+  };
+
+  const formatExpiryDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -215,7 +251,10 @@ export default function PremiumPage() {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="pt-16 flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-muted-foreground">Loading premium plans...</p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -229,11 +268,14 @@ export default function PremiumPage() {
       <main className="pt-16">
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20 py-20">
-          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%239C92AC&quot; fill-opacity=&quot;0.05&quot;%3E%3Ccircle cx=&quot;30&quot; cy=&quot;30&quot; r=&quot;2&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
           <div className="container mx-auto px-4 text-center relative z-10">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-center mb-6">
-                <Crown className="h-12 w-12 text-yellow-500 mr-3" />
+                <div className="relative">
+                  <Crown className="h-12 w-12 text-yellow-500 mr-3" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full animate-pulse"></div>
+                </div>
                 <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                   Premium Membership
                 </h1>
@@ -242,10 +284,10 @@ export default function PremiumPage() {
                 Unlock exclusive features, priority support, and enhanced opportunities
               </p>
               
-              {isPremium && (
-                <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-full font-semibold mb-8">
-                  <Crown className="h-5 w-5 mr-2" />
-                  You are already a Premium member!
+              {isPremium && premiumExpiry && (
+                <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-semibold mb-8 shadow-lg">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Premium Active until {formatExpiryDate(premiumExpiry)}
                 </div>
               )}
             </div>
@@ -256,22 +298,22 @@ export default function PremiumPage() {
         <section className="py-16 bg-background">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Zap className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Enhanced Points</h3>
                 <p className="text-muted-foreground">Earn 2x-3x more points on leaderboard activities</p>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Shield className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Priority Access</h3>
                 <p className="text-muted-foreground">Get early access to events and exclusive resources</p>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                   <Users className="h-8 w-8 text-white" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2">Community Perks</h3>
@@ -290,103 +332,95 @@ export default function PremiumPage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {premiumPlans.map((plan) => (
-                <Card 
-                  key={plan.id} 
-                  className={`relative transition-all duration-300 hover:shadow-xl ${
-                    plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : 'hover:scale-105'
-                  } ${selectedPlan === plan.id ? 'ring-2 ring-primary' : ''}`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-1">
-                        <Star className="h-3 w-3 mr-1" />
-                        Most Popular
-                      </Badge>
-                    </div>
-                  )}
+              {premiumPlans.map((plan) => {
+                const isProcessing = processingPlans.has(plan.id);
+                
+                return (
+                  <Card 
+                    key={plan.id} 
+                    className={`relative transition-all duration-300 hover:shadow-xl ${
+                      plan.popular ? 'ring-2 ring-primary shadow-lg scale-105' : 'hover:scale-105'
+                    } ${selectedPlan === plan.id ? 'ring-2 ring-primary' : ''}`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-1 shadow-lg">
+                          <Star className="h-3 w-3 mr-1" />
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
 
-                  <CardHeader className="text-center pb-4">
-                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                    <div className="flex items-center justify-center gap-2">
-                      <span className="text-4xl font-bold">₹{plan.price}</span>
-                      {plan.originalPrice && (
-                        <span className="text-lg text-muted-foreground line-through">
-                          ₹{plan.originalPrice}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-muted-foreground">{plan.duration}</p>
-                  </CardHeader>
+                    {plan.savings && (
+                      <div className="absolute -top-2 -right-2">
+                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-3 py-1 text-xs">
+                          {plan.savings}
+                        </Badge>
+                      </div>
+                    )}
 
-                  <CardContent className="space-y-6">
-                    <div className="space-y-3">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                          <span className="text-sm">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-4xl font-bold">₹{plan.price}</span>
+                        {plan.originalPrice && (
+                          <span className="text-lg text-muted-foreground line-through">
+                            ₹{plan.originalPrice}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-muted-foreground">{plan.duration}</p>
+                    </CardHeader>
 
-                    <div className="pt-4">
-                      {isPremium ? (
-                        <Button 
-                          className="w-full bg-green-600 hover:bg-green-700" 
-                          disabled
-                        >
-                          <Crown className="h-4 w-4 mr-2" />
-                          Already Premium
-                        </Button>
-                      ) : (
-                        <Button 
-                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                          onClick={() => handlePayment(plan.id)}
-                          disabled={processingPayment}
-                        >
-                          {processingPayment ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Processing...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="h-4 w-4 mr-2" />
-                              Get {plan.name} Plan
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="space-y-6">
+                      <div className="space-y-3">
+                        {plan.features.map((feature, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                            <span className="text-sm">{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-4">
+                        {isPremium ? (
+                          <Button 
+                            className="w-full bg-green-600 hover:bg-green-700" 
+                            disabled
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Already Premium
+                          </Button>
+                        ) : (
+                          <Button 
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
+                            onClick={() => handlePayment(plan.id)}
+                            disabled={isProcessing || processingPlans.size > 0}
+                          >
+                            {isProcessing ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-4 w-4 mr-2" />
+                                Get {plan.name} Plan
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Level Up?
-            </h2>
-            <p className="text-xl mb-8 opacity-90">
-              Join thousands of developers who have already upgraded to Premium
-            </p>
-            {!isPremium && (
-              <Button 
-                size="lg" 
-                className="bg-white text-blue-600 hover:bg-gray-100"
-                onClick={() => handlePayment('biannual')}
-                disabled={processingPayment}
-              >
-                <Gift className="h-5 w-5 mr-2" />
-                Start Your Premium Journey
-              </Button>
-            )}
-          </div>
-        </section>
+
       </main>
 
       <Footer />

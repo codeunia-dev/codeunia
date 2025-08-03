@@ -18,8 +18,8 @@ export default function ThemeAwareFavicon() {
   // If theme is 'system', use resolvedTheme instead
   const currentTheme = mounted ? (theme === 'system' ? resolvedTheme : theme || resolvedTheme || systemTheme) : undefined;
   
-  // Temporarily disabled to fix DOM manipulation errors
-  // useFavicon(currentTheme);
+  // Enable favicon updates
+  useFavicon(currentTheme);
 
   return null; // This component doesn't render anything
 } 
