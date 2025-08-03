@@ -9,7 +9,7 @@ import { ArrowLeft, Clock, Calendar, Users, DollarSign, Star, Sparkles} from "lu
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image";
-import { Tabs as AnimatedTabs } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import React from "react";
 import { useHackathon } from "@/hooks/useHackathons"
 
@@ -25,10 +25,11 @@ interface Sponsor {
 }
 
 const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
-  if (!sponsors || sponsors.length === 0) return null;
+  if (!sponsors || sponsors.length === 0) {
+    return null;
+  }
+  
   const shouldAnimate = sponsors.length > 4;
-  // Duplicate sponsors for infinite scroll
-  const displaySponsors = shouldAnimate ? [...sponsors, ...sponsors] : sponsors;
 
   return (
     <div className="mb-6">
@@ -36,10 +37,12 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
         <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse"></span>
         Our Sponsors
       </h3>
-      <div className="relative w-full overflow-hidden">
+      
+      {/* Mobile Animation - Horizontal Scroll */}
+      <div className="md:hidden relative w-full overflow-hidden">
         <div className={`flex gap-4 py-2 ${shouldAnimate ? 'animate-scroll' : ''}`}
              style={{ minWidth: shouldAnimate ? '200%' : undefined }}>
-          {displaySponsors.map((sponsor, idx) => (
+          {(shouldAnimate ? [...sponsors, ...sponsors] : sponsors).map((sponsor, idx) => (
             <motion.div
               key={sponsor.name + idx}
               className="flex-shrink-0 w-[180px] h-[120px] rounded-lg border border-primary/10 bg-background/50 backdrop-blur-sm p-1 flex flex-col items-center justify-center gap-2 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
@@ -49,13 +52,51 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
                 <Image
                   src={sponsor.logo}
                   alt={sponsor.name}
-                  fill
+                  width={80}
+                  height={80}
                   className="object-contain p-2"
                 />
               </div>
               <div className="text-center">
                 <h3 className="font-semibold text-xs text-white leading-tight">{sponsor.name}</h3>
                 <p className="text-[10px] text-muted-foreground leading-tight">{sponsor.type}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop Animation - Grid with Staggered Entrance */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {sponsors.map((sponsor, idx) => (
+            <motion.div
+              key={sponsor.name + idx}
+              className="w-full h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-4 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ 
+                duration: 0.5, 
+                delay: idx * 0.1,
+                ease: "easeOut"
+              }}
+              whileHover={{ 
+                y: -8,
+                scale: 1.02,
+                transition: { duration: 0.2 }
+              }}
+            >
+              <div className="relative w-24 h-24 flex items-center justify-center rounded-full p-2">
+                <Image
+                  src={sponsor.logo}
+                  alt={sponsor.name}
+                  fill
+                  className="object-contain p-2"
+                />
+              </div>
+              <div className="text-center">
+                <h3 className="font-semibold text-lg text-white leading-tight">{sponsor.name}</h3>
+                <p className="text-sm text-muted-foreground leading-tight">{sponsor.type}</p>
               </div>
             </motion.div>
           ))}
@@ -124,7 +165,24 @@ export default function HackathonDetailPage() {
   }
 
   // --- Tab Content Renderers ---
-  const renderAbout = () => (
+  const renderAbout = () => {
+    // Don't render if hackathon data is not loaded yet
+    if (!hackathon) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded mb-4"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded mb-6"></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    return (
     <div className="space-y-6">
       <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
         <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -133,7 +191,7 @@ export default function HackathonDetailPage() {
         </h2>
         <p className="text-lg leading-relaxed mb-6">{hackathon?.description}</p>
         <div className="flex flex-wrap gap-2 pt-6 border-t border-primary/10">
-          {hackathon?.tags.map((tag: string) => (
+            {hackathon?.tags?.map((tag: string) => (
             <Badge key={tag} variant="outline" className="text-sm bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
               #{tag}
             </Badge>
@@ -144,27 +202,128 @@ export default function HackathonDetailPage() {
       <RotatingSponsorsGrid sponsors={hackathon?.sponsors} />
     </div>
   )
+  }
 
-  const renderRules = () => (
+  const renderRules = () => {
+    if (!hackathon) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-6 rounded-2xl border border-primary/10 shadow mb-16">
+            <div className="animate-pulse">
+              <div className="h-6 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded mb-1"></div>
+              <div className="h-4 bg-muted rounded mb-1"></div>
+              <div className="h-4 bg-muted rounded mb-1"></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    let rulesArray: string[] = [];
+    if (Array.isArray(hackathon?.rules)) {
+      rulesArray = hackathon.rules;
+    } else if (hackathon?.rules && typeof hackathon.rules === 'object') {
+      rulesArray = Object.values(hackathon.rules).map(String);
+    }
+
+    // Default rules if no data is provided
+    if (rulesArray.length === 0) {
+      rulesArray = [
+        "All team members must be registered participants",
+        "Original work only - no plagiarism or pre-built solutions",
+        "Teams must work independently without external help",
+        "All code must be written during the hackathon period",
+        "Presentations must be completed within the allocated time",
+        "Judges' decisions are final and binding",
+        "Respect all participants and maintain professional conduct",
+        "Follow the specified submission format and deadlines",
+        "No use of proprietary or licensed software without permission",
+        "Teams must be present for the entire duration of the event"
+      ];
+    }
+    
+    return (
     <div className="space-y-6">
-      {hackathon?.rules && (
-        <div className="bg-background/50 backdrop-blur-sm p-6 rounded-2xl border border-primary/10 shadow mb-16">
-          <h3 className="font-semibold mb-2">Rules</h3>
-          <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-            {hackathon.rules.map((rule: string) => <li key={rule}>{rule}</li>)}
+      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+          <svg className="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          Hackathon Rules & Guidelines
+        </h2>
+        <div className="mb-6">
+          <p className="text-muted-foreground mb-4">
+            To ensure a fair and enjoyable experience for all participants, please follow these rules and guidelines:
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="font-semibold mb-3 text-primary">General Rules</h3>
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              {rulesArray.slice(0, Math.ceil(rulesArray.length / 2)).map((rule, index) => (
+                <li key={index} className="text-muted-foreground">{rule}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-3 text-primary">Additional Guidelines</h3>
+            <ul className="list-disc pl-5 space-y-2 text-sm">
+              {rulesArray.slice(Math.ceil(rulesArray.length / 2)).map((rule, index) => (
+                <li key={index} className="text-muted-foreground">{rule}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="mt-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+          <h3 className="font-semibold mb-2 text-yellow-600">⚠️ Important Reminders:</h3>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Violation of rules may result in disqualification</li>
+            <li>• Questions about rules should be asked before the event starts</li>
+            <li>• Organizers reserve the right to modify rules if necessary</li>
           </ul>
         </div>
-      )}
+      </div>
     </div>
   )
+  }
 
   const renderSchedule = () => {
+    if (!hackathon) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded mb-4"></div>
+              <div className="h-4 bg-muted rounded mb-3"></div>
+              <div className="h-4 bg-muted rounded mb-3"></div>
+              <div className="h-4 bg-muted rounded mb-3"></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
     let scheduleArray: { date: string, label: string }[] = [];
     if (Array.isArray(hackathon?.schedule)) {
       scheduleArray = hackathon.schedule;
     } else if (hackathon?.schedule && typeof hackathon.schedule === 'object') {
       scheduleArray = Object.entries(hackathon.schedule).map(([date, label]) => ({ date, label: String(label) }));
     }
+
+    // Default schedule if no data is provided
+    if (scheduleArray.length === 0) {
+      scheduleArray = [
+        { date: "Day 1 - Opening", label: "Registration & Team Formation" },
+        { date: "Day 1 - Morning", label: "Opening Ceremony & Problem Statement Release" },
+        { date: "Day 1 - Afternoon", label: "Coding & Development Phase" },
+        { date: "Day 1 - Evening", label: "Mentorship Sessions & Networking" },
+        { date: "Day 2 - Morning", label: "Continued Development & Prototyping" },
+        { date: "Day 2 - Afternoon", label: "Final Submissions & Presentations" },
+        { date: "Day 2 - Evening", label: "Judging & Award Ceremony" }
+      ];
+    }
+
     return (
       <div className="space-y-6">
         <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
@@ -172,88 +331,252 @@ export default function HackathonDetailPage() {
             <Clock className="h-6 w-6 text-primary" />
             Hackathon Schedule
           </h2>
+          <div className="mb-6">
+            <p className="text-muted-foreground mb-4">
+              Join us for an exciting journey of innovation and collaboration. Here's what you can expect during the hackathon:
+            </p>
+          </div>
           <ul className="divide-y divide-primary/10">
-            {scheduleArray.map((item) => (
-              <li key={item.date} className="py-3 flex flex-col md:flex-row md:items-center md:gap-4">
-                <span className="font-medium min-w-[120px] text-primary">{item.date}</span>
-                <span className="text-muted-foreground">{item.label}</span>
+            {scheduleArray.map((item, index) => (
+              <li key={index} className="py-4 flex flex-col md:flex-row md:items-center md:gap-6">
+                <span className="font-semibold min-w-[140px] text-primary bg-primary/10 px-3 py-1 rounded-full text-sm">
+                  {item.date}
+                </span>
+                <span className="text-foreground mt-2 md:mt-0">{item.label}</span>
               </li>
             ))}
           </ul>
+          <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
+            <h3 className="font-semibold mb-2 text-primary">Important Notes:</h3>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• All times are in local timezone</li>
+              <li>• Schedule may be subject to change</li>
+              <li>• Check announcements for updates</li>
+              <li>• Networking breaks will be provided</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
   };
 
-  const renderPrizes = () => (
+  const renderPrizes = () => {
+    if (!hackathon) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded mb-4"></div>
+              <div className="h-12 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded"></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
+    const prizeAmount = hackathon?.prize || hackathon?.price || "₹50,000+";
+    const prizeDetails = hackathon?.prize_details || "Exciting rewards, sponsor goodies, and recognition.";
+    
+    return (
     <div className="space-y-6">
       <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
           <DollarSign className="h-6 w-6 text-primary" />
-          Prizes
+          Prizes & Rewards
         </h2>
-        <div className="text-3xl font-bold text-primary mb-2">{hackathon?.prize}</div>
-        <p className="text-muted-foreground">{hackathon?.prize_details || 'Exciting rewards, sponsor goodies, and recognition.'}</p>
+        
+        {/* Main Prize */}
+        <div className="text-center mb-8 p-6 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
+          <div className="text-4xl font-bold text-primary mb-2">{prizeAmount}</div>
+          <p className="text-muted-foreground text-lg">{prizeDetails}</p>
+        </div>
+
+        {/* Prize Categories */}
+        <div className="grid md:grid-cols-3 gap-6 mb-6">
+          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
+            <div className="text-2xl mb-2">🥇</div>
+            <h3 className="font-semibold mb-1">1st Place</h3>
+            <p className="text-sm text-muted-foreground">Grand Prize Winner</p>
+          </div>
+          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
+            <div className="text-2xl mb-2">🥈</div>
+            <h3 className="font-semibold mb-1">2nd Place</h3>
+            <p className="text-sm text-muted-foreground">Runner Up</p>
+          </div>
+          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
+            <div className="text-2xl mb-2">🥉</div>
+            <h3 className="font-semibold mb-1">3rd Place</h3>
+            <p className="text-sm text-muted-foreground">Second Runner Up</p>
+          </div>
+        </div>
+
+        {/* Additional Rewards */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg">Additional Rewards</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
+              <div className="text-2xl">🏆</div>
+              <div>
+                <div className="font-medium">Trophy & Certificates</div>
+                <div className="text-sm text-muted-foreground">Official recognition</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
+              <div className="text-2xl">💼</div>
+              <div>
+                <div className="font-medium">Internship Opportunities</div>
+                <div className="text-sm text-muted-foreground">With partner companies</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
+              <div className="text-2xl">🎁</div>
+              <div>
+                <div className="font-medium">Sponsor Goodies</div>
+                <div className="text-sm text-muted-foreground">Swag bags & merchandise</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
+              <div className="text-2xl">🌟</div>
+              <div>
+                <div className="font-medium">Networking</div>
+                <div className="text-sm text-muted-foreground">Connect with industry experts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
+          <h3 className="font-semibold mb-2 text-primary">💡 Pro Tips:</h3>
+          <ul className="text-sm text-muted-foreground space-y-1">
+            <li>• Focus on innovation and problem-solving</li>
+            <li>• Present your solution clearly and confidently</li>
+            <li>• Network with other participants and mentors</li>
+            <li>• Have fun and learn from the experience!</li>
+          </ul>
+        </div>
       </div>
     </div>
   )
+  }
 
   const renderFAQ = () => {
+    // Don't render if hackathon data is not loaded yet
+    if (!hackathon) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+            <div className="animate-pulse">
+              <div className="h-8 bg-muted rounded mb-4"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+              <div className="h-4 bg-muted rounded mb-2"></div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+    
     let faqArray: { question: string, answer: string }[] = [];
     if (Array.isArray(hackathon?.faq)) {
       faqArray = hackathon.faq;
     } else if (hackathon?.faq && typeof hackathon.faq === 'object') {
       faqArray = Object.entries(hackathon.faq).map(([question, answer]) => ({ question, answer: String(answer) }));
     }
+
+    // Default FAQ if no data is provided
+    if (faqArray.length === 0) {
+      faqArray = [
+        {
+          question: "Who can participate in this hackathon?",
+          answer: "This hackathon is open to all students, professionals, and coding enthusiasts. Whether you're a beginner or an expert, everyone is welcome to participate and showcase their skills."
+        },
+        {
+          question: "What is the team size requirement?",
+          answer: "Teams can consist of 1-5 members. You can participate individually or form a team with friends or colleagues. Team formation will be facilitated during the opening ceremony."
+        },
+        {
+          question: "What technologies can I use?",
+          answer: "You can use any programming language, framework, or technology stack of your choice. The focus is on innovation and problem-solving rather than specific technologies."
+        },
+        {
+          question: "Do I need to bring my own equipment?",
+          answer: "Yes, please bring your own laptop and any necessary peripherals. We'll provide power outlets and internet connectivity. Some hardware components may be available on request."
+        },
+        {
+          question: "How will the judging process work?",
+          answer: "Projects will be evaluated based on innovation, technical implementation, user experience, and presentation. A panel of industry experts will judge the final submissions."
+        },
+        {
+          question: "What if I have dietary restrictions?",
+          answer: "We'll provide meals and snacks throughout the event. Please inform us about any dietary restrictions during registration, and we'll accommodate your needs."
+        },
+        {
+          question: "Can I work on a pre-existing project?",
+          answer: "No, all work must be original and created during the hackathon period. You can plan and research beforehand, but coding and development must start after the problem statement is released."
+        },
+        {
+          question: "What happens if I need help during the hackathon?",
+          answer: "Mentors will be available throughout the event to provide guidance and answer questions. You can also reach out to the organizing team for any technical or logistical support."
+        },
+        {
+          question: "How do I submit my project?",
+          answer: "Detailed submission guidelines will be provided during the opening ceremony. Generally, you'll need to submit your code repository, a demo video, and present your solution to the judges."
+        },
+        {
+          question: "What are the prizes and rewards?",
+          answer: "Winners will receive cash prizes, trophies, certificates, and potential internship opportunities with partner companies. All participants will receive certificates and networking opportunities."
+        }
+      ];
+    }
+    
     return (
       <div className="space-y-6">
         <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
             Frequently Asked Questions
           </h2>
-          <ul className="space-y-4">
-            {faqArray.map((q) => (
-              <li key={q.question}>
-                <div className="font-semibold">{q.question}</div>
-                <div className="text-muted-foreground">{q.answer}</div>
-              </li>
+          <div className="mb-6">
+            <p className="text-muted-foreground mb-4">
+              Find answers to common questions about the hackathon. If you don't see your question here, feel free to contact us!
+            </p>
+          </div>
+          <div className="space-y-6">
+            {faqArray.map((faq, index) => (
+              <div key={index} className="border border-primary/10 rounded-lg p-4 hover:bg-background/30 transition-colors">
+                <h3 className="font-semibold text-primary mb-2 flex items-center gap-2">
+                  <span className="text-sm bg-primary/10 px-2 py-1 rounded-full">Q{index + 1}</span>
+                  {faq.question}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
+              </div>
             ))}
-          </ul>
+          </div>
+          
+          <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10">
+            <h3 className="font-semibold mb-2 text-primary">Still have questions?</h3>
+            <p className="text-sm text-muted-foreground mb-3">
+              Don't hesitate to reach out to our organizing team. We're here to help!
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" className="text-xs">
+                📧 Email Support
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs">
+                💬 Live Chat
+              </Button>
+              <Button variant="outline" size="sm" className="text-xs">
+                📱 WhatsApp
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
-  const hackathonTabs = [
-    {
-      title: "About",
-      value: "about",
-      content: (
-        <div>{renderAbout()}</div>
-      ),
-    },
-    {
-      title: "Schedule",
-      value: "schedule",
-      content: renderSchedule(),
-    },
-    {
-      title: "Rules",
-      value: "rules",
-      content: renderRules(),
-    },
-    {
-      title: "Prizes",
-      value: "prizes",
-      content: renderPrizes(),
-    },
-    {
-      title: "FAQ",
-      value: "faq",
-      content: renderFAQ(),
-    },
-  ];
+
 
   if (isLoading) {
     return (
@@ -307,7 +630,7 @@ export default function HackathonDetailPage() {
       </div>
       {/* Hackathon Banner - full width, edge-to-edge */}
       <div className="w-full relative">
-        <div className="aspect-[2/1] sm:aspect-[4/1] bg-muted overflow-hidden rounded-b-2xl">
+        <div className="aspect-[2/1] sm:aspect-[4/1] bg-muted overflow-hidden rounded-b-2xl relative">
           {hackathon?.image ? (
             <Image
               src={hackathon.image}
@@ -315,6 +638,7 @@ export default function HackathonDetailPage() {
               fill
               className="object-cover w-full h-full"
               priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -371,7 +695,41 @@ export default function HackathonDetailPage() {
                 )}
                 {/* Tabs */}
                 <div className="w-full">
-                  <AnimatedTabs tabs={hackathonTabs} />
+                  {hackathon ? (
+                    <Tabs defaultValue="about" className="w-full">
+                      <TabsList className="grid w-full grid-cols-5">
+                        <TabsTrigger value="about">About</TabsTrigger>
+                        <TabsTrigger value="schedule">Schedule</TabsTrigger>
+                        <TabsTrigger value="rules">Rules</TabsTrigger>
+                        <TabsTrigger value="prizes">Prizes</TabsTrigger>
+                        <TabsTrigger value="faq">FAQ</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="about" className="mt-6">
+                        {renderAbout()}
+                      </TabsContent>
+                      <TabsContent value="schedule" className="mt-6">
+                        {renderSchedule()}
+                      </TabsContent>
+                      <TabsContent value="rules" className="mt-6">
+                        {renderRules()}
+                      </TabsContent>
+                      <TabsContent value="prizes" className="mt-6">
+                        {renderPrizes()}
+                      </TabsContent>
+                      <TabsContent value="faq" className="mt-6">
+                        {renderFAQ()}
+                      </TabsContent>
+                    </Tabs>
+                  ) : (
+                    <div className="animate-pulse">
+                      <div className="h-10 bg-muted rounded-md mb-6"></div>
+                      <div className="space-y-4">
+                        <div className="h-4 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded"></div>
+                        <div className="h-4 bg-muted rounded"></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               {/* Sidebar (Hackathon Details, Registration, Need Help) */}

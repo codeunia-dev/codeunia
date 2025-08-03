@@ -38,14 +38,38 @@ export async function GET(request: NextRequest) {
 
   // Handle email verification
   if (token_hash && type) {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
     
-    if (!error) {
-      // redirect user to specified redirect URL or root of app
-      redirect(next);
+    if (!error && data.user) {
+      // Email confirmed successfully, mark it in the profile
+      try {
+        await supabase.rpc('mark_email_confirmed', { user_id: data.user.id });
+        
+        // Create profile if it doesn't exist
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (!profile) {
+          // Create profile for email user
+          await supabase.rpc('create_email_profile', {
+            user_id: data.user.id,
+            email: data.user.email || '',
+            user_metadata: data.user.user_metadata || {}
+          });
+        }
+      } catch (profileError) {
+        console.error('Error updating profile after email confirmation:', profileError);
+        // Continue anyway, the user can still proceed
+      }
+      
+      // redirect user to setup page
+      redirect('/setup');
     } else {
       // redirect the user to an error page with some instructions
       redirect(`/auth/error?error=${encodeURIComponent(error?.message || 'Verification failed')}`);

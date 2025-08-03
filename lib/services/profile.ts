@@ -32,9 +32,6 @@ export class ProfileService {
       id: userId,
       first_name: user.user?.user_metadata?.first_name || '',
       last_name: user.user?.user_metadata?.last_name || '',
-      display_name: user.user?.user_metadata?.first_name 
-        ? `${user.user.user_metadata.first_name} ${user.user.user_metadata.last_name || ''}`.trim()
-        : user.user?.email?.split('@')[0] || '',
       is_public: true,
       email_notifications: true,
       profile_completion_percentage: 0
@@ -127,13 +124,39 @@ export class ProfileService {
     return data
   }
 
+  // Get public profile by username (for viewing other users)
+  async getPublicProfileByUsername(username: string): Promise<Profile | null> {
+    console.log('profileService.getPublicProfileByUsername: Starting with username:', username)
+    
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .select('*')
+      .eq('username', username)
+      .eq('is_public', true)
+      .single()
+
+    console.log('profileService.getPublicProfileByUsername: Supabase response:', { data, error })
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.log('profileService.getPublicProfileByUsername: Profile not found or not public')
+        return null // Profile not found or not public
+      }
+      console.error('Error fetching public profile by username:', error)
+      throw new Error(`Failed to fetch public profile: ${error.message}`)
+    }
+
+    console.log('profileService.getPublicProfileByUsername: Returning profile:', data)
+    return data
+  }
+
   // Search public profiles
   async searchProfiles(query: string, limit: number = 10): Promise<Profile[]> {
     const { data, error } = await this.supabase
       .from('profiles')
       .select('*')
       .eq('is_public', true)
-      .or(`display_name.ilike.%${query}%,bio.ilike.%${query}%,skills.cs.{${query}}`)
+      .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,bio.ilike.%${query}%,skills.cs.{${query}}`)
       .limit(limit)
 
     if (error) {

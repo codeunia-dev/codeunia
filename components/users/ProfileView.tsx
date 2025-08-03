@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { ContributionGraph } from '@/components/ui/contribution-graph'
+import { useContributionGraph } from '@/hooks/useContributionGraph'
 import { 
   User, 
   MapPin, 
@@ -19,12 +21,20 @@ import {
   Edit,
   Loader2,
   Eye,
-  EyeOff
+  EyeOff,
+  Share2,
+  Copy
 } from 'lucide-react'
 import Link from 'next/link'
 
 export function ProfileView() {
   const { profile, loading } = useProfile()
+  const {
+    data: activityData,
+    loading: activityLoading,
+    handleFilterChange,
+    refresh: refreshActivity
+  } = useContributionGraph()
 
   if (loading) {
     return (
@@ -50,8 +60,8 @@ export function ProfileView() {
     if (profile.first_name && profile.last_name) {
       return `${profile.first_name[0]}${profile.last_name[0]}`
     }
-    if (profile.display_name) {
-      return profile.display_name.slice(0, 2).toUpperCase()
+    if (profile.first_name) {
+      return profile.first_name[0].toUpperCase()
     }
     return 'U'
   }
@@ -60,7 +70,10 @@ export function ProfileView() {
     if (profile.first_name && profile.last_name) {
       return `${profile.first_name} ${profile.last_name}`
     }
-    return profile.display_name || 'Unknown User'
+    if (profile.first_name) {
+      return profile.first_name
+    }
+    return 'Unknown User'
   }
 
   const socialLinks = [
@@ -89,9 +102,34 @@ export function ProfileView() {
   const hasSocialLinks = socialLinks.length > 0
   const hasSkills = profile.skills && profile.skills.length > 0
 
+  const handleShare = async () => {
+          const profileUrl = `${window.location.origin}/${profile.username || profile.id}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${getFullName()} - Codeunia Profile`,
+          text: `Check out ${getFullName()}'s profile on Codeunia`,
+          url: profileUrl
+        })
+      } catch (error) {
+        console.log('Error sharing:', error)
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(profileUrl)
+        // You could add a toast notification here
+        alert('Profile link copied to clipboard!')
+      } catch (error) {
+        console.log('Error copying to clipboard:', error)
+      }
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6">
-      {/* Header with Edit Button */}
+      {/* Header with Edit and Share Buttons */}
       <div className="flex justify-between items-start">
         <div className="space-y-2">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
@@ -101,30 +139,63 @@ export function ProfileView() {
             View your profile information as others see it
           </p>
         </div>
-        <Link href="/protected/profile">
-          <Button variant="outline" className="gap-2">
-            <Edit className="h-4 w-4" />
-            Edit Profile
+        <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleShare}>
+            <Share2 className="h-4 w-4" />
+            Share Profile
           </Button>
-        </Link>
+          <Link href="/protected/profile">
+            <Button variant="outline" className="gap-2">
+              <Edit className="h-4 w-4" />
+              Edit Profile
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Privacy Status */}
-      <Card className={`border-l-4 ${profile.is_public ? 'border-l-green-500' : 'border-l-yellow-500'}`}>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-2">
-            {profile.is_public ? (
-              <>
-                <Eye className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-green-600">Public Profile</span>
-                <span className="text-muted-foreground">- Visible to others</span>
-              </>
-            ) : (
-              <>
-                <EyeOff className="h-4 w-4 text-yellow-600" />
-                <span className="font-medium text-yellow-600">Private Profile</span>
-                <span className="text-muted-foreground">- Only visible to you</span>
-              </>
+      <Card className={`border-l-4 ${profile.is_public ? 'border-l-green-500' : 'border-l-orange-500'}`}>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              {profile.is_public ? (
+                <Eye className="h-5 w-5 text-green-600" />
+              ) : (
+                <EyeOff className="h-5 w-5 text-orange-600" />
+              )}
+              <div>
+                <p className="font-medium">
+                  {profile.is_public ? 'Public Profile' : 'Private Profile'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {profile.is_public 
+                    ? 'Your profile is visible to everyone' 
+                    : 'Your profile is only visible to you'
+                  }
+                </p>
+              </div>
+            </div>
+            
+            {profile.is_public && (
+              <div className="pt-3 border-t">
+                <p className="text-sm font-medium mb-2">Public Profile Link:</p>
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                          <code className="text-xs flex-1 break-all">
+          {`${window.location.origin}/${profile.username || profile.id}`}
+        </code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/${profile.username || profile.id}`)
+                      alert('Profile link copied to clipboard!')
+                    }}
+                    className="h-6 w-6 p-0"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </CardContent>
@@ -144,9 +215,9 @@ export function ProfileView() {
                 <CardTitle className="text-2xl md:text-3xl">
                   {getFullName()}
                 </CardTitle>
-                {profile.display_name && profile.first_name && profile.last_name && (
+                {profile.username && (
                   <p className="text-muted-foreground mt-1">
-                    Also known as &quot;{profile.display_name}&quot;
+                    @{profile.username}
                   </p>
                 )}
               </div>
@@ -184,19 +255,28 @@ export function ProfileView() {
               <Phone className="h-5 w-5" />
               Contact Information
             </CardTitle>
+            <CardDescription>
+              How others can reach you
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent>
+            <div className="space-y-4">
               {profile.phone && (
                 <div className="flex items-center gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{profile.phone}</span>
+                  <div>
+                    <p className="font-medium">Phone</p>
+                    <p className="text-muted-foreground">{profile.phone}</p>
+                  </div>
                 </div>
               )}
               {profile.location && (
                 <div className="flex items-center gap-3">
                   <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>{profile.location}</span>
+                  <div>
+                    <p className="font-medium">Location</p>
+                    <p className="text-muted-foreground">{profile.location}</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -212,9 +292,12 @@ export function ProfileView() {
               <Briefcase className="h-5 w-5" />
               Professional Information
             </CardTitle>
+            <CardDescription>
+              Your work and career details
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent>
+            <div className="space-y-4">
               {profile.current_position && (
                 <div className="flex items-center gap-3">
                   <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -295,6 +378,15 @@ export function ProfileView() {
           </CardContent>
         </Card>
       )}
+
+      {/* Activity Graph */}
+      <ContributionGraph
+        data={activityData}
+        loading={activityLoading}
+        onFilterChange={handleFilterChange}
+        onRefresh={refreshActivity}
+        className="w-full"
+      />
 
       {/* Empty State */}
       {!profile.bio && !hasContactInfo && !hasCompleteProfessionalInfo && !hasSkills && !hasSocialLinks && (

@@ -478,7 +478,7 @@ export function HeroSection2() {
                 className="px-6 py-4 sm:px-8 sm:py-6 text-base sm:text-lg font-semibold shadow-2xl hover:shadow-3xl bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-purple-600/90 backdrop-blur-sm relative overflow-hidden group transition-all duration-300 hover:scale-105 hover:-translate-y-1 w-full sm:w-auto"
                 asChild
               >
-                <Link href="/events">
+                <Link href="/hackathons">
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <Rocket className="mr-2 sm:mr-3 h-5 w-5 sm:h-6 sm:w-6 relative z-10 group-hover:animate-pulse" />
                 <span className="relative z-10">Explore Events</span>

@@ -91,15 +91,32 @@ export default function AdminHackathons() {
   const fetchHackathons = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/hackathons?limit=100')
+      // Use relative URL to work with any port
+      const response = await fetch('/api/admin/hackathons?limit=100', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
       if (!response.ok) {
-        throw new Error('Failed to fetch hackathons')
+        if (response.status === 401) {
+          toast.error("Please log in to access hackathons")
+        } else if (response.status === 404) {
+          toast.error("Hackathons API not found")
+        } else {
+          throw new Error(`Failed to fetch hackathons: ${response.status}`)
+        }
+        // Set empty array to prevent errors
+        setHackathons([])
+        return
       }
       const data = await response.json()
-      setHackathons(data.hackathons)
+      setHackathons(data.hackathons || [])
     } catch (error) {
       toast.error("Failed to fetch hackathons")
-      console.error(error)
+      console.error('Fetch error:', error)
+      // Set empty array to prevent errors
+      setHackathons([])
     } finally {
       setLoading(false)
     }

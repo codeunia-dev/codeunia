@@ -117,3 +117,45 @@ export function usePublicProfile(userId: string | null) {
     refresh: fetchPublicProfile
   }
 }
+
+// Hook for getting public profile by username (for viewing other users)
+export function usePublicProfileByUsername(username: string | null) {
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPublicProfile = async () => {
+    if (!username) return
+
+    try {
+      setLoading(true)
+      setError(null)
+      console.log('usePublicProfileByUsername: Fetching profile for username:', username)
+      const profileData = await profileService.getPublicProfileByUsername(username)
+      console.log('usePublicProfileByUsername: Profile data received:', profileData)
+      setProfile(profileData)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch profile'
+      console.error('usePublicProfileByUsername: Error fetching profile:', err)
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (username) {
+      fetchPublicProfile()
+    } else {
+      setProfile(null)
+      setLoading(false)
+    }
+  }, [username])
+
+  return {
+    profile,
+    loading,
+    error,
+    refresh: fetchPublicProfile
+  }
+}

@@ -1,76 +1,34 @@
 // Server-side service for hackathons
 import { createClient } from '@/lib/supabase/server'
+import { Hackathon, HackathonsFilters, HackathonsResponse } from '@/types/hackathons'
 
-export interface Hackathon {
-  id?: number
-  slug: string
-  title: string
-  excerpt: string
-  description: string
-  organizer: string
-  organizer_contact?: {
-    email?: string
-    phone?: string
-    [key: string]: string | undefined
+// Re-export types for convenience
+export type { Hackathon, HackathonsFilters, HackathonsResponse }
+
+// Simple in-memory cache for development
+const cache = new Map<string, { data: any; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+function getCachedData(key: string) {
+  const cached = cache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data
   }
-  date: string
-  time: string
-  duration: string
-  registration_deadline?: string
-  category: string
-  categories: string[]
-  tags: string[]
-  featured: boolean
-  image?: string
-  location: string
-  locations: string[]
-  capacity: number
-  registered: number
-  team_size?: {
-    min?: number
-    max?: number
-    [key: string]: number | undefined
-  }
-  user_types: string[]
-  price: string
-  payment: string
-  status: 'live' | 'draft' | 'published' | 'cancelled' | 'completed'
-  event_type: string[]
-  registration_required: boolean
-  rules?: string[]
-  schedule?: Record<string, unknown> | { date: string; label: string }[]
-  prize?: string
-  prize_details?: string
-  faq?: Record<string, unknown> | { question: string; answer: string }[]
-  socials?: {
-    linkedin?: string
-    whatsapp?: string
-    instagram?: string
-    [key: string]: string | undefined
-  }
-  sponsors?: { logo: string; name: string; type: string }[]
-  created_at?: string
-  updated_at?: string
+  return null
 }
 
-export interface HackathonsFilters {
-  search?: string
-  category?: string
-  status?: string
-  featured?: boolean
-  dateFilter?: 'upcoming' | 'all' | 'past'
-  limit?: number
-  offset?: number
-}
-
-export interface HackathonsResponse {
-  hackathons: Hackathon[]
-  total: number
-  hasMore: boolean
+function setCachedData(key: string, data: any) {
+  cache.set(key, { data, timestamp: Date.now() })
 }
 
 class HackathonsService {
   async getHackathons(filters: HackathonsFilters = {}): Promise<HackathonsResponse> {
+    const cacheKey = `hackathons:${JSON.stringify(filters)}`
+    const cached = getCachedData(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const supabase = await createClient()
     
     let query = supabase
@@ -79,7 +37,7 @@ class HackathonsService {
 
     // Apply filters
     if (filters.search) {
-      query = query.or(`title.ilike.%${filters.search}%,excerpt.ilike.%${filters.search}%,tags.cs.{${filters.search}}`)
+      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
     }
 
     if (filters.category) {
@@ -94,21 +52,19 @@ class HackathonsService {
       query = query.eq('featured', filters.featured)
     }
 
-    // Date filtering
     if (filters.dateFilter === 'upcoming') {
       query = query.gte('date', new Date().toISOString().split('T')[0])
     } else if (filters.dateFilter === 'past') {
       query = query.lt('date', new Date().toISOString().split('T')[0])
     }
 
-    // Order by date (upcoming first, then by date)
-    query = query.order('date', { ascending: true })
-
     // Apply pagination
-    const limit = filters.limit || 50
+    const limit = filters.limit || 10
     const offset = filters.offset || 0
-    
     query = query.range(offset, offset + limit - 1)
+
+    // Order by date
+    query = query.order('date', { ascending: true })
 
     const { data: hackathons, error, count } = await query
 
@@ -120,14 +76,23 @@ class HackathonsService {
     const total = count || 0
     const hasMore = offset + limit < total
 
-    return {
+    const result = {
       hackathons: hackathons || [],
       total,
       hasMore
     }
+
+    setCachedData(cacheKey, result)
+    return result
   }
 
   async getHackathonBySlug(slug: string): Promise<Hackathon | null> {
+    const cacheKey = `hackathon:${slug}`
+    const cached = getCachedData(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const supabase = await createClient()
     
     const { data: hackathon, error } = await supabase
@@ -144,26 +109,42 @@ class HackathonsService {
       throw new Error('Failed to fetch hackathon')
     }
 
+    setCachedData(cacheKey, hackathon)
     return hackathon
   }
 
   async getFeaturedHackathons(limit: number = 5) {
-    const supabase = await createClient()
-    
-    const { data: hackathons, error } = await supabase
-      .from('hackathons')
-      .select('*')
-      .eq('featured', true)
-      .gte('date', new Date().toISOString().split('T')[0])
-      .order('date', { ascending: true })
-      .limit(limit)
-
-    if (error) {
-      console.error('Error fetching featured hackathons:', error)
-      throw new Error('Failed to fetch featured hackathons')
+    const cacheKey = `featured_hackathons:${limit}`
+    const cached = getCachedData(cacheKey)
+    if (cached) {
+      return cached
     }
 
-    return hackathons || []
+    try {
+      const supabase = await createClient()
+      
+      const { data: hackathons, error } = await supabase
+        .from('hackathons')
+        .select('*')
+        .eq('featured', true)
+        .gte('date', new Date().toISOString().split('T')[0])
+        .order('date', { ascending: true })
+        .limit(limit)
+
+      if (error) {
+        console.error('Error fetching featured hackathons:', error)
+        // Return empty array instead of throwing to prevent 500 errors
+        return []
+      }
+
+      const result = hackathons || []
+      setCachedData(cacheKey, result)
+      return result
+    } catch (error) {
+      console.error('Error in getFeaturedHackathons:', error)
+      // Return empty array as fallback
+      return []
+    }
   }
 
   async createHackathon(hackathonData: Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>): Promise<Hackathon> {
@@ -180,6 +161,8 @@ class HackathonsService {
       throw new Error('Failed to create hackathon')
     }
 
+    // Clear cache after creating new hackathon
+    cache.clear()
     return hackathon
   }
 
@@ -198,6 +181,8 @@ class HackathonsService {
       throw new Error('Failed to update hackathon')
     }
 
+    // Clear cache after updating hackathon
+    cache.clear()
     return hackathon
   }
 
@@ -214,6 +199,8 @@ class HackathonsService {
       throw new Error('Failed to delete hackathon')
     }
 
+    // Clear cache after deleting hackathon
+    cache.clear()
     return true
   }
 }

@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -285,7 +285,6 @@ export default function AboutPage() {
                             transition={{ duration: 0.6 }}
                             viewport={{ once: true }}
                         >
-                            {/* copy from here  */}
                             <div className="flex flex-col items-center justify-center gap-4">
                                 <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
                                     <span className="absolute inset-0 overflow-hidden rounded-full">
@@ -300,7 +299,6 @@ export default function AboutPage() {
                                     <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
                                 </button>
                             </div>
-                            {/* to here  */}
                             <h2 className="text-3xl md:text-4xl font-bold">
                                 Our{" "}
                                 <span className="gradient-text">Features</span>
@@ -331,7 +329,6 @@ export default function AboutPage() {
                                         className="relative h-full bg-white/50 dark:bg-background/50 backdrop-blur-md border border-primary/10 overflow-hidden"
                                         color="rgba(99, 102, 241, 0.15)"
                                     >
-                                        {/* Instead of full overlay, use a radial white fade to preserve spotlight */}
                                         <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_60%)] dark:bg-none" />
 
                                         <div className="relative z-10 space-y-4">
@@ -385,231 +382,6 @@ export default function AboutPage() {
             {/* Team Section */}
             <TeamSection />
 
-
-            {/* Vision & Roadmap Section */}
-            <section className="py-20 relative overflow-hidden">
-                <div className="container px-4 mx-auto">
-                    <div className="max-w-4xl mx-auto space-y-12">
-                        <motion.div
-                            className="text-center space-y-6"
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.6 }}
-                            viewport={{ once: true }}
-                        >
-                            <div className="flex flex-col items-center justify-center gap-4">
-                                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
-                                    <span className="absolute inset-0 overflow-hidden rounded-full">
-                                        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                    </span>
-                                    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-                                        <span> Our Vision & Mission</span>
-                                        <span>
-                                            <Target className="w-3 h-3" />
-                                        </span>
-                                    </div>
-                                    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-                                </button>
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-bold">
-                                Building the{" "}
-                                <span className="gradient-text">Future</span>
-                            </h2>
-                            <p className="text-xl text-muted-foreground">
-                                We believe that everyone should have access to
-                                quality coding education. Our mission is to
-                                empower developers worldwide with the skills,
-                                knowledge, and community support they need to
-                                succeed in the tech industry.
-                            </p>
-                        </motion.div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                viewport={{ once: true }}
-                            >
-                                <Card className="relative border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-primary animate-gradient-x rounded-lg"></div>
-                                    <div className="absolute inset-[1px] bg-background rounded-lg"></div>
-                                    <CardHeader className="relative">
-                                        <div className="flex items-center space-x-4">
-                                            <motion.div
-                                                className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden bg-gradient-to-br from-blue-500 to-cyan-500"
-                                                whileHover={{
-                                                    rotate: [0, 10, -10, 0],
-                                                    transition: {
-                                                        duration: 0.5,
-                                                    },
-                                                }}
-                                            >
-                                                <Users className="h-7 w-7 text-white" />
-                                            </motion.div>
-                                            <div>
-                                                <CardTitle className="text-2xl font-bold text-primary">
-                                                    Community Growth
-                                                </CardTitle>
-                                                <p className="text-lg font-semibold text-foreground">
-                                                    Building Together
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <p className="text-muted-foreground leading-relaxed text-lg">
-                                            Our goal is to build a vibrant
-                                            community of 10,000+ active learners
-                                            by the end of 2024, fostering
-                                            collaboration and knowledge sharing
-                                            among developers of all levels,
-                                            regardless of their background or
-                                            experience.
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 }}
-                                viewport={{ once: true }}
-                            >
-                                <Card className="relative border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-primary to-purple-500 animate-gradient-x rounded-lg"></div>
-                                    <div className="absolute inset-[1px] bg-background rounded-lg"></div>
-                                    <CardHeader className="relative">
-                                        <div className="flex items-center space-x-4">
-                                            <motion.div
-                                                className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500"
-                                                whileHover={{
-                                                    rotate: [0, 10, -10, 0],
-                                                    transition: {
-                                                        duration: 0.5,
-                                                    },
-                                                }}
-                                            >
-                                                <Code2 className="h-7 w-7 text-white" />
-                                            </motion.div>
-                                            <div>
-                                                <CardTitle className="text-2xl font-bold text-primary">
-                                                    Learning Platform
-                                                </CardTitle>
-                                                <p className="text-lg font-semibold text-foreground">
-                                                    Innovation First
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <p className="text-muted-foreground leading-relaxed text-lg">
-                                            We&apos;re developing an AI-powered
-                                            learning platform with 500+ coding
-                                            challenges and 50+ structured
-                                            learning paths to help developers
-                                            master their skills in an inclusive
-                                            learning environment.
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                viewport={{ once: true }}
-                            >
-                                <Card className="relative border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-500 to-green-500 animate-gradient-x rounded-lg"></div>
-                                    <div className="absolute inset-[1px] bg-background rounded-lg"></div>
-                                    <CardHeader className="relative">
-                                        <div className="flex items-center space-x-4">
-                                            <motion.div
-                                                className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden bg-gradient-to-br from-green-500 to-emerald-500"
-                                                whileHover={{
-                                                    rotate: [0, 10, -10, 0],
-                                                    transition: {
-                                                        duration: 0.5,
-                                                    },
-                                                }}
-                                            >
-                                                <Globe className="h-7 w-7 text-white" />
-                                            </motion.div>
-                                            <div>
-                                                <CardTitle className="text-2xl font-bold text-primary">
-                                                    Global Reach
-                                                </CardTitle>
-                                                <p className="text-lg font-semibold text-foreground">
-                                                    Expanding Horizons
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <p className="text-muted-foreground leading-relaxed text-lg">
-                                            Planning to expand our reach to 50+
-                                            countries, making coding education
-                                            accessible to developers worldwide
-                                            through localized content and
-                                            community support, ensuring quality
-                                            education for everyone.
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.3 }}
-                                viewport={{ once: true }}
-                            >
-                                <Card className="relative border-0 shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group hover:-translate-y-2">
-                                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 animate-gradient-x rounded-lg"></div>
-                                    <div className="absolute inset-[1px] bg-background rounded-lg"></div>
-                                    <CardHeader className="relative">
-                                        <div className="flex items-center space-x-4">
-                                            <motion.div
-                                                className="w-14 h-14 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden bg-gradient-to-br from-orange-500 to-red-500"
-                                                whileHover={{
-                                                    rotate: [0, 10, -10, 0],
-                                                    transition: {
-                                                        duration: 0.5,
-                                                    },
-                                                }}
-                                            >
-                                                <Trophy className="h-7 w-7 text-white" />
-                                            </motion.div>
-                                            <div>
-                                                <CardTitle className="text-2xl font-bold text-primary">
-                                                    Career Impact
-                                                </CardTitle>
-                                                <p className="text-lg font-semibold text-foreground">
-                                                    Success Stories
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="relative">
-                                        <p className="text-muted-foreground leading-relaxed text-lg">
-                                            Aiming to help 1,000+ developers
-                                            land their dream jobs in tech
-                                            through our comprehensive learning
-                                            programs and industry partnerships,
-                                            empowering them with the skills and
-                                            knowledge to succeed.
-                                        </p>
-                                    </CardContent>
-                                </Card>
-                            </motion.div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             {/* Enhanced Testimonials Section */}
             <section className="py-20 bg-gradient-to-b from-muted/30 to-background relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(99,102,241,0.05),transparent_70%)]"></div>
@@ -628,7 +400,7 @@ export default function AboutPage() {
                                         <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                                     </span>
                                     <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-                                        <span> Success Stories</span>
+                                        <span>Success Stories</span>
                                         <span>
                                             <Trophy className="w-3 h-3" />
                                         </span>
@@ -697,8 +469,11 @@ export default function AboutPage() {
                                     <span className="absolute inset-0 overflow-hidden rounded-full">
                                         <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                                     </span>
-                                    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-1 px-4 ring-1 ring-white/10">
-                                        <span>Welcome Back 🚀</span>
+                                    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                                        <span>Welcome Back!</span>
+                                        <span>
+                                            <Sparkles className="w-3 h-3" />
+                                        </span>
                                     </div>
                                     <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
                                 </button>
@@ -709,10 +484,34 @@ export default function AboutPage() {
                                 transition={{ duration: 0.5, delay: 0.2 }}
                                 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
                             >
-                                Keep Growing with Codeunia!
+                                Ready to Continue Your {" "}
+                                <motion.span
+                                    className="gradient-text inline-block"
+                                    animate={{
+                                        backgroundPosition: [
+                                            "0% 50%",
+                                            "100% 50%",
+                                            "0% 50%",
+                                        ],
+                                    }}
+                                    transition={{
+                                        duration: 4,
+                                        repeat: Infinity,
+                                        ease: "linear",
+                                    }}
+                                    style={{
+                                        background:
+                                            "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                                        backgroundSize: "300% 100%",
+                                        WebkitBackgroundClip: "text",
+                                        WebkitTextFillColor: "transparent",
+                                    }}
+                                >
+                                    Coding Journey?
+                                </motion.span>
                             </motion.h1>
                             <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 leading-relaxed">
-                              Continue your learning journey, connect with the community, and unlock new opportunities.
+                              Continue your learning journey with personalized content, track your progress, and connect with our community.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
                               <Button
@@ -721,8 +520,8 @@ export default function AboutPage() {
                                 className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
                                 asChild
                               >
-                                <Link href="/protected" className="h-full flex items-center justify-center gap-2">
-                                  <Users className="w-5 h-5" />
+                                <Link href="/protected/dashboard" className="h-full flex items-center justify-center gap-2">
+                                  <Rocket className="w-5 h-5" />
                                   Go to Dashboard
                                 </Link>
                               </Button>
@@ -732,7 +531,7 @@ export default function AboutPage() {
                                 className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
                                 asChild
                               >
-                                <Link href="/events" className="h-full flex items-center justify-center gap-2">
+                                <Link href="/hackathons" className="h-full flex items-center justify-center gap-2">
                                   <Globe className="w-5 h-5" />
                                   View Events
                                 </Link>
@@ -794,10 +593,10 @@ export default function AboutPage() {
                                 className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-all duration-300"
                                 asChild
                               >
-                                <a href="/auth/signup" className="h-full flex items-center justify-center gap-2">
+                                <Link href="/auth/signup" className="h-full flex items-center justify-center gap-2">
                                   <UserPlus className="w-5 h-5" />
                                   Get Started
-                                </a>
+                                </Link>
                               </Button>
                               <Button
                                 size="sm"
@@ -805,10 +604,10 @@ export default function AboutPage() {
                                 className="sm:w-auto px-6 py-3 text-base font-semibold hover:scale-105 transition-transform duration-300"
                                 asChild
                               >
-                                <a href="/contact" className="h-full flex items-center justify-center gap-2">
+                                <Link href="/contact" className="h-full flex items-center justify-center gap-2">
                                   <Mail className="w-5 h-5" />
                                   Contact Us
-                                </a>
+                                </Link>
                               </Button>
                             </div>
                           </>
@@ -821,4 +620,4 @@ export default function AboutPage() {
             <Footer />
         </div>
     );
-}
+} 

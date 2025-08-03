@@ -18,6 +18,7 @@ import {
   Clock,
   ArrowUpRight,
   ArrowDownRight,
+  ClipboardCheck,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import type { BlogPost } from "@/components/data/blog-posts"
@@ -36,6 +37,15 @@ const dashboardStats = [
     icon: Users,
     color: "text-blue-600",
     bgColor: "bg-blue-50 dark:bg-blue-950/20",
+  },
+  {
+    title: "Active Tests",
+    value: "0",
+    change: "+0%",
+    trend: "up",
+    icon: ClipboardCheck,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50 dark:bg-orange-950/20",
   },
   {
     title: "Active Projects",
@@ -76,20 +86,27 @@ const recentActivities = [
   },
   {
     id: 2,
+    type: "test_created",
+    message: "New test 'JavaScript Fundamentals' created",
+    timestamp: "5 minutes ago",
+    status: "success",
+  },
+  {
+    id: 3,
     type: "blog_published",
     message: "Blog post 'React 18 Features' published by Akshay",
     timestamp: "15 minutes ago",
     status: "success",
   },
   {
-    id: 3,
+    id: 4,
     type: "event_created",
     message: "New hackathon 'Summer Challenge 2025' created",
     timestamp: "1 hour ago",
     status: "info",
   },
   {
-    id: 4,
+    id: 5,
     type: "security_alert",
     message: "Multiple failed login attempts detected",
     timestamp: "2 hours ago",

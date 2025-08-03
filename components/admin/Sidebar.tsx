@@ -32,7 +32,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import AdminHeader from "./AdminHeader";
-import { CodeuniaLogo } from "../codeunia-logo";
+import CodeuniaLogo from "../codeunia-logo";
 
 
 export type SidebarGroupType = {
@@ -74,7 +74,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
               <div className="p-4 border-b border-zinc-800">
                 <div className="flex items-center gap-3">
                   <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
-                    <CodeuniaLogo size={32} />
+                    <CodeuniaLogo size="md" showText={false} noLink={true} />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Admin</span>
@@ -177,7 +177,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                 <SidebarMenuButton size="lg" asChild className="hover:bg-purple-700/20 transition-colors rounded-xl p-2">
                   <Link href="/admin">
                     <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
-                      <CodeuniaLogo size={32} />
+                      <CodeuniaLogo size="md" showText={false} noLink={true} />
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight ml-3">
                       <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Admin</span>

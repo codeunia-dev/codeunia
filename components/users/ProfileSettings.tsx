@@ -3,6 +3,8 @@
 import React from 'react'
 import { useState, useEffect, useCallback } from 'react'
 import { useProfile } from '@/hooks/useProfile'
+import { useContributionGraph } from '@/hooks/useContributionGraph'
+import { GlobalScoreCard } from '@/components/global-leaderboard/GlobalScoreCard'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,10 +20,7 @@ import {
   Github, 
   Linkedin, 
   Twitter, 
-  Phone, 
-  MapPin, 
   Briefcase, 
-  Building, 
   Plus, 
   X,
   AlertCircle,
@@ -31,6 +30,7 @@ import {
   Eye
 } from 'lucide-react'
 import { ProfileUpdateData } from '@/types/profile'
+import { UsernameField } from '@/components/UsernameField'
 
 // Validation rules
 interface ValidationRule {
@@ -42,7 +42,7 @@ interface ValidationRule {
 const validationRules: Record<string, ValidationRule> = {
   first_name: { required: true, minLength: 2 },
   last_name: { required: true, minLength: 2 },
-  display_name: { required: true, minLength: 3 },
+
   email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
   phone: { pattern: /^[\+]?[1-9][\d]{0,15}$/ },
   github_url: { pattern: /^https?:\/\/github\.com\/[a-zA-Z0-9-]+$/ },
@@ -57,6 +57,7 @@ const validationRules: Record<string, ValidationRule> = {
 
 export function ProfileSettings() {
   const { profile, loading, updating, error, updateProfile, clearError } = useProfile()
+  const { logProfileUpdate } = useContributionGraph()
   
   const [formData, setFormData] = useState<ProfileUpdateData>({})
   const [skills, setSkills] = useState<string[]>([])
@@ -71,7 +72,6 @@ export function ProfileSettings() {
     const requiredFields = [
       'first_name',
       'last_name',
-      'display_name',
       'bio',
       'phone',
       'github_url',
@@ -94,51 +94,57 @@ export function ProfileSettings() {
 
   // Auto-save functionality
   const autoSave = useCallback(async () => {
-    if (!hasUnsavedChanges) return
-    
-    setAutoSaveStatus('saving')
+    if (!hasUnsavedChanges) return;
+
     try {
-      const updatedData: ProfileUpdateData = {
+      setAutoSaveStatus('saving');
+      const success = await updateProfile({
         ...formData,
         skills: skills
+      });
+      
+      if (success) {
+        setAutoSaveStatus('saved');
+        setHasUnsavedChanges(false);
+        // Log profile update activity
+        await logProfileUpdate();
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      } else {
+        setAutoSaveStatus('error');
       }
-      await updateProfile(updatedData)
-      setAutoSaveStatus('saved')
-      setHasUnsavedChanges(false)
-      setTimeout(() => setAutoSaveStatus('idle'), 2000)
-    } catch {
-      setAutoSaveStatus('error')
-      setTimeout(() => setAutoSaveStatus('idle'), 3000)
+    } catch (error) {
+      console.error('Auto-save error:', error);
+      setAutoSaveStatus('error');
     }
-  }, [formData, skills, hasUnsavedChanges, updateProfile])
+  }, [formData, skills, hasUnsavedChanges, updateProfile, logProfileUpdate]);
 
-  // Auto-save timer
+  // Auto-save effect
   useEffect(() => {
-    if (!hasUnsavedChanges) return
-    
-    const timer = setTimeout(autoSave, 2000) // Auto-save after 2 seconds of inactivity
-    return () => clearTimeout(timer)
-  }, [formData, skills, hasUnsavedChanges, autoSave])
+    if (hasUnsavedChanges) {
+      const timer = setTimeout(autoSave, 2000) // Auto-save after 2 seconds of inactivity
+      return () => clearTimeout(timer)
+    }
+  }, [hasUnsavedChanges, autoSave])
 
-  // Validation function
+  // Validate a single field
   const validateField = (field: string, value: string): string => {
-    const rules = validationRules[field]
-    if (!rules) return ''
+    const rule = validationRules[field];
+    if (!rule) return '';
 
-    if ('required' in rules && rules.required && !value) {
-      return `${field.replace('_', ' ')} is required`
+    if (rule.required && !value) {
+      return `${field.replace('_', ' ')} is required`;
     }
-    
-    if ('minLength' in rules && rules.minLength && value.length < rules.minLength) {
-      return `${field.replace('_', ' ')} must be at least ${rules.minLength} characters`
+
+    if (rule.minLength && value.length < rule.minLength) {
+      return `${field.replace('_', ' ')} must be at least ${rule.minLength} characters`;
     }
-    
-    if ('pattern' in rules && rules.pattern && value && !rules.pattern.test(value)) {
-      return `Please enter a valid ${field.replace('_', ' ')}`
+
+    if (rule.pattern && !rule.pattern.test(value)) {
+      return `${field.replace('_', ' ')} format is invalid`;
     }
-    
-    return ''
-  }
+
+    return '';
+  };
 
   // Initialize form data when profile loads
   useEffect(() => {
@@ -146,7 +152,7 @@ export function ProfileSettings() {
       setFormData({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-        display_name: profile.display_name || '',
+
         bio: profile.bio || '',
         phone: profile.phone || '',
         github_url: profile.github_url || '',
@@ -195,6 +201,8 @@ export function ProfileSettings() {
     if (success) {
       setSuccessMessage('Profile updated successfully!')
       setHasUnsavedChanges(false)
+      // Log profile update activity
+      await logProfileUpdate();
       setTimeout(() => setSuccessMessage(''), 3000)
     }
   }
@@ -240,6 +248,9 @@ export function ProfileSettings() {
           <AlertDescription>You have unsaved changes. They will be auto-saved in a few seconds, or you can save manually.</AlertDescription>
         </Alert>
       )}
+
+      {/* Global Score & Rank */}
+      <GlobalScoreCard />
 
       {/* Profile Completion */}
       <Card className="border-l-4 border-l-blue-500">
@@ -333,23 +344,28 @@ export function ProfileSettings() {
               )}
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="display_name" className="flex items-center gap-1">
-              Display Name
-              <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="display_name"
-              value={formData.display_name || ''}
-              onChange={(e) => handleInputChange('display_name', e.target.value)}
-              placeholder="How others will see your name"
-              className={validationErrors.display_name ? 'border-red-500' : ''}
+
+
+
+          {/* Username Field with One-Time Edit */}
+          {profile && (
+            <UsernameField
+              key={`${profile.username}-${profile.username_editable}`}
+              currentUsername={profile.username}
+              usernameEditable={profile.username_editable}
+              userId={profile.id}
+              onUsernameChange={(newUsername) => {
+                // Update local state to reflect the change
+                if (profile) {
+                  // Update the profile object to reflect the change
+                  profile.username = newUsername
+                  profile.username_editable = false
+                  // Force re-render
+                  setFormData(prev => ({ ...prev }))
+                }
+              }}
             />
-            {validationErrors.display_name && (
-              <p className="text-xs text-red-500">{validationErrors.display_name}</p>
-            )}
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
@@ -358,43 +374,22 @@ export function ProfileSettings() {
               value={formData.bio || ''}
               onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
-              rows={3}
-              className="resize-none"
+              rows={4}
             />
-            <p className="text-xs text-muted-foreground">
-              {formData.bio?.length || 0}/500 characters
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Phone
-              </Label>
-              <Input
-                id="phone"
-                value={formData.phone || ''}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="+1 (555) 123-4567"
-                className={validationErrors.phone ? 'border-red-500' : ''}
-              />
-              {validationErrors.phone && (
-                <p className="text-xs text-red-500">{validationErrors.phone}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="location" className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Location
-              </Label>
-              <Input
-                id="location"
-                value={formData.location || ''}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                placeholder="City, Country"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              value={formData.phone || ''}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              placeholder="Enter your phone number"
+              className={validationErrors.phone ? 'border-red-500' : ''}
+            />
+            {validationErrors.phone && (
+              <p className="text-xs text-red-500">{validationErrors.phone}</p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -411,62 +406,33 @@ export function ProfileSettings() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="current_position" className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4" />
-                Current Position
-              </Label>
+              <Label htmlFor="current_position">Current Position</Label>
               <Input
                 id="current_position"
                 value={formData.current_position || ''}
                 onChange={(e) => handleInputChange('current_position', e.target.value)}
-                placeholder="Software Engineer"
+                placeholder="e.g., Software Engineer"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company" className="flex items-center gap-2">
-                <Building className="h-4 w-4" />
-                Company
-              </Label>
+              <Label htmlFor="company">Company</Label>
               <Input
                 id="company"
                 value={formData.company || ''}
                 onChange={(e) => handleInputChange('company', e.target.value)}
-                placeholder="Company Name"
+                placeholder="e.g., Tech Corp"
               />
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Label>Skills</Label>
-            <div className="flex flex-wrap gap-2 mb-3 min-h-[40px] p-2 border rounded-md bg-muted/50">
-              {skills.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No skills added yet</p>
-              ) : (
-                skills.map((skill, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80">
-                    {skill}
-                    <button 
-                      onClick={() => handleRemoveSkill(skill)}
-                      className="ml-1 hover:text-red-500 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                placeholder="Add a skill (e.g., React, Python)"
-                onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
-                className="flex-1"
-              />
-              <Button onClick={handleAddSkill} size="icon" disabled={!newSkill.trim()}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              value={formData.location || ''}
+              onChange={(e) => handleInputChange('location', e.target.value)}
+              placeholder="e.g., San Francisco, CA"
+            />
           </div>
         </CardContent>
       </Card>
@@ -480,58 +446,97 @@ export function ProfileSettings() {
           </CardTitle>
           <CardDescription>Connect your social media profiles</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="github_url" className="flex items-center gap-2">
-                <Github className="h-4 w-4" />
-                GitHub
-              </Label>
-              <Input
-                id="github_url"
-                value={formData.github_url || ''}
-                onChange={(e) => handleInputChange('github_url', e.target.value)}
-                placeholder="https://github.com/username"
-                className={validationErrors.github_url ? 'border-red-500' : ''}
-              />
-              {validationErrors.github_url && (
-                <p className="text-xs text-red-500">{validationErrors.github_url}</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="linkedin_url" className="flex items-center gap-2">
-                <Linkedin className="h-4 w-4" />
-                LinkedIn
-              </Label>
-              <Input
-                id="linkedin_url"
-                value={formData.linkedin_url || ''}
-                onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
-               placeholder="https://www.linkedin.com/in/username/"
-                className={validationErrors.linkedin_url ? 'border-red-500' : ''}
-              />
-              {validationErrors.linkedin_url && (
-                <p className="text-xs text-red-500">{validationErrors.linkedin_url}</p>
-              )}
-            </div>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="github_url" className="flex items-center gap-2">
+              <Github className="h-4 w-4" />
+              GitHub Profile
+            </Label>
+            <Input
+              id="github_url"
+              value={formData.github_url || ''}
+              onChange={(e) => handleInputChange('github_url', e.target.value)}
+              placeholder="https://github.com/username"
+              className={validationErrors.github_url ? 'border-red-500' : ''}
+            />
+            {validationErrors.github_url && (
+              <p className="text-xs text-red-500">{validationErrors.github_url}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="linkedin_url" className="flex items-center gap-2">
+              <Linkedin className="h-4 w-4" />
+              LinkedIn Profile
+            </Label>
+            <Input
+              id="linkedin_url"
+              value={formData.linkedin_url || ''}
+              onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+              placeholder="https://linkedin.com/in/username"
+              className={validationErrors.linkedin_url ? 'border-red-500' : ''}
+            />
+            {validationErrors.linkedin_url && (
+              <p className="text-xs text-red-500">{validationErrors.linkedin_url}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="twitter_url" className="flex items-center gap-2">
               <Twitter className="h-4 w-4" />
-              Twitter
+              Twitter/X Profile
             </Label>
             <Input
               id="twitter_url"
               value={formData.twitter_url || ''}
               onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-             placeholder="https://x.com/username"
+              placeholder="https://twitter.com/username"
               className={validationErrors.twitter_url ? 'border-red-500' : ''}
             />
             {validationErrors.twitter_url && (
               <p className="text-xs text-red-500">{validationErrors.twitter_url}</p>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Skills */}
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Skills & Expertise
+          </CardTitle>
+          <CardDescription>Add your technical skills and areas of expertise</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              placeholder="Add a skill..."
+              onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+            />
+            <Button onClick={handleAddSkill} disabled={!newSkill.trim()}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {skills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <Badge key={index} variant="secondary" className="px-3 py-1">
+                  {skill}
+                  <button
+                    onClick={() => handleRemoveSkill(skill)}
+                    className="ml-2 hover:text-red-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -542,33 +547,35 @@ export function ProfileSettings() {
             <Eye className="h-5 w-5" />
             Privacy Settings
           </CardTitle>
-          <CardDescription>Control who can see your profile and how you receive notifications</CardDescription>
+          <CardDescription>Control your profile visibility and notifications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+          <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-base font-medium">Public Profile</Label>
+              <Label htmlFor="is_public">Public Profile</Label>
               <p className="text-sm text-muted-foreground">
                 Allow others to view your profile information
               </p>
             </div>
             <Switch
-              checked={formData.is_public}
+              id="is_public"
+              checked={formData.is_public || false}
               onCheckedChange={(checked) => handleInputChange('is_public', checked)}
             />
           </div>
 
           <Separator />
 
-          <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
+          <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label className="text-base font-medium">Email Notifications</Label>
+              <Label htmlFor="email_notifications">Email Notifications</Label>
               <p className="text-sm text-muted-foreground">
-                Receive email notifications about your account
+                Receive email updates about your account and activities
               </p>
             </div>
             <Switch
-              checked={formData.email_notifications}
+              id="email_notifications"
+              checked={formData.email_notifications || false}
               onCheckedChange={(checked) => handleInputChange('email_notifications', checked)}
             />
           </div>
@@ -576,43 +583,20 @@ export function ProfileSettings() {
       </Card>
 
       {/* Save Button */}
-      <Card className="border-l-4 border-l-green-500">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={updating}
-              className="flex-1"
-              size="lg"
-              variant={hasUnsavedChanges ? "default" : "secondary"}
-            >
-              {updating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : hasUnsavedChanges ? (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Profile
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  All Changes Saved
-                </>
-              )}
-            </Button>
-            <div className="flex flex-col gap-1">
-              {hasUnsavedChanges && (
-                <p className="text-sm text-amber-600 dark:text-amber-400 self-center">
-                  ⚡ Auto-saving in progress...
-                </p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleSaveProfile} 
+          disabled={updating || !hasUnsavedChanges}
+          className="gap-2"
+        >
+          {updating ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {updating ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </div>
     </div>
   )
 }

@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { AlertCircle, FileText, Search, MoreHorizontal, Edit, Star, Trash2, PlusCircle, Loader2, RefreshCw } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { categories, BlogPost } from "@/components/data/blog-posts"
+import { OptimizedImage } from '@/components/ui/optimized-image'
 
 // types
 interface BlogFormData {
@@ -275,7 +276,13 @@ const BlogPostForm = ({
         />
         {formData.image && (
           <div>
-            <img src={formData.image} alt="Article Preview" className="mt-2 max-h-32" />
+            <OptimizedImage
+              src={formData.image}
+              alt="Article Preview"
+              width={256}
+              height={128}
+              className="mt-2 max-h-32"
+            />
             <div className="mt-2 flex items-center gap-2">
               <Input value={formData.image} readOnly className="text-xs" />
             </div>

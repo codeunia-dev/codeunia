@@ -1,6 +1,21 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileSettings } from "@/components/users/ProfileSettings";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+import Link from "next/link";
+
+// Dynamic import with loading fallback
+const ProfileSettings = dynamic(
+  () => import("@/components/users/ProfileSettings").then(mod => ({ default: mod.ProfileSettings })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <span className="ml-4 text-lg text-muted-foreground">Loading profile settings...</span>
+      </div>
+    )
+  }
+);
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -31,14 +46,21 @@ export default async function ProfilePage() {
           </div>
         </div>
 
-        {/* Profile Settings Component */}
+        {/* Profile Settings Component with Suspense */}
         <div className="relative">
-          <ProfileSettings />
+          <Suspense fallback={
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+              <span className="ml-4 text-lg text-muted-foreground">Loading profile settings...</span>
+            </div>
+          }>
+            <ProfileSettings />
+          </Suspense>
         </div>
 
         {/* View Profile Link */}
         <div className="text-center">
-          <a 
+          <Link 
             href="/protected/profile/view" 
             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-200 font-medium"
           >
@@ -47,7 +69,7 @@ export default async function ProfilePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
             View Your Profile
-          </a>
+          </Link>
         </div>
       </div>
     </div>

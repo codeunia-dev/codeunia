@@ -7,14 +7,20 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 5
     
-    const hackathons = await hackathonsService.getFeaturedHackathons(limit)
+    // Add timeout to prevent hanging requests
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 8000)
+    })
+
+    const hackathonsPromise = hackathonsService.getFeaturedHackathons(limit)
+    
+    const hackathons = await Promise.race([hackathonsPromise, timeoutPromise]) as any
     
     return NextResponse.json({ hackathons })
   } catch (error) {
     console.error('Error in GET /api/hackathons/featured:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch featured hackathons' },
-      { status: 500 }
-    )
+    
+    // Return empty response instead of error
+    return NextResponse.json({ hackathons: [] })
   }
 } 
