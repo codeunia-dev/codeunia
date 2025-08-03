@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import type React from "react"
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-import { useState, Suspense } from "react"
+import { useState, Suspense, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -33,6 +33,19 @@ function SignInForm() {
 
   // Get the return URL from query parameters
   const returnUrl = searchParams.get('returnUrl') || '/'
+
+  // Check if user is already authenticated and redirect
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        router.push(returnUrl)
+        router.refresh()
+      }
+    }
+    checkAuth()
+  }, [router, returnUrl])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
