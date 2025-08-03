@@ -78,7 +78,7 @@ export function useFavicon(theme: string | undefined) {
                 link.parentNode.removeChild(link);
               }
             } catch (error) {
-              // Silently handle removal errors
+              console.warn('Error removing favicon link:', error);
             }
           });
           
@@ -101,14 +101,17 @@ export function useFavicon(theme: string | undefined) {
             document.head.appendChild(shortcutLink);
           }
           
-          // Force a repaint by temporarily changing document title
-          const originalTitle = document.title;
-          document.title = originalTitle + ' ';
-          setTimeout(() => {
-            document.title = originalTitle;
-          }, 10);
+          // Also create apple touch icon
+          const appleLink = document.createElement('link');
+          appleLink.rel = 'apple-touch-icon';
+          appleLink.href = faviconWithCacheBust;
+          if (document.head) {
+            document.head.appendChild(appleLink);
+          }
+          
+          console.log(`Favicon updated to: ${faviconPath} (theme: ${detectedTheme})`);
         } catch (error) {
-          // Silently handle errors
+          console.error('Error updating favicon:', error);
         }
       };
 
@@ -116,7 +119,8 @@ export function useFavicon(theme: string | undefined) {
       const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
           if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-            updateFavicon(theme);
+            // Add a small delay to ensure the class change is fully applied
+            setTimeout(() => updateFavicon(theme), 50);
           }
         });
       });
@@ -148,10 +152,16 @@ export function useFavicon(theme: string | undefined) {
       // Also update after a short delay to ensure theme is fully applied
       const delayTimeoutId = setTimeout(() => {
         updateFavicon(theme);
-      }, 1000);
+      }, 500);
+      
+      // Additional update after a longer delay to catch any late theme changes
+      const longDelayTimeoutId = setTimeout(() => {
+        updateFavicon(theme);
+      }, 2000);
       
       return () => {
         clearTimeout(delayTimeoutId);
+        clearTimeout(longDelayTimeoutId);
         mediaQuery.removeEventListener('change', handleSystemThemeChange);
         observer.disconnect();
       };

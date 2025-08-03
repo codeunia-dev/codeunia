@@ -45,6 +45,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify payment with Razorpay
+    const Razorpay = (await import('razorpay')).default;
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID || '',
+      key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+    });
+
+    try {
+      const payment = await razorpay.payments.fetch(paymentId);
+      
+      if (payment.status !== 'captured') {
+        return NextResponse.json(
+          { error: 'Payment not completed. Status: ' + payment.status },
+          { status: 400 }
+        );
+      }
+
+      if (payment.amount !== (premiumPlans[planId as keyof typeof premiumPlans]?.price || 0) * 100) {
+        return NextResponse.json(
+          { error: 'Payment amount mismatch' },
+          { status: 400 }
+        );
+      }
+    } catch (razorpayError) {
+      console.error('Error fetching payment from Razorpay:', razorpayError);
+      return NextResponse.json(
+        { error: 'Failed to verify payment with payment gateway' },
+        { status: 500 }
+      );
+    }
+
     // Get plan details
     const plan = premiumPlans[planId as keyof typeof premiumPlans];
     if (!plan) {

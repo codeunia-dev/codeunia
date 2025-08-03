@@ -48,19 +48,19 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4">
+      <div className="container flex h-16 items-center px-4">
         {/* logo section - left */}
-        <div className="flex items-center">
+        <div className="flex items-center flex-shrink-0">
           <Link href="/" className="hover:scale-105 transition-transform duration-200">
             <div className="flex items-center gap-0">
-              <CodeuniaLogo size="lg" noLink={true} />
+              <CodeuniaLogo size="lg" noLink={true} showText={false} />
               <span className="text-2xl font-bold gradient-text">Codeunia</span>
             </div>
           </Link>
         </div>
 
         {/* desktop nav - center */}
-        <nav className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
+        <nav className="hidden md:flex items-center space-x-8 mx-auto">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -84,7 +84,7 @@ export default function Header() {
         </nav>
 
         {/* desktop auth & theme - right */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
           {/* <ThemeToggle /> */}
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading...</div>
