@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 // import { ThemeToggle } from "@/components/theme-toggle"
 import { UserIcon } from "@/components/user-icon"
@@ -28,6 +28,24 @@ export default function Header() {
   const pathname = usePathname()
   const { user, loading } = useAuth()
 
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element
+      if (isMenuOpen && !target.closest('.mobile-menu-container')) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
+
   // helper function to check if a path is active
   const isActive = (path: string) => {
     if (path === "/") {
@@ -48,13 +66,13 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-16 items-center px-4">
+      <div className="container flex h-16 items-center justify-between px-4">
         {/* logo section - left */}
         <div className="flex items-center flex-shrink-0">
           <Link href="/" className="hover:scale-105 transition-transform duration-200">
             <div className="flex items-center gap-0">
-              <CodeuniaLogo size="lg" noLink={true} showText={false} />
-              <span className="text-2xl font-bold gradient-text">Codeunia</span>
+              <CodeuniaLogo size="md" noLink={true} showText={false} />
+              <span className="text-xl md:text-2xl font-bold gradient-text">Codeunia</span>
             </div>
           </Link>
         </div>
@@ -121,7 +139,10 @@ export default function Header() {
         <div className="flex md:hidden items-center space-x-2">
           {/* <ThemeToggle /> */}
           {!loading && user && (
-            <UserIcon />
+            <div className="flex items-center space-x-2">
+              <PremiumButton user={user} />
+              <UserIcon />
+            </div>
           )}
           <Button
             variant="ghost"
@@ -136,33 +157,66 @@ export default function Header() {
 
       {/* mobile nav*/}
       {isMenuOpen && (
-        <div className="md:hidden border-t bg-background/95 backdrop-blur-xl">
+        <div className="mobile-menu-container md:hidden border-t bg-background/95 backdrop-blur-xl">
           <nav className="container px-4 py-6 space-y-4">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`block text-sm font-medium transition-colors py-2 relative ${
-                  isActive(item.href)
-                    ? "text-primary font-semibold"
-                    : "text-foreground hover:text-primary"
-                }`}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {item.label}
-                {isActive(item.href) && (
-                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-full"></span>
-                )}
-              </Link>
-            ))}
+            {/* Navigation Links */}
+            <div className="space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block text-sm font-medium transition-colors py-3 px-2 rounded-lg relative ${
+                    isActive(item.href)
+                      ? "text-primary font-semibold bg-primary/10"
+                      : "text-foreground hover:text-primary hover:bg-muted/50"
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {item.label}
+                  {isActive(item.href) && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full"></span>
+                  )}
+                </Link>
+              ))}
+            </div>
+
+            {/* User Actions */}
+            {!loading && user && (
+              <div className="pt-4 border-t border-border">
+                <div className="flex items-center space-x-3 py-3 px-2">
+                  <UserIcon />
+                  <div className="flex-1 min-w-0">
+                    <UserDisplay userId={user.id} showCodeuniaId={false} />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={async () => {
+                      const supabase = createClient()
+                      await supabase.auth.signOut()
+                      window.location.reload()
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Auth Buttons for non-authenticated users */}
             {!loading && !user && (
-              <div className="flex space-x-2 pt-4">
-                <Button variant="ghost" asChild className="flex-1">
-                  <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
-                </Button>
-                <Button asChild className="flex-1 glow-effect">
-                  <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
-                </Button>
+              <div className="pt-4 border-t border-border">
+                <div className="flex space-x-2">
+                  <Button variant="ghost" asChild className="flex-1">
+                    <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
+                  </Button>
+                  <Button asChild className="flex-1 glow-effect">
+                    <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
+                  </Button>
+                </div>
               </div>
             )}
           </nav>
