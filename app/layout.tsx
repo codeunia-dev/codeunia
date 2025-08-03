@@ -3,7 +3,6 @@ import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 
-import ThemeAwareFavicon from "@/components/ThemeAwareFavicon";
 // Only load dev tools in development
 const ReactDevTools = () => null;
 const AuthDebug = () => null;
@@ -50,7 +49,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Favicon will be managed dynamically by ThemeAwareFavicon component */}
       </head>
       <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
         <ThemeProvider
@@ -59,7 +57,6 @@ export default function RootLayout({
           enableSystem={true}
           disableTransitionOnChange
         >
-          <ThemeAwareFavicon />
           {children}
           <Toaster richColors position="top-center" />
 
