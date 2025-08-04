@@ -69,7 +69,7 @@ export default function CodeuniaLogo({
       {/* Logo Text */}
       {showText && (
         <span className={`font-medium text-[#007AFF] ${textSizes[size]} transition-all duration-300`} style={{ fontFamily: 'Inter, sans-serif' }}>
-          Codeuni
+          Codeunia
         </span>
       )}
     </>
