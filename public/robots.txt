@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /             # Allow all public pages
+Disallow: /admin/    # Block admin area
+Disallow: /auth/     # Block authentication routes
+Disallow: /protected/# Block protected content
+Disallow: /api/      # Block API endpoints
+
+Sitemap: https://www.codeunia.com/sitemap.xml
