@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+// Updated logo component with new design - force deployment
 interface CodeuniaLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
