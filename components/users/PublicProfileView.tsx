@@ -19,7 +19,6 @@ import {
   Linkedin, 
   Twitter,
   Globe,
-  Share2,
   Loader2,
   EyeOff,
   Lock,
@@ -89,7 +88,7 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
           <EyeOff className="h-12 w-12 mx-auto text-muted-foreground" />
           <h2 className="text-xl font-semibold text-muted-foreground">Profile Not Available</h2>
           <p className="text-muted-foreground">
-            This profile is private or doesn't exist.
+            This profile is private or doesn&apos;t exist.
           </p>
         </div>
       </div>
@@ -152,30 +151,7 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
   const hasSocialLinks = socialLinks.length > 0
   const hasSkills = profile.skills && profile.skills.length > 0
 
-  const handleShare = async () => {
-            const profileUrl = `${window.location.origin}/${profile.username || profile.id}`
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${getFullName()} - Codeunia Profile`,
-          text: `Check out ${getFullName()}'s profile on Codeunia`,
-          url: profileUrl
-        })
-      } catch (error) {
-        console.log('Error sharing:', error)
-      }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(profileUrl)
-        // You could add a toast notification here
-        alert('Profile link copied to clipboard!')
-      } catch (error) {
-        console.log('Error copying to clipboard:', error)
-      }
-    }
-  }
+  
 
   // LinkedIn-style: Show limited content for non-authenticated users
   if (!user) {
@@ -481,7 +457,7 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
             <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">Profile Information</h3>
             <p className="text-muted-foreground mb-4">
-              This profile doesn't have much information yet.
+              This profile doesn&apos;t have much information yet.
             </p>
           </CardContent>
         </Card>
