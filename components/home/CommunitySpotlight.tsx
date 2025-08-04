@@ -29,13 +29,13 @@ export function CommunitySpotlight() {
       quote: "Codeunia is not just another platform — it's a movement. A new-age community that's bringing hackathons and innovation culture right down to the grassroots. It's inspiring to see this kind of impact in real time!",
       name: "Ankul Kumar",
       designation: "President at Rotaract Club of Chandigarh University",
-      src: "/images/testimonials/anshul.jpeg"
+      src: "/images/testimonials/ankul.webp"
     },
     {
         quote: "Participated into my first hackathon through Codeunia! The community support was amazing throughout the event.",
         name: "Simran",
         designation: "Student at Chitkara",
-       src: "/images/testimonials/simran.jpeg"
+       src: "/images/testimonials/simran.webp"
     }
   ];
 

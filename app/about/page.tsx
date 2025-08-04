@@ -93,7 +93,7 @@ export default function AboutPage() {
             quote: "Interning at Codeunia was a turning point in my journey. The hands-on projects, mentorship, and startup exposure helped me grow both technically and professionally.",
             name: "Aditya Sharma",
             designation: "Frontend Developer",
-            src: "/images/testimonials/aditya.jpeg"
+            src: "/images/testimonials/aditya.webp"
         }
     ];
 
