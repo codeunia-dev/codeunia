@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { activityService } from '@/lib/services/activity';
 
 // Helper to get current user
 async function getUser() {
@@ -57,13 +58,29 @@ export async function POST(req: NextRequest) {
   if (!blog_slug) {
     return NextResponse.json({ error: 'Missing slug' }, { status: 400 });
   }
+  
   // Insert like (ignore if already exists due to unique constraint)
   const { error } = await supabase
     .from('blog_likes')
     .insert({ user_id: user.id, blog_slug });
+  
   if (error && !error.message.includes('duplicate key')) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Log activity for points (only if like was actually added)
+  if (!error || !error.message.includes('duplicate key')) {
+    try {
+      await activityService.logActivity(user.id, 'blog_like', { 
+        blog_slug 
+      });
+      console.log(`✅ Activity logged: blog_like for user ${user.id} on ${blog_slug}`);
+    } catch (activityError) {
+      console.error('❌ Failed to log blog like activity:', activityError);
+      // Don't fail the like operation if activity logging fails
+    }
+  }
+
   return NextResponse.json({ success: true });
 }
 

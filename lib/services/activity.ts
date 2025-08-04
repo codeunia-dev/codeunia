@@ -122,7 +122,9 @@ export class ActivityService {
       daily_login: 0,
       profile_update: 0,
       certificate_earned: 0,
-      mcq_practice: 0
+      mcq_practice: 0,
+      blog_like: 0,
+      blog_read: 0
     }
 
     // Group activities by date and type
@@ -209,7 +211,9 @@ export class ActivityService {
         daily_login: 0,
         profile_update: 0,
         certificate_earned: 0,
-        mcq_practice: 0
+        mcq_practice: 0,
+        blog_like: 0,
+        blog_read: 0
       }
     }
   }
@@ -262,7 +266,9 @@ export class ActivityService {
       daily_login: 'daily_login',
       profile_update: 'profile_update',
       certificate_earned: 'certificate_earned',
-      mcq_practice: null // No global points for MCQ practice
+      mcq_practice: null, // No global points for MCQ practice
+      blog_like: 'blog_like',
+      blog_read: 'blog_read'
     }
     
     return mapping[activityType] || null

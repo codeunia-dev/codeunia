@@ -20,12 +20,12 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/codeunia-favicon-dark.svg',
+        url: '/codeunia-favicon-light.svg',
         type: 'image/svg+xml',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/codeunia-favicon-light.svg',
+        url: '/codeunia-favicon-dark.svg',
         type: 'image/svg+xml',
         media: '(prefers-color-scheme: light)',
       }

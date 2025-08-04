@@ -12,6 +12,7 @@ import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import Footer from "@/components/footer"
+import { activityService } from "@/lib/services/activity"
 import type { Test, TestQuestion } from "@/types/test-management"
 
 export default function TakeTestPage() {
@@ -261,6 +262,18 @@ export default function TakeTestPage() {
         return
       }
 
+      // Log test registration activity if not already logged
+      try {
+        await activityService.logActivity(user.id, 'test_registration', { 
+          test_id: testId,
+          registration_id: registration.id
+        });
+        console.log(`✅ Activity logged: test_registration for user ${user.id}`);
+      } catch (activityError) {
+        console.error('❌ Failed to log test registration activity:', activityError);
+        // Don't fail the test start if activity logging fails
+      }
+
       // Fetch questions only after confirming registration
       await fetchQuestions()
 
@@ -391,6 +404,24 @@ export default function TakeTestPage() {
           .insert(answerRecords)
 
         if (answersError) throw answersError
+      }
+
+      // Log activity for points
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await activityService.logActivity(user.id, 'test_completion', { 
+            test_id: testId,
+            attempt_id: attemptId,
+            score,
+            max_score: maxScore,
+            passed
+          });
+          console.log(`✅ Activity logged: test_completion for user ${user.id}`);
+        }
+      } catch (activityError) {
+        console.error('❌ Failed to log test completion activity:', activityError);
+        // Don't fail the test submission if activity logging fails
       }
 
       toast.success('Test submitted successfully!')

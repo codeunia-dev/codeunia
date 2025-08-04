@@ -19,7 +19,9 @@ export function useContributionGraph() {
       daily_login: 0,
       profile_update: 0,
       certificate_earned: 0,
-      mcq_practice: 0
+      mcq_practice: 0,
+      blog_like: 0,
+      blog_read: 0
     }
   })
   const [loading, setLoading] = useState(true)
@@ -120,7 +122,9 @@ export function useContributionGraph() {
           daily_login: 0,
           profile_update: 0,
           certificate_earned: 0,
-          mcq_practice: 0
+          mcq_practice: 0,
+          blog_like: 0,
+          blog_read: 0
         }
       })
       setLoading(false)

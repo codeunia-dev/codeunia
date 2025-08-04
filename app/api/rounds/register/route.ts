@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { activityService } from '@/lib/services/activity';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -86,6 +87,19 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (registrationError) throw registrationError;
+
+    // Log activity for points
+    try {
+      await activityService.logActivity(user_id, 'test_registration', { 
+        test_id, 
+        round_id,
+        registration_id: registration.id 
+      });
+      console.log(`✅ Activity logged: test_registration for user ${user_id}`);
+    } catch (activityError) {
+      console.error('❌ Failed to log test registration activity:', activityError);
+      // Don't fail the registration if activity logging fails
+    }
 
     return NextResponse.json({ 
       message: 'Successfully registered for round',

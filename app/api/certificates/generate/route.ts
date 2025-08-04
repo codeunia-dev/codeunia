@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { activityService } from '@/lib/services/activity';
 
 interface CertificateData {
   templateUrl: string;
@@ -27,6 +28,15 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
 
     // For now, we'll create a simple certificate by returning the template URL
     // In a production environment, you would process the image/PDF with text overlay
@@ -45,6 +55,19 @@ export async function POST(request: NextRequest) {
     
     // Upload a placeholder certificate (in real implementation, this would be the processed image)
     const fileName = `certificates/${certId}.png`;
+    
+    // Log activity for points
+    try {
+      await activityService.logActivity(user.id, 'certificate_earned', { 
+        cert_id: certId,
+        template_url: templateUrl,
+        placeholders
+      });
+      console.log(`✅ Activity logged: certificate_earned for user ${user.id} with cert ${certId}`);
+    } catch (activityError) {
+      console.error('❌ Failed to log certificate earned activity:', activityError);
+      // Don't fail the certificate generation if activity logging fails
+    }
     
     // For now, we'll just return the template URL as the certificate
     // In production, you would process the template and upload the result

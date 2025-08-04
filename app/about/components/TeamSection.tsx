@@ -162,6 +162,7 @@ export function TeamSection() {
                               <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden h-full group">
                                   <div className="relative h-64 overflow-hidden bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900">
                                       <motion.div
+                                          className="relative w-full h-full"
                                           whileHover={{ scale: 1.1 }}
                                           transition={{ duration: 0.6 }}
                                       >

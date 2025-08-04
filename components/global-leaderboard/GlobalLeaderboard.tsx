@@ -10,21 +10,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { 
   Trophy, 
-  TrendingUp, 
   Search, 
   Filter,
   Crown,
   Medal,
   Award,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  TrendingUp
 } from 'lucide-react'
 import { BadgeType } from '@/types/global-leaderboard'
 
 export function GlobalLeaderboard() {
   const {
     leaderboard,
-    stats,
     userRank,
     userPoints,
     userBadge,
@@ -55,68 +54,72 @@ export function GlobalLeaderboard() {
   }
 
   const getRankIcon = (rank: number) => {
-    if (rank === 1) return <Crown className="h-5 w-5 text-yellow-500" />
-    if (rank === 2) return <Medal className="h-5 w-5 text-gray-400" />
-    if (rank === 3) return <Award className="h-5 w-5 text-amber-600" />
+    if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />
+    if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />
+    if (rank === 3) return <Award className="h-6 w-6 text-amber-600" />
     return null
   }
 
   const getRankBadge = (rank: number) => {
-    if (rank === 1) return <Badge className="bg-yellow-500 text-white">🥇 1st</Badge>
-    if (rank === 2) return <Badge className="bg-gray-400 text-white">🥈 2nd</Badge>
-    if (rank === 3) return <Badge className="bg-amber-600 text-white">🥉 3rd</Badge>
-    return <Badge variant="secondary">#{rank}</Badge>
+    if (rank === 1) return <Badge className="bg-yellow-500 text-white text-sm font-bold">🥇 1st</Badge>
+    if (rank === 2) return <Badge className="bg-gray-400 text-white text-sm font-bold">🥈 2nd</Badge>
+    if (rank === 3) return <Badge className="bg-amber-600 text-white text-sm font-bold">🥉 3rd</Badge>
+    return <Badge variant="secondary" className="text-sm font-medium">#{rank}</Badge>
   }
 
   if (loading && leaderboard.length === 0) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center p-12">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-lg font-medium">Loading TopUnia...</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">
-              {stats?.totalUsers?.toLocaleString() || '0'}
+      {/* User's Current Status - Prominent Display */}
+      {userRank && (
+        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-primary">
+                    #{userRank.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-medium">Your Rank</div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">
+                    {userPoints.toLocaleString()}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-medium">Your Points</div>
+                </div>
+                
+                {userBadge && (
+                  <div className="text-center">
+                    <div className="text-3xl">
+                      {getBadgeInfo(userBadge)?.icon}
+                    </div>
+                    <div className="text-sm text-muted-foreground font-medium">
+                      {getBadgeInfo(userBadge)?.name}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              <Button variant="outline" className="hidden md:flex">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                View Profile
+              </Button>
             </div>
-            <div className="text-sm text-gray-600">Total Users</div>
           </CardContent>
         </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">
-              {stats?.totalPoints?.toLocaleString() || '0'}
-            </div>
-            <div className="text-sm text-gray-600">Total Points</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">
-              {stats?.averagePoints?.toLocaleString() || '0'}
-            </div>
-            <div className="text-sm text-gray-600">Average Points</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">
-              {userRank ? `#${userRank.toLocaleString()}` : 'N/A'}
-            </div>
-            <div className="text-sm text-gray-600">Your Rank</div>
-          </CardContent>
-        </Card>
-      </div>
-
+      )}
 
       {/* Filters */}
       <Card>
@@ -182,8 +185,8 @@ export function GlobalLeaderboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-yellow-500" />
-              Global Leaderboard
+              <Trophy className="h-6 w-6 text-yellow-500" />
+              TopUnia Rankings
             </CardTitle>
             <Button 
               variant="outline" 
@@ -198,26 +201,26 @@ export function GlobalLeaderboard() {
         </CardHeader>
         <CardContent>
           {leaderboard.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-6xl mb-4">🏆</div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                {error ? 'Leaderboard Coming Soon!' : 'Be the First to Join!'}
+            <div className="text-center py-16">
+              <div className="text-8xl mb-6">🏆</div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                {error ? 'TopUnia Coming Soon!' : 'Be the First to Join!'}
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-gray-600 dark:text-gray-400 mb-6 text-lg">
                 {error 
-                  ? 'The leaderboard system is being set up. Check back soon!'
-                  : 'No users have earned points yet. Start participating to climb the leaderboard!'
+                  ? 'The ranking system is being set up. Check back soon!'
+                  : 'No users have earned points yet. Start participating to climb the ranks!'
                 }
               </p>
               <div className="text-sm text-gray-500 dark:text-gray-500">
                 {error 
-                  ? 'Database tables are being configured for the global leaderboard.'
+                  ? 'Database tables are being configured for TopUnia.'
                   : 'Complete tests, read blogs, and engage with the community to earn points.'
                 }
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {leaderboard.map((entry) => {
                 const badgeInfo = entry.badge ? getBadgeInfo(entry.badge) : null
                 const isCurrentUser = false // TODO: Compare with actual user ID from auth context
@@ -225,29 +228,29 @@ export function GlobalLeaderboard() {
                 return (
                   <div
                     key={entry.user_id}
-                    className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
+                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 ${
                       isCurrentUser 
-                        ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-900/20'
-                    }`}
+                        ? 'bg-primary/10 border-primary/30 shadow-lg'
+                        : 'hover:bg-gray-50 dark:hover:bg-gray-900/20 border-gray-200 dark:border-gray-800 hover:border-primary/20 hover:shadow-md'
+                    } ${entry.rank <= 3 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800' : ''}`}
                   >
                     {/* Rank */}
-                    <div className="flex items-center gap-2 min-w-[60px]">
+                    <div className="flex items-center gap-3 min-w-[80px]">
                       {getRankIcon(entry.rank)}
                       {getRankBadge(entry.rank)}
                     </div>
 
                     {/* Avatar */}
-                    <Avatar className="h-10 w-10">
+                    <Avatar className={`h-12 w-12 ${entry.rank <= 3 ? 'ring-2 ring-yellow-400' : ''}`}>
                       <AvatarImage src={entry.avatar_url || undefined} />
-                      <AvatarFallback>
+                      <AvatarFallback className="font-bold text-lg">
                         {(entry.username || `User ${entry.rank}`).charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
 
                     {/* User Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold truncate">
+                      <div className="font-bold text-lg truncate">
                         {entry.username || `User #${entry.rank}`}
                         {isCurrentUser && (
                           <Badge variant="secondary" className="ml-2 text-xs">
@@ -256,19 +259,19 @@ export function GlobalLeaderboard() {
                         )}
                       </div>
                       {badgeInfo && (
-                        <div className="flex items-center gap-1 text-sm text-gray-600">
-                          <span>{badgeInfo.icon}</span>
-                          <span>{badgeInfo.name}</span>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span className="text-lg">{badgeInfo.icon}</span>
+                          <span className="font-medium">{badgeInfo.name}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Points */}
                     <div className="text-right">
-                      <div className="font-bold text-lg">
+                      <div className="font-bold text-2xl text-primary">
                         {entry.total_points.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-600">points</div>
+                      <div className="text-sm text-muted-foreground font-medium">points</div>
                     </div>
                   </div>
                 )
@@ -277,52 +280,6 @@ export function GlobalLeaderboard() {
           )}
         </CardContent>
       </Card>
-
-      {/* User's Current Status */}
-      {userRank && (
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Your Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">
-                    #{userRank.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-gray-600">Your Rank</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">
-                    {userPoints.toLocaleString()}
-                  </div>
-                  <div className="text-sm text-gray-600">Your Points</div>
-                </div>
-                
-                {userBadge && (
-                  <div className="text-center">
-                    <div className="text-2xl">
-                      {getBadgeInfo(userBadge)?.icon}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {getBadgeInfo(userBadge)?.name}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <Button variant="outline">
-                View Full Profile
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

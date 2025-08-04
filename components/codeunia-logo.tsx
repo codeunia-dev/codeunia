@@ -43,30 +43,31 @@ export default function CodeuniaLogo({
             </linearGradient>
           </defs>
           
-          {/* The 'C' for Code */}
+          {/* Rounded square background */}
+          <rect x="0" y="0" width="200" height="200" rx="40" ry="40" fill="#007AFF" />
+          
+          {/* The 'C' in black */}
           <path 
             d="M165,100 A65,65 0 1 1 100,35"
             fill="none" 
-            stroke="currentColor" 
+            stroke="#000000" 
             strokeWidth="30" 
             strokeLinecap="round"
-            className="text-foreground"
           />
           
-          {/* The Dot for Unia/Community */}
+          {/* Gradient dot */}
           <circle 
             cx="100" 
             cy="165" 
             r="15" 
             fill="url(#rainbowGradient)"
-            className="group-hover:scale-110 transition-transform duration-300"
           />
         </svg>
       </div>
       
       {/* Logo Text */}
       {showText && (
-        <span className={`font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent ${textSizes[size]} group-hover:from-purple-500 group-hover:to-blue-500 transition-all duration-300`}>
+        <span className={`font-medium text-[#007AFF] ${textSizes[size]} transition-all duration-300`} style={{ fontFamily: 'Inter, sans-serif' }}>
           Codeunia
         </span>
       )}
