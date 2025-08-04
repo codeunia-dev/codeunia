@@ -4,7 +4,6 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { AnimatedTestimonials } from "@/components/ui/animated-testimonials";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { CardSpotlight } from "@/components/ui/card-spotlight";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";

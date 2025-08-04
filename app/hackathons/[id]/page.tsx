@@ -333,7 +333,7 @@ export default function HackathonDetailPage() {
           </h2>
           <div className="mb-6">
             <p className="text-muted-foreground mb-4">
-              Join us for an exciting journey of innovation and collaboration. Here's what you can expect during the hackathon:
+              Join us for an exciting journey of innovation and collaboration. Here&apos;s what you can expect during the hackathon:
             </p>
           </div>
           <ul className="divide-y divide-primary/10">
@@ -539,7 +539,7 @@ export default function HackathonDetailPage() {
           </h2>
           <div className="mb-6">
             <p className="text-muted-foreground mb-4">
-              Find answers to common questions about the hackathon. If you don't see your question here, feel free to contact us!
+              Find answers to common questions about the hackathon. If you don&apos;t see your question here, feel free to contact us!
             </p>
           </div>
           <div className="space-y-6">
@@ -557,7 +557,7 @@ export default function HackathonDetailPage() {
           <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10">
             <h3 className="font-semibold mb-2 text-primary">Still have questions?</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              Don't hesitate to reach out to our organizing team. We're here to help!
+              Don&apos;t hesitate to reach out to our organizing team. We&apos;re here to help!
             </p>
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" size="sm" className="text-xs">

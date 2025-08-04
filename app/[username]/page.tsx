@@ -19,7 +19,7 @@ export default async function UsernamePage({ params }: UsernamePageProps) {
     if (isReserved) {
       notFound();
     }
-  } catch (error) {
+  } catch {
     // Fallback to hardcoded check if database is not available
     if (reservedUsernameService.isFallbackReservedUsername(username)) {
       notFound();
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: UsernamePageProps) {
         description: 'The requested page could not be found.'
       };
     }
-  } catch (error) {
+  } catch {
     // Fallback to hardcoded check if database is not available
     if (reservedUsernameService.isFallbackReservedUsername(username)) {
       return {
