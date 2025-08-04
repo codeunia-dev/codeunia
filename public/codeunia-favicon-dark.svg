@@ -1,14 +1,18 @@
 <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
+    <!-- Rainbow diagonal gradient for dot -->
     <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#007AFF" />     <!-- Blue -->
-      <stop offset="30%" stop-color="#6C63FF" />    <!-- Purple -->
-      <stop offset="60%" stop-color="#FF6EC7" />    <!-- Pink -->
-      <stop offset="100%" stop-color="#FF9F45" />   <!-- Orange -->
+      <stop offset="0%" stop-color="#007AFF" />
+      <stop offset="30%" stop-color="#6C63FF" />
+      <stop offset="60%" stop-color="#FF6EC7" />
+      <stop offset="100%" stop-color="#FF9F45" />
     </linearGradient>
   </defs>
 
-  <!-- The 'C' for Code -->
+  <!-- Rounded gray background -->
+  <rect x="0" y="0" width="200" height="200" rx="30" ry="30" fill="#2B2B2B" />
+
+  <!-- 'C' with exact stroke size -->
   <path 
     d="M165,100 A65,65 0 1 1 100,35"
     fill="none" 
@@ -16,7 +20,7 @@
     stroke-width="30" 
     stroke-linecap="round"
   />
-  
-  <!-- The Dot for Unia/Community -->
+
+  <!-- Dot with exact position and size -->
   <circle cx="100" cy="165" r="15" fill="url(#rainbowGradient)" />
 </svg> 

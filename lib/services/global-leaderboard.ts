@@ -78,7 +78,8 @@ export class GlobalLeaderboardService {
 
   // Only create admin client on server side
   private get supabaseAdmin() {
-    if (typeof window === 'undefined') {
+    // Check if service role key is available
+    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
       // Server side - we can use service role key
       return createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -92,6 +92,8 @@ export type ActivityType =
   | 'profile_update'
   | 'certificate_earned'
   | 'mcq_practice'
+  | 'blog_like'
+  | 'blog_read'
 
 export interface UserActivity {
   id: string

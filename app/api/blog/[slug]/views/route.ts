@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { activityService } from '@/lib/services/activity';
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
+  
+  // Get current user
+  const { data: { user } } = await supabase.auth.getUser();
+  
   // Extract slug from the URL
   const url = req.nextUrl || new URL(req.url);
   const match = url.pathname.match(/\/blog\/([^/]+)\/views/);
@@ -33,6 +38,19 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  // Log activity for points (only for authenticated users)
+  if (user) {
+    try {
+      await activityService.logActivity(user.id, 'blog_read', { 
+        blog_slug: slug 
+      });
+      console.log(`✅ Activity logged: blog_read for user ${user.id} on ${slug}`);
+    } catch (activityError) {
+      console.error('❌ Failed to log blog read activity:', activityError);
+      // Don't fail the view increment if activity logging fails
+    }
   }
 
   return NextResponse.json({ views: data.views });

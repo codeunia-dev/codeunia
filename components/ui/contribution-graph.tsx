@@ -33,7 +33,9 @@ const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
   daily_login: 'Daily Login',
   profile_update: 'Profile Update',
   certificate_earned: 'Certificate Earned',
-  mcq_practice: 'MCQ Practice'
+  mcq_practice: 'MCQ Practice',
+  blog_like: 'Blog Like',
+  blog_read: 'Blog Read'
 }
 
 const ACTIVITY_TYPE_COLORS: Record<ActivityType, string> = {
@@ -45,7 +47,9 @@ const ACTIVITY_TYPE_COLORS: Record<ActivityType, string> = {
   daily_login: 'bg-gray-500',
   profile_update: 'bg-orange-500',
   certificate_earned: 'bg-emerald-500',
-  mcq_practice: 'bg-pink-500'
+  mcq_practice: 'bg-pink-500',
+  blog_like: 'bg-red-500',
+  blog_read: 'bg-cyan-500'
 }
 
 export function ContributionGraph({
