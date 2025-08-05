@@ -77,7 +77,7 @@ export class UnifiedSetupService {
     userId: string, 
     email: string, 
     authProvider: string, 
-    userMetadata: any = {}
+    userMetadata: Record<string, unknown> = {}
   ): Promise<boolean> {
     const { data, error } = await this.supabase
       .rpc('create_oauth_profile', {
@@ -99,7 +99,7 @@ export class UnifiedSetupService {
   async createEmailProfile(
     userId: string, 
     email: string, 
-    userMetadata: any = {}
+    userMetadata: Record<string, unknown> = {}
   ): Promise<boolean> {
     const { data, error } = await this.supabase
       .rpc('create_email_profile', {
