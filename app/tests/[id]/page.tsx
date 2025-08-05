@@ -1,19 +1,25 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Clock, Calendar, Users, Award, Star, Sparkles, FileText, Play, CheckCircle, Trophy, Target, BookOpen, Brain, Zap } from "lucide-react"
+import { ArrowLeft, Clock, Calendar, Users, Award, Star, FileText, Play, CheckCircle, Trophy, Target, BookOpen, Brain, Zap } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 import Footer from "@/components/footer"
 import type { Test } from "@/types/test-management"
+
+interface TestAttempt {
+  id: string;
+  status: string;
+  submitted_at: string | null;
+  created_at: string;
+}
 
 export default function TestDetailPage() {
   const [test, setTest] = useState<Test | null>(null)
@@ -21,7 +27,7 @@ export default function TestDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isRegistered, setIsRegistered] = useState(false)
   const [registrationCount, setRegistrationCount] = useState(0)
-  const [userAttempts, setUserAttempts] = useState<any[]>([])
+  const [userAttempts, setUserAttempts] = useState<TestAttempt[]>([])
   const [hasCompleted, setHasCompleted] = useState(false)
   const [showRegistrationForm, setShowRegistrationForm] = useState(false)
   const [registrationData, setRegistrationData] = useState({
@@ -40,12 +46,7 @@ export default function TestDetailPage() {
   
   const testId = params?.id as string
 
-  useEffect(() => {
-    fetchTest()
-    checkAuth()
-  }, [testId])
-
-  const fetchTest = async () => {
+  const fetchTest = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -72,9 +73,9 @@ export default function TestDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase, testId])
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       setIsAuthenticated(!!user)
@@ -109,7 +110,13 @@ export default function TestDetailPage() {
     } catch (error) {
       console.error('Error checking auth:', error)
     }
-  }
+  }, [supabase, testId])
+
+  // Effect to fetch test data and check auth
+  useEffect(() => {
+    fetchTest()
+    checkAuth()
+  }, [testId, fetchTest, checkAuth])
 
   const handleRegister = async () => {
     try {
@@ -128,7 +135,7 @@ export default function TestDetailPage() {
 
       // Show registration form
       setShowRegistrationForm(true)
-    } catch (error) {
+    } catch {
       toast.error('Failed to register for test')
     }
   }
@@ -176,7 +183,7 @@ export default function TestDetailPage() {
         experience_level: '',
         agree_to_terms: false
       })
-    } catch (error) {
+    } catch {
       toast.error('Failed to register for test')
     }
   }
@@ -227,7 +234,7 @@ export default function TestDetailPage() {
 
       // Navigate to test
       router.push(`/tests/${testId}/take`)
-    } catch (error) {
+    } catch {
       toast.error('Failed to start test')
     }
   }
@@ -425,23 +432,6 @@ export default function TestDetailPage() {
     </div>
   )
 
-  const testTabs = [
-    {
-      title: "About",
-      value: "about",
-      content: renderAbout(),
-    },
-    {
-      title: "Instructions",
-      value: "instructions",
-      content: renderInstructions(),
-    },
-    {
-      title: "Results",
-      value: "results",
-      content: renderResults(),
-    },
-  ]
 
   if (loading) {
     return (

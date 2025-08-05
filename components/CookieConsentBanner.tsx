@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCookieConsent, AnalyticsConsent } from '@/lib/analytics-cookies';
+import { useCookieConsent } from '@/lib/analytics-cookies';
 
 export default function CookieConsentBanner() {
   const { showBanner, consent, acceptAll, acceptNecessary, acceptCustom, updateConsent } = useCookieConsent();

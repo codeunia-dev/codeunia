@@ -26,7 +26,7 @@ interface BulkCertificateData {
 
 export async function POST(request: NextRequest) {
   try {
-    const { templateId, participants, context, customMessage }: BulkCertificateData = await request.json();
+    const { templateId, participants }: BulkCertificateData = await request.json();
     
     if (!templateId || !participants || participants.length === 0) {
       return NextResponse.json(

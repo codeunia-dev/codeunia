@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, FileText, CheckCircle, XCircle, Trophy, Target, Brain, Award, Star, Share2 } from "lucide-react"
+import { ArrowLeft, FileText, CheckCircle, XCircle, Trophy, Brain, Award, Star, Share2 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
@@ -74,7 +74,7 @@ export default function TestResultsPage() {
       const url = window.location.href
       await navigator.clipboard.writeText(url)
       toast.success('Results link copied to clipboard!')
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy link')
     }
   }
@@ -374,7 +374,7 @@ export default function TestResultsPage() {
                   organization: 'CodeUnia'
                 }}
                 templateId={test.certificate_template_id}
-                onComplete={(certURL) => {
+                onComplete={() => {
                   toast.success('Certificate generated successfully!');
                   setShowCertificateGenerator(false);
                 }}

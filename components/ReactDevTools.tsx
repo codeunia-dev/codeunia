@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 
 export function ReactDevTools() {
   // Temporarily disabled to fix DOM manipulation errors

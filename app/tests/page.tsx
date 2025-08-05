@@ -10,7 +10,6 @@ import {
   Clock, 
   FileText, 
   Users, 
-  Calendar,
   Trophy,
   Play,
   ArrowRight,
@@ -49,7 +48,6 @@ export default function TestsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set());
-  const [user, setUser] = useState<any>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
@@ -74,7 +72,7 @@ export default function TestsPage() {
 
       if (error) throw error;
       setTests(data || []);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch tests');
     } finally {
       setLoading(false);
@@ -84,7 +82,6 @@ export default function TestsPage() {
   const checkUserAndRegistrations = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
       
       if (user) {
         // Fetch user's registrations
@@ -153,8 +150,7 @@ export default function TestsPage() {
       // Update local state to reflect the new registration
       setUserRegistrations(prev => new Set([...prev, testId]));
       fetchTests(); // Refresh to update registration count
-    } catch (error) {
-      console.error('Registration failed:', error);
+    } catch {
       toast.error('Failed to register for test');
     }
   };
@@ -212,7 +208,7 @@ export default function TestsPage() {
 
       // Navigate to test
       router.push(`/tests/${testId}/take`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to start test');
     }
   };
