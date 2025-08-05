@@ -18,7 +18,7 @@ interface CertificateData {
 
 export async function POST(request: NextRequest) {
   try {
-    const { templateUrl, placeholders, configs }: CertificateData = await request.json();
+    const { templateUrl, placeholders }: CertificateData = await request.json();
     
     if (!templateUrl || !placeholders) {
       return NextResponse.json(
@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
     const certificateUrl = templateUrl; // For now, just use the template URL
     
     // Upload a placeholder certificate (in real implementation, this would be the processed image)
-    const fileName = `certificates/${certId}.png`;
     
     // Log activity for points
     try {

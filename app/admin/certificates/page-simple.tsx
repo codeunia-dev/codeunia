@@ -5,11 +5,28 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
+interface Certificate {
+  id: string;
+  cert_id: string;
+  issued_at: string;
+}
+
+interface Participant {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface Template {
+  id: string;
+  name: string;
+}
+
 export default function CertificatesPageSimple() {
   const [loading, setLoading] = useState(true);
-  const [certificates, setCertificates] = useState<any[]>([]);
-  const [participants, setParticipants] = useState<any[]>([]);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
 
   useEffect(() => {
     fetchData();

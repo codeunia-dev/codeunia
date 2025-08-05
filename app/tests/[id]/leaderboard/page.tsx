@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Trophy, Medal, Award, Clock, Target, Users } from "lucide-react"
+import { ArrowLeft, Trophy, Medal, Award, Target, Users } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
@@ -92,8 +92,6 @@ export default function LeaderboardPage() {
 
       if (leaderboardError) throw leaderboardError
 
-      // Create a map of user data (simplified approach)
-      const userMap = new Map()
       // For now, we'll use user_id as display name since we can't easily fetch user details
       // In a production app, you might want to store user display names in a separate table
 
