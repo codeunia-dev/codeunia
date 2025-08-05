@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,24 +8,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'react-hot-toast';
 
 export default function EmailConfirmationRequired() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -47,7 +36,18 @@ export default function EmailConfirmationRequired() {
       console.error('Error checking user:', error);
       toast.error('Error loading user information');
     }
-  };
+  }, [router, supabase]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const handleResendEmail = async () => {
     if (!user?.email) {
@@ -107,7 +107,7 @@ export default function EmailConfirmationRequired() {
           <CardHeader>
             <CardTitle className="text-lg">Confirmation Email Sent</CardTitle>
             <CardDescription>
-              We've sent a confirmation email to:
+              We&apos;ve sent a confirmation email to:
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -144,7 +144,7 @@ export default function EmailConfirmationRequired() {
             onClick={checkUser}
             className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700"
           >
-            I've Confirmed My Email
+            I&apos;ve Confirmed My Email
           </Button>
 
           <Button

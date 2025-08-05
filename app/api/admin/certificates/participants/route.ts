@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 export async function GET() {
   try {
     // Fetch all types of participants
-    const [testAttempts, testRegistrations, hackathons, events] = await Promise.all([
+    const [testAttempts, testRegistrations, hackathons, events]: [any, any, any, any] = await Promise.all([
       // Test attempts (including in-progress ones)
       supabaseAdmin
         .from('test_attempts')
@@ -63,11 +63,24 @@ export async function GET() {
     ]);
 
     // Combine all participants
-    const allParticipants: any[] = [];
+    interface Participant {
+      id: string;
+      user_id: string | null;
+      event_type: string;
+      event_title: string;
+      status: string;
+      passed: boolean | null;
+      score: number | null;
+      created_at: string;
+      eligible: boolean;
+      participants_count?: number;
+    }
+
+    const allParticipants: Participant[] = [];
     
     // Add test attempts
     if (testAttempts.data) {
-      testAttempts.data.forEach((attempt: any) => {
+      testAttempts.data.forEach((attempt: { id: string; user_id: string; tests?: { title: string }; status: string; passed: boolean; score: number; created_at: string }) => {
         allParticipants.push({
           id: attempt.id,
           user_id: attempt.user_id,
@@ -84,7 +97,7 @@ export async function GET() {
 
     // Add test registrations (if not already in attempts)
     if (testRegistrations.data) {
-      testRegistrations.data.forEach((registration: any) => {
+      testRegistrations.data.forEach((registration: { id: string; user_id: string; tests?: { title: string }; registered_at: string }) => {
         const existingAttempt = allParticipants.find(p => 
           p.user_id === registration.user_id && 
           p.event_type === 'test' && 
@@ -109,7 +122,7 @@ export async function GET() {
 
     // Add hackathons
     if (hackathons.data) {
-      hackathons.data.forEach((hackathon: any) => {
+      hackathons.data.forEach((hackathon: { id: string; title: string; participants?: number; registered?: number; created_at: string }) => {
         allParticipants.push({
           id: hackathon.id,
           user_id: null, // Hackathons don't have individual user records
@@ -127,7 +140,7 @@ export async function GET() {
 
     // Add events
     if (events.data) {
-      events.data.forEach((event: any) => {
+      events.data.forEach((event: { id: string; title: string; participants?: number; registered?: number; created_at: string }) => {
         allParticipants.push({
           id: event.id,
           user_id: null, // Events don't have individual user records

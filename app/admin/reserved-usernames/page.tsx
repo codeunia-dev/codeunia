@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,11 +37,7 @@ export default function ReservedUsernamesPage() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    loadReservedUsernames();
-  }, []);
-
-  const loadReservedUsernames = async () => {
+  const loadReservedUsernames = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -57,7 +53,11 @@ export default function ReservedUsernamesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    loadReservedUsernames();
+  }, [loadReservedUsernames]);
 
   const handleAddUsername = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,7 +257,7 @@ export default function ReservedUsernamesPage() {
                 </div>
                 <div>
                   <Label htmlFor="category">Category *</Label>
-                  <Select value={formData.category} onValueChange={(value: any) => setFormData({ ...formData, category: value })}>
+                  <Select value={formData.category} onValueChange={(value: ReservedUsername['category']) => setFormData({ ...formData, category: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { UserIcon } from "@/components/user-icon"
 import { Menu, X } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
-import { createClient } from "@/lib/supabase/client"
 import CodeuniaLogo from "./codeunia-logo";
 import dynamic from "next/dynamic";
 

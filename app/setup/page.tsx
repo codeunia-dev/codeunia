@@ -168,7 +168,7 @@ export default function SetupProfile() {
             👋 Welcome to Codeunia!
           </h1>
           <p className="text-gray-600">
-            Let's get you started by choosing a unique username. Your Codeunia ID will be generated automatically.
+            Let&apos;s get you started by choosing a unique username. Your Codeunia ID will be generated automatically.
           </p>
         </div>
 
@@ -290,7 +290,7 @@ export default function SetupProfile() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            By continuing, you agree to Codeunia's{' '}
+            By continuing, you agree to Codeunia&apos;s{' '}
             <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
             {' '}and{' '}
             <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
