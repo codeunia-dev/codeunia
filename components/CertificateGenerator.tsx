@@ -20,10 +20,8 @@ import {
   Download, 
   Settings, 
   FileText, 
-  Users, 
   Calendar,
   Trophy,
-  QrCode,
   Loader2,
   Save
 } from 'lucide-react';
@@ -97,7 +95,7 @@ export function CertificateGenerator({
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [certificateUrl, setCertificateUrl] = useState<string | null>(null);
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  // const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [showPlaceholderConfig, setShowPlaceholderConfig] = useState(false);
   const [uploadForm, setUploadForm] = useState({
@@ -107,7 +105,7 @@ export function CertificateGenerator({
   });
   const [placeholderConfigs, setPlaceholderConfigs] = useState<Record<string, PlaceholderConfig>>({});
   const [customMessage, setCustomMessage] = useState('');
-  const [generatedCertificates, setGeneratedCertificates] = useState<string[]>([]);
+  // const [generatedCertificates, setGeneratedCertificates] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
@@ -309,14 +307,14 @@ export function CertificateGenerator({
           await new Promise(resolve => setTimeout(resolve, 500));
         }
         
-        setGeneratedCertificates(certificateUrls);
+        // setGeneratedCertificates(certificateUrls);
         toast.success(`Generated ${certificateUrls.length} certificates successfully!`);
         onComplete?.(certificateUrls[0]); // Return first certificate URL
       } else {
         const { certificateUrl, qrCodeUrl } = await generateCertificate();
         
         setCertificateUrl(certificateUrl);
-        setQrCodeUrl(qrCodeUrl);
+        // setQrCodeUrl(qrCodeUrl);
         setPreviewUrl(certificateUrl);
 
         // Save certificate record to database

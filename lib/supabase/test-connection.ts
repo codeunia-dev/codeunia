@@ -7,7 +7,7 @@ export async function testSupabaseConnection() {
     console.log('🔍 Testing Supabase connection...');
     
     // Test basic connection
-    const { data, error } = await supabase.from('profiles').select('count').limit(1);
+    const { error } = await supabase.from('profiles').select('count').limit(1);
     
     if (error) {
       console.error('❌ Supabase connection failed:', error);

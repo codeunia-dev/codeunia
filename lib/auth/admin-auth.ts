@@ -28,7 +28,7 @@ export async function authenticateAdmin(request: NextRequest): Promise<Authentic
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       // Try to get session from cookies as fallback
-      const cookieStore = await cookies();
+      await cookies();
       const supabaseClient = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
