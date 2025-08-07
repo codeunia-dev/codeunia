@@ -35,7 +35,15 @@ export async function GET() {
       .order('created_at', { ascending: false })
       .limit(6); // Show only 6 most recent tests
 
-    const { data: tests, error } = await Promise.race([queryPromise, timeoutPromise]) as any;
+    const result = await Promise.race([queryPromise, timeoutPromise]);
+    const { data: tests, error } = result as { data: Array<{
+      id: string;
+      name: string;
+      description: string;
+      duration_minutes: number;
+      passing_score: number;
+      test_registrations: Array<{ count: number }>;
+    }> | null; error: Error | null };
 
     if (error) {
       console.error('Error fetching tests:', error);

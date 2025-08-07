@@ -9,7 +9,19 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 // Cache for 5 minutes
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 let cache: {
-  data: any;
+  data: {
+    totalUsers: number;
+    totalPoints: number;
+    averagePoints: number;
+    topRankedUser: {
+      rank: number;
+      user_id: string;
+      username: string;
+      total_points: number;
+      avatar_url: string | undefined;
+      badge: string | null;
+    } | null;
+  };
   timestamp: number;
 } | null = null;
 

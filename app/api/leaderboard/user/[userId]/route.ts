@@ -8,7 +8,15 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 // Cache for 2 minutes (shorter than stats since this is user-specific)
 const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes in milliseconds
-const cache = new Map<string, { data: any; timestamp: number }>();
+const cache = new Map<string, { 
+  data: {
+    rank: number | null;
+    points: number;
+    badge: string;
+    pointsToNextBadge: number;
+  }; 
+  timestamp: number 
+}>();
 
 export async function GET(
   request: NextRequest,
