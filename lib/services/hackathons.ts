@@ -6,7 +6,7 @@ import { Hackathon, HackathonsFilters, HackathonsResponse } from '@/types/hackat
 export type { Hackathon, HackathonsFilters, HackathonsResponse }
 
 // Simple in-memory cache for development
-const cache = new Map<string, { data: any; timestamp: number }>()
+const cache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 function getCachedData(key: string) {
@@ -17,7 +17,7 @@ function getCachedData(key: string) {
   return null
 }
 
-function setCachedData(key: string, data: any) {
+function setCachedData(key: string, data: unknown) {
   cache.set(key, { data, timestamp: Date.now() })
 }
 
@@ -26,7 +26,7 @@ class HackathonsService {
     const cacheKey = `hackathons:${JSON.stringify(filters)}`
     const cached = getCachedData(cacheKey)
     if (cached) {
-      return cached
+      return cached as HackathonsResponse
     }
 
     const supabase = await createClient()
@@ -90,7 +90,7 @@ class HackathonsService {
     const cacheKey = `hackathon:${slug}`
     const cached = getCachedData(cacheKey)
     if (cached) {
-      return cached
+      return cached as Hackathon
     }
 
     const supabase = await createClient()
@@ -117,7 +117,7 @@ class HackathonsService {
     const cacheKey = `featured_hackathons:${limit}`
     const cached = getCachedData(cacheKey)
     if (cached) {
-      return cached
+      return cached as Hackathon[]
     }
 
     try {

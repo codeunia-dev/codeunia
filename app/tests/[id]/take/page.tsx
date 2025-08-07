@@ -138,7 +138,7 @@ export default function TakeTestPage() {
       toast.error('Failed to submit test')
       console.error('Test submission error:', error)
     }
-  }, [attemptId, test, questions, answers, testId, timeRemaining, supabase, router, activityService])
+  }, [attemptId, test, questions, answers, testId, timeRemaining, supabase, router])
 
   useEffect(() => {
     if (testStarted && timeRemaining > 0) {

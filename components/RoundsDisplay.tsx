@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +21,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
 
 interface Round {
   id: string;
@@ -80,13 +79,8 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
-  const supabase = createClient();
 
-  useEffect(() => {
-    fetchRoundsAndRegistrations();
-  }, [test.id, userId]);
-
-  const fetchRoundsAndRegistrations = async () => {
+  const fetchRoundsAndRegistrations = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -106,7 +100,11 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [test.id, userId]);
+
+  useEffect(() => {
+    fetchRoundsAndRegistrations();
+  }, [fetchRoundsAndRegistrations]);
 
   const getRoundStatus = (round: Round) => {
     const now = new Date();
@@ -389,7 +387,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
         </Card>
       ) : (
         <div className="space-y-4">
-          {rounds.map((round, index) => {
+          {rounds.map((round) => {
             const IconComponent = ROUND_TYPE_ICONS[round.round_type];
             const colorClass = ROUND_TYPE_COLORS[round.round_type];
             const status = getRoundStatus(round);

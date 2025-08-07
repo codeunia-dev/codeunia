@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { testSupabaseConnection } from '@/lib/supabase/test-connection'
+import type { Session, User } from '@supabase/supabase-js'
 
 export function AuthDebug() {
   const [authState, setAuthState] = useState<{
     loading: boolean
     error: string | null
-    session: any
-    user: any
+    session: Session | null
+    user: User | null
     connectionStatus: string
   }>({
     loading: true,
