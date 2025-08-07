@@ -200,7 +200,7 @@ export default function ProductionCacheExample() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
                 <select
                   value={theme}
-                  onChange={(e) => updateTheme(e.target.value as any)}
+                  onChange={(e) => updateTheme(e.target.value as 'light' | 'dark' | 'auto')}
                   className="w-full p-2 border rounded-md"
                 >
                   <option value="light">Light</option>
@@ -224,7 +224,7 @@ export default function ProductionCacheExample() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
                 <select
                   value={fontSize}
-                  onChange={(e) => updateFontSize(e.target.value as any)}
+                  onChange={(e) => updateFontSize(e.target.value as 'small' | 'medium' | 'large')}
                   className="w-full p-2 border rounded-md"
                 >
                   <option value="small">Small</option>

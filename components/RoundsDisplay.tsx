@@ -22,6 +22,24 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+interface Registration {
+  round_id: string;
+  status: 'not_registered' | 'registered' | 'in_progress' | 'completed';
+}
+
+interface RazorpayResponse {
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => {
+      open(): void;
+    };
+  }
+}
+
 interface Round {
   id: string;
   round_number: number;
@@ -75,7 +93,7 @@ const ROUND_TYPE_COLORS = {
 
 export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
   const [rounds, setRounds] = useState<Round[]>([]);
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState<string | null>(null);
   const [paying, setPaying] = useState<string | null>(null);
@@ -187,7 +205,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
           name: 'Codeunia',
           description: `${data.test_name} - ${data.round_name}`,
           order_id: data.orderId,
-          handler: async (response: any) => {
+          handler: async (response: RazorpayResponse) => {
             try {
               // Verify payment
               const verifyResponse = await fetch('/api/rounds/payment', {
@@ -225,7 +243,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
           }
         };
 
-        const rzp = new (window as any).Razorpay(options);
+        const rzp = new window.Razorpay(options);
         rzp.open();
       };
     } catch (error) {
