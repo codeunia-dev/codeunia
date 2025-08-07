@@ -6,12 +6,31 @@ import { analyticsCookies, activityCookies, useCookieConsent } from '@/lib/analy
 import { performanceCookies, themeCookies } from '@/lib/cookies';
 import CookieConsentBanner from './CookieConsentBanner';
 
+interface AnalyticsSummary {
+  totalPageViews: number;
+  uniquePages: number;
+  sessionDuration: number;
+  sessionId: string;
+  consent: {
+    necessary: boolean;
+    analytics: boolean;
+    marketing: boolean;
+    preferences: boolean;
+  };
+}
+
+interface AnalyticsSummaryWithError {
+  error: string;
+}
+
+type ActivitySummary = Record<string, number>;
+
 export default function CodeuniaCookieSystem() {
   const { isAuthenticated, isLoading, login, logout } = useAuthCookies();
   const { consent } = useCookieConsent();
   const [showCookieSettings, setShowCookieSettings] = useState(false);
-  const [analyticsSummary, setAnalyticsSummary] = useState<any>(null);
-  const [activitySummary, setActivitySummary] = useState<any>({});
+  const [analyticsSummary, setAnalyticsSummary] = useState<AnalyticsSummary | AnalyticsSummaryWithError | null>(null);
+  const [activitySummary, setActivitySummary] = useState<ActivitySummary>({});
 
   useEffect(() => {
     // Track page view if consent given
@@ -168,22 +187,22 @@ export default function CodeuniaCookieSystem() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-3">Analytics Data</h3>
-              {analyticsSummary?.error ? (
+              {analyticsSummary && 'error' in analyticsSummary ? (
                 <p className="text-red-600">No consent given for analytics</p>
               ) : (
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Total Page Views:</span>
-                    <span className="font-medium">{analyticsSummary?.totalPageViews || 0}</span>
+                    <span className="font-medium">{analyticsSummary && 'totalPageViews' in analyticsSummary ? analyticsSummary.totalPageViews : 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Unique Pages:</span>
-                    <span className="font-medium">{analyticsSummary?.uniquePages || 0}</span>
+                    <span className="font-medium">{analyticsSummary && 'uniquePages' in analyticsSummary ? analyticsSummary.uniquePages : 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Session Duration:</span>
                     <span className="font-medium">
-                      {analyticsSummary?.sessionDuration ? 
+                      {analyticsSummary && 'sessionDuration' in analyticsSummary && analyticsSummary.sessionDuration ? 
                         `${Math.round(analyticsSummary.sessionDuration / 1000)}s` : 'N/A'}
                     </span>
                   </div>
@@ -225,7 +244,7 @@ export default function CodeuniaCookieSystem() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
                   <select
-                    onChange={(e) => themeCookies.setTheme(e.target.value as any)}
+                    onChange={(e) => themeCookies.setTheme(e.target.value as 'light' | 'dark' | 'auto')}
                     defaultValue={themeCookies.getTheme()}
                     className="w-full p-2 border rounded-md"
                   >

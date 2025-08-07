@@ -4,6 +4,11 @@ import { useEffect } from 'react';
 import { useLeaderboard, useTestData, useCertificate, useBlogPost } from '@/hooks/useProductionCache';
 import { useUserPreferences, useSearchHistory, usePageViews, useCacheMetrics } from '@/hooks/useProductionCache';
 
+interface LeaderboardEntry {
+  name: string;
+  score: number;
+}
+
 export default function ProductionCacheExample() {
   // Cache-based hooks (for data that doesn't change often)
   const { data: leaderboard, loading: leaderboardLoading, error: leaderboardError, refresh: refreshLeaderboard } = useLeaderboard('global');
@@ -91,7 +96,7 @@ export default function ProductionCacheExample() {
             ) : (
               <div>
                 <div className="space-y-2">
-                  {leaderboard?.slice(0, 5).map((entry: any, index: number) => (
+                  {leaderboard?.slice(0, 5).map((entry: LeaderboardEntry, index: number) => (
                     <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                       <span className="font-medium">#{index + 1} {entry.name}</span>
                       <span className="text-blue-600 font-bold">{entry.score}</span>
