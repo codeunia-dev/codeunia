@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -110,7 +110,7 @@ export function CertificateGenerator({
   const supabase = createClient();
 
   // Default placeholder configurations
-  const defaultPlaceholderConfigs: Record<string, PlaceholderConfig> = {
+  const defaultPlaceholderConfigs: Record<string, PlaceholderConfig> = useMemo(() => ({
     '{name}': { x: 400, y: 300, fontSize: 48, fontFamily: 'Arial', color: '#000000', textAlign: 'center' },
     '{email}': { x: 400, y: 350, fontSize: 24, fontFamily: 'Arial', color: '#666666', textAlign: 'center' },
     '{event_name}': { x: 400, y: 400, fontSize: 36, fontFamily: 'Arial', color: '#000000', textAlign: 'center' },
@@ -125,28 +125,9 @@ export function CertificateGenerator({
     '{department}': { x: 400, y: 800, fontSize: 20, fontFamily: 'Arial', color: '#666666', textAlign: 'center' },
     '{experience_level}': { x: 400, y: 850, fontSize: 20, fontFamily: 'Arial', color: '#666666', textAlign: 'center' },
     '{rank}': { x: 400, y: 900, fontSize: 20, fontFamily: 'Arial', color: '#666666', textAlign: 'center' }
-  };
+  }), []);
 
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  useEffect(() => {
-    if (templateId && templates.length > 0) {
-      const template = templates.find(t => t.id === templateId);
-      if (template) {
-        setSelectedTemplate(template);
-      }
-    }
-  }, [templateId, templates]);
-
-  useEffect(() => {
-    if (autoGenerate && selectedTemplate && userData) {
-      handleGenerateCertificate();
-    }
-  }, [autoGenerate, selectedTemplate, userData]);
-
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('certificate_templates')
@@ -160,44 +141,22 @@ export function CertificateGenerator({
       console.error('Error fetching templates:', error);
       toast.error('Failed to fetch templates');
     }
-  };
+  }, [supabase]);
 
-  const handleFileUpload = async (file: File) => {
-    if (!file) return;
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
 
-    setIsUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('name', uploadForm.name);
-      formData.append('placeholders', JSON.stringify(uploadForm.placeholders));
-
-      const response = await fetch('/api/certificates/upload-template', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+  useEffect(() => {
+    if (templateId && templates.length > 0) {
+      const template = templates.find(t => t.id === templateId);
+      if (template) {
+        setSelectedTemplate(template);
       }
-
-      const { template } = await response.json();
-
-      toast.success('Template uploaded successfully!');
-      setShowUploadDialog(false);
-      setUploadForm({ name: '', description: '', placeholders: ['{name}', '{email}', '{event_name}', '{score}', '{date}', '{cert_id}', '{qr_code}', '{organizer}', '{total_registrations}', '{duration}', '{institution}', '{department}', '{experience_level}', '{rank}'] });
-      fetchTemplates();
-      setSelectedTemplate(template);
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload template');
-    } finally {
-      setIsUploading(false);
     }
-  };
+  }, [templateId, templates]);
 
-  const generateQRCode = async (certId: string): Promise<string> => {
+  const generateQRCode = useCallback(async (certId: string): Promise<string> => {
     try {
       const verificationUrl = `${window.location.origin}/verify/cert/${certId}`;
       
@@ -225,9 +184,9 @@ export function CertificateGenerator({
       console.error('QR code generation error:', error);
       return '';
     }
-  };
+  }, []);
 
-  const generateCertificate = async (participantData: CertificateUserData = userData): Promise<{ certificateUrl: string; qrCodeUrl: string }> => {
+  const generateCertificate = useCallback(async (participantData: CertificateUserData = userData): Promise<{ certificateUrl: string; qrCodeUrl: string }> => {
     if (!selectedTemplate) {
       throw new Error('No template selected');
     }
@@ -270,9 +229,9 @@ export function CertificateGenerator({
 
     const { certificateUrl } = await response.json();
     return { certificateUrl, qrCodeUrl };
-  };
+  }, [selectedTemplate, userData, defaultPlaceholderConfigs, placeholderConfigs, generateQRCode]);
 
-  const handleGenerateCertificate = async () => {
+  const handleGenerateCertificate = useCallback(async () => {
     if (!selectedTemplate) {
       toast.error('Please select a certificate template');
       return;
@@ -345,7 +304,52 @@ export function CertificateGenerator({
     } finally {
       setIsGenerating(false);
     }
+  }, [selectedTemplate, isBulkMode, selectedParticipants, generateCertificate, supabase, userData, onComplete, onError]);
+
+  useEffect(() => {
+    if (autoGenerate && selectedTemplate && userData) {
+      handleGenerateCertificate();
+    }
+  }, [autoGenerate, selectedTemplate, userData, handleGenerateCertificate]);
+
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', uploadForm.name);
+      formData.append('placeholders', JSON.stringify(uploadForm.placeholders));
+
+      const response = await fetch('/api/certificates/upload-template', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Upload failed');
+      }
+
+      const { template } = await response.json();
+
+      toast.success('Template uploaded successfully!');
+      setShowUploadDialog(false);
+      setUploadForm({ name: '', description: '', placeholders: ['{name}', '{email}', '{event_name}', '{score}', '{date}', '{cert_id}', '{qr_code}', '{organizer}', '{total_registrations}', '{duration}', '{institution}', '{department}', '{experience_level}', '{rank}'] });
+      fetchTemplates();
+      setSelectedTemplate(template);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload template');
+    } finally {
+      setIsUploading(false);
+    }
   };
+
+
+
 
   const handleSendEmail = async () => {
     if (!certificateUrl) {
