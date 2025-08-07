@@ -8,6 +8,16 @@ interface TestData {
   description: string;
 }
 
+interface TestsResponse {
+  tests: TestData[];
+  total: number;
+}
+
+interface UserPreferences {
+  theme: string;
+  language: string;
+}
+
 // Example component showing how to use caching for better performance
 export default function CachedDataExample() {
   // Cache API calls with 5-minute TTL
@@ -17,10 +27,10 @@ export default function CachedDataExample() {
     error: testsError,
     refetch: refetchTests,
     hitRate 
-  } = useCachedAPI('/api/tests/public', {}, 300000);
+  } = useCachedAPI<TestsResponse>('/api/tests/public', {}, 300000);
 
   // Cache user preferences in localStorage for 1 hour
-  const [userPreferences, setUserPreferences, clearPreferences] = useLocalStorageCache(
+  const [userPreferences, setUserPreferences, clearPreferences] = useLocalStorageCache<UserPreferences>(
     'user-preferences',
     { theme: 'light', language: 'en' },
     3600000

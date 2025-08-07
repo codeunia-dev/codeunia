@@ -20,7 +20,7 @@ export function useCookieCache<T = any>(
   // Get data from cache (cookies first, then fallbacks)
   const getCachedData = useCallback((): T | null => {
     // Try cookies first
-    const cookieData = performanceCookies.getCachedAPIResponse(key);
+    const cookieData = performanceCookies.getCachedAPIResponse<T>(key);
     if (cookieData) return cookieData;
 
     // Fallback to localStorage
@@ -30,7 +30,7 @@ export function useCookieCache<T = any>(
         if (localData) {
           const { data, timestamp, ttl: localTtl } = JSON.parse(localData);
           if (Date.now() - timestamp < localTtl * 1000) {
-            return data;
+            return data as T;
           }
         }
       } catch (error) {
@@ -151,7 +151,7 @@ export function useCookieCache<T = any>(
 // Specialized hook for API calls with cookie caching
 export function useCookieAPI<T = any>(
   url: string,
-  params?: Record<string, any>,
+  params?: Record<string, string>,
   ttl: number = 300
 ) {
   const cacheKey = `api:${url}${params ? `:${JSON.stringify(params)}` : ''}`;

@@ -1,10 +1,23 @@
 // GDPR-compliant analytics cookie management for Codeunia
 import { useState, useEffect } from 'react';
+
 export interface AnalyticsConsent {
   necessary: boolean; // Always true
   analytics: boolean; // User consent required
   marketing: boolean; // User consent required
   preferences: boolean; // User consent required
+}
+
+interface EngagementData {
+  timestamp: number;
+  data?: Record<string, unknown>;
+}
+
+interface Activity {
+  activity: string;
+  data?: Record<string, unknown>;
+  timestamp: number;
+  sessionId: string;
 }
 
 export interface AnalyticsData {
@@ -14,7 +27,7 @@ export interface AnalyticsData {
   firstVisit: number;
   lastVisit: number;
   consent: AnalyticsConsent;
-  engagement?: Record<string, Array<{ timestamp: number; data?: any }>>;
+  engagement?: Record<string, Array<EngagementData>>;
 }
 
 // Default consent (only necessary cookies allowed)
@@ -137,7 +150,7 @@ export const analyticsCookies = {
   },
 
   // Track user engagement (only if consent given)
-  trackEngagement: (action: string, data?: any) => {
+  trackEngagement: (action: string, data?: Record<string, unknown>) => {
     if (!analyticsCookies.hasConsent()) return;
 
     const analyticsData = analyticsCookies.getAnalyticsData();
@@ -190,7 +203,7 @@ export const analyticsCookies = {
 // Leaderboard and activity tracking (anonymous, before login)
 export const activityCookies = {
   // Track anonymous activity (no consent required)
-  trackActivity: (activity: string, data?: any) => {
+  trackActivity: (activity: string, data?: Record<string, unknown>) => {
     if (typeof window === 'undefined') return;
 
     try {
@@ -219,7 +232,7 @@ export const activityCookies = {
     try {
       const activities = JSON.parse(localStorage.getItem('codeunia_activities') || '[]');
       
-      const summary = activities.reduce((acc: any, activity: any) => {
+      const summary = activities.reduce((acc: Record<string, number>, activity: Activity) => {
         if (!acc[activity.activity]) {
           acc[activity.activity] = 0;
         }

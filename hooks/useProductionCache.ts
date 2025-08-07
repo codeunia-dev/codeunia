@@ -315,17 +315,22 @@ export function useSearchHistory() {
 // Hook for page views (cookies - lightweight tracking)
 export function usePageViews() {
   const [pageViews, setPageViews] = useState<Record<string, number>>(() => {
-    return performanceCookies.getPageViews();
+    const views = performanceCookies.getPageViews();
+    return typeof views === 'object' ? views : {};
   });
 
   const trackPageView = useCallback((page: string) => {
     performanceCookies.trackPageView(page);
-    setPageViews(performanceCookies.getPageViews());
+    const views = performanceCookies.getPageViews();
+    setPageViews(typeof views === 'object' ? views : {});
   }, []);
 
   const getPageViewCount = useCallback((page?: string) => {
     const views = performanceCookies.getPageViews();
-    return page ? views[page] || 0 : views;
+    if (typeof views === 'object' && page) {
+      return views[page] || 0;
+    }
+    return typeof views === 'object' ? views : {};
   }, []);
 
   return {

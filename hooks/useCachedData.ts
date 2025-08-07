@@ -1,21 +1,21 @@
 import { useState, useEffect } from 'react';
 import { universalCache, apiCache, performanceCache } from '@/lib/cache';
 
-interface UseCachedDataOptions {
+interface UseCachedDataOptions<T> {
   ttl?: number; // Time to live in milliseconds
   key: string;
-  fetchFn: () => Promise<any>;
-  dependencies?: any[];
+  fetchFn: () => Promise<T>;
+  dependencies?: unknown[];
   enabled?: boolean;
 }
 
-export function useCachedData<T = any>({
+export function useCachedData<T = unknown>({
   ttl = 300000, // 5 minutes default
   key,
   fetchFn,
   dependencies = [],
   enabled = true
-}: UseCachedDataOptions) {
+}: UseCachedDataOptions<T>) {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -29,7 +29,7 @@ export function useCachedData<T = any>({
         setError(null);
 
         // Check cache first
-        const cached = universalCache.get(key);
+        const cached = universalCache.get<T>(key);
         if (cached) {
           performanceCache.recordHit();
           setData(cached);
@@ -88,9 +88,9 @@ export function useCachedData<T = any>({
 }
 
 // Specialized hook for API calls
-export function useCachedAPI<T = any>(
+export function useCachedAPI<T = unknown>(
   url: string,
-  params?: Record<string, any>,
+  params?: Record<string, string>,
   ttl: number = 300000
 ) {
   const cacheKey = apiCache.generateKey(url, params);
@@ -115,7 +115,7 @@ export function useCachedAPI<T = any>(
 }
 
 // Hook for localStorage-based caching
-export function useLocalStorageCache<T = any>(
+export function useLocalStorageCache<T = unknown>(
   key: string,
   defaultValue: T,
   ttl: number = 3600000 // 1 hour default
