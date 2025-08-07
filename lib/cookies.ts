@@ -9,6 +9,17 @@ export interface CookieOptions {
   maxAge?: number; // seconds
 }
 
+interface CachedData {
+  data: unknown;
+  timestamp: number;
+  ttl: number;
+}
+
+interface EngagementAction {
+  timestamp: number;
+  data?: Record<string, unknown>;
+}
+
 // Default cookie options
 const defaultOptions: CookieOptions = {
   path: '/',
@@ -20,7 +31,7 @@ const defaultOptions: CookieOptions = {
 // Client-side cookie utilities
 export const clientCookies = {
   // Set a cookie
-  set: (name: string, value: any, options: CookieOptions = {}) => {
+  set: (name: string, value: unknown, options: CookieOptions = {}) => {
     if (typeof window === 'undefined') return;
 
     const opts = { ...defaultOptions, ...options };
@@ -44,7 +55,7 @@ export const clientCookies = {
   },
 
   // Get a cookie
-  get: <T = any>(name: string): T | null => {
+  get: <T = unknown>(name: string): T | null => {
     if (typeof window === 'undefined') return null;
 
     const cookies = document.cookie.split(';');
@@ -80,10 +91,10 @@ export const clientCookies = {
   },
 
   // Get all cookies
-  getAll: (): Record<string, any> => {
+  getAll: (): Record<string, unknown> => {
     if (typeof window === 'undefined') return {};
 
-    const cookies: Record<string, any> = {};
+    const cookies: Record<string, unknown> = {};
     document.cookie.split(';').forEach(cookie => {
       const [name, value] = cookie.trim().split('=');
       if (name && value) {
@@ -101,8 +112,8 @@ export const clientCookies = {
 // Server-side cookie utilities (for API routes)
 export const serverCookies = {
   // Parse cookies from request headers
-  parse: (cookieHeader: string): Record<string, any> => {
-    const cookies: Record<string, any> = {};
+  parse: (cookieHeader: string): Record<string, unknown> => {
+    const cookies: Record<string, unknown> = {};
     
     if (!cookieHeader) return cookies;
 
@@ -121,7 +132,7 @@ export const serverCookies = {
   },
 
   // Set cookie in response headers
-  set: (name: string, value: any, options: CookieOptions = {}): string => {
+  set: (name: string, value: unknown, options: CookieOptions = {}): string => {
     const opts = { ...defaultOptions, ...options };
     let cookieString = `Set-Cookie: ${name}=${encodeURIComponent(JSON.stringify(value))}`;
 
@@ -147,7 +158,7 @@ export const serverCookies = {
 // Performance-focused cookie cache
 export const performanceCookies = {
   // Cache API responses in cookies
-  cacheAPIResponse: (key: string, data: any, ttl: number = 300) => { // 5 minutes default
+  cacheAPIResponse: (key: string, data: unknown, ttl: number = 300) => { // 5 minutes default
     clientCookies.set(`api_cache_${key}`, {
       data,
       timestamp: Date.now(),
@@ -156,8 +167,8 @@ export const performanceCookies = {
   },
 
   // Get cached API response
-  getCachedAPIResponse: <T = any>(key: string): T | null => {
-    const cached = clientCookies.get(`api_cache_${key}`);
+  getCachedAPIResponse: <T = unknown>(key: string): T | null => {
+    const cached = clientCookies.get<CachedData>(`api_cache_${key}`);
     if (!cached) return null;
 
     const { data, timestamp, ttl } = cached;
@@ -166,46 +177,46 @@ export const performanceCookies = {
       return null;
     }
 
-    return data;
+    return data as T;
   },
 
   // Cache user preferences
-  setUserPreference: (key: string, value: any) => {
+  setUserPreference: (key: string, value: unknown) => {
     clientCookies.set(`pref_${key}`, value, { maxAge: 365 * 24 * 60 * 60 }); // 1 year
   },
 
   // Get user preference
-  getUserPreference: <T = any>(key: string, defaultValue: T): T => {
-    const value = clientCookies.get(`pref_${key}`);
+  getUserPreference: <T = unknown>(key: string, defaultValue: T): T => {
+    const value = clientCookies.get<T>(`pref_${key}`);
     return value !== null ? value : defaultValue;
   },
 
   // Cache session data
-  setSessionData: (key: string, value: any) => {
+  setSessionData: (key: string, value: unknown) => {
     clientCookies.set(`session_${key}`, value, { maxAge: 24 * 60 * 60 }); // 1 day
   },
 
   // Get session data
-  getSessionData: <T = any>(key: string): T | null => {
-    return clientCookies.get(`session_${key}`);
+  getSessionData: <T = unknown>(key: string): T | null => {
+    return clientCookies.get<T>(`session_${key}`);
   },
 
   // Track user behavior for performance optimization
   trackPageView: (page: string) => {
-    const views = clientCookies.get('page_views') || {};
+    const views = clientCookies.get<Record<string, number>>('page_views') || {};
     views[page] = (views[page] || 0) + 1;
     clientCookies.set('page_views', views, { maxAge: 30 * 24 * 60 * 60 }); // 30 days
   },
 
   // Get page view count
   getPageViews: (page?: string) => {
-    const views = clientCookies.get('page_views') || {};
+    const views = clientCookies.get<Record<string, number>>('page_views') || {};
     return page ? views[page] || 0 : views;
   },
 
   // Cache search queries for faster autocomplete
   cacheSearchQuery: (query: string) => {
-    const queries = clientCookies.get('search_history') || [];
+    const queries = clientCookies.get<string[]>('search_history') || [];
     if (!queries.includes(query)) {
       queries.unshift(query);
       queries.splice(10); // Keep only last 10 queries
@@ -215,7 +226,7 @@ export const performanceCookies = {
 
   // Get search history
   getSearchHistory: (): string[] => {
-    return clientCookies.get('search_history') || [];
+    return clientCookies.get<string[]>('search_history') || [];
   },
 
   // Clear search history
@@ -249,8 +260,8 @@ export const analyticsCookies = {
   },
 
   // Track user engagement
-  trackEngagement: (action: string, data?: any) => {
-    const engagement = clientCookies.get('user_engagement') || {};
+  trackEngagement: (action: string, data?: Record<string, unknown>) => {
+    const engagement = clientCookies.get<Record<string, EngagementAction[]>>('user_engagement') || {};
     if (!engagement[action]) {
       engagement[action] = [];
     }

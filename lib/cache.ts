@@ -2,16 +2,21 @@
 export interface CacheOptions {
   ttl?: number; // Time to live in milliseconds
   key: string;
-  data: any;
+  data: unknown;
+}
+
+interface CachedItem {
+  data: unknown;
+  expires: number;
 }
 
 // In-memory cache for server-side
-const memoryCache = new Map<string, { data: any; expires: number }>();
+const memoryCache = new Map<string, CachedItem>();
 
 // Cookie-based cache utilities
 export const cookieCache = {
   // Set cookie with data
-  set: (key: string, data: any, ttl: number = 3600000) => { // Default 1 hour
+  set: (key: string, data: unknown, ttl: number = 3600000) => { // Default 1 hour
     const expires = new Date(Date.now() + ttl);
     const serializedData = JSON.stringify({ data, expires: expires.getTime() });
     
@@ -20,7 +25,7 @@ export const cookieCache = {
   },
 
   // Get data from cookie
-  get: (key: string): any => {
+  get: <T = unknown>(key: string): T | null => {
     const cookies = document.cookie.split(';');
     const cookie = cookies.find(c => c.trim().startsWith(`${key}=`));
     
@@ -36,7 +41,7 @@ export const cookieCache = {
         return null;
       }
       
-      return data;
+      return data as T;
     } catch {
       return null;
     }
@@ -51,7 +56,7 @@ export const cookieCache = {
 // localStorage-based cache utilities
 export const localStorageCache = {
   // Set data in localStorage
-  set: (key: string, data: any, ttl: number = 3600000) => {
+  set: (key: string, data: unknown, ttl: number = 3600000) => {
     const expires = Date.now() + ttl;
     const cacheData = { data, expires };
     
@@ -63,7 +68,7 @@ export const localStorageCache = {
   },
 
   // Get data from localStorage
-  get: (key: string): any => {
+  get: <T = unknown>(key: string): T | null => {
     try {
       const cached = localStorage.getItem(key);
       if (!cached) return null;
@@ -75,7 +80,7 @@ export const localStorageCache = {
         return null;
       }
       
-      return data;
+      return data as T;
     } catch {
       return null;
     }
@@ -94,13 +99,13 @@ export const localStorageCache = {
 // Server-side memory cache utilities
 export const serverCache = {
   // Set data in memory cache
-  set: (key: string, data: any, ttl: number = 300000) => { // Default 5 minutes
+  set: (key: string, data: unknown, ttl: number = 300000) => { // Default 5 minutes
     const expires = Date.now() + ttl;
     memoryCache.set(key, { data, expires });
   },
 
   // Get data from memory cache
-  get: (key: string): any => {
+  get: <T = unknown>(key: string): T | null => {
     const cached = memoryCache.get(key);
     if (!cached) return null;
     
@@ -109,7 +114,7 @@ export const serverCache = {
       return null;
     }
     
-    return cached.data;
+    return cached.data as T;
   },
 
   // Remove from memory cache
@@ -126,7 +131,7 @@ export const serverCache = {
 // Universal cache wrapper that tries multiple strategies
 export const universalCache = {
   // Set data using best available cache
-  set: (key: string, data: any, ttl: number = 3600000) => {
+  set: (key: string, data: unknown, ttl: number = 3600000) => {
     // Try localStorage first (client-side)
     if (typeof window !== 'undefined') {
       localStorageCache.set(key, data, ttl);
@@ -138,16 +143,16 @@ export const universalCache = {
   },
 
   // Get data from best available cache
-  get: (key: string): any => {
+  get: <T = unknown>(key: string): T | null => {
     if (typeof window !== 'undefined') {
       // Try localStorage first, then cookies
-      const localData = localStorageCache.get(key);
+      const localData = localStorageCache.get<T>(key);
       if (localData) return localData;
       
-      return cookieCache.get(key);
+      return cookieCache.get<T>(key);
     } else {
       // Server-side
-      return serverCache.get(key);
+      return serverCache.get<T>(key);
     }
   },
 
@@ -171,7 +176,7 @@ export const apiCache = {
     ttl: number = 300000
   ): Promise<T> => {
     // Check cache first
-    const cached = universalCache.get(key);
+    const cached = universalCache.get<T>(key);
     if (cached) {
       return cached;
     }
@@ -186,7 +191,7 @@ export const apiCache = {
   },
 
   // Generate cache key from URL and params
-  generateKey: (url: string, params?: Record<string, any>): string => {
+  generateKey: (url: string, params?: Record<string, string>): string => {
     const baseKey = `api:${url}`;
     if (!params) return baseKey;
     

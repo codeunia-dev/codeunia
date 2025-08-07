@@ -20,7 +20,8 @@ export default function CookiePerformanceExample() {
     setTheme(themeCookies.getTheme());
     setLanguage(themeCookies.getLanguage());
     setSearchHistory(performanceCookies.getSearchHistory());
-    setPageViews(performanceCookies.getPageViews());
+    const views = performanceCookies.getPageViews();
+    setPageViews(typeof views === 'object' ? views : {});
 
     // Track page view
     performanceCookies.trackPageView('cookie-example');
