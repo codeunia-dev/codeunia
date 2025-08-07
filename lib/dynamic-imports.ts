@@ -9,12 +9,6 @@ export const DynamicGlobe = dynamic(() => import('@/components/ui/globe').then(m
   })
 })
 
-export const DynamicVortex = dynamic(() => import('@/components/ui/vortex').then(mod => mod.default), {
-  ssr: false,
-  loading: () => React.createElement('div', { 
-    className: "w-full h-64 bg-gradient-to-br from-purple-50 to-pink-100 animate-pulse rounded-lg" 
-  })
-})
 
 export const DynamicParticles = dynamic(() => import('@/components/ui/particles').then(mod => mod.default), {
   ssr: false,
