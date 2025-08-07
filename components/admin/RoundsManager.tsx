@@ -60,7 +60,7 @@ export function RoundsManager({ rounds, onRoundsChange }: RoundsManagerProps) {
     onRoundsChange([...rounds, newRound]);
   };
 
-  const updateRound = (index: number, field: keyof CreateTestRoundForm, value: any) => {
+  const updateRound = (index: number, field: keyof CreateTestRoundForm, value: CreateTestRoundForm[keyof CreateTestRoundForm]) => {
     const updatedRounds = [...rounds];
     updatedRounds[index] = { ...updatedRounds[index], [field]: value };
     onRoundsChange(updatedRounds);
