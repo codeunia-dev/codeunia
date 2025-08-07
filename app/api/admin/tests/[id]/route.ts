@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
+// Define the type for question data
+interface QuestionData {
+  question_text: string;
+  option_a?: string;
+  option_b?: string;
+  option_c?: string;
+  option_d?: string;
+  correct_options?: string[];
+  explanation?: string | null;
+  points?: number;
+}
+
+// Define the type for test data (request body for PUT)
+interface TestData {
+  name?: string;
+  description?: string;
+  duration_minutes?: number;
+  registration_start?: string | null;
+  registration_end?: string | null;
+  test_start?: string | null;
+  test_end?: string | null;
+  is_public?: boolean;
+  enable_leaderboard?: boolean;
+  certificate_template_id?: string | null;
+  passing_score?: number;
+  max_attempts?: number;
+  questions?: QuestionData[];
+}
+
 // GET: Get test details with questions and registrations (admin only)
 export async function GET(
   request: NextRequest,
@@ -134,7 +163,7 @@ export async function PUT(
       );
     }
 
-    const testData = await request.json();
+    const testData: TestData = await request.json();
 
     // Use service role client for admin operations
     const serviceSupabase = createServiceClient(
@@ -143,7 +172,7 @@ export async function PUT(
     );
 
     // Start a transaction
-    const testInsertData = {
+    const testInsertData: TestData = {
       name: testData.name,
       description: testData.description,
       duration_minutes: testData.duration_minutes,
@@ -151,11 +180,11 @@ export async function PUT(
       registration_end: testData.registration_end || null,
       test_start: testData.test_start || null,
       test_end: testData.test_end || null,
-      is_public: testData.is_public || true,
-      enable_leaderboard: testData.enable_leaderboard || false,
+      is_public: testData.is_public ?? true,
+      enable_leaderboard: testData.enable_leaderboard ?? false,
       certificate_template_id: testData.certificate_template_id || null,
       passing_score: testData.passing_score,
-      max_attempts: testData.max_attempts || 1,
+      max_attempts: testData.max_attempts ?? 1,
     };
 
     // Update test
@@ -189,7 +218,7 @@ export async function PUT(
     }
 
     // Insert new questions
-    const questions = testData.questions.map((q: any, index: number) => ({
+    const questions = testData.questions?.map((q: QuestionData, index: number) => ({
       test_id: id,
       question_text: q.question_text,
       option_a: q.option_a,
@@ -198,22 +227,24 @@ export async function PUT(
       option_d: q.option_d,
       correct_options: q.correct_options || [],
       explanation: q.explanation || null,
-      points: q.points || 1,
+      points: q.points ?? 1,
       order_index: index
-    }));
+    })) || [];
 
     console.log('Updating questions:', questions);
     
-    const { error: questionsError } = await serviceSupabase
-      .from('test_questions')
-      .insert(questions);
+    if (questions.length > 0) {
+      const { error: questionsError } = await serviceSupabase
+        .from('test_questions')
+        .insert(questions);
 
-    if (questionsError) {
-      console.error('Questions update error:', questionsError);
-      return NextResponse.json(
-        { error: 'Failed to update questions: ' + questionsError.message },
-        { status: 500 }
-      );
+      if (questionsError) {
+        console.error('Questions update error:', questionsError);
+        return NextResponse.json(
+          { error: 'Failed to update questions: ' + questionsError.message },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

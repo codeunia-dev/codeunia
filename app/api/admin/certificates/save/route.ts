@@ -1,6 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Define the type for certificate data
+interface CertificateData {
+  cert_id: string;
+  template_id: string;
+  certificate_url?: string;
+  user_id?: string;
+  event_type?: string;
+  event_title?: string;
+  score?: number;
+  status?: string;
+  issued_at?: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check if request has content
@@ -55,8 +68,8 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Save certificate record with only the fields that exist
-    const certificateData: any = {
+    // Save certificate record with typed fields
+    const certificateData: CertificateData = {
       cert_id,
       template_id
     };
@@ -96,4 +109,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

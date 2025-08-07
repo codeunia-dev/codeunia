@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Define the type for updateData
+interface UpdateData {
+  last_contact_at: string;
+  notes: string;
+  contact_attempts?: number;
+  status?: string;
+}
+
 export async function GET() {
   try {
     // Verify admin access (you can add your own admin verification logic)
@@ -80,7 +88,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update payment status based on action
-    const updateData: any = {
+    const updateData: UpdateData = {
       last_contact_at: new Date().toISOString(),
       notes: notes || ''
     };
@@ -125,4 +133,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
