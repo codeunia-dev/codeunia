@@ -42,31 +42,31 @@ export const CACHE_TYPES = {
 } as const;
 
 // Server-side memory cache (simulating Redis)
-const serverCache = new Map<string, { data: any; expires: number; priority: string }>();
+const serverCache = new Map<string, { data: unknown; expires: number; priority: string }>();
 
 // Production cache manager
 export class ProductionCache {
   // Get cache with automatic fallback
-  static async get<T = any>(key: string, config: Partial<CacheConfig> = {}): Promise<T | null> {
+  static async get<T = unknown>(key: string, config: Partial<CacheConfig> = {}): Promise<T | null> {
     const cacheConfig = this.getCacheConfig(key, config);
     
     // Try server cache first (for high-priority items)
     if (cacheConfig.priority === 'high') {
       const serverData = this.getServerCache(key);
-      if (serverData) return serverData;
+      if (serverData) return serverData as T;
     }
 
     // Try localStorage
     if (typeof window !== 'undefined') {
       const localData = this.getLocalStorageCache(key);
-      if (localData) return localData;
+      if (localData) return localData as T;
     }
 
     return null;
   }
 
   // Set cache with appropriate storage
-  static async set<T = any>(key: string, data: T, config: Partial<CacheConfig> = {}): Promise<void> {
+  static async set<T = unknown>(key: string, data: T, config: Partial<CacheConfig> = {}): Promise<void> {
     const cacheConfig = this.getCacheConfig(key, config);
     
     // Store in server cache for high-priority items
@@ -92,7 +92,7 @@ export class ProductionCache {
   }
 
   // Batch operations for performance
-  static async getMultiple<T = any>(keys: string[]): Promise<Record<string, T | null>> {
+  static async getMultiple<T = unknown>(keys: string[]): Promise<Record<string, T | null>> {
     const results: Record<string, T | null> = {};
     
     await Promise.all(
@@ -129,7 +129,7 @@ export class ProductionCache {
     };
   }
 
-  private static getServerCache(key: string): any {
+  private static getServerCache(key: string): unknown {
     const cached = serverCache.get(key);
     if (!cached) return null;
     
@@ -141,7 +141,7 @@ export class ProductionCache {
     return cached.data;
   }
 
-  private static setServerCache(key: string, data: any, ttl: number, priority: string): void {
+  private static setServerCache(key: string, data: unknown, ttl: number, priority: string): void {
     const expires = Date.now() + (ttl * 1000);
     serverCache.set(key, { data, expires, priority });
     
@@ -154,7 +154,7 @@ export class ProductionCache {
     }
   }
 
-  private static getLocalStorageCache(key: string): any {
+  private static getLocalStorageCache(key: string): unknown {
     try {
       const cached = localStorage.getItem(`cache_${key}`);
       if (!cached) return null;
@@ -171,7 +171,7 @@ export class ProductionCache {
     }
   }
 
-  private static setLocalStorageCache(key: string, data: any, ttl: number): void {
+  private static setLocalStorageCache(key: string, data: unknown, ttl: number): void {
     try {
       const expires = Date.now() + (ttl * 1000);
       localStorage.setItem(`cache_${key}`, JSON.stringify({ data, expires }));
@@ -183,12 +183,12 @@ export class ProductionCache {
 
 // Specialized cache managers for Codeunia features
 export class LeaderboardCache {
-  static async getLeaderboard(type: 'global' | 'test' | 'hackathon', testId?: string): Promise<any> {
+  static async getLeaderboard(type: 'global' | 'test' | 'hackathon', testId?: string): Promise<unknown> {
     const key = `leaderboard_${type}${testId ? `_${testId}` : ''}`;
     return ProductionCache.get(key, CACHE_TYPES.LEADERBOARD);
   }
 
-  static async setLeaderboard(type: 'global' | 'test' | 'hackathon', data: any, testId?: string): Promise<void> {
+  static async setLeaderboard(type: 'global' | 'test' | 'hackathon', data: unknown, testId?: string): Promise<void> {
     const key = `leaderboard_${type}${testId ? `_${testId}` : ''}`;
     await ProductionCache.set(key, data, CACHE_TYPES.LEADERBOARD);
   }
@@ -200,83 +200,83 @@ export class LeaderboardCache {
 }
 
 export class TestDataCache {
-  static async getTest(testId: string): Promise<any> {
+  static async getTest(testId: string): Promise<unknown> {
     const key = `test_${testId}`;
     return ProductionCache.get(key, CACHE_TYPES.TEST_DATA);
   }
 
-  static async setTest(testId: string, data: any): Promise<void> {
+  static async setTest(testId: string, data: unknown): Promise<void> {
     const key = `test_${testId}`;
     await ProductionCache.set(key, data, CACHE_TYPES.TEST_DATA);
   }
 
-  static async getTestList(): Promise<any> {
+  static async getTestList(): Promise<unknown> {
     const key = 'test_list';
     return ProductionCache.get(key, CACHE_TYPES.TEST_DATA);
   }
 
-  static async setTestList(data: any): Promise<void> {
+  static async setTestList(data: unknown): Promise<void> {
     const key = 'test_list';
     await ProductionCache.set(key, data, CACHE_TYPES.TEST_DATA);
   }
 }
 
 export class CertificateCache {
-  static async getCertificate(certId: string): Promise<any> {
+  static async getCertificate(certId: string): Promise<unknown> {
     const key = `certificate_${certId}`;
     return ProductionCache.get(key, CACHE_TYPES.CERTIFICATES);
   }
 
-  static async setCertificate(certId: string, data: any): Promise<void> {
+  static async setCertificate(certId: string, data: unknown): Promise<void> {
     const key = `certificate_${certId}`;
     await ProductionCache.set(key, data, CACHE_TYPES.CERTIFICATES);
   }
 
-  static async getCertificatePreview(certId: string): Promise<any> {
+  static async getCertificatePreview(certId: string): Promise<unknown> {
     const key = `certificate_preview_${certId}`;
     return ProductionCache.get(key, { ...CACHE_TYPES.CERTIFICATES, ttl: 1800 }); // 30 min for previews
   }
 }
 
 export class BlogCache {
-  static async getBlogPost(slug: string): Promise<any> {
+  static async getBlogPost(slug: string): Promise<unknown> {
     const key = `blog_${slug}`;
     return ProductionCache.get(key, CACHE_TYPES.BLOG_POSTS);
   }
 
-  static async setBlogPost(slug: string, data: any): Promise<void> {
+  static async setBlogPost(slug: string, data: unknown): Promise<void> {
     const key = `blog_${slug}`;
     await ProductionCache.set(key, data, CACHE_TYPES.BLOG_POSTS);
   }
 
-  static async getBlogList(): Promise<any> {
+  static async getBlogList(): Promise<unknown> {
     const key = 'blog_list';
     return ProductionCache.get(key, CACHE_TYPES.BLOG_POSTS);
   }
 
-  static async setBlogList(data: any): Promise<void> {
+  static async setBlogList(data: unknown): Promise<void> {
     const key = 'blog_list';
     await ProductionCache.set(key, data, CACHE_TYPES.BLOG_POSTS);
   }
 }
 
 export class HackathonCache {
-  static async getHackathon(hackathonId: string): Promise<any> {
+  static async getHackathon(hackathonId: string): Promise<unknown> {
     const key = `hackathon_${hackathonId}`;
     return ProductionCache.get(key, CACHE_TYPES.HACKATHONS);
   }
 
-  static async setHackathon(hackathonId: string, data: any): Promise<void> {
+  static async setHackathon(hackathonId: string, data: unknown): Promise<void> {
     const key = `hackathon_${hackathonId}`;
     await ProductionCache.set(key, data, CACHE_TYPES.HACKATHONS);
   }
 
-  static async getHackathonList(): Promise<any> {
+  static async getHackathonList(): Promise<unknown> {
     const key = 'hackathon_list';
     return ProductionCache.get(key, CACHE_TYPES.HACKATHONS);
   }
 
-  static async setHackathonList(data: any): Promise<void> {
+  static async setHackathonList(data: unknown): Promise<void> {
     const key = 'hackathon_list';
     await ProductionCache.set(key, data, CACHE_TYPES.HACKATHONS);
   }
@@ -319,4 +319,4 @@ export class CacheMetrics {
     this.misses = 0;
     this.sets = 0;
   }
-} 
+}

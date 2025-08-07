@@ -2112,7 +2112,7 @@ function TestCertificates({ testId }: { testId: string }) {
                     experience_level: selectedAttempt.test_registrations?.experience_level
                   }}
                   templateId={selectedAttempt.tests?.certificate_template_id}
-                  onComplete={(certURL) => {
+                  onComplete={() => {
                     toast.success('Certificate generated successfully!');
                     setSelectedAttempt(null);
                   }}
