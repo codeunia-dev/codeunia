@@ -6,6 +6,57 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Define the type for round data
+interface RoundData {
+  name: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+  duration_minutes?: number;
+  max_attempts?: number;
+  passing_score?: number;
+  requirements?: string[];
+  assessment_criteria?: string[];
+  round_type?: string;
+  is_elimination_round?: boolean;
+  weightage?: number;
+}
+
+// Define the type for question data
+interface QuestionData {
+  question_text: string;
+  option_a?: string;
+  option_b?: string;
+  option_c?: string;
+  option_d?: string;
+  correct_options?: string[];
+  explanation?: string;
+  points?: number;
+}
+
+// Define the type for the request body
+interface RequestBody {
+  name: string;
+  description: string;
+  duration_minutes?: number;
+  event_start?: string | null;
+  event_end?: string | null;
+  registration_start?: string | null;
+  registration_end?: string | null;
+  certificate_start?: string | null;
+  certificate_end?: string | null;
+  rounds?: RoundData[];
+  is_paid?: boolean;
+  price?: number;
+  currency?: string;
+  is_public?: boolean;
+  enable_leaderboard?: boolean;
+  certificate_template_id?: string | null;
+  passing_score?: number;
+  max_attempts?: number;
+  questions?: QuestionData[];
+}
+
 export async function GET() {
   try {
     const { data: tests, error } = await supabase
@@ -42,7 +93,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: RequestBody = await request.json();
     const {
       name,
       description,
@@ -95,21 +146,21 @@ export async function POST(request: NextRequest) {
       .insert({
         name,
         description,
-        duration_minutes: duration_minutes || 60,
-        event_start: event_start || null,
-        event_end: event_end || null,
-        registration_start: registration_start || null,
-        registration_end: registration_end || null,
-        certificate_start: certificate_start || null,
-        certificate_end: certificate_end || null,
-        is_paid: is_paid || false,
-        price: price || 0,
-        currency: currency || 'INR',
-        is_public: is_public !== undefined ? is_public : true,
-        enable_leaderboard: enable_leaderboard || false,
-        certificate_template_id: certificate_template_id || null,
-        passing_score: passing_score || 70,
-        max_attempts: max_attempts || 1,
+        duration_minutes: duration_minutes ?? 60,
+        event_start: event_start ?? null,
+        event_end: event_end ?? null,
+        registration_start: registration_start ?? null,
+        registration_end: registration_end ?? null,
+        certificate_start: certificate_start ?? null,
+        certificate_end: certificate_end ?? null,
+        is_paid: is_paid ?? false,
+        price: price ?? 0,
+        currency: currency ?? 'INR',
+        is_public: is_public ?? true,
+        enable_leaderboard: enable_leaderboard ?? false,
+        certificate_template_id: certificate_template_id ?? null,
+        passing_score: passing_score ?? 70,
+        max_attempts: max_attempts ?? 1,
         is_active: true,
         created_by: user.id
       })
@@ -120,7 +171,7 @@ export async function POST(request: NextRequest) {
 
     // Insert rounds if provided
     if (rounds && rounds.length > 0) {
-      const roundsData = rounds.map((round: any, index: number) => ({
+      const roundsData = rounds.map((round: RoundData, index: number) => ({
         test_id: test.id,
         round_number: index + 1,
         name: round.name,
@@ -130,11 +181,11 @@ export async function POST(request: NextRequest) {
         duration_minutes: round.duration_minutes,
         max_attempts: round.max_attempts,
         passing_score: round.passing_score,
-        requirements: round.requirements || [],
-        assessment_criteria: round.assessment_criteria || [],
-        round_type: round.round_type || 'submission',
-        is_elimination_round: round.is_elimination_round || false,
-        weightage: round.weightage || 100
+        requirements: round.requirements ?? [],
+        assessment_criteria: round.assessment_criteria ?? [],
+        round_type: round.round_type ?? 'submission',
+        is_elimination_round: round.is_elimination_round ?? false,
+        weightage: round.weightage ?? 100
       }));
 
       const { error: roundsError } = await supabase
@@ -146,16 +197,16 @@ export async function POST(request: NextRequest) {
 
     // Insert questions if provided
     if (questions && questions.length > 0) {
-      const questionsData = questions.map((question: any, index: number) => ({
+      const questionsData = questions.map((question: QuestionData, index: number) => ({
         test_id: test.id,
         question_text: question.question_text,
         option_a: question.option_a,
         option_b: question.option_b,
         option_c: question.option_c,
         option_d: question.option_d,
-        correct_options: question.correct_options || [],
-        explanation: question.explanation || '',
-        points: question.points || 1,
+        correct_options: question.correct_options ?? [],
+        explanation: question.explanation ?? '',
+        points: question.points ?? 1,
         order_index: index + 1
       }));
 
