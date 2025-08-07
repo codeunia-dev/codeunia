@@ -2106,7 +2106,7 @@ function TestCertificates({ testId }: { testId: string }) {
                     issued_date: new Date().toLocaleDateString(),
                     category: 'Test Completion',
                     duration: `${selectedAttempt.time_taken_minutes} minutes`,
-                    organization: 'CodeUnia',
+                    organization: 'Codeunia',
                     institution: selectedAttempt.test_registrations?.institution,
                     department: selectedAttempt.registration?.department,
                     experience_level: selectedAttempt.test_registrations?.experience_level
