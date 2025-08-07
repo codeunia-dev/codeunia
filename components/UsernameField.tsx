@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -33,7 +33,7 @@ export function UsernameField({
   const supabase = createClient()
 
   // Check username availability
-  const checkUsernameAvailability = async (usernameToCheck: string) => {
+  const checkUsernameAvailability = useCallback(async (usernameToCheck: string) => {
     if (!usernameToCheck || usernameToCheck.length < 3) {
       setIsAvailable(null)
       return
@@ -62,7 +62,7 @@ export function UsernameField({
     } finally {
       setIsChecking(false)
     }
-  }
+  }, [supabase, userId])
 
   // Debounced username availability check
   useEffect(() => {
@@ -75,7 +75,7 @@ export function UsernameField({
     }, 500)
 
     return () => clearTimeout(timeoutId)
-  }, [username, currentUsername, userId])
+  }, [username, currentUsername, userId, checkUsernameAvailability])
 
   // Save username
   const saveUsername = async () => {

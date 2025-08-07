@@ -38,7 +38,7 @@ export const DynamicTestManager = dynamic(() => import('@/components/admin/TestM
 })
 
 // Utility function for lazy loading components
-export function lazyLoad<T extends React.ComponentType<any>>(
+export function lazyLoad<T extends React.ComponentType<Record<string, unknown>>>(
   importFunc: () => Promise<{ default: T }>,
   options?: {
     ssr?: boolean

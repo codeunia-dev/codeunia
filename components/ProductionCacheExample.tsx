@@ -14,7 +14,7 @@ export default function ProductionCacheExample() {
   // Cookie-based hooks (for user-specific, small, secure data)
   const { theme, language, fontSize, updateTheme, updateLanguage, updateFontSize } = useUserPreferences();
   const { searchHistory, addSearchQuery, clearSearchHistory } = useSearchHistory();
-  const { pageViews, trackPageView, getPageViewCount } = usePageViews();
+  const { pageViews, trackPageView } = usePageViews();
   const { stats, refreshStats, resetStats } = useCacheMetrics();
 
   // Track page view on mount

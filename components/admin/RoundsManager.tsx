@@ -11,7 +11,6 @@ import {
   Plus, 
   Trash2, 
   Edit, 
-  Clock, 
   Target, 
   Award, 
   Users, 

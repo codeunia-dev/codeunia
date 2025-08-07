@@ -216,7 +216,7 @@ export default function PremiumPage() {
           },
         };
 
-        const razorpay = new (window as typeof window & { Razorpay: any }).Razorpay(options);
+        const razorpay = new (window as typeof window & { Razorpay: new (options: unknown) => { open: () => void } }).Razorpay(options);
         razorpay.open();
       };
 

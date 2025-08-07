@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { UserActivity, ActivityType, ContributionGraphData, ActivityData } from '@/types/profile'
 import { globalLeaderboardService } from './global-leaderboard'
+import type { ActivityType as GlobalActivityType } from '@/types/global-leaderboard'
 
 export class ActivityService {
   private supabase = createClient()
@@ -33,7 +34,7 @@ export class ActivityService {
         const globalActivityType = this.mapToGlobalActivityType(activityType)
         if (globalActivityType) {
           console.log(`🎯 Awarding global points for ${activityType} -> ${globalActivityType}`)
-          const success = await globalLeaderboardService.awardPoints(userId, globalActivityType as any)
+          const success = await globalLeaderboardService.awardPoints(userId, globalActivityType)
           if (success) {
             console.log(`✅ Global points awarded for ${activityType}`)
           } else {
@@ -256,8 +257,8 @@ export class ActivityService {
   }
 
   // Map contribution graph activity types to global leaderboard activity types
-  private mapToGlobalActivityType(activityType: ActivityType): string | null {
-    const mapping: Record<ActivityType, string | null> = {
+  private mapToGlobalActivityType(activityType: ActivityType): GlobalActivityType | null {
+    const mapping: Record<ActivityType, GlobalActivityType | null> = {
       test_registration: 'test_registration',
       test_attempt: 'test_completion',
       test_completion: 'test_completion',
