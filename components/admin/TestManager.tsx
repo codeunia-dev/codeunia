@@ -34,6 +34,123 @@ import type {
   CreateTestForm, 
   CreateTestQuestionForm
 } from "@/types/test-management";
+import type { User } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+// Define interfaces for API responses
+interface TestDetailsResponse {
+  test: Test;
+  questions: Array<{
+    question_text: string;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    correct_options: string[];
+    explanation: string;
+    points: number;
+  }>;
+}
+
+interface RoundData {
+  round_number: number;
+  name: string;
+  description: string;
+  start_date: string;
+  end_date: string;
+  duration_minutes: number;
+  max_attempts: number;
+  passing_score: number;
+  requirements: string[];
+  assessment_criteria: string[];
+  round_type: string;
+  is_elimination_round: boolean;
+  weightage: number;
+}
+
+interface TestRegistration {
+  id: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  institution?: string;
+  department?: string;
+  year_of_study?: string;
+  experience_level?: string;
+  registration_date: string;
+  status?: string;
+  attempt_count?: number;
+  best_score?: number;
+  best_attempt_id?: string;
+  registration_data?: Record<string, unknown>;
+  profiles?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+}
+
+interface TestAttempt {
+  id: string;
+  user_id: string;
+  test_id: string;
+  score: number;
+  passed: boolean;
+  time_taken_minutes: number;
+  submitted_at: string;
+  started_at: string;
+  violations_count?: number;
+  admin_override_score?: number | null;
+  status: string;
+  profiles?: {
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+  registration?: {
+    phone?: string;
+    institution?: string;
+    department?: string;
+    year_of_study?: string;
+    experience_level?: string;
+  };
+  test_registrations?: {
+    institution?: string;
+    experience_level?: string;
+  };
+  tests?: {
+    name: string;
+    certificate_template_id?: string;
+  };
+}
+
+interface LeaderboardEntry {
+  id: string;
+  rank: number;
+  score: number;
+  time_taken_minutes: number;
+  profiles?: {
+    first_name?: string;
+    last_name?: string;
+  };
+  registration?: {
+    institution?: string;
+    experience_level?: string;
+  };
+}
+
+interface TestResults {
+  statistics?: {
+    totalRegistrations: number;
+    totalAttempts: number;
+    passedAttempts: number;
+    averageScore: number;
+  };
+  attempts?: TestAttempt[];
+  leaderboard?: LeaderboardEntry[];
+}
+
+
 import { CertificateGenerator } from "@/components/CertificateGenerator";
 import { EventTimeline } from "@/components/admin/EventTimeline";
 import { RoundsManager } from "@/components/admin/RoundsManager";
@@ -44,8 +161,8 @@ export function TestManager() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedTest, setSelectedTest] = useState<Test | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
-  const [user, setUser] = useState<any>(null);
-  const [supabaseClient, setSupabaseClient] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
   const [formData, setFormData] = useState<CreateTestForm>({
     name: "",
     description: "",
@@ -96,13 +213,16 @@ export function TestManager() {
 
     try {
       // Add timeout to the auth request
-      const timeoutPromise = new Promise((_, reject) => 
+      const timeoutPromise = new Promise<never>((_, reject) => 
         setTimeout(() => reject(new Error('Authentication timeout')), 10000)
       );
 
       const authPromise = supabaseClient.auth.getUser();
-      const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]);
+      const result = await Promise.race([authPromise, timeoutPromise]);
       
+      // Handle successful auth response
+      const { data: { user }, error } = result;
+    
       if (error) {
         toast.error('Authentication error: ' + error.message);
         return;
@@ -240,7 +360,7 @@ export function TestManager() {
         certificate_end: data.test.certificate_end ? new Date(data.test.certificate_end).toISOString().slice(0, 16) : "",
         
         // Dynamic Rounds System
-        rounds: data.test.rounds?.map((r: any) => ({
+        rounds: data.test.rounds?.map((r: RoundData) => ({
           round_number: r.round_number,
           name: r.name,
           description: r.description,
@@ -267,7 +387,7 @@ export function TestManager() {
         certificate_template_id: data.test.certificate_template_id || "",
         passing_score: data.test.passing_score,
         max_attempts: data.test.max_attempts,
-        questions: data.questions.map((q: any) => ({
+        questions: data.questions.map((q: TestDetailsResponse['questions'][number]) => ({
           question_text: q.question_text,
           option_a: q.option_a,
           option_b: q.option_b,
@@ -355,7 +475,7 @@ export function TestManager() {
     }));
   };
 
-  const updateQuestion = (index: number, field: keyof CreateTestQuestionForm, value: any) => {
+  const updateQuestion = (index: number, field: keyof CreateTestQuestionForm, value: CreateTestQuestionForm[keyof CreateTestQuestionForm]) => {
     setFormData(prev => ({
       ...prev,
       questions: prev.questions.map((q, i) => 
@@ -1061,17 +1181,12 @@ function TestOverview({ test }: { test: Test }) {
 }
 
 function TestRegistrations({ testId }: { testId: string }) {
-  const [registrations, setRegistrations] = useState<any[]>([]);
+  const [registrations, setRegistrations] = useState<TestRegistration[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
+  const [selectedRegistration, setSelectedRegistration] = useState<TestRegistration | null>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchRegistrations();
-  }, [testId]);
-
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/admin/tests/${testId}`);
@@ -1082,7 +1197,11 @@ function TestRegistrations({ testId }: { testId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [testId]);
+
+  useEffect(() => {
+    fetchRegistrations();
+  }, [fetchRegistrations]);
 
   const downloadCSV = () => {
     const headers = [
@@ -1134,7 +1253,7 @@ function TestRegistrations({ testId }: { testId: string }) {
     toast.success('CSV downloaded successfully!');
   };
 
-  const viewRegistrationDetails = (registration: any) => {
+  const viewRegistrationDetails = (registration: TestRegistration) => {
     setSelectedRegistration(registration);
     setShowDetailsDialog(true);
   };
@@ -1291,17 +1410,12 @@ function TestRegistrations({ testId }: { testId: string }) {
 }
 
 function TestResults({ testId }: { testId: string }) {
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<TestResults | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedAttempt, setSelectedAttempt] = useState<any>(null);
+  const [selectedAttempt, setSelectedAttempt] = useState<TestAttempt | null>(null);
   const [showAttemptDetails, setShowAttemptDetails] = useState(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    fetchResults();
-  }, [testId]);
-
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/admin/tests/${testId}/results`);
@@ -1312,7 +1426,11 @@ function TestResults({ testId }: { testId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [testId]);
+
+  useEffect(() => {
+    fetchResults();
+  }, [fetchResults]);
 
   const downloadResultsCSV = () => {
     if (!results?.attempts) return;
@@ -1333,7 +1451,7 @@ function TestResults({ testId }: { testId: string }) {
       'Admin Override Score'
     ];
 
-    const csvData = results.attempts.map((attempt: any) => [
+    const csvData = results.attempts.map((attempt: TestAttempt) => [
       attempt.profiles?.first_name + ' ' + attempt.profiles?.last_name || 'N/A',
       attempt.profiles?.email || 'N/A',
       attempt.registration?.phone || 'N/A',
@@ -1350,7 +1468,7 @@ function TestResults({ testId }: { testId: string }) {
     ]);
 
     const csvContent = [headers, ...csvData]
-      .map(row => row.map((cell: any) => `"${cell}"`).join(','))
+      .map(row => row.map((cell: string | number) => `"${cell}"`).join(','))
       .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -1366,7 +1484,7 @@ function TestResults({ testId }: { testId: string }) {
     toast.success('Results CSV downloaded successfully!');
   };
 
-  const viewAttemptDetails = (attempt: any) => {
+  const viewAttemptDetails = (attempt: TestAttempt) => {
     setSelectedAttempt(attempt);
     setShowAttemptDetails(true);
   };
@@ -1435,7 +1553,7 @@ function TestResults({ testId }: { testId: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {results.leaderboard.map((entry: any) => (
+                {results.leaderboard.map((entry: LeaderboardEntry) => (
                   <TableRow key={entry.id}>
                     <TableCell>
                       <Badge variant={entry.rank <= 3 ? 'default' : 'secondary'}>
@@ -1477,7 +1595,7 @@ function TestResults({ testId }: { testId: string }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {results?.attempts?.map((attempt: any) => (
+              {results?.attempts?.map((attempt: TestAttempt) => (
                 <TableRow key={attempt.id}>
                   <TableCell className="font-medium">
                     {attempt.profiles?.first_name} {attempt.profiles?.last_name}
@@ -1497,7 +1615,7 @@ function TestResults({ testId }: { testId: string }) {
                   </TableCell>
                   <TableCell>{attempt.time_taken_minutes} min</TableCell>
                   <TableCell>
-                    <Badge variant={attempt.violations_count > 0 ? 'destructive' : 'secondary'}>
+                    <Badge variant={(attempt.violations_count ?? 0) > 0 ? 'destructive' : 'secondary'}>
                       {attempt.violations_count || 0}
                     </Badge>
                   </TableCell>
@@ -1592,7 +1710,7 @@ function TestResults({ testId }: { testId: string }) {
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Violations</Label>
-                    <Badge variant={selectedAttempt.violations_count > 0 ? 'destructive' : 'secondary'}>
+                    <Badge variant={(selectedAttempt.violations_count ?? 0) > 0 ? 'destructive' : 'secondary'}>
                       {selectedAttempt.violations_count || 0}
                     </Badge>
                   </div>
@@ -1638,33 +1756,15 @@ function TestResults({ testId }: { testId: string }) {
 }
 
 function TestCertificates({ testId }: { testId: string }) {
-  const [selectedAttempt, setSelectedAttempt] = useState<any>(null);
-  const [attempts, setAttempts] = useState<any[]>([]);
+  const [selectedAttempt, setSelectedAttempt] = useState<TestAttempt | null>(null);
+  const [attempts, setAttempts] = useState<TestAttempt[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingCertificates, setSendingCertificates] = useState(false);
   const [selectedAttempts, setSelectedAttempts] = useState<string[]>([]);
-  const [supabaseClient, setSupabaseClient] = useState<any>(null);
-  const [userProfiles, setUserProfiles] = useState<{[key: string]: any}>({});
+  const [supabaseClient, setSupabaseClient] = useState<SupabaseClient | null>(null);
+  const [userProfiles, setUserProfiles] = useState<{[key: string]: { first_name: string; last_name: string; email: string }}>({});
 
-  useEffect(() => {
-    // Initialize Supabase client safely
-    try {
-      const client = createClient();
-      setSupabaseClient(client);
-    } catch (error) {
-      console.error('Failed to initialize Supabase client:', error);
-      toast.error('Failed to initialize database connection');
-    }
-  }, []);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    if (supabaseClient && testId) {
-      fetchPassedAttempts();
-    }
-  }, [supabaseClient, testId]);
-
-  const fetchUserProfiles = async (userIds: string[]) => {
+  const fetchUserProfiles = useCallback(async (userIds: string[]) => {
     if (!supabaseClient || userIds.length === 0) return;
 
     try {
@@ -1678,17 +1778,17 @@ function TestCertificates({ testId }: { testId: string }) {
         return;
       }
 
-      const profilesMap: {[key: string]: any} = {};
-      data?.forEach((profile: any) => {
+      const profilesMap: {[key: string]: { first_name: string; last_name: string; email: string }} = {};
+      data?.forEach((profile: { id: string; first_name: string; last_name: string; email: string }) => {
         profilesMap[profile.id] = profile;
       });
       setUserProfiles(profilesMap);
     } catch (error) {
       console.error('Error fetching user profiles:', error);
     }
-  };
+  }, [supabaseClient]);
 
-  const fetchPassedAttempts = async () => {
+  const fetchPassedAttempts = useCallback(async () => {
     if (!supabaseClient) {
       console.error('Supabase client not available');
       return;
@@ -1715,7 +1815,7 @@ function TestCertificates({ testId }: { testId: string }) {
         .eq('status', 'submitted')
         .order('submitted_at', { ascending: false });
 
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as { data: TestAttempt[], error: Error | null };
 
       if (error) {
         console.error('Supabase error:', error);
@@ -1726,7 +1826,7 @@ function TestCertificates({ testId }: { testId: string }) {
 
       // Fetch user profiles for the attempts
       if (data && data.length > 0) {
-        const userIds = [...new Set(data.map((attempt: any) => attempt.user_id))] as string[];
+        const userIds = [...new Set(data.map((attempt: TestAttempt) => attempt.user_id))] as string[];
         await fetchUserProfiles(userIds);
       }
     } catch (error) {
@@ -1742,13 +1842,31 @@ function TestCertificates({ testId }: { testId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabaseClient, testId, fetchUserProfiles]);
 
-  const generateCertificateForAttempt = (attempt: any) => {
+  useEffect(() => {
+    // Initialize Supabase client safely
+    try {
+      const client = createClient();
+      setSupabaseClient(client);
+    } catch (error) {
+      console.error('Failed to initialize Supabase client:', error);
+      toast.error('Failed to initialize database connection');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (supabaseClient && testId) {
+      fetchPassedAttempts();
+    }
+  }, [supabaseClient, testId, fetchPassedAttempts]);
+
+  const generateCertificateForAttempt = (attempt: TestAttempt) => {
     setSelectedAttempt(attempt);
   };
 
-  const sendCertificateEmail = async (attempt: any) => {
+  const sendCertificateEmail = async (attempt: TestAttempt) => {
+    if (!supabaseClient) return;
     try {
       // Get user profile data separately
       const { data: profileData, error: profileError } = await supabaseClient
@@ -1783,8 +1901,9 @@ function TestCertificates({ testId }: { testId: string }) {
       } else {
         throw new Error('Failed to send email');
       }
-    } catch (error) {
-      toast.error(`Failed to send certificate email: ${error}`);
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      toast.error(`Failed to send certificate email: ${errorMessage}`);
     }
   };
 
@@ -1808,8 +1927,9 @@ function TestCertificates({ testId }: { testId: string }) {
 
       toast.success(`Certificates sent to ${selectedAttemptsData.length} candidates`);
       setSelectedAttempts([]);
-    } catch (error) {
-      toast.error('Failed to send bulk certificates');
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      toast.error(`Failed to send bulk certificates: ${errorMessage}`);
     } finally {
       setSendingCertificates(false);
     }
@@ -1988,7 +2108,7 @@ function TestCertificates({ testId }: { testId: string }) {
                     duration: `${selectedAttempt.time_taken_minutes} minutes`,
                     organization: 'CodeUnia',
                     institution: selectedAttempt.test_registrations?.institution,
-                    department: selectedAttempt.test_registrations?.department,
+                    department: selectedAttempt.registration?.department,
                     experience_level: selectedAttempt.test_registrations?.experience_level
                   }}
                   templateId={selectedAttempt.tests?.certificate_template_id}
