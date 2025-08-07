@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,16 +48,10 @@ export default function TestsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set());
-  const [filterOpen, setFilterOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchTests();
-    checkUserAndRegistrations();
-  }, []);
-
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -77,9 +71,9 @@ export default function TestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase]);
 
-  const checkUserAndRegistrations = async () => {
+  const checkUserAndRegistrations = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -101,7 +95,14 @@ export default function TestsPage() {
     } catch (error) {
       console.error('Error checking user and registrations:', error);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchTests();
+    checkUserAndRegistrations();
+  }, [fetchTests, checkUserAndRegistrations]);
+
+
 
   const handleRegister = async (testId: string) => {
     try {
@@ -440,7 +441,7 @@ export default function TestsPage() {
               />
             </div>
             {/* Filters Button */}
-            <Button variant="outline" className="flex items-center gap-2" onClick={() => setFilterOpen(true)}>
+            <Button variant="outline" className="flex items-center gap-2">
               <Filter className="h-4 w-4" /> Filters
             </Button>
           </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -33,9 +33,112 @@ export default function TakeTestPage() {
   
   const testId = params?.id as string
 
+  const fetchTestAndQuestions = useCallback(async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch test details
+      const { data: testData, error: testError } = await supabase
+        .from('tests')
+        .select('*')
+        .eq('id', testId)
+        .eq('is_public', true)
+        .single()
+
+      if (testError) throw testError
+      setTest(testData)
+
+      // Set initial time
+      setTimeRemaining(testData.duration_minutes * 60)
+    } catch (error) {
+      toast.error('Failed to load test')
+      console.error('Error fetching test:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [testId, supabase])
+
   useEffect(() => {
     fetchTestAndQuestions()
-  }, [testId])
+  }, [fetchTestAndQuestions])
+
+  const handleSubmitTest = useCallback(async () => {
+    if (!attemptId || !test) return
+
+    try {
+      // Calculate score
+      let score = 0
+      let maxScore = 0
+
+      questions.forEach(question => {
+        maxScore += question.points
+        const userAnswers = answers[question.id] || []
+        const correctAnswers = question.correct_options
+
+        if (userAnswers.length === correctAnswers.length &&
+            userAnswers.every(answer => correctAnswers.includes(answer))) {
+          score += question.points
+        }
+      })
+
+      const passed = (score / maxScore) * 100 >= test.passing_score
+
+      // Update attempt
+      const { error: updateError } = await supabase
+        .from('test_attempts')
+        .update({
+          submitted_at: new Date().toISOString(),
+          score,
+          max_score: maxScore,
+          passed,
+          time_taken_minutes: Math.floor((test.duration_minutes * 60 - timeRemaining) / 60),
+          status: 'submitted'
+        })
+        .eq('id', attemptId)
+
+      if (updateError) throw updateError
+
+      // Save answers
+      const answerRecords = Object.entries(answers).map(([questionId, selectedOptions]) => ({
+        attempt_id: attemptId,
+        question_id: questionId,
+        selected_options: selectedOptions,
+        answered_at: new Date().toISOString()
+      }))
+
+      if (answerRecords.length > 0) {
+        const { error: answersError } = await supabase
+          .from('test_answers')
+          .insert(answerRecords)
+
+        if (answersError) throw answersError
+      }
+
+      // Log activity for points
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await activityService.logActivity(user.id, 'test_completion', { 
+            test_id: testId,
+            attempt_id: attemptId,
+            score,
+            max_score: maxScore,
+            passed
+          });
+          console.log(`✅ Activity logged: test_completion for user ${user.id}`);
+        }
+      } catch (activityError) {
+        console.error('❌ Failed to log test completion activity:', activityError);
+        // Don't fail the test submission if activity logging fails
+      }
+
+      toast.success('Test submitted successfully!')
+      router.push(`/tests/${testId}/results?attempt=${attemptId}`)
+    } catch (error) {
+      toast.error('Failed to submit test')
+      console.error('Test submission error:', error)
+    }
+  }, [attemptId, test, questions, answers, testId, timeRemaining, supabase, router, activityService])
 
   useEffect(() => {
     if (testStarted && timeRemaining > 0) {
@@ -51,7 +154,7 @@ export default function TakeTestPage() {
 
       return () => clearInterval(timer)
     }
-  }, [testStarted, timeRemaining])
+  }, [testStarted, timeRemaining, handleSubmitTest])
 
   // Full-screen and tab switching detection
   useEffect(() => {
@@ -129,7 +232,7 @@ export default function TakeTestPage() {
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('contextmenu', handleContextMenu)
     }
-  }, [testStarted, isFullScreen])
+  }, [testStarted, isFullScreen, handleSubmitTest, violations])
 
   const requestFullScreen = async () => {
     try {
@@ -143,18 +246,8 @@ export default function TakeTestPage() {
     }
   }
 
-  const exitFullScreen = async () => {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen()
-        setIsFullScreen(false)
-      }
-    } catch (error) {
-      console.error('Failed to exit full-screen mode:', error)
-    }
-  }
 
-  const updateViolations = async () => {
+  const updateViolations = useCallback(async () => {
     if (!attemptId) return
     
     try {
@@ -169,39 +262,15 @@ export default function TakeTestPage() {
     } catch (error) {
       console.error('Error updating violations:', error)
     }
-  }
+  }, [attemptId, violations, supabase])
 
   // Update violations in database when violations change
   useEffect(() => {
     if (testStarted && attemptId) {
       updateViolations()
     }
-  }, [violations, testStarted, attemptId])
+  }, [violations, testStarted, attemptId, updateViolations])
 
-  const fetchTestAndQuestions = async () => {
-    try {
-      setLoading(true)
-      
-      // Fetch test details
-      const { data: testData, error: testError } = await supabase
-        .from('tests')
-        .select('*')
-        .eq('id', testId)
-        .eq('is_public', true)
-        .single()
-
-      if (testError) throw testError
-      setTest(testData)
-
-      // Set initial time
-      setTimeRemaining(testData.duration_minutes * 60)
-    } catch (error) {
-      toast.error('Failed to load test')
-      console.error('Error fetching test:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const fetchQuestions = async () => {
     try {
@@ -354,82 +423,6 @@ export default function TakeTestPage() {
     })
   }
 
-  const handleSubmitTest = async () => {
-    if (!attemptId || !test) return
-
-    try {
-      // Calculate score
-      let score = 0
-      let maxScore = 0
-
-      questions.forEach(question => {
-        maxScore += question.points
-        const userAnswers = answers[question.id] || []
-        const correctAnswers = question.correct_options
-
-        if (userAnswers.length === correctAnswers.length &&
-            userAnswers.every(answer => correctAnswers.includes(answer))) {
-          score += question.points
-        }
-      })
-
-      const passed = (score / maxScore) * 100 >= test.passing_score
-
-      // Update attempt
-      const { error: updateError } = await supabase
-        .from('test_attempts')
-        .update({
-          submitted_at: new Date().toISOString(),
-          score,
-          max_score: maxScore,
-          passed,
-          time_taken_minutes: Math.floor((test.duration_minutes * 60 - timeRemaining) / 60),
-          status: 'submitted'
-        })
-        .eq('id', attemptId)
-
-      if (updateError) throw updateError
-
-      // Save answers
-      const answerRecords = Object.entries(answers).map(([questionId, selectedOptions]) => ({
-        attempt_id: attemptId,
-        question_id: questionId,
-        selected_options: selectedOptions,
-        answered_at: new Date().toISOString()
-      }))
-
-      if (answerRecords.length > 0) {
-        const { error: answersError } = await supabase
-          .from('test_answers')
-          .insert(answerRecords)
-
-        if (answersError) throw answersError
-      }
-
-      // Log activity for points
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          await activityService.logActivity(user.id, 'test_completion', { 
-            test_id: testId,
-            attempt_id: attemptId,
-            score,
-            max_score: maxScore,
-            passed
-          });
-          console.log(`✅ Activity logged: test_completion for user ${user.id}`);
-        }
-      } catch (activityError) {
-        console.error('❌ Failed to log test completion activity:', activityError);
-        // Don't fail the test submission if activity logging fails
-      }
-
-      toast.success('Test submitted successfully!')
-      router.push(`/tests/${testId}/results?attempt=${attemptId}`)
-    } catch (error) {
-      toast.error('Failed to submit test')
-    }
-  }
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)

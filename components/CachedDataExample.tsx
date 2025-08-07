@@ -2,6 +2,12 @@
 
 import { useCachedAPI, useLocalStorageCache } from '@/hooks/useCachedData';
 
+interface TestData {
+  id: string;
+  name: string;
+  description: string;
+}
+
 // Example component showing how to use caching for better performance
 export default function CachedDataExample() {
   // Cache API calls with 5-minute TTL
@@ -80,7 +86,7 @@ export default function CachedDataExample() {
         <h3 className="font-semibold text-gray-900">Cached Tests Data</h3>
         <p className="text-gray-600">Total tests: {tests?.total || 0}</p>
         <div className="mt-2 space-y-1">
-          {tests?.tests?.map((test: any) => (
+          {tests?.tests?.map((test: TestData) => (
             <div key={test.id} className="p-2 bg-white rounded border">
               <h4 className="font-medium">{test.name}</h4>
               <p className="text-sm text-gray-600">{test.description}</p>
