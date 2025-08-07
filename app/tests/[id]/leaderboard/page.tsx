@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -45,11 +45,7 @@ export default function LeaderboardPage() {
   
   const testId = params?.id as string
 
-  useEffect(() => {
-    fetchTestAndLeaderboard()
-  }, [testId])
-
-  const fetchTestAndLeaderboard = async () => {
+  const fetchTestAndLeaderboard = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -126,7 +122,11 @@ export default function LeaderboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [testId, supabase, router])
+
+  useEffect(() => {
+    fetchTestAndLeaderboard()
+  }, [testId, fetchTestAndLeaderboard])
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Trophy className="h-5 w-5 text-yellow-500" />

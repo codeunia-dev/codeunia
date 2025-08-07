@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -89,13 +89,7 @@ export default function PremiumPage() {
   const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    if (user) {
-      checkPremiumStatus();
-    }
-  }, [user]);
-
-  const checkPremiumStatus = async () => {
+  const checkPremiumStatus = useCallback(async () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
@@ -113,7 +107,13 @@ export default function PremiumPage() {
     } catch (error) {
       console.error('Error checking premium status:', error);
     }
-  };
+  }, [supabase, user?.id]);
+
+  useEffect(() => {
+    if (user) {
+      checkPremiumStatus();
+    }
+  }, [user, checkPremiumStatus]);
 
   const handlePayment = async (planId: string) => {
     if (!user) {
@@ -165,7 +165,7 @@ export default function PremiumPage() {
           name: 'Codeunia',
           description: `${plan.name} Premium Plan`,
           order_id: orderData.orderId,
-          handler: async function (response: any) {
+          handler: async function (response: { razorpay_payment_id: string; razorpay_signature: string }) {
             try {
               // Verify payment
               const verifyResponse = await fetch('/api/premium/verify-payment', {
@@ -216,7 +216,7 @@ export default function PremiumPage() {
           },
         };
 
-        const razorpay = new (window as any).Razorpay(options);
+        const razorpay = new (window as typeof window & { Razorpay: any }).Razorpay(options);
         razorpay.open();
       };
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -28,11 +28,7 @@ export default function TestResultsPage() {
   const testId = params?.id as string
   const attemptId = searchParams.get('attempt')
 
-  useEffect(() => {
-    fetchResults()
-  }, [testId, attemptId])
-
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -67,7 +63,11 @@ export default function TestResultsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [attemptId, testId, supabase, router])
+
+  useEffect(() => {
+    fetchResults()
+  }, [testId, attemptId, fetchResults])
 
   const shareResults = async () => {
     try {
@@ -327,7 +327,7 @@ export default function TestResultsPage() {
                   {isPassed ? (
                     <div className="flex items-center justify-center gap-2 text-green-600">
                       <Star className="h-5 w-5" />
-                      <span className="font-semibold">Excellent work! You've demonstrated strong knowledge in this area.</span>
+                      <span className="font-semibold">Excellent work! You&apos;ve demonstrated strong knowledge in this area.</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-2 text-orange-600">
@@ -389,7 +389,7 @@ export default function TestResultsPage() {
                 <Award className="w-12 h-12 text-green-600 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Congratulations!</h3>
                 <p className="text-muted-foreground mb-4">
-                  You've passed the test! Generate your certificate to showcase your achievement.
+                  You&apos;ve passed the test! Generate your certificate to showcase your achievement.
                 </p>
                 <Button onClick={() => setShowCertificateGenerator(true)}>
                   <Award className="w-4 h-4 mr-2" />
