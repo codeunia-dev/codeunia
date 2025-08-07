@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'react-hot-toast';
@@ -12,15 +12,11 @@ export default function SetupProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -70,7 +66,11 @@ export default function SetupProfile() {
       console.error('Error checking user:', error);
       toast.error('Error loading profile setup');
     }
-  };
+  }, [supabase, router]);
+
+  useEffect(() => {
+    checkUser();
+  }, [checkUser]);
 
   const checkUsernameAvailability = async (username: string) => {
     if (!username || username.length < 3) {
@@ -104,6 +104,11 @@ export default function SetupProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast.error('User not found. Please sign in again.');
+      return;
+    }
     
     if (!username || username.length < 3) {
       toast.error('Username must be at least 3 characters long');
