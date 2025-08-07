@@ -9,7 +9,7 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 export async function GET() {
   try {
     // Fetch all types of participants
-    const [testAttempts, testRegistrations, hackathons, events]: [any, any, any, any] = await Promise.all([
+    const [testAttempts, testRegistrations, hackathons, events] = await Promise.all([
       // Test attempts (including in-progress ones)
       supabaseAdmin
         .from('test_attempts')
@@ -80,12 +80,12 @@ export async function GET() {
     
     // Add test attempts
     if (testAttempts.data) {
-      testAttempts.data.forEach((attempt: { id: string; user_id: string; tests?: { title: string }; status: string; passed: boolean; score: number; created_at: string }) => {
+      testAttempts.data.forEach((attempt) => {
         allParticipants.push({
           id: attempt.id,
           user_id: attempt.user_id,
           event_type: 'test',
-          event_title: attempt.tests?.title || 'Unknown Test',
+          event_title: attempt.tests?.[0]?.title || 'Unknown Test',
           status: attempt.status,
           passed: attempt.passed,
           score: attempt.score,
@@ -97,11 +97,11 @@ export async function GET() {
 
     // Add test registrations (if not already in attempts)
     if (testRegistrations.data) {
-      testRegistrations.data.forEach((registration: { id: string; user_id: string; tests?: { title: string }; registered_at: string }) => {
+      testRegistrations.data.forEach((registration) => {
         const existingAttempt = allParticipants.find(p => 
           p.user_id === registration.user_id && 
           p.event_type === 'test' && 
-          p.event_title === registration.tests?.title
+          p.event_title === registration.tests?.[0]?.title
         );
         
         if (!existingAttempt) {
@@ -109,7 +109,7 @@ export async function GET() {
             id: registration.id,
             user_id: registration.user_id,
             event_type: 'test',
-            event_title: registration.tests?.title || 'Unknown Test',
+            event_title: registration.tests?.[0]?.title || 'Unknown Test',
             status: 'registered',
             passed: null,
             score: null,
@@ -122,7 +122,7 @@ export async function GET() {
 
     // Add hackathons
     if (hackathons.data) {
-      hackathons.data.forEach((hackathon: { id: string; title: string; participants?: number; registered?: number; created_at: string }) => {
+      hackathons.data.forEach((hackathon) => {
         allParticipants.push({
           id: hackathon.id,
           user_id: null, // Hackathons don't have individual user records
@@ -140,7 +140,7 @@ export async function GET() {
 
     // Add events
     if (events.data) {
-      events.data.forEach((event: { id: string; title: string; participants?: number; registered?: number; created_at: string }) => {
+      events.data.forEach((event) => {
         allParticipants.push({
           id: event.id,
           user_id: null, // Events don't have individual user records

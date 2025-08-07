@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,18 +18,13 @@ import {
   Trash2, 
   Eye, 
   BarChart3, 
-  Clock, 
   Users,
   FileText,
   Settings,
-  Calendar,
   Award,
   Trophy,
   Download,
   Send,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
   Loader2
 } from "lucide-react";
 import { toast } from "sonner";
@@ -37,10 +32,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { 
   Test, 
   CreateTestForm, 
-  CreateTestQuestionForm,
-  TestRegistration,
-  TestAttempt,
-  TestLeaderboard
+  CreateTestQuestionForm
 } from "@/types/test-management";
 import { CertificateGenerator } from "@/components/CertificateGenerator";
 import { EventTimeline } from "@/components/admin/EventTimeline";
@@ -96,13 +88,7 @@ export function TestManager() {
     }
   }, []);
 
-  useEffect(() => {
-    if (supabaseClient) {
-      checkAuthAndFetchTests();
-    }
-  }, [supabaseClient]);
-
-  const checkAuthAndFetchTests = async () => {
+  const checkAuthAndFetchTests = useCallback(async () => {
     if (!supabaseClient) {
       console.error('Supabase client not available');
       return;
@@ -144,7 +130,13 @@ export function TestManager() {
         toast.error('Failed to authenticate: ' + errorMessage);
       }
     }
-  };
+  }, [supabaseClient]);
+
+  useEffect(() => {
+    if (supabaseClient) {
+      checkAuthAndFetchTests();
+    }
+  }, [supabaseClient, checkAuthAndFetchTests]);
 
   const fetchTests = async () => {
     try {
@@ -1074,6 +1066,7 @@ function TestRegistrations({ testId }: { testId: string }) {
   const [selectedRegistration, setSelectedRegistration] = useState<any>(null);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchRegistrations();
   }, [testId]);
@@ -1084,7 +1077,7 @@ function TestRegistrations({ testId }: { testId: string }) {
       const response = await fetch(`/api/admin/tests/${testId}`);
       const data = await response.json();
       setRegistrations(data.registrations || []);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch registrations');
     } finally {
       setLoading(false);
@@ -1303,6 +1296,7 @@ function TestResults({ testId }: { testId: string }) {
   const [selectedAttempt, setSelectedAttempt] = useState<any>(null);
   const [showAttemptDetails, setShowAttemptDetails] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchResults();
   }, [testId]);
@@ -1313,7 +1307,7 @@ function TestResults({ testId }: { testId: string }) {
       const response = await fetch(`/api/admin/tests/${testId}/results`);
       const data = await response.json();
       setResults(data);
-    } catch (error) {
+    } catch {
       toast.error('Failed to fetch results');
     } finally {
       setLoading(false);
@@ -1663,6 +1657,7 @@ function TestCertificates({ testId }: { testId: string }) {
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (supabaseClient && testId) {
       fetchPassedAttempts();
