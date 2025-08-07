@@ -208,7 +208,7 @@ export default function TestsPage() {
       }
 
       // Navigate to test
-      router.push(`/tests/${testId}/take`);
+      router.push(`/tests/${testId}`);
     } catch {
       toast.error('Failed to start test');
     }
