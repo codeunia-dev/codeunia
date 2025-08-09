@@ -43,17 +43,6 @@ export function TeamSection() {
       }
     },
     {
-      name: "Aayush Bhardwaj",
-      role: "Strategy & Outreach Lead",
-      image: "/images/team/aayush.jpeg",
-      description: "Developing strategic partnerships and expanding our reach in the coding education space.",
-      badge: "Strategy",
-      socials: {
-        github: "https://github.com/AayuBhardwajj",
-        linkedin: "https://www.linkedin.com/in/aayushbhardwaj0001"
-      }
-    },
-    {
       name: "Akshay Kumar",
       role: "Web Development Lead",
       image: "/images/team/akshay.jpg",
@@ -62,39 +51,6 @@ export function TeamSection() {
       socials: {
         github: "https://github.com/akshay0611",
         linkedin: "https://www.linkedin.com/in/akshaykumar0611/"
-      }
-    },
-    {
-      name: "Anurag Shekhawat",
-      role: "Technical Lead",
-      image: "/images/team/anurag.jpeg",
-      description: "Leading technical innovation and development at Codeunia.",
-      badge: "Technology",
-      socials: {
-        github: "https://github.com/anuragshekhawat1234",
-        linkedin: "https://www.linkedin.com/in/anurag-shekhawat-33214828b"
-      }
-    },
-    {
-      name: "Keshav Datta",
-      role: "Community Operations Lead",
-      image: "/images/team/keshav.jpeg",
-      description: "Coordinating and managing community operations to foster engagement and growth.",
-      badge: "Community",
-      socials: {
-        github: "https://github.com/Keshav-datta",
-        linkedin: "https://www.linkedin.com/in/keshav-datta-3b3623289"
-      }
-    },
-    {
-      name: "Tanvi Sharma",
-      role: "Marketing and Communications Lead",
-     image: "/images/team/tanvi.jpeg",
-      description: "Crafting our brand story and driving engagement through strategic communications.",
-      badge: "Marketing",
-      socials: {
-        github: "https://github.com/tanvisharma154",
-        linkedin: "https://www.linkedin.com/in/tanvi-sharma-8a686a28a/"
       }
     },
     {
