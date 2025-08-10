@@ -19,7 +19,6 @@ export type InternshipRow = {
   end_date: string; // date
   certificate_url: string | null;
   certificate_issued_at: string | null; // timestamptz
-  verification_code: string | null;
   project_name: string | null;
   project_url: string | null;
 };

@@ -16,7 +16,6 @@ type InternRow = {
   end_date: string; // date
   certificate_url: string | null;
   certificate_issued_at: string | null; // timestamptz
-  verification_code: string | null;
   project_name: string | null;
   project_url: string | null;
 };
@@ -77,7 +76,6 @@ export default async function InternshipsPage() {
         "end_date",
         "certificate_url",
         "certificate_issued_at",
-        "verification_code",
         "project_name",
         "project_url",
       ].join(", ")
