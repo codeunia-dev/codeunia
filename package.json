@@ -70,7 +70,8 @@
     "tailwind-merge": "^3.3.1",
     "three": "^0.177.0",
     "three-globe": "^2.42.11",
-    "typewriter-effect": "^2.22.0"
+    "typewriter-effect": "^2.22.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -84,6 +85,7 @@
     "@types/react-collapse": "^5.0.4",
     "@types/react-devtools": "^3.6.2",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",

@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Trash2, Plus, ExternalLink } from "lucide-react";
+import { Eye, Edit, Trash2, Plus, ExternalLink, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 type Domain = "Web Development" | "Python" | "Artificial Intelligence" | "Machine Learning" | "Java";
@@ -17,10 +17,10 @@ type AdminInternship = {
   email: string;
   passed: boolean | null;
   domain: Domain;
-  start_date: string; // date (YYYY-MM-DD)
-  end_date: string; // date (YYYY-MM-DD)
+  start_date: string;
+  end_date: string;
   certificate_url: string | null;
-  certificate_issued_at: string | null; // timestamptz
+  certificate_issued_at: string | null;
   project_name: string | null;
   project_url: string | null;
 };
@@ -47,13 +47,11 @@ export default function AdminInternshipsPage() {
   const [domainFilter, setDomainFilter] = useState<string>("all");
   const [passedFilter, setPassedFilter] = useState<string>("all");
 
-  // Dialog state
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selected, setSelected] = useState<AdminInternship | null>(null);
 
-  // Form state
   const [form, setForm] = useState<AdminInternship>({
     email: "",
     passed: false,
@@ -231,7 +229,6 @@ export default function AdminInternshipsPage() {
         </div>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="flex-1">
           <Input
@@ -241,20 +238,14 @@ export default function AdminInternshipsPage() {
           />
         </div>
         <Select value={domainFilter} onValueChange={setDomainFilter}>
-          <SelectTrigger className="w-full md:w-56">
-            <SelectValue placeholder="Domain" />
-          </SelectTrigger>
+          <SelectTrigger className="w-full md:w-56"><SelectValue placeholder="Domain" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Domains</SelectItem>
-            {domainOptions.map((d) => (
-              <SelectItem key={d} value={d}>{d}</SelectItem>
-            ))}
+            {domainOptions.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={passedFilter} onValueChange={setPassedFilter}>
-          <SelectTrigger className="w-full md:w-48">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
+          <SelectTrigger className="w-full md:w-48"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="passed">Passed</SelectItem>
@@ -263,7 +254,6 @@ export default function AdminInternshipsPage() {
         </Select>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto border rounded-xl">
         <Table>
           <TableHeader>
@@ -280,13 +270,9 @@ export default function AdminInternshipsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">Loading...</TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground">Loading...</TableCell></TableRow>
             ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">No internships found</TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground">No internships found</TableCell></TableRow>
             ) : (
               filtered.map((it) => (
                 <TableRow key={`${it.email}-${it.domain}-${it.start_date}`} className="align-middle">
@@ -319,20 +305,8 @@ export default function AdminInternshipsPage() {
                           <ExternalLink className="w-3 h-3" /> Project
                         </a>
                       )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleStartEdit(it)}
-                      >
-                        <Edit className="w-4 h-4 mr-1" /> Edit
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => { setSelected(it); setDeleteOpen(true); }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" /> Delete
-                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleStartEdit(it)}><Edit className="w-4 h-4 mr-1" /> Edit</Button>
+                      <Button variant="destructive" size="sm" onClick={() => { setSelected(it); setDeleteOpen(true); }}><Trash2 className="w-4 h-4 mr-1" /> Delete</Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -342,7 +316,6 @@ export default function AdminInternshipsPage() {
         </Table>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={(o) => { setEditOpen(o); if (!o) setSelected(null); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -356,14 +329,13 @@ export default function AdminInternshipsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Internship</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the internship for
-              {" "}<span className="font-medium">{selected?.email}</span>.
+              This action cannot be undone. This will permanently delete the internship for{" "}
+              <span className="font-medium">{selected?.email}</span>.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -382,8 +354,71 @@ type InternshipFormProps = {
 };
 
 function InternshipForm({ form, setForm }: InternshipFormProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!file) {
+      toast.error("Please select a file to upload.");
+      return;
+    }
+    if (!form.email || !form.domain || !form.start_date) {
+      toast.error("Please fill in Email, Domain, and Start Date before uploading.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const res = await fetch("/api/admin/internships/upload-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: form.email,
+          domain: form.domain,
+          start_date: form.start_date,
+          contentType: file.type,
+        }),
+      });
+
+      const { signedUrl, publicUrl, error } = await res.json();
+
+      if (error || !signedUrl) {
+        throw new Error(error || "Failed to get a signed URL.");
+      }
+
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error("Upload failed:", errorText);
+        throw new Error('Failed to upload file to storage. Check console for details.');
+      }
+
+      setForm((f) => ({ ...f, certificate_url: publicUrl }));
+      toast.success("Certificate uploaded successfully!");
+
+    } catch (e) {
+      toast.error((e as Error).message || "An unexpected error occurred.");
+    } finally {
+      setUploading(false);
+      setFile(null);
+    }
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
@@ -393,9 +428,7 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
         <Select value={form.domain} onValueChange={(v) => setForm((f) => ({ ...f, domain: v as Domain }))}>
           <SelectTrigger id="domain"><SelectValue placeholder="Select domain" /></SelectTrigger>
           <SelectContent>
-            {domainOptions.map((d) => (
-              <SelectItem key={d} value={d}>{d}</SelectItem>
-            ))}
+            {domainOptions.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -425,10 +458,24 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
         <Label htmlFor="project_url">Project URL</Label>
         <Input id="project_url" value={form.project_url || ""} onChange={(e) => setForm((f) => ({ ...f, project_url: e.target.value }))} />
       </div>
+      
+      <div className="space-y-2 md:col-span-2">
+        <Label>Upload Certificate</Label>
+        <div className="flex items-center gap-2">
+          <Input id="certificate_file" type="file" onChange={handleFileChange} className="flex-1" accept="application/pdf,image/*" />
+          <Button onClick={handleUpload} disabled={!file || uploading} size="sm">
+            <Upload className="w-4 h-4 mr-2" />
+            {uploading ? "Uploading..." : "Upload"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">Upload a PDF or image file. This will generate the Certificate URL.</p>
+      </div>
+
       <div className="space-y-2 md:col-span-2">
         <Label htmlFor="certificate_url">Certificate URL</Label>
-        <Input id="certificate_url" value={form.certificate_url || ""} onChange={(e) => setForm((f) => ({ ...f, certificate_url: e.target.value }))} />
+        <Input id="certificate_url" value={form.certificate_url || ""} readOnly className="bg-muted/50" placeholder="URL will be generated after upload..." />
       </div>
+      
       <div className="space-y-2">
         <Label htmlFor="certificate_issued_at">Certificate Issued At</Label>
         <Input id="certificate_issued_at" type="datetime-local" value={form.certificate_issued_at || ""} onChange={(e) => setForm((f) => ({ ...f, certificate_issued_at: e.target.value }))} />
