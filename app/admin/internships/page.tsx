@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Edit, Trash2, Plus, ExternalLink, Upload } from "lucide-react";
+import { Eye, Edit, Trash2, Plus, ExternalLink, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 type Domain = "Web Development" | "Python" | "Artificial Intelligence" | "Machine Learning" | "Java";
@@ -354,66 +355,35 @@ type InternshipFormProps = {
 };
 
 function InternshipForm({ form, setForm }: InternshipFormProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!file) {
-      toast.error("Please select a file to upload.");
-      return;
-    }
-    if (!form.email || !form.domain || !form.start_date) {
-      toast.error("Please fill in Email, Domain, and Start Date before uploading.");
+  const handleGenerateCertificate = async () => {
+    if (!form.email) {
+      toast.error("Please enter the intern's email first.");
       return;
     }
 
-    setUploading(true);
+    setIsGenerating(true);
     try {
-      const res = await fetch("/api/admin/internships/upload-url", {
+      const res = await fetch("/api/admin/internships/generate-certificate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          domain: form.domain,
-          start_date: form.start_date,
-          contentType: file.type,
-        }),
+        body: JSON.stringify({ email: form.email }),
       });
 
-      const { signedUrl, publicUrl, error } = await res.json();
+      const data = await res.json();
 
-      if (error || !signedUrl) {
-        throw new Error(error || "Failed to get a signed URL.");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate certificate.");
       }
 
-      const uploadResponse = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error("Upload failed:", errorText);
-        throw new Error('Failed to upload file to storage. Check console for details.');
-      }
-
-      setForm((f) => ({ ...f, certificate_url: publicUrl }));
-      toast.success("Certificate uploaded successfully!");
+      setForm((f) => ({ ...f, certificate_url: data.publicUrl }));
+      toast.success("Certificate generated and URL updated!");
 
     } catch (e) {
-      toast.error((e as Error).message || "An unexpected error occurred.");
+      toast.error((e as Error).message);
     } finally {
-      setUploading(false);
-      setFile(null);
+      setIsGenerating(false);
     }
   };
 
@@ -460,20 +430,21 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
       </div>
       
       <div className="space-y-2 md:col-span-2">
-        <Label>Upload Certificate</Label>
-        <div className="flex items-center gap-2">
-          <Input id="certificate_file" type="file" onChange={handleFileChange} className="flex-1" accept="application/pdf,image/*" />
-          <Button onClick={handleUpload} disabled={!file || uploading} size="sm">
-            <Upload className="w-4 h-4 mr-2" />
-            {uploading ? "Uploading..." : "Upload"}
-          </Button>
+        <Label>Certificate Generation</Label>
+        <div className="flex items-center gap-2 p-2 border rounded-lg bg-muted/30">
+            <div className="flex-1">
+                <Button onClick={handleGenerateCertificate} disabled={isGenerating} className="w-full">
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {isGenerating ? "Generating PDF..." : "Generate & Upload Certificate"}
+                </Button>
+            </div>
         </div>
-        <p className="text-xs text-muted-foreground">Upload a PDF or image file. This will generate the Certificate URL.</p>
+        <p className="text-xs text-muted-foreground">This will generate a new PDF certificate with the intern's name and upload it, creating the URL below.</p>
       </div>
 
       <div className="space-y-2 md:col-span-2">
         <Label htmlFor="certificate_url">Certificate URL</Label>
-        <Input id="certificate_url" value={form.certificate_url || ""} readOnly className="bg-muted/50" placeholder="URL will be generated after upload..." />
+        <Input id="certificate_url" value={form.certificate_url || ""} readOnly className="bg-muted/50" placeholder="URL will be generated automatically..." />
       </div>
       
       <div className="space-y-2">
