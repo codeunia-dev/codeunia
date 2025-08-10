@@ -103,7 +103,7 @@ export default async function InternshipsPage() {
   const fullName = `${firstName} ${lastName}`.trim() || authEmail || "";
 
   return (
-    <div className="flex-1 w-full p-6 max-w-4xl mx-auto">
+    <div className="flex-1 w-full p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Internship Certificate</h1>
         <p className="text-muted-foreground">Your completed internships and certificate access.</p>
