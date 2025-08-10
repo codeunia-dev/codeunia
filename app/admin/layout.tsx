@@ -75,6 +75,11 @@ const sidebarItems: SidebarGroupType[] = [
         icon: Calendar,
       },
       {
+        title: "Internships",
+        url: "/admin/internships",
+        icon: Handshake,
+      },
+      {
         title: "Certificates",
         url: "/admin/certificates",
         icon: Award,
