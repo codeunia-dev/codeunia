@@ -1,10 +1,24 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import InternshipCertificate from "@/components/InternshipCertificate";
+
+import InternshipsTable from "@/components/InternshipsTable";
 
 type InternRow = {
   email: string;
   passed: boolean | null;
+  domain:
+    | "Web Development"
+    | "Python"
+    | "Artificial Intelligence"
+    | "Machine Learning"
+    | "Java";
+  start_date: string; // date
+  end_date: string; // date
+  certificate_url: string | null;
+  certificate_issued_at: string | null; // timestamptz
+  verification_code: string | null;
+  project_name: string | null;
+  project_url: string | null;
 };
 
 type ProfileRow = {
@@ -17,6 +31,21 @@ function formatNamePart(part: string | null | undefined): string {
   if (!part) return "";
   const lower = part.toLowerCase();
   return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+function formatDate(dateString: string | null | undefined): string {
+  if (!dateString) return "-";
+  try {
+    const d = new Date(dateString);
+    if (Number.isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    });
+  } catch {
+    return "-";
+  }
 }
 
 export default async function InternshipsPage() {
@@ -36,30 +65,36 @@ export default async function InternshipsPage() {
     .eq("email", authEmail)
     .single<ProfileRow>();
 
-  // Fetch internship pass status by email
-  const { data: intern, error: internError } = await supabase
+  // Fetch internship records by email (completed only)
+  const { data: internships, error: internError } = await supabase
     .from("interns")
-    .select("email, passed")
+    .select(
+      [
+        "email",
+        "passed",
+        "domain",
+        "start_date",
+        "end_date",
+        "certificate_url",
+        "certificate_issued_at",
+        "verification_code",
+        "project_name",
+        "project_url",
+      ].join(", ")
+    )
     .eq("email", authEmail)
-    .maybeSingle<InternRow>();
+    .eq("passed", true)
+    .order("start_date", { ascending: false }) as unknown as {
+      data: InternRow[] | null;
+      error: unknown;
+    };
 
-  if (internError || !intern) {
+  if (internError || !internships || internships.length === 0) {
     return (
       <div className="flex-1 w-full flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-semibold mb-2">Internship Access</h1>
+        <h1 className="text-2xl font-semibold mb-2">Internships</h1>
         <p className="text-muted-foreground max-w-md">
-          We could not find your internship record. If you recently joined, please wait a bit or contact support.
-        </p>
-      </div>
-    );
-  }
-
-  if (!intern.passed) {
-    return (
-      <div className="flex-1 w-full flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-2xl font-semibold mb-2">Certificate Locked</h1>
-        <p className="text-muted-foreground max-w-md">
-          Your internship status is not marked as passed yet. Once approved, your certificate will be available here.
+          We could not find any completed internships for your account yet. If you recently completed one, please wait a bit or contact support.
         </p>
       </div>
     );
@@ -73,13 +108,17 @@ export default async function InternshipsPage() {
     <div className="flex-1 w-full p-6 max-w-4xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Internship Certificate</h1>
-        <p className="text-muted-foreground">Download your internship completion certificate.</p>
+        <p className="text-muted-foreground">Your completed internships and certificate access.</p>
       </div>
 
-      <InternshipCertificate
-        fullName={fullName}
-        backgroundSrc="/images/certificatesample.png"
-      />
+      <div className="mb-6">
+        <div className="text-sm text-muted-foreground mb-1">Intern</div>
+        <div className="font-medium">{fullName || authEmail}</div>
+      </div>
+
+      <InternshipsTable internships={internships as unknown as InternRow[]} />
+
+      
     </div>
   );
 }
