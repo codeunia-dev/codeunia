@@ -52,18 +52,7 @@ export function TeamSection() {
         github: "https://github.com/akshay0611",
         linkedin: "https://www.linkedin.com/in/akshaykumar0611/"
       }
-    },
-    {
-      name: "Sahil",
-      role: "Project Development Lead",
-       image: "/images/team/sahil.jpeg",
-      description: "Coordinating project development and ensuring successful delivery of learning initiatives.",
-      badge: "Development",
-      socials: {
-        github: "https://github.com/kaikon100x",
-        linkedin: "https://www.linkedin.com/in/sahil4k00"
-      }
-    },
+    }
   ];
 
   return (
