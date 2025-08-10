@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -22,6 +21,7 @@ type AdminInternship = {
   end_date: string;
   certificate_url: string | null;
   certificate_issued_at: string | null;
+  verification_code: string | null;
   project_name: string | null;
   project_url: string | null;
 };
@@ -61,6 +61,7 @@ export default function AdminInternshipsPage() {
     end_date: "",
     certificate_url: "",
     certificate_issued_at: "",
+    verification_code: "",
     project_name: "",
     project_url: "",
   });
@@ -74,6 +75,7 @@ export default function AdminInternshipsPage() {
       end_date: "",
       certificate_url: "",
       certificate_issued_at: "",
+      verification_code: "",
       project_name: "",
       project_url: "",
     });
@@ -142,6 +144,7 @@ export default function AdminInternshipsPage() {
       end_date: item.end_date || "",
       certificate_url: item.certificate_url || "",
       certificate_issued_at: item.certificate_issued_at || "",
+      verification_code: item.verification_code || "",
       project_name: item.project_name || "",
       project_url: item.project_url || "",
     });
@@ -209,7 +212,10 @@ export default function AdminInternshipsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={fetchInternships} variant="outline">Refresh</Button>
-          <Dialog open={createOpen} onOpenChange={(o) => { setCreateOpen(o); if (!o) resetForm(); }}>
+          <Dialog open={createOpen} onOpenChange={(open) => { 
+            if (open) { resetForm(); } 
+            setCreateOpen(open); 
+          }}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
@@ -350,16 +356,16 @@ export default function AdminInternshipsPage() {
 }
 
 type InternshipFormProps = {
-  form: Omit<AdminInternship, "id">;
-  setForm: React.Dispatch<React.SetStateAction<Omit<AdminInternship, "id">>>;
+  form: AdminInternship;
+  setForm: React.Dispatch<React.SetStateAction<AdminInternship>>;
 };
 
 function InternshipForm({ form, setForm }: InternshipFormProps) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerateCertificate = async () => {
-    if (!form.email) {
-      toast.error("Please enter the intern's email first.");
+    if (!form.email || !form.domain || !form.start_date) {
+      toast.error("Please fill in Email, Domain, and Start Date before generating.");
       return;
     }
 
@@ -368,7 +374,11 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
       const res = await fetch("/api/admin/internships/generate-certificate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email }),
+        body: JSON.stringify({ 
+            email: form.email,
+            domain: form.domain,
+            start_date: form.start_date
+        }),
       });
 
       const data = await res.json();
@@ -377,7 +387,11 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
         throw new Error(data.error || "Failed to generate certificate.");
       }
 
-      setForm((f) => ({ ...f, certificate_url: data.publicUrl }));
+      setForm((f) => ({ 
+          ...f, 
+          certificate_url: data.publicUrl,
+          verification_code: data.verification_code
+      }));
       toast.success("Certificate generated and URL updated!");
 
     } catch (e) {
@@ -442,9 +456,14 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
         <p className="text-xs text-muted-foreground">This will generate a new PDF certificate with the intern's name and upload it, creating the URL below.</p>
       </div>
 
-      <div className="space-y-2 md:col-span-2">
+      <div className="space-y-2">
         <Label htmlFor="certificate_url">Certificate URL</Label>
         <Input id="certificate_url" value={form.certificate_url || ""} readOnly className="bg-muted/50" placeholder="URL will be generated automatically..." />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="verification_code">Verification Code</Label>
+        <Input id="verification_code" value={form.verification_code || ""} readOnly className="bg-muted/50" placeholder="Code will be generated automatically..." />
       </div>
       
       <div className="space-y-2">
