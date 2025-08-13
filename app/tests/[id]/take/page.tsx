@@ -687,7 +687,7 @@ export default function TakeTestPage() {
         </div>
       </div>
       
-      <Footer/>
+      { !isFullScreen && <Footer/> }
     </div>
   )
 } 
