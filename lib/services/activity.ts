@@ -164,15 +164,13 @@ export class ActivityService {
     currentStreak: number
     longestStreak: number
   } {
-    const dates = Object.keys(activityByDate).sort()
     let currentStreak = 0
     let longestStreak = 0
     let tempStreak = 0
 
-    // Calculate current streak (consecutive days from today)
-    const today = new Date().toISOString().split('T')[0]
-    const currentDate = new Date(today)
-    
+    // Calculate current streak (consecutive days from today, within current year scope)
+    const todayIso = new Date().toISOString().split('T')[0]
+    const currentDate = new Date(todayIso)
     while (true) {
       const dateStr = currentDate.toISOString().split('T')[0]
       if (activityByDate[dateStr] && activityByDate[dateStr].count > 0) {
@@ -183,14 +181,21 @@ export class ActivityService {
       }
     }
 
-    // Calculate longest streak
-    for (let i = 0; i < dates.length; i++) {
-      if (activityByDate[dates[i]].count > 0) {
+    // Calculate longest streak by walking day-by-day across the current year
+    const currentYear = new Date().getFullYear()
+    const startOfYear = new Date(currentYear, 0, 1)
+    const today = new Date() // do not count future days
+    const iterDate = new Date(startOfYear)
+
+    while (iterDate <= today) {
+      const dateStr = iterDate.toISOString().split('T')[0]
+      if (activityByDate[dateStr] && activityByDate[dateStr].count > 0) {
         tempStreak++
-        longestStreak = Math.max(longestStreak, tempStreak)
+        if (tempStreak > longestStreak) longestStreak = tempStreak
       } else {
         tempStreak = 0
       }
+      iterDate.setDate(iterDate.getDate() + 1)
     }
 
     return { currentStreak, longestStreak }
