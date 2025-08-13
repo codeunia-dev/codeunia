@@ -23,7 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import CodeuniaLogo from '@/components/codeunia-logo';
-import PdfLogo from '@/components/PdfLogo';
+// Removed PdfLogo in favor of CodeuniaLogo
 
 interface MembershipCardProps {
   uid: string;
@@ -155,10 +155,11 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        // Slightly larger than A4 (210x297mm)
+        format: [220, 307]
       });
       
-      const imgWidth = 210;
+      const imgWidth = 220;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
@@ -293,12 +294,12 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
       <div 
         ref={pdfContentRef} 
         className="fixed -left-[9999px] top-0 bg-white flex flex-col items-center"
-        style={{ width: '210mm', minHeight: '297mm', padding: '10mm' }}
+        style={{ width: '220mm', minHeight: '307mm', padding: '10mm' }}
       >
         {/* PDF Header */}
       <div className="text-center mb-6 max-w-4xl pt-2">
-        <div className="flex items-center justify-center gap-3 mb-2">
-         <PdfLogo size={40} />
+        <div className="flex flex-col items-center justify-center gap-2 mb-2">
+         <CodeuniaLogo size="lg" showText={false} noLink className="" />
          <h1 className="text-3xl font-bold text-purple-600">Codeunia</h1>
         </div>
         <p className="text-lg text-blue-600 font-semibold">
@@ -359,113 +360,127 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 
 
         
-        {/* Membership Card in PDF */}
+        {/* Membership Card in PDF (mirrors Visible Card) */}
         <div className="flex justify-center mb-8">
-  <div className="bg-white rounded-lg shadow-lg border border-gray-300" style={{ width: '420px', height: '330px' }}>
-    <div className="flex h-full">
-      {/* Left Section - Member Info */}
-      <div className="flex-1 p-4 bg-gradient-to-br from-gray-50 to-white rounded-l-lg">
-        {/* Member Type Badge */}
-        <div className="mb-3">
-          <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full border ${
-            userData?.memberType === 'premium' 
-              ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-300 shadow-md' 
-              : 'bg-blue-100 text-blue-800 border-blue-200'
-          }`}>
-            {userData?.memberType === 'premium' ? 'PREMIUM' : userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
-          </span>
-        </div>
+          <div className="flex bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden w-full max-w-[500px] h-[300px]">
+            {/* Left Section - Member Info */}
+            <div className="flex-1 p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
+              {/* Member Type Badge */}
+              <div className="mb-4">
+                <span className={`inline-block px-4 py-1 text-xs font-bold rounded-full border ${
+                  userData?.memberType === 'premium'
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-yellow-900 border-yellow-300 shadow-md'
+                    : 'bg-blue-100 text-blue-800 border-blue-200'
+                }`}>
+                  {userData?.memberType === 'premium' ? 'PREMIUM' : userData?.memberType?.toUpperCase() || 'STUDENT'} MEMBER
+                </span>
+              </div>
 
-        {/* Organization Title */}
-        <div className="mb-4">
-          <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-            CODEUNIA
-          </h1>
-          <p className="text-xs text-gray-500 font-medium">ORGANIZATION</p>
-        </div>
+              {/* Organization Title */}
+              <div className="mb-4 sm:mb-6">
+                <h1 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+                  CODEUNIA
+                </h1>
+                <p className="text-xs text-gray-500 font-medium">ORGANIZATION</p>
+              </div>
 
-        {/* Member Name */}
-        <div className="mb-3">
-          <div className="text-sm text-gray-600">Member: 
-            <span className={`font-semibold ml-1 ${
-              userData?.memberType === 'premium' 
-                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent' 
-                : 'text-blue-600'
-            }`}>{userData?.name}</span>
+              {/* Member Name */}
+              <div className="mb-4">
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  <span>Member: <span className={`font-semibold ${
+                    userData?.memberType === 'premium'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent'
+                      : 'text-blue-600'
+                  }`}>{userData?.name}</span></span>
+                </div>
+              </div>
+
+              {/* Member ID with Copy Function */}
+              <div className="mb-4">
+                <div className="text-sm text-gray-600 mb-1 flex items-center gap-2">
+                  <span>Member ID: <span className={`font-mono font-bold ${
+                    userData?.memberType === 'premium'
+                      ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent'
+                      : 'text-blue-600'
+                  }`}>{memberId}</span></span>
+                  <button
+                    onClick={copyMemberId}
+                    className="p-1 hover:bg-gray-100 rounded transition-colors"
+                    title="Copy Member ID"
+                  >
+                    {copiedId ? (
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-gray-500" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Status and Year */}
+              <div className="flex items-center gap-4 mb-6">
+                <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-md border ${
+                  userData?.membershipStatus === 'active' 
+                    ? 'bg-green-100 text-green-800 border-green-200' 
+                    : 'bg-red-100 text-red-800 border-red-200'
+                }`}>
+                  {userData?.membershipStatus === 'active' ? 'Active Member' : 'Inactive Member'}
+                </span>
+                <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-md border border-yellow-200">
+                  {new Date().getFullYear()}
+                </span>
+              </div>
+
+              {/* Validity Info */}
+              <div className="text-xs text-gray-600 mb-2 flex items-center gap-2">
+                <Calendar className="h-3 w-3" />
+                <div>
+                  <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
+                </div>
+              </div>
+
+              {/* No QR code inside the card to mirror Visible Card */}
+            </div>
+
+            {/* Right Section - Purple Background with Logo */}
+            <div className="w-32 sm:w-48 bg-gradient-to-br from-purple-600 to-purple-800 p-2 sm:p-4 text-white flex flex-col justify-between items-center">
+              {/* Logo */}
+              <div className="flex flex-col items-center">
+                <CodeuniaLogo size="md" showText={false} noLink className="mb-2" />
+                <h2 className="text-sm sm:text-xl font-bold tracking-wide mt-1">Codeunia</h2>
+                <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders Globally</p>
+              </div>
+
+              {/* Footer */}
+              <div className="text-center">
+                <div className="text-xs text-purple-200">Powered by Codeunia</div>
+                <div className="text-xs text-purple-300 flex items-center justify-center gap-1 mt-1">
+                  <Mail className="h-3 w-3" />
+                  <span className="hidden sm:inline">connect@codeunia.com</span>
+                  <span className="sm:hidden">@codeunia.com</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Member ID */}
-        <div className="mb-3">
-          <div className="text-sm text-gray-600">Member ID: 
-            <span className={`font-mono font-bold ${
-              userData?.memberType === 'premium' 
-                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent' 
-                : 'text-blue-600'
-            }`}>{memberId}</span>
-          </div>
-        </div>
-
-        {/* QR Code for Verification */}
-        <div className="mb-4 flex items-center gap-3">
+        {/* QR code placed at the bottom-right corner for PDF */}
+        <div
+          style={{ position: 'absolute', bottom: '10mm', right: '10mm' }}
+          className="flex flex-col items-center gap-1"
+        >
           <div className="bg-white p-1 border border-gray-200 rounded">
-            <QRCode 
+            <QRCode
               value={`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.codeunia.com'}/verify/${memberId}`}
-              size={48}
+              size={64}
               level="H"
               fgColor="#4f46e5"
               bgColor="#ffffff"
             />
           </div>
-          <div className="text-xs text-gray-500">
-            Scan to verify membership
-          </div>
+          <div className="text-xs text-gray-500">Scan to verify membership</div>
         </div>
-
-        {/* Status and Year */}
-         <div className="flex items-center gap-3 mb-2">
-          <span className="inline-block px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded border border-green-200">
-            {userData?.membershipStatus === 'active' ? 'Active Member' : 'Inactive Member'}
-          </span>
-          <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded border border-yellow-200">
-            {new Date().getFullYear()}
-          </span>
-        </div>
-
-        {/* Validity Info */}
-        <div className="text-[10px] text-gray-600">
-          <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
-        </div>
-      </div>
-
-      {/* Right Section - Purple Background with Logo */}
-      <div className="w-36 bg-gradient-to-br from-purple-600 to-purple-800 p-4 flex flex-col items-center justify-center text-white relative rounded-r-lg">
-        {/* Logo */}
-        <CodeuniaLogo size="lg" showText={false} className="mb-3" />
-
-        {/* CodeUnia Text */}
-        <div className="text-center mb-4">
-          <h2 className="text-sm font-bold tracking-wide">Codeunia</h2>
-          <p className="text-xs text-purple-200 mt-1">Empowering Coders</p>
-        </div>
-
-        {/* Footer */}
-        <div className="absolute bottom-3 left-2 right-2 text-center">
-          <div className="text-xs text-purple-200 mb-1">Powered by Codeunia</div>
-          <div className="text-xs text-purple-300">connect@codeunia.com</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-        {/* Footer Info */}
-        {/* <div className="text-center text-xs text-gray-600 mt-8">
-          <p className="mb-2">
-            <span className="font-semibold">Make the Most of Your Membership.</span> Learn about these and all CodeUnia member benefits at{' '}
-            <span className="text-blue-600 font-semibold">codeunia.com/benefits</span>
-          </p>
-        </div> */}
       </div>
 
       {/* Visible Card for Display */}
@@ -576,7 +591,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   <div className="flex flex-col items-center">
     <CodeuniaLogo size="md" showText={false} className="mb-2" />
     <h2 className="text-sm sm:text-xl font-bold tracking-wide mt-1">Codeunia</h2>
-    <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders</p>
+    <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders Globally</p>
   </div>
 
   {/* Footer */}

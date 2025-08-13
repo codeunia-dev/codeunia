@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { useId } from 'react';
 
 // Updated logo component with new design - force deployment
 interface CodeuniaLogoProps {
@@ -14,6 +15,8 @@ export default function CodeuniaLogo({
   showText = true,
   noLink = false
 }: CodeuniaLogoProps) {
+  const uniqueId = useId().replace(/:/g, '');
+  const gradientId = `rainbowGradient-${uniqueId}`;
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
@@ -36,7 +39,7 @@ export default function CodeuniaLogo({
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
-            <linearGradient id="rainbowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#007AFF" />
               <stop offset="30%" stopColor="#6C63FF" />
               <stop offset="60%" stopColor="#FF6EC7" />
@@ -61,7 +64,7 @@ export default function CodeuniaLogo({
             cx="100" 
             cy="165" 
             r="15" 
-            fill="url(#rainbowGradient)"
+            fill={`url(#${gradientId})`}
           />
         </svg>
       </div>
