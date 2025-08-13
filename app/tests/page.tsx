@@ -225,7 +225,9 @@ export default function TestsPage() {
        (!test.event_end || new Date(test.event_end) >= new Date())) ||
       (filterStatus === "ended" && test.event_end && new Date(test.event_end) < new Date());
     
-    const matchesCategory = selectedCategory === "All" || test.category === selectedCategory;
+    // Treat missing category as "General Knowledge" to match display
+    const normalizedCategory = test.category || "General Knowledge";
+    const matchesCategory = selectedCategory === "All" || normalizedCategory === selectedCategory;
     
     return matchesSearch && matchesStatus && matchesCategory;
   });
@@ -275,26 +277,26 @@ export default function TestsPage() {
     
     // Check if user is registered for this test
     if (userRegistrations.has(test.id)) {
-      return { status: 'registered', badge: <Badge variant="default" className="bg-blue-500/10 text-blue-500 border-blue-500/20">Registered</Badge> };
+      return { status: 'registered', badge: <Badge variant="default" className="pointer-events-none bg-blue-500/10 text-blue-500 border-blue-500/20">Registered</Badge> };
     }
     
     // Check registration dates
     if (regStart && now < regStart) {
       return { 
         status: 'pending', 
-        badge: <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Registration Pending</Badge>,
+        badge: <Badge variant="outline" className="pointer-events-none bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Registration Pending</Badge>,
         message: `Registration starts ${regStart.toLocaleDateString()} at ${regStart.toLocaleTimeString()}`
       };
     } else if (regEnd && now > regEnd) {
       return { 
         status: 'closed', 
-        badge: <Badge variant="destructive" className="bg-red-500/10 text-red-500 border-red-500/20">Registration Closed</Badge>,
+        badge: <Badge variant="destructive" className="pointer-events-none bg-red-500/10 text-red-500 border-red-500/20">Registration Closed</Badge>,
         message: `Registration ended ${regEnd.toLocaleDateString()} at ${regEnd.toLocaleTimeString()}`
       };
     } else {
       return { 
         status: 'open', 
-        badge: <Badge variant="default" className="bg-green-500/10 text-green-500 border-green-500/20">Registration Open</Badge>,
+        badge: <Badge variant="default" className="pointer-events-none bg-green-500/10 text-green-500 border-green-500/20">Registration Open</Badge>,
         message: regEnd ? `Registration ends ${regEnd.toLocaleDateString()} at ${regEnd.toLocaleTimeString()}` : 'Registration open'
       };
     }
@@ -535,7 +537,6 @@ export default function TestsPage() {
                     <Card className={cn(
                       "group relative overflow-hidden border-0 shadow-xl card-hover bg-gradient-to-br from-background to-muted/20 flex flex-col h-full w-full",
                       `hover:shadow-2xl hover:scale-105 transition-all duration-300`)}>
-                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600"></div>
                       
                       {/* Test Image/Logo */}
                       <div className="h-32 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
@@ -544,8 +545,8 @@ export default function TestsPage() {
                         </div>
                         {/* Category Badge */}
                         <div className="absolute top-2 left-2 flex gap-1 z-10">
-                          <Badge className={`${getCategoryColor(test.category || 'General Knowledge')} shadow-lg text-xs`} variant="secondary">
-                            {test.category || 'General Knowledge'}
+                          <Badge className={`${getCategoryColor(test.category || 'Other')} shadow-lg text-xs`} variant="secondary">
+                            {test.category || 'Other'}
                           </Badge>
                         </div>
                         {/* Status Badge */}

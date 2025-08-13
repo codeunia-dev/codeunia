@@ -448,8 +448,13 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
               {/* Logo */}
               <div className="flex flex-col items-center">
                 <CodeuniaLogo size="md" showText={false} noLink className="mb-2" />
-                <h2 className="text-sm sm:text-xl font-bold tracking-wide mt-1">Codeunia</h2>
-                <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders Globally</p>
+                <h2
+                  className="text-sm sm:text-xl font-bold tracking-wide mt-1 text-[#007AFF]"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                  Codeunia
+                </h2>
+                <p className="text-xs sm:text-sm text-purple-200 mt-1 whitespace-nowrap">Empowering Coders Globally</p>
               </div>
 
               {/* Footer */}
@@ -590,8 +595,13 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   {/* Logo */}
   <div className="flex flex-col items-center">
     <CodeuniaLogo size="md" showText={false} className="mb-2" />
-    <h2 className="text-sm sm:text-xl font-bold tracking-wide mt-1">Codeunia</h2>
-    <p className="text-xs sm:text-sm text-purple-200 mt-1">Empowering Coders Globally</p>
+    <h2
+      className="text-sm sm:text-xl font-bold tracking-wide mt-1 text-[#007AFF]"
+      style={{ fontFamily: 'Inter, sans-serif' }}
+    >
+      Codeunia
+    </h2>
+    <p className="text-xs sm:text-sm text-purple-200 mt-1 whitespace-nowrap">Empowering Coders Globally</p>
   </div>
 
   {/* Footer */}
