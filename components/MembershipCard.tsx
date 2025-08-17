@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import Link from 'next/link';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import QRCode from 'react-qr-code';
@@ -13,15 +12,14 @@ import {
   Copy, 
   CheckCircle, 
   AlertCircle, 
-  User, 
+  User,
   Calendar, 
   Mail, 
-  Edit3,
-  ArrowRight,
-  Sparkles
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useMembershipCardEmail } from '@/hooks/useMembershipCardEmail';
 import CodeuniaLogo from '@/components/codeunia-logo';
 // Removed PdfLogo in favor of CodeuniaLogo
 
@@ -41,6 +39,7 @@ interface UserData {
 const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   const { user } = useAuth();
   const { profile, loading } = useProfile();
+  const { sendMembershipCard, isSending, emailSent } = useMembershipCardEmail();
   const cardRef = useRef<HTMLDivElement>(null);
   const pdfContentRef = useRef<HTMLDivElement>(null);
   
@@ -51,55 +50,15 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   const [isLoading, setIsLoading] = useState(true);
 
 
-  const hasCompletedProfile = profile && (() => {
-    const requiredFields = [
-      'first_name',
-      'last_name',
-      'bio',
-      'phone',
-      'github_url',
-      'linkedin_url',
-      'twitter_url',
-      'current_position',
-      'company',
-      'location',
-      'skills'
-    ] as const;
-  
-    return requiredFields.every((field) => {
-      const value = profile[field];
-      if (Array.isArray(value)) return value.length > 0;
-      return Boolean(value);
-    });
-  })();
-  
-
-  // Calculate profile completion percentage
-  const getProfileCompletionPercentage = () => {
-    if (!profile) return 0;
-  
-    const requiredFields = [
-      'first_name',
-      'last_name',
-      'bio',
-      'phone',
-      'github_url',
-      'linkedin_url',
-      'twitter_url',
-      'current_position',
-      'company',
-      'location',
-      'skills'
-    ] as const;
-  
-    const completedFields = requiredFields.filter((field) => {
-      const value = profile[field];
-      if (Array.isArray(value)) return value.length > 0;
-      return Boolean(value);
-    });
-  
-    return Math.round((completedFields.length / requiredFields.length) * 100);
-  };
+  // Get user's display name (use first/last name or fallback to username or email)
+  const getDisplayName = useCallback(() => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name} ${profile.last_name}`;
+    }
+    if (profile?.first_name) return profile.first_name;
+    if (profile?.username) return profile.username;
+    return user?.email?.split('@')[0] || 'User';
+  }, [profile?.first_name, profile?.last_name, profile?.username, user?.email]);
   
 
   // Use the dedicated codeunia_id from profile instead of UUID slice
@@ -179,18 +138,13 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   // Initialize user data
   useEffect(() => {
     const initializeUserData = () => {
-      if (user && profile && hasCompletedProfile) {
-        const name = profile.first_name && profile.last_name 
-          ? `${profile.first_name} ${profile.last_name}`
-          : profile.username || user.email?.split('@')[0] || 'Member';
-        
+      if (user && profile) {
+        const name = getDisplayName();
         const joinDate = profile.created_at || user.created_at || new Date().toISOString();
         
         // Check if user has premium status
         const isPremium = profile.is_premium && profile.premium_expires_at && 
           new Date(profile.premium_expires_at) > new Date();
-        
-
         
         setUserData({
           name,
@@ -205,7 +159,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
     };
 
     initializeUserData();
-  }, [user, profile, hasCompletedProfile]);
+  }, [user, profile, getDisplayName]);
 
   // Loading state
   if (loading || isLoading) {
@@ -221,73 +175,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
     );
   }
 
-  // Profile completion prompt for users without completed profiles
-  if (!hasCompletedProfile) {
-    return (
-      <div className="flex flex-col items-center p-4 sm:p-8">
-        <div className="w-full max-w-[500px] h-[370px] bg-gradient-to-br from-gray-50 to-white rounded-3xl shadow-2xl border border-gray-200 flex items-center justify-center relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-100 to-blue-100 rounded-full -translate-y-16 translate-x-16 opacity-50"></div>
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full translate-y-12 -translate-x-12 opacity-50"></div>
-          
-          <div className="text-center space-y-6 relative z-10">
-            {/* Icon */}
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
-             <User className="h-10 w-10 text-white" />
-           </div>
-
-
-            
-            {/* Title */}
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-gray-900">Complete Your Profile</h3>
-              <p className="text-gray-600 max-w-sm">
-                To get your personalized membership card, please complete your profile with your name and details.
-              </p>
-            </div>
-            
-            {/* Progress indicator */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Profile Completion</span>
-                <span className="text-purple-600 font-semibold">{getProfileCompletionPercentage()}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${getProfileCompletionPercentage()}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            {/* CTA Button */}
-            <Button asChild className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-              <Link href="/protected/profile" className="flex items-center gap-2">
-                <Edit3 className="h-4 w-4" />
-                Complete Profile
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            
-            {/* Benefits preview */}
-            <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-              <div className="flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-purple-500" />
-                <span>Personalized Card</span>
-              </div>
-              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-              <div className="flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-blue-500" />
-                <span>Download PDF</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Full membership card for users with completed profiles
+  // Full membership card - now shown to all authenticated users
   return (
     <>
       {/* Hidden PDF Content - Only visible when generating PDF */}
@@ -617,8 +505,27 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
 </div>
 </div>
 
-        {/* Download Button */}
-        <div className="mt-8">
+        {/* Action Buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-4 items-center justify-center">
+          {/* Email Card Button */}
+          <Button
+            onClick={() => sendMembershipCard(true)}
+            disabled={isSending}
+            className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center gap-2">
+              {isSending ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : emailSent ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+              {isSending ? 'Sending...' : emailSent ? 'Resend Email' : 'Email Card'}
+            </div>
+          </Button>
+
+          {/* Download PDF Button */}
           <Button
             onClick={handleDownload}
             disabled={isGeneratingPdf}

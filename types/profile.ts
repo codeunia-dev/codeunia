@@ -48,6 +48,10 @@ export interface Profile {
   premium_purchased_at?: string
   points_multiplier?: number
   
+  // Membership card email fields
+  membership_card_sent?: boolean
+  membership_card_sent_at?: string
+  
   // Admin access
   is_admin?: boolean
 }

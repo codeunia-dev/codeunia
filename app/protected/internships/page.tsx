@@ -32,21 +32,6 @@ function formatNamePart(part: string | null | undefined): string {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-function formatDate(dateString: string | null | undefined): string {
-  if (!dateString) return "-";
-  try {
-    const d = new Date(dateString);
-    if (Number.isNaN(d.getTime())) return "-";
-    return d.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-    });
-  } catch {
-    return "-";
-  }
-}
-
 export default async function InternshipsPage() {
   const supabase = await createClient();
 
@@ -58,7 +43,7 @@ export default async function InternshipsPage() {
   const authEmail = (authData.user.email || "").toLowerCase();
 
   // Fetch profile name by email
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("email, first_name, last_name")
     .eq("email", authEmail)
