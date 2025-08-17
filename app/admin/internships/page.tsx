@@ -453,7 +453,7 @@ function InternshipForm({ form, setForm }: InternshipFormProps) {
                 </Button>
             </div>
         </div>
-        <p className="text-xs text-muted-foreground">This will generate a new PDF certificate with the intern's name and upload it, creating the URL below.</p>
+        <p className="text-xs text-muted-foreground">This will generate a new PDF certificate with the intern&apos;s name and upload it, creating the URL below.</p>
       </div>
 
       <div className="space-y-2">

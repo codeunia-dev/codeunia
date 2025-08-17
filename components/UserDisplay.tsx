@@ -79,7 +79,7 @@ export default function UserDisplay({ userId, showCodeuniaId = false, className 
         }`}
       >
         {userData.username}
-        {isPremium && <span className="ml-1">👑</span>}
+        {isPremium && <span className="ml-1"></span>}
       </span>
 
       {/* Codeunia ID */}

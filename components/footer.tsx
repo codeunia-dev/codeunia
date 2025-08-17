@@ -141,7 +141,7 @@ export default function Footer() {
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               </div>
-              <p className="text-xs text-foreground/70">Join 10,000+ developers in our newsletter</p>
+              <p className="text-xs text-foreground/70">Join 2,000+ developers in our newsletter</p>
             </div>
           </div>
         </div>

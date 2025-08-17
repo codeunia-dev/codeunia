@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -96,10 +97,11 @@ export default function InternshipsTable({ internships }: Props) {
                       {/* Thumbnail */}
                       {intern.certificate_url && isImageUrl(intern.certificate_url) ? (
                         // Image thumbnail
-                        <img
+                        <Image
                           src={intern.certificate_url}
                           alt="Certificate thumbnail"
-                          className="absolute inset-0 w-full h-full object-cover"
+                          fill
+                          className="object-cover"
                         />
                       ) : (
                         // PDF or unknown: use iframe snapshot
@@ -148,7 +150,9 @@ export default function InternshipsTable({ internships }: Props) {
           </DialogHeader>
           <div className="w-full">
             {previewUrl && isImageUrl(previewUrl) ? (
-              <img src={previewUrl} alt="Certificate preview" className="w-full h-auto rounded-md border" />
+              <div className="relative w-full h-auto min-h-[400px]">
+                <Image src={previewUrl} alt="Certificate preview" fill className="object-contain rounded-md border" />
+              </div>
             ) : previewUrl && isPdfUrl(previewUrl) ? (
               <iframe src={previewUrl} className="w-full h-[70vh] rounded-md border" title="Certificate preview" />
             ) : previewUrl ? (
