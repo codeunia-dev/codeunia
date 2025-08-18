@@ -56,7 +56,24 @@ export async function POST(request: NextRequest) {
     const memberName = profile.first_name || 'Member';
     const memberId = profile.codeunia_id || `CU${Date.now()}`;
     const isPremium = profile.is_premium;
-    const joinDate = new Date().toLocaleDateString();
+    const getMembershipDuration = (joinDate: string) => {
+      const join = new Date(joinDate);
+      const now = new Date();
+      const diffTime = Math.abs(now.getTime() - join.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const years = Math.floor(diffDays / 365);
+      const months = Math.floor((diffDays % 365) / 30);
+      
+      if (years > 0) {
+        return `${years} year${years > 1 ? 's' : ''}`;
+      } else if (months > 0) {
+        return `${months} month${months > 1 ? 's' : ''}`;
+      } else {
+        return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
+      }
+    };
+
+    const membershipDuration = profile.created_at ? getMembershipDuration(profile.created_at) : '1 Year';
 
     // Create email template using exact structure from MembershipCard PDF content
     const createMembershipCardEmail = () => {
@@ -80,13 +97,7 @@ export async function POST(request: NextRequest) {
                       <table cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td align="center">
-                            <!-- Codeunia Logo matching exact SVG -->
-                            <div style="width: 48px; height: 48px; margin-bottom: 8px; display: inline-block; background: #007AFF; border-radius: 10px; position: relative; font-family: Arial, sans-serif;">
-                              <!-- The 'C' arc - recreating path "M165,100 A65,65 0 1 1 100,35" -->
-                              <div style="position: absolute; top: 4px; left: 11px; width: 33px; height: 33px; border: 7px solid #000000; border-left: 7px solid transparent; border-bottom: 7px solid transparent; border-radius: 50%; transform: rotate(45deg);"></div>
-                              <!-- Gradient dot at bottom center like cx="100" cy="165" -->
-                              <div style="position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 7px; height: 7px; background: linear-gradient(45deg, #007AFF, #6C63FF, #FF6EC7, #FF9F45); border-radius: 50%;"></div>
-                            </div>
+                            
                           </td>
                         </tr>
                         <tr>
@@ -170,70 +181,63 @@ export async function POST(request: NextRequest) {
                   </tr>
 
                   <!-- Membership Card -->
-                  <tr>
-                    <td align="center" style="padding: 0 20px 30px 20px;">
-                      <table width="500" cellpadding="0" cellspacing="0" border="0" style="background: white; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; overflow: hidden;">
-                        <tr>
-                          <td width="300" style="padding: 20px; background: linear-gradient(to bottom right, #f9fafb, white); vertical-align: top;">
-                            
-                            <!-- Member Badge -->
-                            <div style="margin-bottom: 16px;">
-                              <span style="display: inline-block; padding: 4px 16px; font-size: 12px; font-weight: bold; border-radius: 20px; border: 1px solid; ${isPremium ? 'background: linear-gradient(to right, #fbbf24, #f59e0b); color: #92400e; border-color: #fcd34d;' : 'background: #dbeafe; color: #1e40af; border-color: #bfdbfe;'}">${isPremium ? 'PREMIUM' : 'STUDENT'} MEMBER</span>
-                            </div>
+                 <tr>
+  <td align="center" style="padding: 0 20px 30px 20px;">
+    <table width="500" cellpadding="0" cellspacing="0" border="0" style="background: white; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; overflow: hidden;">
+      <tr>
+        <td width="300" style="padding: 20px; background: linear-gradient(to bottom right, #f9fafb, white); vertical-align: top;">
+          
+          <!-- Member Badge -->
+          <div style="margin-bottom: 16px;">
+            <span style="display: inline-block; padding: 4px 16px; font-size: 12px; font-weight: bold; border-radius: 20px; border: 1px solid; ${isPremium ? 'background: linear-gradient(to right, #fbbf24, #f59e0b); color: #92400e; border-color: #fcd34d;' : 'background: #dbeafe; color: #1e40af; border-color: #bfdbfe;'}">${isPremium ? 'PREMIUM' : 'STUDENT'} MEMBER</span>
+          </div>
 
-                            <!-- Organization -->
-                            <div style="margin-bottom: 16px;">
-                              <h1 style="font-size: 20px; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.025em;">CODEUNIA</h1>
-                              <p style="font-size: 12px; color: #6b7280; font-weight: 500; margin: 0;">ORGANIZATION</p>
-                            </div>
+          <!-- Organization -->
+          <div style="margin-bottom: 16px;">
+            <h1 style="font-size: 20px; font-weight: 900; color: #111827; margin: 0; letter-spacing: -0.025em;">CODEUNIA</h1>
+            <p style="font-size: 12px; color: #6b7280; font-weight: 500; margin: 0;">ORGANIZATION</p>
+          </div>
 
-                            <!-- Member Info -->
-                            <div style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">
-                              👤 Member: <span style="font-weight: 600; ${isPremium ? 'color: #f59e0b;' : 'color: #2563eb;'}">${memberName}</span>
-                            </div>
+          <!-- Member Info -->
+          <div style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">
+            👤 Member: <span style="font-weight: 600; ${isPremium ? 'color: #f59e0b;' : 'color: #2563eb;'}">${memberName}</span>
+          </div>
 
-                            <div style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">
-                              Member ID: <span style="font-weight: 600; font-family: monospace; ${isPremium ? 'color: #f59e0b;' : 'color: #2563eb;'}">${memberId}</span>
-                            </div>
+          <div style="font-size: 14px; color: #4b5563; margin-bottom: 16px;">
+            Member ID: <span style="font-weight: 600; font-family: monospace; ${isPremium ? 'color: #f59e0b;' : 'color: #2563eb;'}">${memberId}</span>
+          </div>
 
-                            <!-- Status Badges -->
-                            <div style="margin-bottom: 20px;">
-                              <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; margin-right: 10px;">Active Member</span>
-                              <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">${new Date().getFullYear()}</span>
-                            </div>
+          <!-- Status Badges -->
+          <div style="margin-bottom: 20px;">
+            <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; margin-right: 10px;">Active Member</span>
+            <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">${new Date().getFullYear()}</span>
+          </div>
 
-                            <!-- Validity -->
-                            <div style="font-size: 12px; color: #4b5563;">
-                              📅 Valued Codeunia Member from ${joinDate}
-                            </div>
+          <!-- Validity -->
+          <div style="font-size: 12px; color: #4b5563;">
+            📅 Valued Codeunia Member from ${membershipDuration}
+          </div>
 
-                          </td>
-                          <td width="200" style="background: linear-gradient(to bottom right, #7c3aed, #6d28d9); padding: 16px; color: white; text-align: center; vertical-align: top;">
-                            
-                            <!-- Logo Section -->
-                            <div style="margin-bottom: 40px;">
-                              <!-- Codeunia Logo matching exact SVG -->
-                              <div style="width: 32px; height: 32px; margin: 0 auto 8px auto; display: inline-block; background: #007AFF; border-radius: 6px; position: relative; font-family: Arial, sans-serif;">
-                                <!-- The 'C' arc - recreating path "M165,100 A65,65 0 1 1 100,35" -->
-                                <div style="position: absolute; top: 2px; left: 7px; width: 22px; height: 22px; border: 5px solid #000000; border-left: 5px solid transparent; border-bottom: 5px solid transparent; border-radius: 50%; transform: rotate(45deg);"></div>
-                                <!-- Gradient dot at bottom center like cx="100" cy="165" -->
-                                <div style="position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; background: linear-gradient(45deg, #007AFF, #6C63FF, #FF6EC7, #FF9F45); border-radius: 50%;"></div>
-                              </div>
-                              <h2 style="font-size: 16px; font-weight: bold; color: #007AFF; margin: 4px 0 0 0; font-family: Arial, sans-serif;">Codeunia</h2>
-                              <p style="font-size: 12px; color: #c4b5fd; margin: 4px 0 0 0;">Empowering Coders Globally</p>
-                            </div>
+        </td>
+        <td width="200" style="background: linear-gradient(to bottom right, #7c3aed, #6d28d9); padding: 16px; color: white; text-align: center; vertical-align: top; position: relative;">
+          
+          <!-- Logo Section -->
+          <div style="margin-bottom: 80px;">
+            <h2 style="font-size: 16px; font-weight: bold; color: #007AFF; margin: 4px 0 0 0; font-family: Arial, sans-serif;">Codeunia</h2>
+            <p style="font-size: 12px; color: #c4b5fd; margin: 4px 0 0 0;">Empowering Coders Globally</p>
+          </div>
 
-                            <!-- Footer -->
-                            <div>
-                              <div style="font-size: 12px; color: #c4b5fd;">Powered by Codeunia</div>
-                              <div style="font-size: 12px; color: #ddd6fe; margin-top: 4px;">✉️ connect@codeunia.com</div>
-                            </div>
+          <!-- Footer - Positioned Lower -->
+          <div style="position: absolute; bottom: 2px; left: 16px; right: 16px; text-align: center;">
+            <div style="font-size: 12px; color: #c4b5fd;">Powered by Codeunia</div>
+            <div style="font-size: 12px; color: #ddd6fe; margin-top: 2px;">✉️ <a href="mailto:connect@codeunia.com" style="color: #ddd6fe; text-decoration: none;">connect@codeunia.com</a></div>
+          </div>
 
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
 
                   <!-- Footer -->
                   <tr>

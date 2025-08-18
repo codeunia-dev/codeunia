@@ -473,7 +473,6 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
                 <Calendar className="h-3 w-3" />
                 <div>
                   <div>Valued Codeunia Member from {userData ? getMembershipDuration(userData.joinDate) : '1 Year'}</div>
-                  {/* <div className="font-semibold">Valid through 31 December {new Date().getFullYear()}</div> */}
                 </div>
               </div>
             </div>
