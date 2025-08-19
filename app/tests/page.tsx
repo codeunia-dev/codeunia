@@ -13,7 +13,6 @@ import {
   Trophy,
   Play,
   ArrowRight,
-  Filter,
   Target,
   Brain,
   Sparkles
@@ -22,7 +21,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { cn, getCategoryImage } from "@/lib/utils";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Test } from "@/types/test-management";
@@ -37,8 +37,7 @@ const testCategories = [
   "AI/ML",
   "Cybersecurity",
   "Database",
-  "DevOps",
-  "General Knowledge"
+  "DevOps"
 ];
 
 export default function TestsPage() {
@@ -225,8 +224,8 @@ export default function TestsPage() {
        (!test.event_end || new Date(test.event_end) >= new Date())) ||
       (filterStatus === "ended" && test.event_end && new Date(test.event_end) < new Date());
     
-    // Treat missing category as "General Knowledge" to match display
-    const normalizedCategory = test.category || "General Knowledge";
+    // Treat missing category as "Other" to match display
+    const normalizedCategory = test.category || "Other";
     const matchesCategory = selectedCategory === "All" || normalizedCategory === selectedCategory;
     
     return matchesSearch && matchesStatus && matchesCategory;
@@ -320,8 +319,6 @@ export default function TestsPage() {
         return "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
       case "DevOps":
         return "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
-      case "General Knowledge":
-        return "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
       default:
         return "bg-gradient-to-r from-gray-500 to-slate-600 text-white"
     }
@@ -442,10 +439,6 @@ export default function TestsPage() {
                 className="pl-10 pr-4 h-12 shadow-lg border-2 focus:border-primary/50 transition-all duration-300 bg-background/80 backdrop-blur-sm rounded-xl"
               />
             </div>
-            {/* Filters Button */}
-            <Button variant="outline" className="flex items-center gap-2">
-              <Filter className="h-4 w-4" /> Filters
-            </Button>
           </div>
 
           {/* Category Dropdown */}
@@ -539,10 +532,14 @@ export default function TestsPage() {
                       `hover:shadow-2xl hover:scale-105 transition-all duration-300`)}>
                       
                       {/* Test Image/Logo */}
-                      <div className="h-32 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
-                        <div className="flex items-center justify-center w-full h-full">
-                          <FileText className="h-12 w-12 text-muted-foreground opacity-40" />
-                        </div>
+                      <div className="h-48 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
+                        <Image 
+                          src={getCategoryImage(test.category || 'Other')} 
+                          alt={test.name} 
+                          layout="fill"
+                          objectFit="cover"
+                        />
+                        <div className="absolute inset-0 bg-black/20"></div>
                         {/* Category Badge */}
                         <div className="absolute top-2 left-2 flex gap-1 z-10">
                           <Badge className={`${getCategoryColor(test.category || 'Other')} shadow-lg text-xs`} variant="secondary">
@@ -748,44 +745,7 @@ export default function TestsPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-gradient-to-b from-background to-muted/30 relative">
-        <div className="container px-4 mx-auto relative z-10">
-          <Card className="border-0 shadow-xl bg-gradient-to-br from-background to-muted/20">
-            <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-primary">{tests.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Tests</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {tests.filter(t => {
-                      const now = new Date();
-                      const testStart = t.event_start ? new Date(t.event_start) : null;
-                      const testEnd = t.event_end ? new Date(t.event_end) : null;
-                      return (!testStart || now >= testStart) && (!testEnd || now <= testEnd);
-                    }).length}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Active Tests</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {tests.reduce((sum, t) => sum + (t.test_registrations?.[0]?.count || 0), 0)}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Total Registrations</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-primary">
-                    {tests.filter(t => t.enable_leaderboard).length}
-                  </div>
-                  <div className="text-sm text-muted-foreground">Leaderboard Tests</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      
 
       <Footer />
     </div>
