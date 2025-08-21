@@ -27,12 +27,12 @@ const opportunities = [
     tags: ["Tech", "Workshops", "Conferences"],
   },
   {
-    title: "Projects",
-    description: "Join real-world projects and collaborations. Grow your portfolio and skills.",
+    title: "Learn",
+    description: "Master programming languages, frameworks, and technologies with interactive courses and tutorials.",
     icon: Code2,
-    href: "/projects",
+    href: "https://learn.codeunia.com",
     gradient: "from-emerald-500 to-teal-600",
-    tags: ["Collaboration", "Portfolio", "Open Source"],
+    tags: ["Courses", "Tutorials", "Programming"],
   },
   {
     title: "Tests & Assessments",
