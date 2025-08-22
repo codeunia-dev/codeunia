@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Profile not found for the given email." }, { status: 404 });
     }
 
-    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    const fullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim().toUpperCase();
     if (!fullName) {
         return NextResponse.json({ error: "First name and last name are missing from the profile." }, { status: 400 });
     }
@@ -63,9 +63,9 @@ export async function POST(request: Request) {
     // 5. Add the text to the PDF
     const font = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
     page.drawText(fullName, {
-      x: (width - font.widthOfTextAtSize(fullName, 60)) / 2,
+      x: (width - font.widthOfTextAtSize(fullName, 80)) / 2,
       y: height / 2 - 20,
-      size: 60,
+      size: 80,
       font: font,
       color: rgb(1, 1, 1),
     });
