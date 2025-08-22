@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       y: height / 2 - 20,
       size: 60,
       font: font,
-      color: rgb(0.1, 0.2, 0.3),
+      color: rgb(1, 1, 1),
     });
 
     // 6. Generate and embed the QR code
@@ -76,9 +76,9 @@ export async function POST(request: Request) {
     const qrImage = await pdfDoc.embedPng(qrImageBytes);
     page.drawImage(qrImage, {
         x: width - qrImage.width * 0.5 - 60, // position bottom right
-        y: 60,
-        width: qrImage.width * 0.5,
-        height: qrImage.height * 0.5,
+        y: 20,
+        width: qrImage.width * 0.7,
+        height: qrImage.height * 0.7,
     });
 
     // 7. Save the PDF to a buffer
