@@ -1,8 +1,16 @@
 "use client"
 
-import React, { Suspense } from "react";
+import React, { useState } from "react";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import Header from "@/components/header";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // Lazy load non-critical components
 const HeroSection2 = dynamic(() => import("@/components/home/HeroSection2").then(mod => ({ default: mod.HeroSection2 })), {
@@ -71,55 +79,61 @@ const Footer = dynamic(() => import("@/components/footer"), {
 });
 
 export default function Home() {
+  const [open, setOpen] = useState(true);
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   return (
     <>
+      {/* 🎉 Happy Birthday Dialog 🎉 */}
+{/* 🎉 Happy Birthday Dialog 🎉 */}
+<Dialog open={open} onOpenChange={(val) => { if (!val) handleClose(); }}>
+  <DialogContent showCloseButton>
+    <DialogHeader>
+      <DialogTitle className="text-center text-2xl font-bold text-blue-600">
+        🎂 Happy Birthday to Our Founder! 🎉
+      </DialogTitle>
+      <DialogDescription>
+        <div className="flex flex-col items-center gap-4">
+          <img 
+            src="/images/birthday.jpeg" 
+            alt="Happy Birthday" 
+            className="rounded-lg w-full max-w-xs object-cover shadow-lg"
+          />
+          <div className="text-base text-center text-muted-foreground">
+            Today, we celebrate the vision, passion, and dedication of our amazing founder.  
+            <br/><br/>
+            <b className="text-blue-700">
+              Wishing you a wonderful year ahead filled with success, happiness, and endless possibilities. 💙
+            </b>
+          </div>
+          <div className="mt-4 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded shadow transition-colors duration-200">
+            🎉 Happy Birthday from the entire Codeunia family!
+          </div>
+        </div>
+      </DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>
+
       <main className="flex min-h-screen flex-col items-center justify-between">
         <Header/>
         <div className="w-full max-w-[2000px]">
-          <Suspense fallback={
-            <div className="min-h-[600px] flex items-center justify-center">
-              <div className="animate-pulse text-primary">Loading...</div>
-            </div>
-          }>
+          <Suspense fallback={<div className="min-h-[600px] flex items-center justify-center"><div className="animate-pulse text-primary">Loading...</div></div>}>
             <HeroSection2 />
           </Suspense>
-          
-          <Suspense fallback={
-            <div className="py-24">
-              <div className="container px-4 mx-auto">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                </div>
-              </div>
-            </div>
-          }>
+
+          <Suspense fallback={<div className="py-24"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <FeaturesSection />
           </Suspense>
-          
-          <Suspense fallback={
-            <div className="py-16">
-              <div className="container px-4 mx-auto">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                </div>
-              </div>
-            </div>
-          }>
+
+          <Suspense fallback={<div className="py-16"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <CommunitySpotlight />
           </Suspense>
-          
-          <Suspense fallback={
-            <div className="py-24">
-              <div className="container px-4 mx-auto">
-                <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
-                </div>
-              </div>
-            </div>
-          }>
+
+          <Suspense fallback={<div className="py-24"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <LatestContentPreview />
           </Suspense>
         </div>
