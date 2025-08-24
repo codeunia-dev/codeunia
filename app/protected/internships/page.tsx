@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 
 import InternshipsTable from "@/components/InternshipsTable";
 
+export const dynamic = "force-dynamic";
+
 type InternRow = {
   email: string;
   passed: boolean | null;
