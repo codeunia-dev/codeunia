@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import Image from 'next/image';
 import Header from "@/components/header";
 import {
   Dialog,
@@ -95,11 +96,13 @@ export default function Home() {
       <DialogTitle className="text-center text-2xl font-bold text-blue-600">
         🎂 Happy Birthday to Our Founder! 🎉
       </DialogTitle>
-      <DialogDescription>
+      <DialogDescription asChild>
         <div className="flex flex-col items-center gap-4">
-          <img 
+          <Image 
             src="/images/birthday.jpeg" 
             alt="Happy Birthday" 
+            width={300}
+            height={200}
             className="rounded-lg w-full max-w-xs object-cover shadow-lg"
           />
           <div className="text-base text-center text-muted-foreground">
