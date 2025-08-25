@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
-import { createClient as createBrowserSupabase } from '@/lib/supabase/client'
+import type { Profile } from '@/types/profile'
 
 type Domain = 'Web Development' | 'Python' | 'Artificial Intelligence' | 'Machine Learning' | 'Java'
 type Level = 'Beginner' | 'Intermediate' | 'Advanced'
@@ -75,7 +75,7 @@ export default function InternshipLandingPage() {
   const [selectedLevel, setSelectedLevel] = useState<Level | ''>('')
   const [coverNote, setCoverNote] = useState('')
   const [savingProfile, setSavingProfile] = useState(false)
-  const [selectedDuration, setSelectedDuration] = useState<4 | 6 | ''>('')
+  const [selectedDuration, setSelectedDuration] = useState<number | ''>('')
   const [profileDraft, setProfileDraft] = useState({
     first_name: '',
     last_name: '',
@@ -110,15 +110,12 @@ export default function InternshipLandingPage() {
   // Load current user's applications
   const loadApplied = useCallback(async () => {
     try {
-      const supabase = createBrowserSupabase()
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      if (!token) return
-      const res = await fetch('/api/internships/my-applications', { headers: { Authorization: `Bearer ${token}` } })
+      if (!user?.id) return
+      const res = await fetch('/api/internships/my-applications')
       const data = await res.json()
       if (res.ok && Array.isArray(data.appliedIds)) setAppliedIds(data.appliedIds)
     } finally {}
-  }, [])
+  }, [user?.id])
 
   // initial and on user change
   useMemo(() => { if (user?.id) loadApplied() }, [user?.id, loadApplied])
@@ -127,7 +124,7 @@ export default function InternshipLandingPage() {
     if (!user?.id) return
     try {
       setSavingProfile(true)
-      const ok = await updateProfile(profileDraft as any)
+      const ok = await updateProfile(profileDraft as Profile)
       if (ok) {
         toast.success('Profile updated')
         await refresh()
@@ -149,25 +146,33 @@ export default function InternshipLandingPage() {
       toast.error('Please select domain and level')
       return
     }
-    if (selected?.type === 'Paid' && !selectedDuration) {
+    if (!selectedDuration) {
       toast.error('Please select duration')
       return
     }
 
     try {
-      const supabase = createBrowserSupabase()
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      if (!token) {
+      if (!user?.id) {
         toast.error('Not authenticated. Please sign in again.')
         return
       }
       if (selected.type === 'Paid') {
-        const price = selectedDuration === 6 ? 999 : 699
+        const basePrice = selectedDuration === 6 ? 999 : 699
+        
+        // Check if user is a premium member for 50% discount
+        const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+          new Date(profile.premium_expires_at) > new Date()
+        
+        const price = isPremium ? Math.floor(basePrice / 2) : basePrice
+        
+        if (isPremium) {
+          toast.success(`🎉 Premium member discount applied! 50% off (₹${basePrice} → ₹${price})`)
+        }
+        
         // Create Razorpay order
         const orderRes = await fetch('/api/internships/create-order', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ internshipId: selected.id, amount: price * 100, currency: 'INR' })
         })
         const orderData = await orderRes.json()
@@ -190,50 +195,76 @@ export default function InternshipLandingPage() {
           name: 'Codeunia',
           description: `${selected.title}`,
           order_id: orderData.orderId,
-          handler: async () => {
-            // On successful payment, record application
-            const res = await fetch('/api/internships/apply', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-              body: JSON.stringify({
-                internshipId: selected.id,
-                domain: selectedDomain,
-                level: selectedLevel,
-                coverNote,
-                durationWeeks: selectedDuration
+          handler: async (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
+            // On successful payment, record application with payment details
+            try {
+              const basePrice = selectedDuration === 6 ? 999 : 699
+              const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                new Date(profile.premium_expires_at) > new Date()
+              const finalPrice = isPremium ? Math.floor(basePrice / 2) : basePrice
+              const discountAmount = basePrice - finalPrice
+
+              const res = await fetch('/api/internships/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  internshipId: selected.id,
+                  domain: selectedDomain,
+                  level: selectedLevel,
+                  coverNote,
+                  durationWeeks: selectedDuration,
+                  // Payment information
+                  orderId: orderData.orderId,
+                  paymentId: response.razorpay_payment_id,
+                  paymentSignature: response.razorpay_signature,
+                  amountPaid: finalPrice * 100, // in paise
+                  originalAmount: basePrice * 100, // in paise
+                  discountApplied: discountAmount * 100, // in paise
+                  paymentMethod: 'razorpay'
+                })
               })
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Failed to apply')
-            toast.success('Application submitted')
-            setApplyOpen(false)
-            loadApplied()
+              const data = await res.json()
+              if (!res.ok) throw new Error(data.error || 'Failed to apply')
+              
+              toast.success(`🎉 Payment successful! Application submitted for ${selected.title}`)
+              setApplyOpen(false)
+              loadApplied()
+            } catch (error) {
+              console.error('Error submitting application after payment:', error)
+              toast.error('Payment successful but application submission failed. Please contact support.')
+            }
           }
-        } as any
-        const razorpay = new (window as any).Razorpay(options)
+        }
+        const razorpay = new (window as unknown as { Razorpay: new (options: object) => { open: () => void } }).Razorpay(options)
         razorpay.open()
       } else {
+        // Free internship application
         const res = await fetch('/api/internships/apply', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             internshipId: selected.id,
             domain: selectedDomain,
             level: selectedLevel,
             coverNote,
-            durationWeeks: selectedDuration || undefined
+            durationWeeks: selectedDuration || undefined,
+            // Payment tracking for free internships (all zero values)
+            amountPaid: 0,
+            originalAmount: 0,
+            discountApplied: 0,
+            paymentMethod: 'free'
           })
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Failed to apply')
-        toast.success('Application submitted')
+        toast.success(`🎉 Application submitted for ${selected.title}!`)
         setApplyOpen(false)
         loadApplied()
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to apply')
     }
-  }, [selected, selectedDomain, selectedLevel, coverNote, user?.id, selectedDuration, loadApplied])
+  }, [selected, selectedDomain, selectedLevel, coverNote, user?.id, selectedDuration, loadApplied, profile?.is_premium, profile?.premium_expires_at])
 
   return (
     <div className="min-h-screen bg-background">
@@ -249,7 +280,7 @@ export default function InternshipLandingPage() {
             <div className="flex flex-wrap items-center gap-3 mb-8">
               <div className="flex items-center gap-2">
                 <Label htmlFor="domain">Domain</Label>
-                <select id="domain" className="border rounded-md px-3 py-2 bg-background" value={domainFilter} onChange={(e) => setDomainFilter(e.target.value as any)}>
+                <select id="domain" className="border rounded-md px-3 py-2 bg-background" value={domainFilter} onChange={(e) => setDomainFilter(e.target.value as Domain | 'All')}>
                   {domains.map((d) => (
                     <option key={d} value={d}>{d}</option>
                   ))}
@@ -257,7 +288,7 @@ export default function InternshipLandingPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Label htmlFor="level">Level</Label>
-                <select id="level" className="border rounded-md px-3 py-2 bg-background" value={levelFilter} onChange={(e) => setLevelFilter(e.target.value as any)}>
+                <select id="level" className="border rounded-md px-3 py-2 bg-background" value={levelFilter} onChange={(e) => setLevelFilter(e.target.value as Level | 'All')}>
                   {levels.map((l) => (
                     <option key={l} value={l}>{l}</option>
                   ))}
@@ -278,9 +309,32 @@ export default function InternshipLandingPage() {
                     <p className="text-sm text-muted-foreground">{i.description}</p>
                     {i.type === 'Paid' ? (
                       <div className="text-sm">
-                        <span className="font-semibold">Price:</span> ₹699 (4 weeks) / ₹999 (6 weeks)
+                        <span className="font-semibold">Price:</span> 
+                        {(() => {
+                          const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                            new Date(profile.premium_expires_at) > new Date()
+                          
+                          if (isPremium) {
+                            return (
+                              <div className="space-y-1">
+                                <div className="text-green-600 font-medium">
+                                  ₹350 (4 weeks) / ₹500 (6 weeks) - Premium 50% off! 🎉
+                                </div>
+                                <div className="text-xs text-muted-foreground line-through">
+                                  Regular: ₹699 (4 weeks) / ₹999 (6 weeks)
+                                </div>
+                              </div>
+                            )
+                          } else {
+                            return ' ₹699 (4 weeks) / ₹999 (6 weeks)'
+                          }
+                        })()}
                       </div>
-                    ) : null}
+                    ) : (
+                      <div className="text-sm">
+                        <span className="font-semibold">Duration:</span> Choose 4 weeks or 6 weeks
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <div className="text-xs font-medium">What you get</div>
                       <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-1">
@@ -304,10 +358,14 @@ export default function InternshipLandingPage() {
                         <Button className="w-full" disabled>Applied</Button>
                       ) : i.type === 'Paid' ? (
                         <Button onClick={() => openApply(i)} className="w-full">
-                          Apply • Pay ₹699/₹999
+                          {(() => {
+                            const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                              new Date(profile.premium_expires_at) > new Date()
+                            return isPremium ? 'Apply • Pay ₹350/₹500 (Premium)' : 'Apply • Pay ₹699/₹999'
+                          })()}
                         </Button>
                       ) : (
-                        <Button onClick={() => openApply(i)} className="w-full">Apply</Button>
+                        <Button onClick={() => openApply(i)} className="w-full">Apply • Select Duration</Button>
                       )}
                     </div>
                   </CardContent>
@@ -326,12 +384,14 @@ export default function InternshipLandingPage() {
             <DialogTitle>{selected ? `Apply: ${selected.title}` : 'Apply'}</DialogTitle>
             <DialogDescription asChild>
               <div>
-                Select domain and level. We will use your profile details for one-click apply.
+                Select domain, level, and duration. We will use your profile details for one-click apply.
                 {selected && (
                   <div className="mt-3 space-y-1">
                     {selected.type === 'Paid' ? (
                       <div className="text-sm"><span className="font-medium">Price:</span> ₹699 (4 weeks) / ₹999 (6 weeks)</div>
-                    ) : null}
+                    ) : (
+                      <div className="text-sm"><span className="font-medium">Duration:</span> Choose 4 weeks or 6 weeks</div>
+                    )}
                     <div className="text-sm font-medium">What you get</div>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
                       {selected.benefits.map((b) => (
@@ -364,16 +424,45 @@ export default function InternshipLandingPage() {
                   ))}
                 </select>
               </div>
-              {selected?.type === 'Paid' && (
-                <div>
-                  <Label>Duration</Label>
-                  <select className="mt-1 w-full border rounded-md px-3 py-2 bg-background" value={selectedDuration as any} onChange={(e) => setSelectedDuration((e.target.value ? Number(e.target.value) : '') as any)}>
-                    <option value="">Select duration</option>
-                    <option value="4">4 weeks (₹699)</option>
-                    <option value="6">6 weeks (₹999)</option>
-                  </select>
-                </div>
-              )}
+              <div>
+                <Label>Duration</Label>
+                <select className="mt-1 w-full border rounded-md px-3 py-2 bg-background" value={selectedDuration || ''} onChange={(e) => setSelectedDuration(e.target.value ? Number(e.target.value) : '')}>
+                  <option value="">Select duration</option>
+                  {selected?.type === 'Paid' ? (
+                    // Paid internships with pricing
+                    (() => {
+                      const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                        new Date(profile.premium_expires_at) > new Date()
+                      
+                      const price4weeks = isPremium ? 350 : 699 // 50% discount
+                      const price6weeks = isPremium ? 500 : 999 // 50% discount (rounded)
+                      
+                      return (
+                        <>
+                          <option value="4">
+                            4 weeks (₹{price4weeks}{isPremium ? ' - Premium 50% off!' : ''})
+                          </option>
+                          <option value="6">
+                            6 weeks (₹{price6weeks}{isPremium ? ' - Premium 50% off!' : ''})
+                          </option>
+                        </>
+                      )
+                    })()
+                  ) : (
+                    // Free internships without pricing
+                    <>
+                      <option value="4">4 weeks</option>
+                      <option value="6">6 weeks</option>
+                    </>
+                  )}
+                </select>
+                {selected?.type === 'Paid' && profile?.is_premium && profile?.premium_expires_at && 
+                  new Date(profile.premium_expires_at) > new Date() && (
+                  <p className="text-sm text-green-600 mt-1 font-medium">
+                    🎉 Premium Member Discount: 50% off applied!
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>

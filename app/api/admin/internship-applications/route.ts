@@ -37,21 +37,26 @@ export async function GET() {
 // Update application: expects { id, status?, remarks? }
 export async function PATCH(request: Request) {
   try {
-    const body = await request.json() as { id?: string; status?: string; remarks?: string }
+    const body = await request.json() as { 
+      id?: string
+      status?: string
+      remarks?: string
+      repo_url?: string
+      duration_weeks?: number
+    }
     if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
     const update: Record<string, unknown> = {}
     if (body.status) update.status = body.status
     if (body.remarks !== undefined) update.remarks = body.remarks
     // Optional fields for assignment and scheduling
-    const parsed = body as any
-    if (typeof parsed.repo_url === 'string') update.repo_url = parsed.repo_url
-    if (parsed.duration_weeks === 4 || parsed.duration_weeks === 6) update.duration_weeks = parsed.duration_weeks
+    if (typeof body.repo_url === 'string') update.repo_url = body.repo_url
+    if (body.duration_weeks === 4 || body.duration_weeks === 6) update.duration_weeks = body.duration_weeks
     // If status becomes accepted and duration is set, set start/end if missing
-    if (parsed.status === 'accepted') {
+    if (body.status === 'accepted') {
       const now = new Date()
       const startISO = now.toISOString()
-      const weeks = parsed.duration_weeks === 6 ? 6 : parsed.duration_weeks === 4 ? 4 : undefined
+      const weeks = body.duration_weeks === 6 ? 6 : body.duration_weeks === 4 ? 4 : undefined
       if (weeks) {
         const end = new Date(now)
         end.setDate(end.getDate() + weeks * 7)

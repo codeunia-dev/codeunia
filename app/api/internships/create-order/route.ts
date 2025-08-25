@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
-import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST(request: Request) {
   try {
@@ -15,21 +14,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Payment config missing' }, { status: 500 })
     }
 
-    const cookieStore = await cookies()
-    const accessToken = cookieStore.get('sb-access-token')?.value
-    if (!accessToken) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
-    const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
-      global: { headers: { Authorization: `Bearer ${accessToken}` } }
-    })
-    const { data: userData } = await anon.auth.getUser()
-    const userId = userData?.user?.id
-    if (!userId) return NextResponse.json({ error: 'Auth failed' }, { status: 401 })
+    // Get authenticated user using server-side Supabase client
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+      console.error('Authentication error:', authError)
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
 
     const razorpay = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET })
-    const order = await razorpay.orders.create({ amount, currency, receipt: `intern_${Date.now()}`, notes: { internshipId, userId } })
+    const order = await razorpay.orders.create({ 
+      amount, 
+      currency, 
+      receipt: `intern_${Date.now()}`, 
+      notes: { internshipId, userId: user.id } 
+    })
     return NextResponse.json({ orderId: order.id, key: process.env.RAZORPAY_KEY_ID })
   } catch (e) {
+    console.error('Server error:', e)
     const msg = e instanceof Error ? e.message : 'Server error'
     return NextResponse.json({ error: msg }, { status: 500 })
   }

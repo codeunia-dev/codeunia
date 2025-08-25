@@ -7,6 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 export const dynamic = "force-dynamic";
 
+type InternshipApplication = {
+  status: string
+  start_date?: string
+  end_date?: string
+  repo_url?: string
+  duration_weeks?: number
+}
+
 type InternRow = {
   email: string;
   passed: boolean | null;
@@ -173,24 +181,24 @@ export default async function InternshipsPage() {
               <CardTitle>Current Internship Assignment</CardTitle>
             </CardHeader>
             <CardContent>
-              {(applications as Array<{ status: string; start_date?: string; end_date?: string; repo_url?: string; duration_weeks?: number }>).filter((a) => a.status === 'accepted').map((a, idx) => {
-                const start = (a as any).start_date ? new Date((a as any).start_date) : null
-                const end = (a as any).end_date ? new Date((a as any).end_date) : null
+              {(applications as InternshipApplication[]).filter((a) => a.status === 'accepted').map((a, idx) => {
+                const start = a.start_date ? new Date(a.start_date) : null
+                const end = a.end_date ? new Date(a.end_date) : null
                 const today = new Date()
                 const daysLeft = start && end ? Math.max(0, Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24))) : null
                 return (
                   <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-lg p-4 mb-4">
                     <div>
                       <div className="text-sm text-muted-foreground">Repository</div>
-                      {(a as any).repo_url ? (
-                        <a href={(a as any).repo_url as string} target="_blank" className="text-primary underline break-all">{(a as any).repo_url}</a>
+                      {a.repo_url ? (
+                        <a href={a.repo_url} target="_blank" className="text-primary underline break-all">{a.repo_url}</a>
                       ) : (
                         <div className="text-sm">—</div>
                       )}
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Duration</div>
-                      <div className="text-sm">{(a as any).duration_weeks ? `${(a as any).duration_weeks} weeks` : '—'}</div>
+                      <div className="text-sm">{a.duration_weeks ? `${a.duration_weeks} weeks` : '—'}</div>
                     </div>
                     <div>
                       <div className="text-sm text-muted-foreground">Start</div>
