@@ -95,7 +95,7 @@ export default function Home() {
       <DialogTitle className="text-center text-2xl font-bold text-blue-600">
         🎂 Happy Birthday to Our Founder! 🎉
       </DialogTitle>
-      <DialogDescription>
+      <DialogDescription asChild>
         <div className="flex flex-col items-center gap-4">
           <img 
             src="/images/birthday.jpeg" 
