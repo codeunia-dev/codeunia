@@ -66,8 +66,36 @@ export default function AdminInternshipApplicationsPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Update failed')
-      toast.success('Updated')
-      await load()
+      
+      // Update the local state immediately with the new data
+      setRows((prevRows) => 
+        prevRows.map((row) => 
+          row.id === id 
+            ? { 
+                ...row, 
+                status: form.status, 
+                remarks: form.remarks || null,
+                repo_url: form.repo_url || null,
+                duration_weeks: form.duration_weeks || null,
+                start_date: data.application?.start_date || row.start_date,
+                end_date: data.application?.end_date || row.end_date
+              }
+            : row
+        )
+      )
+      
+      // Update editing state to reflect the new values
+      setEditing((s) => ({
+        ...s,
+        [id]: {
+          status: form.status,
+          remarks: form.remarks || '',
+          repo_url: form.repo_url || '',
+          duration_weeks: form.duration_weeks
+        }
+      }))
+      
+      toast.success(`Application ${form.status === 'accepted' ? 'accepted' : form.status === 'rejected' ? 'rejected' : 'updated'} successfully`)
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Update failed')
     } finally {
@@ -114,17 +142,24 @@ export default function AdminInternshipApplicationsPage() {
                     <TableCell className="text-sm">{r.level}</TableCell>
                     <TableCell className="text-sm w-[160px]">
                       {progress[r.id] === 'view' ? (
-                        <div className="capitalize">{editing[r.id]?.status || r.status}</div>
+                        <div className={`capitalize px-2 py-1 rounded text-xs font-medium ${
+                          (editing[r.id]?.status || r.status) === 'accepted' ? 'bg-green-100 text-green-800' :
+                          (editing[r.id]?.status || r.status) === 'rejected' ? 'bg-red-100 text-red-800' :
+                          (editing[r.id]?.status || r.status) === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {editing[r.id]?.status || r.status}
+                        </div>
                       ) : (
                         <select
                           className="border rounded-md px-2 py-1 bg-background w-full"
                           value={editing[r.id]?.status || r.status}
                           onChange={(e) => setEditing((s) => ({ ...s, [r.id]: { ...(s[r.id] || { status: r.status, remarks: r.remarks || '' }), status: e.target.value } }))}
                         >
-                          <option value="submitted">submitted</option>
-                          <option value="reviewed">reviewed</option>
-                          <option value="accepted">accepted</option>
-                          <option value="rejected">rejected</option>
+                          <option value="submitted">Submitted</option>
+                          <option value="reviewed">Reviewed</option>
+                          <option value="accepted">Accepted</option>
+                          <option value="rejected">Rejected</option>
                         </select>
                       )}
                     </TableCell>
