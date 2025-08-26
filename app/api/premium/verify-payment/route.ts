@@ -3,9 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import crypto from 'crypto';
 
 const premiumPlans = {
-  monthly: { duration: 30, pointsMultiplier: 2, price: 49 },
-  biannual: { duration: 180, pointsMultiplier: 3, price: 199 },
-  yearly: { duration: 365, pointsMultiplier: 3, price: 349 },
+  monthly: { duration: 30, pointsMultiplier: 2, price: 499 },
+  biannual: { duration: 180, pointsMultiplier: 3, price: 2499 },
+  yearly: { duration: 365, pointsMultiplier: 4, price: 4499 },
 };
 
 export async function POST(request: NextRequest) {
@@ -16,6 +16,14 @@ export async function POST(request: NextRequest) {
     if (!orderId || !paymentId || !signature || !planId || !userId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Prevent processing free plan
+    if (planId === 'free') {
+      return NextResponse.json(
+        { error: 'Free plan cannot be processed for payment' },
         { status: 400 }
       );
     }
@@ -56,13 +64,18 @@ export async function POST(request: NextRequest) {
       const payment = await razorpay.payments.fetch(paymentId);
       
       if (payment.status !== 'captured') {
+        console.error('Payment status not captured:', payment.status, 'for payment:', paymentId);
         return NextResponse.json(
           { error: 'Payment not completed. Status: ' + payment.status },
           { status: 400 }
         );
       }
 
-      if (payment.amount !== (premiumPlans[planId as keyof typeof premiumPlans]?.price || 0) * 100) {
+      const expectedAmount = (premiumPlans[planId as keyof typeof premiumPlans]?.price || 0) * 100;
+      console.log('Payment verification - Expected amount:', expectedAmount, 'Actual amount:', payment.amount, 'Plan:', planId);
+      
+      if (payment.amount !== expectedAmount) {
+        console.error('Payment amount mismatch - Expected:', expectedAmount, 'Actual:', payment.amount, 'Plan:', planId);
         return NextResponse.json(
           { error: 'Payment amount mismatch' },
           { status: 400 }
@@ -134,7 +147,8 @@ export async function POST(request: NextRequest) {
           payment_id: paymentId,
           order_id: orderId,
           plan_id: planId,
-          amount: plan.price,
+          amount: plan.price * 100, // Log amount in paisa for consistency
+          amount_inr: plan.price, // Also log INR amount for clarity
           currency: 'INR'
         })
       });

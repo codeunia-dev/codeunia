@@ -32,65 +32,63 @@ const premiumPlans: PremiumPlan[] = [
     pointsMultiplier: 1,
     features: [
       'Basic leaderboard access',
-      'Standard event participation',
+      'Standard events',
       'Community access',
-      'Basic support',
-      'Public resources'
+      'Basic support'
     ]
   },
   {
     id: 'monthly',
     name: 'Monthly',
-    price: 69,
+    price: 499,
     duration: '30 days',
     pointsMultiplier: 2,
     features: [
-      'Golden username & Codeunia ID',
-      'Double leaderboard points',
-      'Free access to paid events',
+      'Golden username',
+      '2x leaderboard points',
+      'Free paid events',
       'Priority support',
       'Exclusive resources',
-      'Premium badge on profile'
+      'Premium badge'
     ]
   },
   {
     id: 'biannual',
-    name: 'Biannual',
-    price: 299,
-    originalPrice: 500,
+    name: 'Bi-Annual',
+    price: 2499,
+    originalPrice: 2994, // 6 months × ₹499
     duration: '6 months',
     pointsMultiplier: 3,
-    popular: true,
-    savings: 'Save 32%',
+    savings: 'Save ₹495',
     features: [
-      'Golden username & Codeunia ID',
-      'Triple leaderboard points',
-      'Free access to paid events',
+      'Golden username',
+      '3x leaderboard points',
+      'Free paid events',
       'Priority support',
-      'Exclusive resources',
-      'Early access to new features',
-      'Premium badge on profile',
-      'Save 32% vs monthly'
+      'Early feature access',
+      'Premium badge',
+      '~₹416/month',
+      'Better value'
     ]
   },
   {
     id: 'yearly',
-    name: 'Yearly',
-    price: 599,
-    originalPrice: 1000,
+    name: 'Yearly - Most Popular',
+    price: 4499,
+    originalPrice: 5988, // 12 months × ₹499
     duration: '12 months',
-    pointsMultiplier: 3,
-    savings: 'Save 41%',
+    pointsMultiplier: 4,
+    popular: true,
+    savings: 'Save ₹1,489',
     features: [
-      'Golden username & Codeunia ID',
-      'Triple leaderboard points',
-      'Free access to paid events',
-      'Priority support',
-      'Exclusive resources',
-      'Early access to new features',
-      'Personal mentorship session',
-      'Premium badge on profile',
-      'Save 41% vs monthly'
+      'Golden username',
+      '4x leaderboard points',
+      'Free paid events',
+      'Personal mentorship',
+      'Early feature access',
+      'Elite member status',
+      '~₹375/month',
+      'Best value'
     ]
   }
 ];
@@ -101,6 +99,7 @@ export default function PremiumPage() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [processingPlans, setProcessingPlans] = useState<Set<string>>(new Set());
   const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const supabase = createClient();
 
   const checkPremiumStatus = useCallback(async () => {
@@ -124,9 +123,15 @@ export default function PremiumPage() {
   }, [supabase, user?.id]);
 
   useEffect(() => {
+    // Clear any existing toasts when component mounts
+    toast.dismiss();
+  }, []);
+
+  useEffect(() => {
     if (user) {
       checkPremiumStatus();
     }
+    setIsInitialized(true);
   }, [user, checkPremiumStatus]);
 
   const handlePayment = async (planId: string) => {
@@ -145,6 +150,9 @@ export default function PremiumPage() {
     setProcessingPlans(prev => new Set(prev).add(planId));
 
     try {
+      // Clear any existing error toasts
+      toast.dismiss();
+      
       // Create order
       const orderResponse = await fetch('/api/premium/create-order', {
         method: 'POST',
@@ -231,6 +239,9 @@ export default function PremiumPage() {
                   // Don't show error to user as payment was successful
                 }
               } else {
+                console.error('Payment verification failed:', verifyData);
+                console.error('Verification response status:', verifyResponse.status);
+                console.error('Plan details:', { planId: plan.id, amount: plan.price * 100 });
                 throw new Error(verifyData.error || 'Payment verification failed');
               }
             } catch (error) {
@@ -287,7 +298,7 @@ export default function PremiumPage() {
     });
   };
 
-  if (loading) {
+  if (loading || !isInitialized) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -324,7 +335,7 @@ export default function PremiumPage() {
               <div className="flex items-center justify-center mb-8">
                 <div className="relative mr-4">
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-lg opacity-75 animate-pulse"></div>
-                  <Crown className="h-16 w-16 text-yellow-400 relative z-10" />
+                  <Crown className="w-16 h-16 text-yellow-400 relative z-10" />
                 </div>
                 <h1 className="text-6xl md:text-7xl font-extrabold">
                   <span className="bg-gradient-to-r from-yellow-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
@@ -341,7 +352,7 @@ export default function PremiumPage() {
               
               {isPremium && premiumExpiry && (
                 <div className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-semibold mb-8 shadow-2xl border border-green-300/20">
-                  <CheckCircle className="h-6 w-6 mr-3" />
+                  <CheckCircle className="w-6 h-6 mr-3" />
                   <span className="text-lg">Premium Active until {formatExpiryDate(premiumExpiry)}</span>
                 </div>
               )}
@@ -365,6 +376,43 @@ export default function PremiumPage() {
           </div>
         </section>
 
+        {/* Elite Membership Promotion Banner */}
+        <section className="py-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/20"></div>
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-center mb-4">
+                <Crown className="w-8 h-8 text-white mr-3 animate-pulse" />
+                <h2 className="text-3xl md:text-4xl font-bold text-white">
+                  Elite Membership - Not For Everyone
+                </h2>
+                <Crown className="w-8 h-8 text-white ml-3 animate-pulse" />
+              </div>
+              <p className="text-xl text-white/90 mb-6">
+                Join the exclusive circle of leaders, builders, and future innovators
+              </p>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-white">
+                <div className="flex items-center">
+                  <Shield className="w-6 h-6 mr-2" />
+                  <span className="font-semibold">Elite Member Status</span>
+                </div>
+                <div className="flex items-center">
+                  <Star className="w-6 h-6 mr-2" />
+                  <span className="font-semibold">Invitation-Only Access</span>
+                </div>
+                <div className="flex items-center">
+                  <Sparkles className="w-6 h-6 mr-2" />
+                  <span className="font-semibold">Prestige & Excellence</span>
+                </div>
+              </div>
+              <div className="mt-6 inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 text-white font-semibold">
+                <ArrowRight className="w-5 h-5 mr-2" />
+                Premium Members Shape the Future
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Pricing Section */}
         <section className="py-20 relative overflow-hidden bg-muted/30">
           <div
@@ -381,117 +429,148 @@ export default function PremiumPage() {
               <h2 className="text-4xl md:text-6xl font-bold mb-6">
                 Choose Your <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Plan</span>
               </h2>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
-                Start your premium journey today and unlock your full potential
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+                Exclusive membership for leaders, builders, and future innovators
               </p>
+              
+              {/* Elite Member Count */}
+              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 dark:from-purple-500/30 dark:to-indigo-500/30 rounded-full border border-purple-200 dark:border-purple-700/50 backdrop-blur-sm mb-8">
+                <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
+                <span className="text-purple-700 dark:text-purple-300 font-semibold text-sm">Exclusive Elite Membership - By Invitation Only</span>
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-8xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pt-8 pb-4">
               {premiumPlans.map((plan) => {
                 const isProcessing = processingPlans.has(plan.id);
                 const isFree = plan.id === 'free';
                 
                 return (
-                  <Card 
-                    key={plan.id} 
-                    className={`relative transition-all duration-500 hover:shadow-2xl ${
-                      isFree 
-                        ? 'bg-background/50 border-border hover:bg-background/70' 
-                        : 'bg-background/80 border-border backdrop-blur-sm'
-                    } ${
-                      plan.popular 
-                        ? 'ring-2 ring-yellow-400 shadow-2xl scale-105 bg-gradient-to-b from-background/90 to-background/80' 
-                        : 'hover:scale-105 hover:bg-background/90'
-                    } ${selectedPlan === plan.id ? 'ring-2 ring-primary' : ''}`}
-                  >
+                  <div key={plan.id} className="flex">
+                    <Card 
+                      className={`w-full relative transition-all duration-300 group flex flex-col ${
+                        isFree 
+                          ? 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-lg' 
+                          : 'bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-xl'
+                      } ${
+                        plan.popular 
+                          ? 'ring-2 ring-yellow-400 shadow-2xl transform scale-[1.02] bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-900/20 dark:via-orange-900/20 dark:to-red-900/20 border-yellow-200 dark:border-yellow-700/50' 
+                          : 'hover:scale-[1.02] hover:shadow-xl'
+                      } ${selectedPlan === plan.id ? 'ring-2 ring-primary shadow-lg' : ''} rounded-2xl overflow-hidden`}
+                    >
+                    {/* Background decoration for popular plan */}
                     {plan.popular && (
-                      <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-6 py-2 text-sm font-bold shadow-xl border-0 rounded-full">
-                          <Star className="h-4 w-4 mr-2" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-orange-400/5 to-red-400/5 dark:from-yellow-400/10 dark:via-orange-400/10 dark:to-red-400/10 rounded-2xl"></div>
+                    )}
+
+                    {plan.popular && (
+                      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
+                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-3 py-1 text-xs font-bold shadow-xl border-0 rounded-full animate-pulse whitespace-nowrap">
+                          <Star className="w-3 h-3 mr-1.5" />
                           MOST POPULAR
                         </Badge>
                       </div>
                     )}
 
                     {plan.savings && (
-                      <div className="absolute -top-3 -right-3">
-                        <Badge className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 text-sm font-bold shadow-lg rounded-full border-2 border-background/20">
-                          {plan.savings}
-                        </Badge>
+                      <div className="absolute top-3 right-3 z-20">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-md opacity-60 animate-pulse"></div>
+                          <Badge className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2 py-1 text-xs font-bold shadow-lg rounded-full border border-white/50 dark:border-slate-700/50">
+                            {plan.savings}
+                          </Badge>
+                        </div>
                       </div>
                     )}
 
-                    <CardHeader className="text-center pb-6 pt-8">
-                      <CardTitle className="text-2xl font-bold mb-4">{plan.name}</CardTitle>
-                      <div className="flex items-baseline justify-center gap-2 mb-2">
-                        {isFree ? (
-                          <span className="text-4xl md:text-5xl font-bold">Free</span>
-                        ) : (
-                          <>
-                            <span className="text-4xl md:text-5xl font-bold">₹{plan.price}</span>
-                            {plan.originalPrice && (
-                              <span className="text-lg text-muted-foreground line-through ml-2">
-                                ₹{plan.originalPrice}
+                    <CardHeader className={`text-center pb-4 px-6 relative z-10 ${plan.popular ? 'pt-14' : plan.savings ? 'pt-12' : 'pt-8'}`}>
+                      <CardTitle className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-100">
+                        {plan.name}
+                      </CardTitle>
+                      
+                      <div className="mb-4">
+                        <div className="flex items-baseline justify-center gap-1 mb-2">
+                          {isFree ? (
+                            <span className="text-3xl font-bold text-slate-700 dark:text-slate-200">Free</span>
+                          ) : (
+                            <>
+                              <span className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+                                ₹{plan.price}
                               </span>
-                            )}
-                          </>
-                        )}
+                              {plan.originalPrice && (
+                                <span className="text-sm text-slate-500 line-through ml-2">
+                                  ₹{plan.originalPrice}
+                                </span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">{plan.duration}</p>
                       </div>
-                      <p className="text-muted-foreground text-base">{plan.duration}</p>
-                      <div className="mt-4 inline-flex items-center px-3 py-2 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full border border-primary/30">
-                        <Zap className="h-3 w-3 text-primary mr-2" />
-                        <span className="text-primary font-semibold text-sm">{plan.pointsMultiplier}x Points</span>
+
+                      <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 dark:from-indigo-500/30 dark:to-purple-500/30 rounded-full border border-indigo-200 dark:border-indigo-700/50 backdrop-blur-sm">
+                        <Zap className="w-3 h-3 text-indigo-600 dark:text-indigo-400 mr-1" />
+                        <span className="text-indigo-700 dark:text-indigo-300 font-semibold text-xs">{plan.pointsMultiplier}x Points</span>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="space-y-6 px-4 pb-6">
-                      <div className="space-y-3">
-                        {plan.features.map((feature, index) => (
-                          <div key={index} className="flex items-start gap-3">
-                            <div className="flex-shrink-0 w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mt-0.5">
-                              <Check className="h-2.5 w-2.5 text-white font-bold" />
+                    <CardContent className="px-4 pb-6 relative z-10 flex flex-col flex-grow">
+                      <div className="space-y-2 mb-4 flex-grow">
+                        {plan.features.slice(0, 6).map((feature, index) => (
+                          <div key={index} className="flex items-start gap-2 group/feature">
+                            <div className="flex-shrink-0 w-3 h-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mt-0.5 shadow-sm">
+                              <Check className="w-2 h-2 text-white font-bold" />
                             </div>
-                            <span className="text-foreground text-xs leading-relaxed">{feature}</span>
+                            <span className="text-slate-700 dark:text-slate-300 text-xs leading-relaxed font-medium">
+                              {feature}
+                            </span>
                           </div>
                         ))}
+                        {plan.features.length > 6 && (
+                          <div className="flex items-center justify-center mt-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-full">
+                            <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                              +{plan.features.length - 6} more features
+                            </span>
+                          </div>
+                        )}
                       </div>
 
-                      <div className="pt-4">
+                      <div className="mt-auto">
                         {isFree ? (
                           <Button 
-                            className="w-full bg-muted text-muted-foreground font-bold py-3 text-sm rounded-xl border-0 cursor-default" 
+                            className="w-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold py-2.5 text-sm rounded-xl border-0 cursor-default" 
                             disabled
                           >
                             Current Plan
                           </Button>
                         ) : isPremium ? (
                           <Button 
-                            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-3 text-sm rounded-xl shadow-lg border-0" 
+                            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-2.5 text-sm rounded-xl shadow-lg border-0" 
                             disabled
                           >
-                            <CheckCircle className="h-4 w-4 mr-2" />
+                            <CheckCircle className="w-3 h-3 mr-2" />
                             Already Premium
                           </Button>
                         ) : (
                           <Button 
-                            className={`w-full font-bold py-3 text-sm rounded-xl shadow-xl border-0 transition-all duration-300 ${
+                            className={`w-full font-semibold py-2.5 text-sm rounded-xl shadow-lg border-0 transition-all duration-300 ${
                               plan.popular 
-                                ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-white' 
-                                : 'bg-gradient-to-r from-primary via-purple-600 to-indigo-600 hover:from-primary/90 hover:via-purple-700 hover:to-indigo-700 text-white'
-                            } disabled:opacity-50 hover:scale-105 hover:shadow-2xl`}
+                                ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-white hover:shadow-xl' 
+                                : 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-600 hover:from-indigo-600 hover:via-purple-700 hover:to-blue-700 text-white hover:shadow-xl'
+                            } disabled:opacity-50`}
                             onClick={() => handlePayment(plan.id)}
                             disabled={isProcessing || processingPlans.size > 0}
                           >
                             {isProcessing ? (
                               <>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
                                 Processing...
                               </>
                             ) : (
                               <>
-                                <Sparkles className="h-4 w-4 mr-2" />
+                                <Sparkles className="w-3 h-3 mr-2" />
                                 Get {plan.name}
-                                <ArrowRight className="h-4 w-4 ml-2" />
+                                <ArrowRight className="w-3 h-3 ml-2" />
                               </>
                             )}
                           </Button>
@@ -499,6 +578,7 @@ export default function PremiumPage() {
                       </div>
                     </CardContent>
                   </Card>
+                  </div>
                 );
               })}
             </div>
@@ -508,15 +588,15 @@ export default function PremiumPage() {
               <p className="text-muted-foreground mb-6">Trusted by thousands of developers</p>
               <div className="flex items-center justify-center space-x-8 opacity-60">
                 <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-green-500" />
+                  <Shield className="w-5 h-5 text-green-500" />
                   <span className="text-muted-foreground text-sm">Secure Payments</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-blue-500" />
+                  <CheckCircle className="w-5 h-5 text-blue-500" />
                   <span className="text-muted-foreground text-sm">Instant Activation</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Star className="h-5 w-5 text-yellow-500" />
+                  <Star className="w-5 h-5 text-yellow-500" />
                   <span className="text-muted-foreground text-sm">Cancel Anytime</span>
                 </div>
               </div>
