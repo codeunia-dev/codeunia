@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { apiFetch } from "@/lib/api-fetch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,7 +74,7 @@ export default function AdminVolunteerPage() {
   const fetchVolunteers = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin-volunteers");
+      const res = await apiFetch("/api/admin-volunteers");
       const json = await res.json();
       if (json.volunteers) setApplications(json.volunteers);
     } catch {
@@ -90,7 +91,7 @@ export default function AdminVolunteerPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     try {
-      const res = await fetch("/api/admin-volunteers", {
+      const res = await apiFetch("/api/admin-volunteers", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -435,7 +436,7 @@ export default function AdminVolunteerPage() {
                   className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900"
                   disabled={selectedApp.status === 'approved'}
                   onClick={async () => {
-                    const res = await fetch('/api/admin-volunteers', {
+                    const res = await apiFetch('/api/admin-volunteers', {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ id: selectedApp.id, status: 'approved' }),
@@ -457,7 +458,7 @@ export default function AdminVolunteerPage() {
                   className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900"
                   disabled={selectedApp.status === 'rejected'}
                   onClick={async () => {
-                    const res = await fetch('/api/admin-volunteers', {
+                    const res = await apiFetch('/api/admin-volunteers', {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ id: selectedApp.id, status: 'rejected' }),

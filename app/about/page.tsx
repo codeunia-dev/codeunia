@@ -62,7 +62,7 @@ export default function AboutPage() {
 
     const stats = [
         {
-            number: "600+",
+            number: "3000+",
             label: "Active Learners",
             icon: Users,
             color: "text-blue-500",

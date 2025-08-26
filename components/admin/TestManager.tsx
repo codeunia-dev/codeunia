@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import { apiFetch } from "@/lib/api-fetch";
 import type { 
   Test, 
   CreateTestForm, 
@@ -267,7 +268,7 @@ export function TestManager() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
-      const response = await fetch('/api/admin/tests', {
+      const response = await apiFetch('/api/admin/tests', {
         signal: controller.signal
       });
       
@@ -310,7 +311,7 @@ export function TestManager() {
       const url = isEditing ? `/api/admin/tests/${selectedTest.id}` : '/api/admin/tests';
       const method = isEditing ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -539,11 +540,18 @@ export function TestManager() {
         <div>
           <h1 className="text-3xl font-bold">Test Management</h1>
           <p className="text-muted-foreground">Create and manage MCQ-based tests with registration and certificates</p>
+          <p className="text-xs text-blue-600 mt-1">Debug: Currently showing {tests.length} test(s)</p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Test
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchTests} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+            Refresh Data
+          </Button>
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Test
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -1911,7 +1919,7 @@ function TestCertificates({ testId }: { testId: string }) {
         return;
       }
 
-      const response = await fetch('/api/certificates/send-email', {
+      const response = await apiFetch('/api/certificates/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

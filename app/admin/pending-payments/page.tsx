@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Phone, Mail, User, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface PendingPayment {
   id: string;
@@ -39,7 +40,7 @@ export default function PendingPaymentsPage() {
 
   const fetchPendingPayments = async () => {
     try {
-      const response = await fetch('/api/admin/pending-payments');
+      const response = await apiFetch('/api/admin/pending-payments');
       const data = await response.json();
 
       if (data.success) {
@@ -58,7 +59,7 @@ export default function PendingPaymentsPage() {
   const updatePaymentStatus = async (paymentId: string, action: string, notes?: string) => {
     try {
       setRefreshing(true);
-      const response = await fetch('/api/admin/pending-payments', {
+      const response = await apiFetch('/api/admin/pending-payments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

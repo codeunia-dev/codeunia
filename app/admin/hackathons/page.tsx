@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { Hackathon } from "@/lib/services/hackathons"
+import { apiFetch } from "@/lib/api-fetch"
 import {
   Search,
   Plus,
@@ -92,7 +93,7 @@ export default function AdminHackathons() {
     try {
       setLoading(true)
       // Use relative URL to work with any port
-      const response = await fetch('/api/admin/hackathons?limit=100', {
+      const response = await apiFetch('/api/admin/hackathons?limit=100', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +130,7 @@ export default function AdminHackathons() {
   const handleDelete = async (slug: string) => {
     if (confirm('Are you sure you want to delete this hackathon?')) {
       try {
-        const response = await fetch(`/api/admin/hackathons?slug=${slug}`, {
+        const response = await apiFetch(`/api/admin/hackathons?slug=${slug}`, {
           method: 'DELETE'
         })
         if (!response.ok) {
@@ -155,7 +156,7 @@ export default function AdminHackathons() {
         : {};
 
       if (editingHackathon) {
-        const response = await fetch('/api/admin/hackathons', {
+        const response = await apiFetch('/api/admin/hackathons', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -171,7 +172,7 @@ export default function AdminHackathons() {
         toast.success("Hackathon updated successfully")
         setEditingHackathon(null)
       } else {
-        const response = await fetch('/api/admin/hackathons', {
+        const response = await apiFetch('/api/admin/hackathons', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

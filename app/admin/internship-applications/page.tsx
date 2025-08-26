@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { Check, Pencil } from 'lucide-react'
+import { apiFetch } from '@/lib/api-fetch'
 
 type AppRow = {
   id: string
@@ -34,7 +35,7 @@ export default function AdminInternshipApplicationsPage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/internship-applications')
+      const res = await apiFetch('/api/admin/internship-applications')
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load applications')
       setRows(data.applications || [])
@@ -59,7 +60,7 @@ export default function AdminInternshipApplicationsPage() {
     const form = editing[id]
     try {
       setProgress((s) => ({ ...s, [id]: 'saving' }))
-      const res = await fetch('/api/admin/internship-applications', {
+      const res = await apiFetch('/api/admin/internship-applications', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: form.status, remarks: form.remarks, repo_url: form.repo_url, duration_weeks: form.duration_weeks })

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { apiFetch } from '@/lib/api-fetch';
 
 import { toast } from 'sonner';
 import { 
@@ -165,7 +166,7 @@ export function CertificateGenerator({
       const qrCodeDataUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(verificationUrl)}`;
       
       // Upload QR code via API route
-      const response = await fetch('/api/certificates/upload-qr', {
+      const response = await apiFetch('/api/certificates/upload-qr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -217,7 +218,7 @@ export function CertificateGenerator({
     };
 
     // Call API to generate certificate
-    const response = await fetch('/api/certificates/generate', {
+    const response = await apiFetch('/api/certificates/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(certificateData)
@@ -323,7 +324,7 @@ export function CertificateGenerator({
       formData.append('name', uploadForm.name);
       formData.append('placeholders', JSON.stringify(uploadForm.placeholders));
 
-      const response = await fetch('/api/certificates/upload-template', {
+      const response = await apiFetch('/api/certificates/upload-template', {
         method: 'POST',
         body: formData
       });
@@ -358,7 +359,7 @@ export function CertificateGenerator({
     }
 
     try {
-      const response = await fetch('/api/certificates/send-email', {
+      const response = await apiFetch('/api/certificates/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

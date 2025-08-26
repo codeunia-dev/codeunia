@@ -505,7 +505,7 @@ export function HeroSection2() {
             {/* Desktop Stats (hidden on mobile) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 pt-6 sm:pt-8 animate-fade-in relative z-10 hidden lg:grid" style={{ animationDelay: '0.8s' }}>
               {[
-                { value: "600+", label: "Active Developers", icon: Users, gradient: "from-blue-500 to-purple-600" },
+                { value: "3000+", label: "Active Developers", icon: Users, gradient: "from-blue-500 to-purple-600" },
                 { value: "20+", label: "Projects Built", icon: Code, gradient: "from-green-500 to-blue-500" },
                 { value: "10+", label: "Events Hosted", icon: Sparkles, gradient: "from-purple-500 to-pink-500" },
                 { value: "95%", label: "Success Rate", icon: Globe, gradient: "from-orange-500 to-red-500" }
