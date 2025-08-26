@@ -5,6 +5,7 @@ import { Sparkles, Rocket, Shield, User } from 'lucide-react'
 import { ContributionGraph } from '@/components/ui/contribution-graph'
 import { useContributionGraph } from '@/hooks/useContributionGraph'
 import MembershipCard from '@/components/MembershipCard'
+import { ClientOnly } from '@/components/ClientOnly'
 
 interface DashboardContentProps {
   userId: string
@@ -37,20 +38,24 @@ export function DashboardContent({ userId, displayName }: DashboardContentProps)
       </div>
 
       {/* Membership Card Section */}
-      <div className="flex justify-center my-8">
-        <MembershipCard uid={userId} />
-      </div>
+      <ClientOnly fallback={<div className="flex justify-center my-8 h-48 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />}>
+        <div className="flex justify-center my-8">
+          <MembershipCard uid={userId} />
+        </div>
+      </ClientOnly>
 
       {/* Contribution Graph Section */}
-      <div className="mt-8">
-        <ContributionGraph
-          data={activityData}
-          loading={activityLoading}
-          onFilterChange={handleFilterChange}
-          onRefresh={refreshActivity}
-          className="w-full"
-        />
-      </div>
+      <ClientOnly fallback={<div className="mt-8 h-64 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />}>
+        <div className="mt-8">
+          <ContributionGraph
+            data={activityData}
+            loading={activityLoading}
+            onFilterChange={handleFilterChange}
+            onRefresh={refreshActivity}
+            className="w-full"
+          />
+        </div>
+      </ClientOnly>
 
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>

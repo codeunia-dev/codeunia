@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
 
 // Only load dev tools in development
 const ReactDevTools = () => null;
@@ -51,18 +53,21 @@ export default function RootLayout({
       <head>
       </head>
       <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem={true}
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster richColors position="top-center" />
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem={true}
+            disableTransitionOnChange
+          >
+            <GlobalErrorHandler />
+            {children}
+            <Toaster richColors position="top-center" />
 
-          <ReactDevTools />
-          <AuthDebug />
-        </ThemeProvider>
+            <ReactDevTools />
+            <AuthDebug />
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

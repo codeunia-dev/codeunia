@@ -48,6 +48,11 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   const [copiedId, setCopiedId] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Helper function to get current year safely
+  const getCurrentYear = () => {
+    return typeof window !== 'undefined' ? new Date().getFullYear() : 2025;
+  };
 
 
   // Get user's display name (use first/last name or fallback to username or email)
@@ -65,8 +70,13 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   const memberId = profile?.codeunia_id ? profile.codeunia_id : `CU-${uid.slice(-4)}`;
 
 
-  // Calculate membership duration
+  // Calculate membership duration with stable date handling
   const getMembershipDuration = (joinDate: string) => {
+    if (typeof window === 'undefined') {
+      // Return a stable value during SSR
+      return '0 days';
+    }
+    
     const join = new Date(joinDate);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - join.getTime());
@@ -316,7 +326,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
                   {userData?.membershipStatus === 'active' ? 'Active Member' : 'Inactive Member'}
                 </span>
                 <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-md border border-yellow-200">
-                  {new Date().getFullYear()}
+                  {getCurrentYear()}
                 </span>
               </div>
 
@@ -464,7 +474,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
                   {userData?.membershipStatus === 'active' ? 'Active Member' : 'Inactive Member'}
                 </span>
                 <span className="inline-block px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-md border border-yellow-200">
-                  {new Date().getFullYear()}
+                  {getCurrentYear()}
                 </span>
               </div>
 
