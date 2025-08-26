@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { apiFetch } from "@/lib/api-fetch";
 import {
   Dialog,
   DialogContent,
@@ -54,7 +55,7 @@ export default function AdminCollaborationPage() {
   const fetchCollaborations = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin-collaboration");
+      const res = await apiFetch("/api/admin-collaboration");
       const json = await res.json();
       if (json.collaborations) setApplications(json.collaborations);
     } catch {
@@ -70,7 +71,7 @@ export default function AdminCollaborationPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
     try {
-      const res = await fetch("/api/admin-collaboration", {
+      const res = await apiFetch("/api/admin-collaboration", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -379,7 +380,7 @@ export default function AdminCollaborationPage() {
                   className="border-green-600 text-green-700 hover:bg-green-50 dark:hover:bg-green-900"
                   disabled={selectedApp.status === 'approved'}
                   onClick={async () => {
-                    const res = await fetch('/api/admin-collaboration', {
+                    const res = await apiFetch('/api/admin-collaboration', {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ id: selectedApp.id, status: 'approved' }),
@@ -401,7 +402,7 @@ export default function AdminCollaborationPage() {
                   className="border-red-600 text-red-700 hover:bg-red-50 dark:hover:bg-red-900"
                   disabled={selectedApp.status === 'rejected'}
                   onClick={async () => {
-                    const res = await fetch('/api/admin-collaboration', {
+                    const res = await apiFetch('/api/admin-collaboration', {
                       method: 'PATCH',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({ id: selectedApp.id, status: 'rejected' }),

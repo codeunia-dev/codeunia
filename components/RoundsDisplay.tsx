@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { apiFetch } from '@/lib/api-fetch';
 import { 
   Calendar, 
   Clock, 
@@ -103,11 +104,11 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
       setLoading(true);
       
       // Fetch rounds
-      const roundsResponse = await fetch(`/api/admin/rounds?testId=${test.id}`);
+      const roundsResponse = await apiFetch(`/api/admin/rounds?testId=${test.id}`);
       const roundsData = await roundsResponse.json();
       
       // Fetch user registrations
-      const registrationsResponse = await fetch(`/api/rounds/register?userId=${userId}&testId=${test.id}`);
+      const registrationsResponse = await apiFetch(`/api/rounds/register?userId=${userId}&testId=${test.id}`);
       const registrationsData = await registrationsResponse.json();
       
       setRounds(roundsData.rounds || []);
@@ -144,7 +145,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
     try {
       setRegistering(round.id);
       
-      const response = await fetch('/api/rounds/register', {
+      const response = await apiFetch('/api/rounds/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +176,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
       setPaying(round.id);
       
       // Create payment order
-      const response = await fetch('/api/rounds/payment', {
+      const response = await apiFetch('/api/rounds/payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -208,7 +209,7 @@ export function RoundsDisplay({ test, userId }: RoundsDisplayProps) {
           handler: async (response: RazorpayResponse) => {
             try {
               // Verify payment
-              const verifyResponse = await fetch('/api/rounds/payment', {
+              const verifyResponse = await apiFetch('/api/rounds/payment', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

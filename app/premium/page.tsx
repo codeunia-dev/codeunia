@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Star, Sparkles, Zap, Shield, ArrowRight, CheckCircle } from 'lucide-react';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface PremiumPlan {
   id: string;
@@ -154,7 +155,7 @@ export default function PremiumPage() {
       toast.dismiss();
       
       // Create order
-      const orderResponse = await fetch('/api/premium/create-order', {
+      const orderResponse = await apiFetch('/api/premium/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +191,7 @@ export default function PremiumPage() {
           handler: async function (response: { razorpay_payment_id: string; razorpay_signature: string }) {
             try {
               // Verify payment
-              const verifyResponse = await fetch('/api/premium/verify-payment', {
+              const verifyResponse = await apiFetch('/api/premium/verify-payment', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -214,7 +215,7 @@ export default function PremiumPage() {
                 
                 // Send premium membership card email
                 try {
-                  const emailResponse = await fetch('/api/membership/send-card', {
+                  const emailResponse = await apiFetch('/api/membership/send-card', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',

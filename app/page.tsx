@@ -1,17 +1,9 @@
 "use client"
 
-import React, { useState } from "react";
+import React from "react";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import Image from 'next/image';
 import Header from "@/components/header";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 
 // Lazy load non-critical components
 const HeroSection2 = dynamic(() => import("@/components/home/HeroSection2").then(mod => ({ default: mod.HeroSection2 })), {
@@ -80,47 +72,8 @@ const Footer = dynamic(() => import("@/components/footer"), {
 });
 
 export default function Home() {
-  const [open, setOpen] = useState(true);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   return (
     <>
-      {/* 🎉 Happy Birthday Dialog 🎉 */}
-{/* 🎉 Happy Birthday Dialog 🎉 */}
-<Dialog open={open} onOpenChange={(val) => { if (!val) handleClose(); }}>
-  <DialogContent showCloseButton>
-    <DialogHeader>
-      <DialogTitle className="text-center text-2xl font-bold text-blue-600">
-        🎂 Happy Birthday to Our Founder! 🎉
-      </DialogTitle>
-      <DialogDescription asChild>
-        <div className="flex flex-col items-center gap-4">
-          <Image 
-            src="/images/birthday.jpeg" 
-            alt="Happy Birthday" 
-            width={300}
-            height={200}
-            className="rounded-lg w-full max-w-xs object-cover shadow-lg"
-          />
-          <div className="text-base text-center text-muted-foreground">
-            Today, we celebrate the vision, passion, and dedication of our amazing founder.  
-            <br/><br/>
-            <b className="text-blue-700">
-              Wishing you a wonderful year ahead filled with success, happiness, and endless possibilities. 💙
-            </b>
-          </div>
-          <div className="mt-4 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded shadow transition-colors duration-200">
-            🎉 Happy Birthday from the entire Codeunia family!
-          </div>
-        </div>
-      </DialogDescription>
-    </DialogHeader>
-  </DialogContent>
-</Dialog>
-
       <main className="flex min-h-screen flex-col items-center justify-between">
         <Header/>
         <div className="w-full max-w-[2000px]">

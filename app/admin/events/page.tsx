@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Search, Plus, Calendar, MapPin } from "lucide-react"
 import { toast } from "sonner"
+import { apiFetch } from "@/lib/api-fetch"
 
 interface Event {
   id: number
@@ -30,7 +31,7 @@ export default function AdminEvents() {
     try {
       setLoading(true)
       // Use relative URL to work with any port
-      const response = await fetch('/api/admin/events?limit=100', {
+      const response = await apiFetch('/api/admin/events?limit=100', {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',

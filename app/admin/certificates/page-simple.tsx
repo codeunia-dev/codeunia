@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface Certificate {
   id: string;
@@ -38,7 +39,7 @@ export default function CertificatesPageSimple() {
       console.log('Fetching certificates data...');
       
       // Fetch certificates data
-      const dataResponse = await fetch('/api/admin/certificates/data');
+      const dataResponse = await apiFetch('/api/admin/certificates/data');
       console.log('Data response status:', dataResponse.status);
       
       if (dataResponse.ok) {
@@ -53,7 +54,7 @@ export default function CertificatesPageSimple() {
       }
 
       // Fetch participants
-      const participantsResponse = await fetch('/api/admin/certificates/participants');
+      const participantsResponse = await apiFetch('/api/admin/certificates/participants');
       console.log('Participants response status:', participantsResponse.status);
       
       if (participantsResponse.ok) {

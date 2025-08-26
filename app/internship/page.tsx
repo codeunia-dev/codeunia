@@ -13,6 +13,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import type { Profile } from '@/types/profile'
+import { apiFetch } from '@/lib/api-fetch'
 
 type Domain = 'Web Development' | 'Python' | 'Artificial Intelligence' | 'Machine Learning' | 'Java'
 type Level = 'Beginner' | 'Intermediate' | 'Advanced'
@@ -111,7 +112,7 @@ export default function InternshipLandingPage() {
   const loadApplied = useCallback(async () => {
     try {
       if (!user?.id) return
-      const res = await fetch('/api/internships/my-applications')
+      const res = await apiFetch('/api/internships/my-applications')
       const data = await res.json()
       if (res.ok && Array.isArray(data.appliedIds)) setAppliedIds(data.appliedIds)
     } finally {}
@@ -170,7 +171,7 @@ export default function InternshipLandingPage() {
         }
         
         // Create Razorpay order
-        const orderRes = await fetch('/api/internships/create-order', {
+        const orderRes = await apiFetch('/api/internships/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ internshipId: selected.id, amount: price * 100, currency: 'INR' })
@@ -204,7 +205,7 @@ export default function InternshipLandingPage() {
               const finalPrice = isPremium ? Math.floor(basePrice / 2) : basePrice
               const discountAmount = basePrice - finalPrice
 
-              const res = await fetch('/api/internships/apply', {
+              const res = await apiFetch('/api/internships/apply', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -239,7 +240,7 @@ export default function InternshipLandingPage() {
         razorpay.open()
       } else {
         // Free internship application
-        const res = await fetch('/api/internships/apply', {
+        const res = await apiFetch('/api/internships/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
