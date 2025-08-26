@@ -167,6 +167,7 @@ export function TestManager() {
     name: "",
     description: "",
     duration_minutes: 60,
+    category: "",
     
     // Event Timeline
     event_start: "",
@@ -350,6 +351,7 @@ export function TestManager() {
         name: data.test.name,
         description: data.test.description || "",
         duration_minutes: data.test.duration_minutes,
+        category: data.test.category || "",
         
         // Event Timeline
         event_start: data.test.event_start ? new Date(data.test.event_start).toISOString().slice(0, 16) : "",
@@ -432,6 +434,7 @@ export function TestManager() {
       name: "",
       description: "",
       duration_minutes: 60,
+      category: "",
       
       // Event Timeline
       event_start: "",
@@ -772,6 +775,33 @@ export function TestManager() {
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Test description"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <select
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">Select Category</option>
+                <option value="Programming">Programming</option>
+                <option value="Database">Database (DBMS)</option>
+                <option value="Operating Systems">Operating Systems</option>
+                <option value="Computer Networks">Computer Networks</option>
+                <option value="Data Structures">Data Structures & Algorithms</option>
+                <option value="Web Development">Web Development</option>
+                <option value="Software Engineering">Software Engineering</option>
+                <option value="Computer Architecture">Computer Architecture</option>
+                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                <option value="Machine Learning">Machine Learning</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Cloud Computing">Cloud Computing</option>
+                <option value="Mobile Development">Mobile Development</option>
+                <option value="DevOps">DevOps</option>
+                <option value="General">General Computer Science</option>
+              </select>
             </div>
 
             {/* Registration Dates */}

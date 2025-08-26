@@ -40,35 +40,84 @@ export async function POST(request: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
-    if (authError || !user) {
+    if (authError || !user || !user.email) {
       console.error('Authentication error:', authError)
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
 
+    // Verify user profile exists - just check if user has a profile
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile) {
+      console.error('Profile verification failed:', profileError)
+      return NextResponse.json({ error: 'User profile verification failed. Please complete your profile setup.' }, { status: 404 })
+    }
+
+    console.log('✅ Profile found for user:', { userId: user.id, userEmail: user.email, profileEmail: profile.email })
+
+    // Check if email foreign key will work
+    const { data: emailCheck, error: emailError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', user.email)
+      .single()
+    
+    console.log('🔍 Email FK check:', { 
+      authEmail: user.email, 
+      emailExists: !!emailCheck, 
+      emailError: emailError?.code 
+    })
+
+    if (!emailCheck || emailError) {
+      console.error('❌ FK constraint will fail - no profile with auth email:', user.email)
+      console.log('🔧 Fixing by updating profile email field...')
+      
+      // Fix: Update the user's profile to set the email field
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ email: user.email })
+        .eq('id', user.id)
+      
+      if (updateError) {
+        console.error('❌ Failed to update profile email:', updateError)
+        return NextResponse.json(
+          { error: `Failed to update profile email: ${updateError.message}` },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ Profile email updated successfully')
+    }
+
     // Check if this is a paid internship
-    const isPaidInternship = paymentId && orderId && amountPaid !== undefined
+    const isPaidInternship = paymentId && orderId && amountPaid !== undefined && amountPaid > 0
 
     const insert = {
       user_id: user.id,
-      email: user.email,
+      email: user.email, // Use email from authenticated user
       internship_id: internshipId,
       domain,
       level,
       cover_note: coverNote || null,
-      status: isPaidInternship ? 'submitted' : 'submitted', // Both are submitted after this point
+      status: 'submitted',
       duration_weeks: typeof durationWeeks === 'number' ? durationWeeks : null,
       created_at: new Date().toISOString(),
-      // Payment fields
-      order_id: orderId || null,
-      payment_id: paymentId || null,
-      payment_signature: paymentSignature || null,
-      amount_paid: amountPaid || 0,
-      original_amount: originalAmount || 0,
-      discount_applied: discountApplied || 0,
-      currency: 'INR',
-      payment_status: isPaidInternship ? 'completed' : 'completed', // Free internships are also "completed"
-      is_paid: isPaidInternship ? true : true, // Free internships are considered "paid" (no payment required)
-      paid_at: isPaidInternship ? new Date().toISOString() : new Date().toISOString()
+      // Payment fields - must satisfy constraint: 
+      // (amount_paid = 0 AND is_paid = false) OR (amount_paid > 0 AND is_paid = true)
+      order_id: isPaidInternship ? orderId : null,
+      payment_id: isPaidInternship ? paymentId : null,
+      payment_signature: isPaidInternship ? paymentSignature : null,
+      amount_paid: isPaidInternship ? (amountPaid || 0) : 0,
+      original_amount: isPaidInternship ? (originalAmount || 0) : 0,
+      discount_applied: isPaidInternship ? (discountApplied || 0) : 0,
+      currency: isPaidInternship ? 'INR' : null,
+      payment_status: isPaidInternship ? 'completed' : null,
+      is_paid: isPaidInternship, // This will be true for paid, false for free
+      paid_at: isPaidInternship ? new Date().toISOString() : null
     }
 
     const { error } = await supabase.from('internship_applications').insert([insert])

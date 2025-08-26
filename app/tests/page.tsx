@@ -10,11 +10,9 @@ import {
   Clock, 
   FileText, 
   Users, 
-  Trophy,
   Play,
   ArrowRight,
   Target,
-  Brain,
   Sparkles
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -27,18 +25,45 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import type { Test } from "@/types/test-management";
 
-// Test categories for dropdown
+// Test categories for sections - Updated for computer science subjects
 const testCategories = [
   "All",
-  "Programming",
-  "Web Development",
-  "Mobile Development",
-  "Data Science",
-  "AI/ML",
-  "Cybersecurity",
-  "Database",
-  "DevOps"
+  "Programming", // Python, Java, C++, JavaScript, etc.
+  "Database", // DBMS, SQL, NoSQL, etc.
+  "Operating Systems", // OS, Linux, Windows, etc.
+  "Computer Networks", // CN, Networking protocols, etc.
+  "Data Structures & Algorithms", // DSA
+  "Web Development", // Frontend, Backend, Full Stack
+  "Mobile Development", // Android, iOS, React Native
+  "Data Science", // Analytics, Statistics, etc.
+  "AI/ML", // Machine Learning, Deep Learning
+  "Cybersecurity", // Security, Ethical Hacking
+  "DevOps", // CI/CD, Docker, Kubernetes
+  "Software Engineering", // SDLC, Testing, etc.
+  "Theory of Computation", // TOC, Automata
+  "Compiler Design", // CD
+  "Computer Graphics", // CG
+  "Other"
 ];
+
+// Category mapping for automatic assignment
+const categoryKeywords = {
+  "Programming": ["python", "java", "javascript", "c++", "c#", "programming", "coding", "fundamentals"],
+  "Database": ["dbms", "database", "sql", "mysql", "postgresql", "mongodb", "nosql", "oracle"],
+  "Operating Systems": ["operating system", "os", "linux", "windows", "unix", "kernel", "process", "thread"],
+  "Computer Networks": ["network", "networking", "cn", "tcp", "ip", "http", "protocol", "socket"],
+  "Data Structures & Algorithms": ["dsa", "data structure", "algorithm", "sorting", "searching", "tree", "graph", "array", "linked list"],
+  "Web Development": ["web", "html", "css", "react", "angular", "vue", "node", "express", "frontend", "backend"],
+  "Mobile Development": ["mobile", "android", "ios", "react native", "flutter", "kotlin", "swift"],
+  "Data Science": ["data science", "analytics", "statistics", "pandas", "numpy", "visualization"],
+  "AI/ML": ["artificial intelligence", "machine learning", "deep learning", "neural network", "ai", "ml", "tensorflow", "pytorch"],
+  "Cybersecurity": ["security", "cybersecurity", "hacking", "encryption", "vulnerability", "penetration"],
+  "DevOps": ["devops", "docker", "kubernetes", "ci/cd", "jenkins", "deployment", "cloud"],
+  "Software Engineering": ["software engineering", "sdlc", "testing", "agile", "scrum", "requirement"],
+  "Theory of Computation": ["toc", "theory of computation", "automata", "finite state", "grammar", "turing"],
+  "Compiler Design": ["compiler", "lexical analysis", "syntax analysis", "semantic analysis", "parser"],
+  "Computer Graphics": ["computer graphics", "cg", "rendering", "3d", "opengl", "directx", "animation"]
+};
 
 export default function TestsPage() {
   const [tests, setTests] = useState<Test[]>([]);
@@ -49,6 +74,19 @@ export default function TestsPage() {
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set());
   const router = useRouter();
   const supabase = createClient();
+
+  // Auto-categorize test based on name and description
+  const autoCategorizеTest = (test: Test): string => {
+    const searchText = `${test.name} ${test.description || ''}`.toLowerCase();
+    
+    for (const [category, keywords] of Object.entries(categoryKeywords)) {
+      if (keywords.some(keyword => searchText.includes(keyword))) {
+        return category;
+      }
+    }
+    
+    return test.category || "Other";
+  };
 
   const fetchTests = useCallback(async () => {
     try {
@@ -231,6 +269,23 @@ export default function TestsPage() {
     return matchesSearch && matchesStatus && matchesCategory;
   });
 
+  // Group tests by category
+  const groupedTests = filteredTests.reduce((groups, test) => {
+    const category = autoCategorizеTest(test);
+    if (!groups[category]) {
+      groups[category] = [];
+    }
+    groups[category].push(test);
+    return groups;
+  }, {} as Record<string, Test[]>);
+
+  // Sort categories to show populated ones first
+  const sortedCategories = Object.keys(groupedTests).sort((a, b) => {
+    if (a === "Other") return 1;
+    if (b === "Other") return -1;
+    return groupedTests[b].length - groupedTests[a].length;
+  });
+
   const getTestStatus = (test: Test) => {
     const now = new Date();
     const testStart = test.event_start ? new Date(test.event_start) : null;
@@ -305,20 +360,34 @@ export default function TestsPage() {
     switch (category) {
       case "Programming":
         return "bg-gradient-to-r from-blue-500 to-indigo-600 text-white"
-      case "Web Development":
+      case "Database":
         return "bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
-      case "Mobile Development":
+      case "Operating Systems":
         return "bg-gradient-to-r from-purple-500 to-violet-600 text-white"
-      case "Data Science":
+      case "Computer Networks":
         return "bg-gradient-to-r from-red-500 to-pink-600 text-white"
-      case "AI/ML":
+      case "Data Structures & Algorithms":
         return "bg-gradient-to-r from-orange-500 to-amber-600 text-white"
+      case "Web Development":
+        return "bg-gradient-to-r from-emerald-500 to-green-600 text-white"
+      case "Mobile Development":
+        return "bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white"
+      case "Data Science":
+        return "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
+      case "AI/ML":
+        return "bg-gradient-to-r from-rose-500 to-pink-600 text-white"
       case "Cybersecurity":
         return "bg-gradient-to-r from-yellow-500 to-orange-500 text-white"
-      case "Database":
-        return "bg-gradient-to-r from-cyan-500 to-blue-500 text-white"
       case "DevOps":
-        return "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
+        return "bg-gradient-to-r from-slate-500 to-gray-600 text-white"
+      case "Software Engineering":
+        return "bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
+      case "Theory of Computation":
+        return "bg-gradient-to-r from-teal-500 to-cyan-600 text-white"
+      case "Compiler Design":
+        return "bg-gradient-to-r from-amber-500 to-yellow-600 text-white"
+      case "Computer Graphics":
+        return "bg-gradient-to-r from-pink-500 to-rose-600 text-white"
       default:
         return "bg-gradient-to-r from-gray-500 to-slate-600 text-white"
     }
@@ -514,232 +583,334 @@ export default function TestsPage() {
               </Button>
             </motion.div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-              {filteredTests.map((test, index) => {
-                const testStatus = getTestStatus(test);
-                const regStatus = getRegistrationStatus(test);
-                
-                return (
+            <div className="space-y-12 mt-8">
+              {/* Show tests by category */}
+              {selectedCategory === "All" ? (
+                // Show all categories in sections
+                sortedCategories.map((category) => (
                   <motion.div
-                    key={test.id}
-                    className="flex h-full"
-                    initial={{ opacity: 0, y: 30 }}
+                    key={category}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-6"
                   >
-                    <Card className={cn(
-                      "group relative overflow-hidden border-0 shadow-xl card-hover bg-gradient-to-br from-background to-muted/20 flex flex-col h-full w-full",
-                      `hover:shadow-2xl hover:scale-105 transition-all duration-300`)}>
-                      
-                      {/* Test Image/Logo */}
-                      <div className="h-48 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
-                        <Image 
-                          src={getCategoryImage(test.category || 'Other')} 
-                          alt={test.name} 
-                          layout="fill"
-                          objectFit="cover"
-                        />
-                        <div className="absolute inset-0 bg-black/20"></div>
-                        {/* Category Badge */}
-                        <div className="absolute top-2 left-2 flex gap-1 z-10">
-                          <Badge className={`${getCategoryColor(test.category || 'Other')} shadow-lg text-xs`} variant="secondary">
-                            {test.category || 'Other'}
-                          </Badge>
-                        </div>
-                        {/* Status Badge */}
-                        <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
-                          {testStatus.badge}
-                        </div>
+                    {/* Category Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                          {category}
+                        </h2>
+                        <Badge variant="outline" className="text-sm">
+                          {groupedTests[category].length} test{groupedTests[category].length !== 1 ? 's' : ''}
+                        </Badge>
                       </div>
-                      
-                      <CardHeader className="relative z-10 pb-2">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <CardTitle className="text-xl font-bold group-hover:text-white transition-colors duration-300">
-                              {test.name}
-                            </CardTitle>
-                            <CardDescription className="text-base text-muted-foreground group-hover:text-white/90 transition-colors duration-300 line-clamp-2 mt-2">
-                              {test.description || "Test your knowledge and skills"}
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2 mt-3">
-                          {regStatus.badge}
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="relative z-10 flex flex-col flex-1 justify-between pt-0">
-                        {/* Test Meta */}
-                        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4 group-hover:text-white/90 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {test.duration_minutes}m
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              {test.passing_score}%
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              {test.test_registrations?.[0]?.count || 0}
-                            </span>
-                          </div>
-                        </div>
+                      {groupedTests[category].length > 4 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedCategory(category)}
+                          className="text-primary hover:text-primary/80"
+                        >
+                          View All <ArrowRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Tests Grid - 4 cards per row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {groupedTests[category].slice(0, 4).map((test, index) => {
+                        const testStatus = getTestStatus(test);
+                        const regStatus = getRegistrationStatus(test);
                         
-                        {/* Test Timing Info */}
-                        <div className="space-y-2 mb-4">
-                          {(test.event_start || test.event_end) && (
-                            <div className="text-xs text-muted-foreground group-hover:text-white/70 transition-colors">
-                              {testStatus.message}
-                            </div>
-                          )}
-                          {(test.registration_start || test.registration_end) && (
-                            <div className="text-xs text-muted-foreground group-hover:text-white/70 transition-colors">
-                              {regStatus.message}
-                            </div>
-                          )}
-                        </div>
+                        return (
+                          <motion.div
+                            key={test.id}
+                            className="flex h-full"
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                          >
+                            <Card className={cn(
+                              "group relative overflow-hidden border-0 shadow-xl card-hover bg-gradient-to-br from-background to-muted/20 flex flex-col h-full w-full",
+                              `hover:shadow-2xl hover:scale-105 transition-all duration-300`)}>
+                              
+                              {/* Test Image/Logo */}
+                              <div className="h-40 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
+                                <Image 
+                                  src={getCategoryImage(autoCategorizеTest(test))} 
+                                  alt={test.name} 
+                                  layout="fill"
+                                  objectFit="cover"
+                                />
+                                <div className="absolute inset-0 bg-black/20"></div>
+                                {/* Category Badge */}
+                                <div className="absolute top-2 left-2 flex gap-1 z-10">
+                                  <Badge className={`${getCategoryColor(autoCategorizеTest(test))} shadow-lg text-xs`} variant="secondary">
+                                    {autoCategorizеTest(test)}
+                                  </Badge>
+                                </div>
+                                {/* Status Badge */}
+                                <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
+                                  {testStatus.badge}
+                                </div>
+                              </div>
+                              
+                              <CardHeader className="relative z-10 pb-2">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <CardTitle className="text-lg font-bold group-hover:text-white transition-colors duration-300 line-clamp-2">
+                                      {test.name}
+                                    </CardTitle>
+                                    <CardDescription className="text-sm text-muted-foreground group-hover:text-white/90 transition-colors duration-300 line-clamp-2 mt-1">
+                                      {test.description || "Test your knowledge and skills"}
+                                    </CardDescription>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2 mt-2">
+                                  {regStatus.badge}
+                                </div>
+                              </CardHeader>
+                              
+                              <CardContent className="relative z-10 flex flex-col flex-1 justify-between pt-0">
+                                {/* Test Meta */}
+                                <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 group-hover:text-white/90 transition-colors">
+                                  <div className="flex items-center gap-3">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {test.duration_minutes}m
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Target className="h-3 w-3" />
+                                      {test.passing_score}%
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Users className="h-3 w-3" />
+                                      {test.test_registrations?.[0]?.count || 0}
+                                    </span>
+                                  </div>
+                                </div>
 
-                        {/* Features */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {test.enable_leaderboard && testStatus.status === 'ended' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => router.push(`/tests/${test.id}/results`)}
-                              className="text-xs bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors"
-                            >
-                              <Trophy className="w-3 h-3 mr-1" />
-                              View Leaderboard
-                            </Button>
-                          )}
-                          {test.enable_leaderboard && testStatus.status !== 'ended' && (
-                            <Badge variant="outline" className="text-xs bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
-                              <Trophy className="w-3 h-3 mr-1" />
-                              Leaderboard
-                            </Badge>
-                          )}
-                          {test.max_attempts > 1 && (
-                            <Badge variant="outline" className="text-xs bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
-                              <Brain className="w-3 h-3 mr-1" />
-                              {test.max_attempts} Attempts
-                            </Badge>
-                          )}
-                        </div>
+                                {/* Action Buttons */}
+                                <div className="space-y-2">
+                                  {/* Registered User - Test Active */}
+                                  {regStatus.status === 'registered' && testStatus.status === 'active' && (
+                                    <Button
+                                      onClick={() => handleStartTest(test.id)}
+                                      size="sm"
+                                      className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                    >
+                                      <Play className="w-3 h-3 mr-1" />
+                                      Start Test
+                                    </Button>
+                                  )}
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{test.test_registrations?.[0]?.count || 0} registered</span>
-                            </div>
-                          </div>
-                          
-                          {/* Registered User - Test Active */}
-                          {regStatus.status === 'registered' && testStatus.status === 'active' && (
-                            <Button
-                              onClick={() => handleStartTest(test.id)}
-                              size="lg"
-                              className="
-                                font-semibold 
-                                px-4 py-2 
-                                text-sm 
-                                rounded-full 
-                                bg-gradient-to-r from-primary to-purple-600 
-                                hover:from-primary/90 hover:to-purple-600/90 
-                                shadow-lg 
-                                transition-transform duration-200 
-                                transform-gpu hover:scale-105 
-                                focus:ring-2 focus:ring-primary/40 
-                                w-full sm:w-fit
-                                text-center
-                                max-w-full
-                              "
-                            >
-                              <Play className="w-4 h-4 mr-2" />
-                              Start Test <ArrowRight className="ml-1 h-4 w-4 flex-shrink-0" />
-                            </Button>
-                          )}
+                                  {/* Registered User - Test Not Started */}
+                                  {regStatus.status === 'registered' && testStatus.status === 'upcoming' && (
+                                    <Button variant="outline" disabled size="sm" className="w-full">
+                                      Test Not Started Yet
+                                    </Button>
+                                  )}
 
-                          {/* Registered User - Test Not Started */}
-                          {regStatus.status === 'registered' && testStatus.status === 'upcoming' && (
-                            <Button variant="outline" disabled size="lg" className="w-full sm:w-fit">
-                              Test Not Started Yet
-                            </Button>
-                          )}
+                                  {/* Registered User - Test Ended */}
+                                  {regStatus.status === 'registered' && testStatus.status === 'ended' && (
+                                    <Button
+                                      onClick={() => router.push(`/tests/${test.id}/results`)}
+                                      size="sm"
+                                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-600/90 hover:to-emerald-600/90"
+                                    >
+                                      <Target className="w-3 h-3 mr-1" />
+                                      View Results
+                                    </Button>
+                                  )}
 
-                          {/* Registered User - Test Ended */}
-                          {regStatus.status === 'registered' && testStatus.status === 'ended' && (
-                            <Button
-                              onClick={() => router.push(`/tests/${test.id}/results`)}
-                              size="lg"
-                              className="
-                                font-semibold 
-                                px-4 py-2 
-                                text-sm 
-                                rounded-full 
-                                bg-gradient-to-r from-green-600 to-emerald-600 
-                                hover:from-green-600/90 hover:to-emerald-600/90 
-                                shadow-lg 
-                                transition-transform duration-200 
-                                transform-gpu hover:scale-105 
-                                focus:ring-2 focus:ring-green-600/40 
-                                w-full sm:w-fit
-                                text-center
-                                max-w-full
-                              "
-                            >
-                              <Target className="w-4 h-4 mr-2" />
-                              View Results <ArrowRight className="ml-1 h-4 w-4 flex-shrink-0" />
-                            </Button>
-                          )}
+                                  {/* Not Registered - Registration Open */}
+                                  {regStatus.status === 'open' && (
+                                    <Button
+                                      onClick={() => handleRegister(test.id)}
+                                      size="sm"
+                                      className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                    >
+                                      Register
+                                    </Button>
+                                  )}
 
-                          {/* Not Registered - Registration Open */}
-                          {regStatus.status === 'open' && (
-                            <Button
-                              onClick={() => handleRegister(test.id)}
-                              size="lg"
-                              className="
-                                font-semibold 
-                                px-4 py-2 
-                                text-sm 
-                                rounded-full 
-                                bg-gradient-to-r from-primary to-purple-600 
-                                hover:from-primary/90 hover:to-purple-600/90 
-                                shadow-lg 
-                                transition-transform duration-200 
-                                transform-gpu hover:scale-105 
-                                focus:ring-2 focus:ring-primary/40 
-                                w-full sm:w-fit
-                                text-center
-                                max-w-full
-                              "
-                            >
-                              Register <ArrowRight className="ml-1 h-4 w-4 flex-shrink-0" />
-                            </Button>
-                          )}
-
-                          {/* Registration Pending */}
-                          {regStatus.status === 'pending' && (
-                            <Button variant="outline" disabled size="lg" className="w-full sm:w-fit">
-                              Registration Pending
-                            </Button>
-                          )}
-
-                          {/* Registration Closed */}
-                          {regStatus.status === 'closed' && (
-                            <Button variant="outline" disabled size="lg" className="w-full sm:w-fit">
-                              Registration Closed
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                                  {/* Registration Pending/Closed */}
+                                  {(regStatus.status === 'pending' || regStatus.status === 'closed') && (
+                                    <Button variant="outline" disabled size="sm" className="w-full">
+                                      {regStatus.status === 'pending' ? 'Registration Pending' : 'Registration Closed'}
+                                    </Button>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
                   </motion.div>
-                );
-              })}
+                ))
+              ) : (
+                // Show selected category only
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-6"
+                >
+                  {/* Category Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedCategory("All")}
+                        className="text-primary hover:text-primary/80"
+                      >
+                        <ArrowRight className="mr-1 h-4 w-4 rotate-180" /> Back to All
+                      </Button>
+                      <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                        {selectedCategory}
+                      </h2>
+                      <Badge variant="outline" className="text-sm">
+                        {filteredTests.length} test{filteredTests.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Tests Grid - 4 cards per row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredTests.map((test, index) => {
+                      const testStatus = getTestStatus(test);
+                      const regStatus = getRegistrationStatus(test);
+                      
+                      return (
+                        <motion.div
+                          key={test.id}
+                          className="flex h-full"
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                        >
+                          <Card className={cn(
+                            "group relative overflow-hidden border-0 shadow-xl card-hover bg-gradient-to-br from-background to-muted/20 flex flex-col h-full w-full",
+                            `hover:shadow-2xl hover:scale-105 transition-all duration-300`)}>
+                            
+                            {/* Test Image/Logo */}
+                            <div className="h-40 w-full relative flex items-center justify-center bg-gradient-to-br from-muted to-muted/50 border-b border-primary/10">
+                              <Image 
+                                src={getCategoryImage(autoCategorizеTest(test))} 
+                                alt={test.name} 
+                                layout="fill"
+                                objectFit="cover"
+                              />
+                              <div className="absolute inset-0 bg-black/20"></div>
+                              {/* Category Badge */}
+                              <div className="absolute top-2 left-2 flex gap-1 z-10">
+                                <Badge className={`${getCategoryColor(autoCategorizеTest(test))} shadow-lg text-xs`} variant="secondary">
+                                  {autoCategorizеTest(test)}
+                                </Badge>
+                              </div>
+                              {/* Status Badge */}
+                              <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
+                                {testStatus.badge}
+                              </div>
+                            </div>
+                            
+                            <CardHeader className="relative z-10 pb-2">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <CardTitle className="text-lg font-bold group-hover:text-white transition-colors duration-300 line-clamp-2">
+                                    {test.name}
+                                  </CardTitle>
+                                  <CardDescription className="text-sm text-muted-foreground group-hover:text-white/90 transition-colors duration-300 line-clamp-2 mt-1">
+                                    {test.description || "Test your knowledge and skills"}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 mt-2">
+                                {regStatus.badge}
+                              </div>
+                            </CardHeader>
+                            
+                            <CardContent className="relative z-10 flex flex-col flex-1 justify-between pt-0">
+                              {/* Test Meta */}
+                              <div className="flex items-center justify-between text-xs text-muted-foreground mb-3 group-hover:text-white/90 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {test.duration_minutes}m
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Target className="h-3 w-3" />
+                                    {test.passing_score}%
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Users className="h-3 w-3" />
+                                    {test.test_registrations?.[0]?.count || 0}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="space-y-2">
+                                {/* Registered User - Test Active */}
+                                {regStatus.status === 'registered' && testStatus.status === 'active' && (
+                                  <Button
+                                    onClick={() => handleStartTest(test.id)}
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                  >
+                                    <Play className="w-3 h-3 mr-1" />
+                                    Start Test
+                                  </Button>
+                                )}
+
+                                {/* Registered User - Test Not Started */}
+                                {regStatus.status === 'registered' && testStatus.status === 'upcoming' && (
+                                  <Button variant="outline" disabled size="sm" className="w-full">
+                                    Test Not Started Yet
+                                  </Button>
+                                )}
+
+                                {/* Registered User - Test Ended */}
+                                {regStatus.status === 'registered' && testStatus.status === 'ended' && (
+                                  <Button
+                                    onClick={() => router.push(`/tests/${test.id}/results`)}
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-600/90 hover:to-emerald-600/90"
+                                  >
+                                    <Target className="w-3 h-3 mr-1" />
+                                    View Results
+                                  </Button>
+                                )}
+
+                                {/* Not Registered - Registration Open */}
+                                {regStatus.status === 'open' && (
+                                  <Button
+                                    onClick={() => handleRegister(test.id)}
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                                  >
+                                    Register
+                                  </Button>
+                                )}
+
+                                {/* Registration Pending/Closed */}
+                                {(regStatus.status === 'pending' || regStatus.status === 'closed') && (
+                                  <Button variant="outline" disabled size="sm" className="w-full">
+                                    {regStatus.status === 'pending' ? 'Registration Pending' : 'Registration Closed'}
+                                  </Button>
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
             </div>
           )}
         </div>
