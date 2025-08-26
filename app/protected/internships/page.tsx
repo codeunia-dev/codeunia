@@ -4,8 +4,38 @@ import { createClient } from "@/lib/supabase/server";
 import InternshipsTable from "@/components/InternshipsTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+
+// Progress Bar Component
+function InternshipProgress({ startDate, endDate }: { startDate: Date, endDate: Date }) {
+  const today = new Date()
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+  const daysPassed = Math.max(0, Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
+  const progressPercentage = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100))
+  const daysLeft = Math.max(0, totalDays - daysPassed)
+  
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Progress</span>
+        <span>{Math.round(progressPercentage)}% Complete</span>
+      </div>
+      <Progress value={progressPercentage} className="w-full h-2" />
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>Day {Math.min(daysPassed, totalDays)} of {totalDays}</span>
+        <span>{daysLeft > 0 ? `${daysLeft} days left` : 'Completed!'}</span>
+      </div>
+    </div>
+  )
+}
 
 export const dynamic = "force-dynamic";
+
+// Internship mapping for proper display names
+const INTERNSHIP_NAMES: Record<string, string> = {
+  'free-basic': 'Codeunia Starter Internship',
+  'paid-pro': 'Codeunia Pro Internship'
+}
 
 type InternshipApplication = {
   status: string
@@ -13,6 +43,15 @@ type InternshipApplication = {
   end_date?: string
   repo_url?: string
   duration_weeks?: number
+  internship_id?: string
+}
+
+type ExtendedInternshipApplication = InternshipApplication & {
+  internship_id: string
+  domain: string
+  level: string
+  created_at: string
+  remarks?: string
 }
 
 type InternRow = {
@@ -156,9 +195,9 @@ export default async function InternshipsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(applications as Array<{ internship_id: string; domain: string; level: string; status: string; created_at: string; remarks?: string }>).map((a, i) => (
+                    {(applications as ExtendedInternshipApplication[]).map((a, i) => (
                       <TableRow key={i}>
-                        <TableCell className="text-sm">{a.internship_id}</TableCell>
+                        <TableCell className="text-sm font-medium">{INTERNSHIP_NAMES[a.internship_id] || a.internship_id}</TableCell>
                         <TableCell className="text-sm">{a.domain}</TableCell>
                         <TableCell className="text-sm">{a.level}</TableCell>
                         <TableCell className="text-sm capitalize">{a.status}</TableCell>
@@ -174,39 +213,55 @@ export default async function InternshipsPage() {
         </div>
       )}
 
-      {applications && (applications as Array<{ status: string }>).some((a) => a.status === 'accepted') && (
+      {applications && (applications as ExtendedInternshipApplication[]).some((a) => a.status === 'accepted') && (
         <div className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>Current Internship Assignment</CardTitle>
             </CardHeader>
             <CardContent>
-              {(applications as InternshipApplication[]).filter((a) => a.status === 'accepted').map((a, idx) => {
+              {(applications as ExtendedInternshipApplication[]).filter((a) => a.status === 'accepted').map((a, idx) => {
                 const start = a.start_date ? new Date(a.start_date) : null
                 const end = a.end_date ? new Date(a.end_date) : null
-                const today = new Date()
-                const daysLeft = start && end ? Math.max(0, Math.ceil((end.getTime() - today.getTime()) / (1000*60*60*24))) : null
+                
                 return (
-                  <div key={idx} className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-lg p-4 mb-4">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Repository</div>
-                      {a.repo_url ? (
-                        <a href={a.repo_url} target="_blank" className="text-primary underline break-all">{a.repo_url}</a>
-                      ) : (
-                        <div className="text-sm">—</div>
-                      )}
+                  <div key={idx} className="space-y-6 border rounded-lg p-6 mb-4">
+                    {/* Internship Title */}
+                    <div className="text-center">
+                      <h3 className="text-lg font-semibold text-primary">{INTERNSHIP_NAMES[a.internship_id] || a.internship_id}</h3>
+                      <p className="text-sm text-muted-foreground">Current Active Internship</p>
                     </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Duration</div>
-                      <div className="text-sm">{a.duration_weeks ? `${a.duration_weeks} weeks` : '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Start</div>
-                      <div className="text-sm">{start ? start.toLocaleDateString() : '—'}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">End</div>
-                      <div className="text-sm">{end ? end.toLocaleDateString() : '—'}{daysLeft !== null ? ` • ${daysLeft} days left` : ''}</div>
+
+                    {/* Progress Bar */}
+                    {start && end && (
+                      <InternshipProgress 
+                        startDate={start} 
+                        endDate={end} 
+                      />
+                    )}
+
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <div className="text-sm text-muted-foreground">Repository</div>
+                        {a.repo_url ? (
+                          <a href={a.repo_url} target="_blank" className="text-primary underline break-all">{a.repo_url}</a>
+                        ) : (
+                          <div className="text-sm">—</div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Duration</div>
+                        <div className="text-sm">{a.duration_weeks ? `${a.duration_weeks} weeks` : '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">Start Date</div>
+                        <div className="text-sm">{start ? start.toLocaleDateString() : '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-muted-foreground">End Date</div>
+                        <div className="text-sm">{end ? end.toLocaleDateString() : '—'}</div>
+                      </div>
                     </div>
                   </div>
                 )
