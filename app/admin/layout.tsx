@@ -80,6 +80,11 @@ const sidebarItems: SidebarGroupType[] = [
         icon: Handshake,
       },
       {
+        title: "Applications",
+        url: "/admin/internship-applications",
+        icon: ClipboardCheck,
+      },
+      {
         title: "Certificates",
         url: "/admin/certificates",
         icon: Award,
