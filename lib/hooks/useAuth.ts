@@ -8,8 +8,15 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!isHydrated) return
+
     let mounted = true
 
     const initializeAuth = async () => {
@@ -54,7 +61,12 @@ export function useAuth() {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [isHydrated])
+
+  // Return loading state during hydration
+  if (!isHydrated) {
+    return { user: null, loading: true, error: null, isAdmin: false }
+  }
 
   return { 
     user, 
