@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendInternshipApplicationEmails } from '@/lib/services/email'
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { 
-      internshipId, 
-      domain, 
-      level, 
-      coverNote, 
+    const {
+      internshipId,
+      domain,
+      level,
+      coverNote,
       durationWeeks,
       // Payment related fields
       orderId,
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     // Get authenticated user using server-side Supabase client
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+
     if (authError || !user || !user.email) {
       console.error('Authentication error:', authError)
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
@@ -65,23 +66,23 @@ export async function POST(request: Request) {
       .select('email')
       .eq('email', user.email)
       .single()
-    
-    console.log('🔍 Email FK check:', { 
-      authEmail: user.email, 
-      emailExists: !!emailCheck, 
-      emailError: emailError?.code 
+
+    console.log('🔍 Email FK check:', {
+      authEmail: user.email,
+      emailExists: !!emailCheck,
+      emailError: emailError?.code
     })
 
     if (!emailCheck || emailError) {
       console.error('❌ FK constraint will fail - no profile with auth email:', user.email)
       console.log('🔧 Fixing by updating profile email field...')
-      
+
       // Fix: Update the user's profile to set the email field
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ email: user.email })
         .eq('id', user.id)
-      
+
       if (updateError) {
         console.error('❌ Failed to update profile email:', updateError)
         return NextResponse.json(
@@ -89,12 +90,12 @@ export async function POST(request: Request) {
           { status: 500 }
         )
       }
-      
+
       console.log('✅ Profile email updated successfully')
     }
 
     // Check if this is a paid internship
-    const isPaidInternship = paymentId && orderId && amountPaid !== undefined && amountPaid > 0
+    const isPaidInternship = Boolean(paymentId && orderId && amountPaid !== undefined && amountPaid > 0)
 
     const insert = {
       user_id: user.id,
@@ -120,17 +121,66 @@ export async function POST(request: Request) {
       paid_at: isPaidInternship ? new Date().toISOString() : null
     }
 
-    const { error } = await supabase.from('internship_applications').insert([insert])
+    const { data: insertedData, error } = await supabase
+      .from('internship_applications')
+      .insert([insert])
+      .select('id')
+      .single()
+
     if (error) {
       console.error('Database error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     console.log(`✅ Application submitted: ${internshipId} by ${user.email} (${isPaidInternship ? 'PAID' : 'FREE'})`)
-    
-    return NextResponse.json({ 
+
+    // Get user's full name from profile for email
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single()
+
+    const applicantName = userProfile
+      ? `${userProfile.first_name || ''} ${userProfile.last_name || ''}`.trim() || 'Codeunia User'
+      : 'Codeunia User'
+
+    // Map internship ID to title
+    const internshipTitles: Record<string, string> = {
+      'free-basic': 'Codeunia Starter Internship',
+      'paid-pro': 'Codeunia Pro Internship'
+    }
+
+    // Send confirmation and notification emails
+    try {
+      const emailResult = await sendInternshipApplicationEmails({
+        applicantName,
+        applicantEmail: user.email,
+        internshipTitle: internshipTitles[internshipId] || internshipId,
+        internshipId,
+        domain,
+        level,
+        duration: durationWeeks || 4,
+        isPaid: isPaidInternship,
+        amountPaid: isPaidInternship ? Math.floor((amountPaid || 0) / 100) : undefined, // Convert from paise to rupees
+        coverNote: coverNote || undefined,
+        applicationId: insertedData?.id || 'unknown'
+      })
+
+      if (emailResult.success) {
+        console.log('✅ Application emails sent successfully')
+      } else {
+        console.error('❌ Failed to send application emails:', emailResult.error)
+        // Don't fail the application if email fails, just log it
+      }
+    } catch (emailError) {
+      console.error('❌ Email sending error:', emailError)
+      // Don't fail the application if email fails
+    }
+
+    return NextResponse.json({
       success: true,
-      applicationId: insert.user_id, // You might want to return the actual inserted ID
+      applicationId: insertedData?.id || insert.user_id,
       paymentStatus: insert.payment_status,
       isPaid: insert.is_paid
     })
