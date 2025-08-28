@@ -15,7 +15,8 @@ export interface AuthCookieOptions {
 const defaultAuthOptions: AuthCookieOptions = {
   secure: process.env.NODE_ENV === 'production',
   httpOnly: true, // Prevents XSS attacks
-  sameSite: 'Strict',
+  sameSite: 'None',
+  domain: '.codeunia.com',
   maxAge: 7 * 24 * 60 * 60, // 7 days
 };
 
