@@ -39,14 +39,14 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
     const { applicantName, internshipTitle, domain, level, duration, isPaid, amountPaid } = data
 
     return {
-        subject: `✅ Application Confirmed: ${internshipTitle}`,
+        subject: `✅ Application Submitted: ${internshipTitle}`,
         html: `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Application Confirmed</title>
+          <title>Application Submitted</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f8fafc; }
             .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
@@ -68,7 +68,7 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
         <body>
           <div class="container">
             <div class="header">
-              <h1>Application Confirmed!</h1>
+              <h1>Application Submitted!</h1>
               <p>Welcome to Codeunia Internships</p>
             </div>
             
