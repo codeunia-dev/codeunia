@@ -138,30 +138,15 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           margin: 20px 0;
         }
         
-        .details-table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 20px 0;
-          background: #f8fafc;
-          border-radius: 8px;
-          overflow: hidden;
+        .internship-details {
+          margin-top: 20px;
         }
         
-        .details-table th,
-        .details-table td {
-          padding: 12px 16px;
-          text-align: left;
-          border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .details-table th {
-          background: #10b981;
-          color: white;
-          font-weight: 600;
-        }
-        
-        .details-table tr:last-child td {
-          border-bottom: none;
+        .internship-details h3 {
+          font-size: 20px;
+          font-weight: bold;
+          color: #10b981;
+          margin-bottom: 16px;
         }
         
         .benefits {
@@ -282,52 +267,18 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
             intern at Codeunia. After careful review of your application and qualifications, we believe 
             you will be a valuable addition to our team.
           </p>
+
+          <p>
+            We are pleased to offer you this ${duration}-week internship in the ${domain} domain at the ${level} level, 
+            starting from ${startDate} to ${endDate}. This is a ${isPaid ? `paid position with a stipend of $${amountPaid}` : 'non-paid position'}.
+          </p>
+          
+          ${repoUrl ? `<p>You will be working on a project with the repository available at: ${repoUrl}.</p>` : ''}
+          
+          <p>
+            ${remarks || 'We are excited to have you join our team and look forward to your contributions.'}
+          </p>
         </div>
-        
-        <!-- Internship Details -->
-        <table class="details-table">
-          <thead>
-            <tr>
-              <th colspan="2">Internship Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Position</strong></td>
-              <td>${internshipTitle}</td>
-            </tr>
-            <tr>
-              <td><strong>Domain</strong></td>
-              <td>${domain}</td>
-            </tr>
-            <tr>
-              <td><strong>Level</strong></td>
-              <td>${level}</td>
-            </tr>
-            <tr>
-              <td><strong>Duration</strong></td>
-              <td>${duration} weeks</td>
-            </tr>
-            <tr>
-              <td><strong>Start Date</strong></td>
-              <td>${new Date(startDate).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-              <td><strong>End Date</strong></td>
-              <td>${new Date(endDate).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-              <td><strong>Type</strong></td>
-              <td>${isPaid ? `Paid Internship (₹${amountPaid})` : 'Unpaid Internship'}</td>
-            </tr>
-            ${repoUrl ? `
-              <tr>
-                <td><strong>Project Repository</strong></td>
-                <td>${repoUrl}</td>
-              </tr>
-            ` : ''}
-          </tbody>
-        </table>
         
         <!-- Benefits -->
         <div class="benefits">
@@ -369,7 +320,7 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
             This offer letter is confidential and intended solely for the named recipient.
           </div>
           <div style="margin-top: 8px;">
-            © ${new Date().getFullYear()} Codeunia. All rights reserved.
+            &copy; ${new Date().getFullYear()} Codeunia. All rights reserved.
           </div>
         </div>
       </div>
@@ -665,7 +616,7 @@ export async function generateMembershipCardPDF(data: MembershipCardData): Promi
             This digital card serves as proof of your active membership and access to exclusive benefits.
           </div>
           <div style="margin-top: 8px;">
-            © ${new Date().getFullYear()} Codeunia. All rights reserved.
+            &copy; ${new Date().getFullYear()} Codeunia. All rights reserved.
           </div>
           <div style="margin-top: 8px;">
             Questions? Contact us at connect@codeunia.com
