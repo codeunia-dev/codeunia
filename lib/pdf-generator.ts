@@ -71,19 +71,19 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           text-align: center;
           margin-bottom: 40px;
           padding-bottom: 20px;
-          border-bottom: 3px solid #10b981;
+          border-bottom: 3px solid #007AFF;
         }
         
         .logo {
           font-size: 36px;
           font-weight: bold;
-          color: #10b981;
+          color: #007AFF;
           margin-bottom: 8px;
         }
         
         .company-info {
           font-size: 14px;
-          color: #6b7280;
+          color: #000000;
           margin-bottom: 8px;
         }
         
@@ -101,7 +101,7 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           text-align: right;
           margin-bottom: 30px;
           font-size: 14px;
-          color: #6b7280;
+          color: #000000;
         }
         
         .content {
@@ -184,22 +184,9 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           color: #6b7280;
           font-size: 12px;
         }
-        
-        .watermark {
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%) rotate(-45deg);
-          font-size: 120px;
-          color: rgba(16, 185, 129, 0.05);
-          font-weight: bold;
-          z-index: -1;
-          pointer-events: none;
-        }
       </style>
     </head>
     <body>
-      <div class="watermark">CODEUNIA</div>
       
       <div class="container">
         <!-- Header -->
