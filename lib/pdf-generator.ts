@@ -104,22 +104,6 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           color: #6b7280;
         }
         
-        .recipient-section {
-          margin-bottom: 30px;
-        }
-        
-        .recipient-name {
-          font-size: 18px;
-          font-weight: bold;
-          color: #1f2937;
-          margin-bottom: 4px;
-        }
-        
-        .recipient-email {
-          font-size: 14px;
-          color: #6b7280;
-        }
-        
         .content {
           font-size: 16px;
           line-height: 1.8;
@@ -172,9 +156,11 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
         }
         
         .benefits li:before {
-          content: "✅";
+          content: "•";
           position: absolute;
           left: 0;
+          font-size: 20px;
+          line-height: 1;
         }
         
         .next-steps {
@@ -188,23 +174,6 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
         .next-steps h3 {
           color: #1e40af;
           margin-bottom: 12px;
-        }
-        
-        .signature-section {
-          margin-top: 50px;
-          display: flex;
-          justify-content: space-between;
-        }
-        
-        .signature-box {
-          text-align: center;
-          width: 200px;
-        }
-        
-        .signature-line {
-          border-top: 2px solid #1f2937;
-          margin-bottom: 8px;
-          margin-top: 40px;
         }
         
         .footer {
@@ -252,15 +221,9 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
   })}
         </div>
         
-        <!-- Recipient -->
-        <div class="recipient-section">
-          <div class="recipient-name">${applicantName}</div>
-          <div class="recipient-email">${applicantEmail}</div>
-        </div>
-        
         <!-- Content -->
         <div class="content">
-          <p>Dear ${applicantName},</p>
+          <p>Dear <strong>${applicantName}</strong>,</p>
           
           <p>
             Congratulations! We are delighted to offer you the position of <strong>${internshipTitle}</strong> 
@@ -269,11 +232,9 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           </p>
 
           <p>
-            We are pleased to offer you this ${duration}-week internship in the ${domain} domain at the ${level} level, 
-            starting from ${startDate} to ${endDate}. This is a ${isPaid ? `paid position with a stipend of $${amountPaid}` : 'non-paid position'}.
+            We are pleased to offer you this <strong>${duration}-week</strong> internship in the <strong>${domain}</strong> domain at the <strong>${level}</strong> level, 
+            starting from <strong>${new Date(startDate).toLocaleDateString('en-GB')}</strong> to <strong>${new Date(endDate).toLocaleDateString('en-GB')}</strong>.
           </p>
-          
-          ${repoUrl ? `<p>You will be working on a project with the repository available at: ${repoUrl}.</p>` : ''}
           
           <p>
             ${remarks || 'We are excited to have you join our team and look forward to your contributions.'}
