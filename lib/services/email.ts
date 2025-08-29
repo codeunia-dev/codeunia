@@ -56,7 +56,7 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
             .success-badge { background: #10b981; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; margin-bottom: 20px; }
             .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #667eea; }
             .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-            .detail-label { font-weight: 600; color: #4b5563; }
+            .detail-label { font-weight: bold; color: #4b5563; }
             .detail-value { color: #1f2937; }
             .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
             .next-steps h3 { margin-top: 0; color: #1e40af; }
@@ -128,12 +128,12 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
               <p>If you have any questions, feel free to reply to this email or contact us at <a href="mailto:support@codeunia.com" style="color: #667eea;">support@codeunia.com</a></p>
               
               <p>Best regards,<br>
-              <strong>The Codeunia Team</strong></p>
+              <strong>Codeunia Team</strong></p>
             </div>
             
             <div class="footer">
-              <p>© 2024 Codeunia. All rights reserved.</p>
-              <p>Building the next generation of developers, one internship at a time.</p>
+              <p>© 2025 Codeunia. All rights reserved.</p>
+              <p>Empowering the Next Generation of Coders</p>
             </div>
           </div>
         </body>
@@ -151,8 +151,6 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
             case 'accepted':
                 return {
                     headerColor: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    badgeColor: '#10b981',
-                    badgeText: 'Accepted',
                     title: 'Congratulations! Your Application is Accepted',
                     message: `Fantastic news! Your application for <strong>${internshipTitle}</strong> has been <strong>accepted</strong>. Welcome to the Codeunia family!`,
                     nextSteps: [
@@ -166,8 +164,6 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
             case 'rejected':
                 return {
                     headerColor: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                    badgeColor: '#ef4444',
-                    badgeText: '❌ Not Selected',
                     title: 'Application Update',
                     message: `Thank you for your interest in <strong>${internshipTitle}</strong>. After careful consideration, we have decided not to move forward with your application at this time.`,
                     nextSteps: [
@@ -212,7 +208,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
     const statusContent = getStatusContent()
     
     return {
-        subject: `${statusContent.badgeText} ${internshipTitle} - Application Update`,
+        subject: `${statusContent.badgeText || ''} ${internshipTitle} - Application Update`,
         html: `
             <!DOCTYPE html>
             <html>
@@ -226,18 +222,17 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                         .header { background: ${statusContent.headerColor}; color: white; padding: 30px 20px; text-align: center; }
                         .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
                         .content { padding: 30px 20px; }
-                        .status-badge { background: ${statusContent.badgeColor}; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; margin-bottom: 20px; }
-                        .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid ${statusContent.badgeColor}; }
+                        .status-badge { background: ${statusContent.badgeColor || '#6b7280'}; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; margin-bottom: 20px; }
+                        .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid ${statusContent.badgeColor || '#6b7280'}; }
                         .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-                        .detail-label { font-weight: 600; color: #4b5563; }
+                        .detail-label { font-weight: bold; color: #4b5563; }
                         .detail-value { color: #1f2937; }
                         .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
                         .next-steps h3 { margin-top: 0; color: #1e40af; }
                         .next-steps ul { margin: 0; padding-left: 20px; }
                         .next-steps li { margin: 8px 0; }
-                        .remarks-card { background: #fef3c7; border-radius: 8px; padding: 15px; margin: 15px 0; border-left: 4px solid #f59e0b; }
                         .footer { background: #f8fafc; padding: 20px; text-align: center; color: #6b7280; font-size: 14px; }
-                        .cta-button { background: ${statusContent.badgeColor}; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; margin: 10px 0; font-weight: 500; }
+                        .cta-button { background: ${statusContent.badgeColor || '#6b7280'}; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; margin: 10px 0; font-weight: 500; }
                     </style>
                 </head>
                 <body>
@@ -248,7 +243,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                         </div>
                         
                         <div class="content">
-                            <div class="status-badge">${statusContent.badgeText}</div>
+                            ${statusContent.badgeText ? `<div class="status-badge">${statusContent.badgeText}</div>` : ''}
                             
                             <p>Hi ${applicantName},</p>
                             
@@ -257,45 +252,38 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                             <div class="details-card">
                                 <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
                                 <div class="detail-row">
-                                    <span class="detail-label">Internship:</span>
+                                    <span class="detail-label">Internship: </span>
                                     <span class="detail-value">${internshipTitle}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Domain:</span>
+                                    <span class="detail-label">Domain: </span>
                                     <span class="detail-value">${domain}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Level:</span>
+                                    <span class="detail-label">Level: </span>
                                     <span class="detail-value">${level}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Duration:</span>
+                                    <span class="detail-label">Duration: </span>
                                     <span class="detail-value">${duration} weeks</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Status:</span>
-                                    <span class="detail-value" style="color: ${statusContent.badgeColor}; font-weight: 600; text-transform: capitalize;">${newStatus}</span>
+                                    <span class="detail-label">Status: </span>
+                                    <span class="detail-value" style="color: ${statusContent.badgeColor || '#6b7280'}; font-weight: 600; text-transform: capitalize;">${newStatus}</span>
                                 </div>
                                 ${startDate ? `
                                     <div class="detail-row">
-                                        <span class="detail-label">Start Date:</span>
+                                        <span class="detail-label">Start Date: </span>
                                         <span class="detail-value">${new Date(startDate).toLocaleDateString()}</span>
                                     </div>
                                 ` : ''}
                                 ${endDate ? `
                                     <div class="detail-row">
-                                        <span class="detail-label">End Date:</span>
+                                        <span class="detail-label">End Date: </span>
                                         <span class="detail-value">${new Date(endDate).toLocaleDateString()}</span>
                                     </div>
                                 ` : ''}
                             </div>
-                            
-                            ${remarks ? `
-                                <div class="remarks-card">
-                                    <h4 style="margin-top: 0; color: #92400e;">Additional Notes</h4>
-                                    <p style="margin-bottom: 0; font-style: italic;">"${remarks}"</p>
-                                </div>
-                            ` : ''}
                             
                             ${repoUrl ? `
                                 <div class="details-card">
@@ -309,32 +297,30 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                                 <ul>
                                     ${statusContent.nextSteps.map(step => `<li>${step}</li>`).join('')}
                                 </ul>
-                                ${newStatus === 'accepted' ? `
-                                    <div style="background: #fef3c7; border-radius: 8px; padding: 15px; margin-top: 15px; border-left: 4px solid #f59e0b;">
-                                        <h4 style="margin-top: 0; color: #92400e;">📎 Offer Letter Attached</h4>
-                                        <p style="margin-bottom: 0; font-size: 14px;">
-                                            Please find your official internship offer letter attached to this email. 
-                                            Review the terms and reply to confirm your acceptance within 7 days.
-                                        </p>
-                                    </div>
-                                ` : ''}
                             </div>
                             
                             ${newStatus === 'accepted' ? `
+                                <div style="background: #fef3c7; border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+                                    <h4 style="margin-top: 0; color: #92400e;">📎 Offer Letter Attached</h4>
+                                    <p style="margin-bottom: 0; font-size: 14px;">
+                                        Please find your official internship offer letter attached to this email. 
+                                    </p>
+                                </div>
+                                
                                 <div style="text-align: center; margin: 20px 0;">
-                                    <a href="https://discord.gg/codeunia" class="cta-button">Join Our Discord Community</a>
+                                    <a href="https://discord.gg/codeunia" style="background: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: 500;">Join Our Discord Community</a>
                                 </div>
                             ` : ''}
                             
-                            <p>If you have any questions, feel free to reply to this email or contact us at <a href="mailto:connect@codeunia.com" style="color: ${statusContent.badgeColor};">connect@codeunia.com</a></p>
+                           <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: ${statusContent.badgeColor || '#6b7280'};">support@codeunia.in</a></p>
                             
                             <p>Best regards,<br>
-                            <strong>The Codeunia Team</strong></p>
+                            <strong>Codeunia Team</strong></p>
                         </div>
                         
                         <div class="footer">
-                            <p>© 2024 Codeunia. All rights reserved.</p>
-                            <p>Building the next generation of developers, one internship at a time.</p>
+                            <p>© 2025 Codeunia. All rights reserved.</p>
+                            <p>Empowering the Next Generation of Coders</p>
                         </div>
                     </div>
                 </body>
