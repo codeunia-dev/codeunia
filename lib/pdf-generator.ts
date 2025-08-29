@@ -231,16 +231,13 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
         <!-- Benefits -->
         <div class="benefits">
           <h3>What You'll Get</h3>
-         <ul>
+        <ul>
   <li>Hands-on experience with real-world projects</li>
   <li>Certificate of completion upon successful internship</li>
-  <li>Weekly code reviews and feedback sessions</li>
-  <li>Mentorship sessions with industry professionals</li>
-  <li>Portfolio projects to showcase your skills</li>
+  <li>Regular mentorship and feedback through weekly code reviews with industry professionals</li>
   ${isPaid ? `
     <li>One-on-one mentorship from industry professionals</li>
     <li>Letter of recommendation (based on performance)</li>
-    <li>Competitive stipend for your contributions</li>
   ` : ''}
 </ul>
         </div>   
@@ -252,14 +249,14 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           </div>
         ` : ''}
         
-        <div class="content">
+        <div class="content" style="margin-bottom: 15px;">
           <p>
             We look forward to working with you and supporting your growth as a developer. 
             If you have any questions about this offer or the internship program, please don't 
             hesitate to reach out to us.
           </p>
           
-          <p>Welcome aboard!</p>
+          <p style="margin-bottom: 8px;">Welcome aboard!</p>
         </div>
         
         <!-- Footer -->
