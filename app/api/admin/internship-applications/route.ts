@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendStatusUpdateEmail } from '@/lib/services/email'
 
 // NOTE: Protect this route via middleware/admin auth in your app.
 const service = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
@@ -37,7 +38,7 @@ export async function GET() {
 // Update application: expects { id, status?, remarks? }
 export async function PATCH(request: Request) {
   try {
-    const body = await request.json() as { 
+    const body = await request.json() as {
       id?: string
       status?: string
       remarks?: string
@@ -45,6 +46,17 @@ export async function PATCH(request: Request) {
       duration_weeks?: number
     }
     if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+    // Get current application data before update (for email comparison)
+    const { data: currentApp, error: fetchError } = await service
+      .from('internship_applications')
+      .select('id, email, internship_id, domain, level, status, duration_weeks, start_date, end_date')
+      .eq('id', body.id)
+      .single()
+
+    if (fetchError || !currentApp) {
+      return NextResponse.json({ error: 'Application not found' }, { status: 404 })
+    }
 
     const update: Record<string, unknown> = {}
     if (body.status) update.status = body.status
@@ -56,7 +68,7 @@ export async function PATCH(request: Request) {
     if (body.status === 'accepted') {
       const now = new Date()
       const startISO = now.toISOString()
-      const weeks = body.duration_weeks === 6 ? 6 : body.duration_weeks === 4 ? 4 : undefined
+      const weeks = body.duration_weeks === 6 ? 6 : body.duration_weeks === 4 ? 4 : currentApp.duration_weeks || 4
       if (weeks) {
         const end = new Date(now)
         end.setDate(end.getDate() + weeks * 7)
@@ -72,6 +84,56 @@ export async function PATCH(request: Request) {
       .select('id, status, remarks, repo_url, duration_weeks, start_date, end_date')
       .single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Send status update email if status changed
+    if (body.status && body.status !== currentApp.status) {
+      try {
+        // Get user profile for name
+        const { data: profile } = await service
+          .from('profiles')
+          .select('first_name, last_name')
+          .eq('email', currentApp.email)
+          .single()
+
+        const applicantName = profile
+          ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Codeunia User'
+          : 'Codeunia User'
+
+        // Map internship ID to title
+        const internshipTitles: Record<string, string> = {
+          'free-basic': 'Codeunia Starter Internship',
+          'paid-pro': 'Codeunia Pro Internship'
+        }
+
+        const emailResult = await sendStatusUpdateEmail({
+          applicantName,
+          applicantEmail: currentApp.email,
+          internshipTitle: internshipTitles[currentApp.internship_id] || currentApp.internship_id,
+          internshipId: currentApp.internship_id,
+          domain: currentApp.domain,
+          level: currentApp.level,
+          duration: data.duration_weeks || currentApp.duration_weeks || 4,
+          oldStatus: currentApp.status,
+          newStatus: body.status,
+          remarks: body.remarks,
+          repoUrl: body.repo_url,
+          startDate: data.start_date,
+          endDate: data.end_date
+        })
+
+        if (emailResult.success && !emailResult.skipped) {
+          console.log(`✅ Status update email sent to ${currentApp.email}: ${currentApp.status} → ${body.status}`)
+        } else if (emailResult.skipped) {
+          console.log(`⏭️ Status update email skipped (no change): ${currentApp.email}`)
+        } else {
+          console.error(`❌ Failed to send status update email to ${currentApp.email}:`, emailResult.error)
+        }
+      } catch (emailError) {
+        console.error('❌ Status update email error:', emailError)
+        // Don't fail the update if email fails
+      }
+    }
+
     return NextResponse.json({ application: data })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Server error'
