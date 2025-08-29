@@ -55,7 +55,7 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
             .content { padding: 30px 20px; }
             .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #667eea; }
             .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-            .detail-label { font-weight: bold; color: #000000; }
+            .detail-label { font-weight: bold; color: #000000; margin-right: 6px; }
             .detail-value { color: #1f2937; }
             .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
             .next-steps h3 { margin-top: 0; color: #1e40af; }
@@ -75,33 +75,33 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
             <div class="content">
               <p>Hi ${applicantName},</p>
               
-              <p>Great news! Your application for <strong>${internshipTitle}</strong> has been successfully submitted and confirmed.</p>
+             <p>Great news! Your application for <strong>${internshipTitle}</strong> has been successfully submitted and is under review.</p>
               
               <div class="details-card">
                 <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
                 <div class="detail-row">
-                  <span class="detail-label">Internship: </span>
+                  <span class="detail-label">Internship:</span>
                   <span class="detail-value">${internshipTitle}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Domain: </span>
+                  <span class="detail-label">Domain:</span>
                   <span class="detail-value">${domain}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Level: </span>
+                  <span class="detail-label">Level:</span>
                   <span class="detail-value">${level}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Duration: </span>
+                  <span class="detail-label">Duration:</span>
                   <span class="detail-value">${duration} weeks</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Type: </span>
+                  <span class="detail-label">Type:</span>
                   <span class="detail-value">${isPaid ? `Paid (₹${amountPaid})` : 'Free'}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Status: </span>
-                  <span class="detail-value" style="color: #10b981; font-weight: 600;">Under Review</span>
+                  <span class="detail-label">Status:</span>
+                  <span class="detail-value" style="color: #667eea; font-weight: 600;">Under Review</span>
                 </div>
               </div>
               
@@ -120,10 +120,10 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
   <li>Join our <a href="https://chat.whatsapp.com/your-whatsapp-link" style="color: #667eea;">WhatsApp community</a> to stay connected with peers and mentors</li>
   <li>Join our <a href="https://discord.gg/codeunia" style="color: #667eea;">Discord community</a> for discussions and resources</li>
   <li>Follow us on <a href="https://linkedin.com/company/codeunia" style="color: #667eea;">LinkedIn</a> for the latest updates and announcements</li>
-  <li>Explore our <a href="https://codeunia.com/blog" style="color: #667eea;">blog</a> for learning resources and insights</li>
+  <li>Explore our <a href="https://codeunia.com/blog" style="color: #667eea;">website</a> for learning resources and insights</li>
 </ul>
               
-              <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: #667eea;">support@codeunia.in</a></p>
+              <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: #2563eb; text-decoration: underline;">support@codeunia.in</a></p>
               
               <p>Best regards,<br>
               <strong>Codeunia Team</strong></p>
@@ -227,7 +227,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                             (statusContent.badgeColor || '#6b7280')
                         }; }
                         .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-                        .detail-label { font-weight: bold; color: #000000; }
+                        .detail-label { font-weight: bold; color: #000000; margin-right: 6px; }
                         .detail-value { color: #1f2937; }
                         .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
                         .next-steps h3 { margin-top: 0; color: #1e40af; }
@@ -254,23 +254,23 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                             <div class="details-card">
                                 <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
                                 <div class="detail-row">
-                                    <span class="detail-label">Internship: </span>
+                                    <span class="detail-label">Internship:</span>
                                     <span class="detail-value">${internshipTitle}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Domain: </span>
+                                    <span class="detail-label">Domain:</span>
                                     <span class="detail-value">${domain}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Level: </span>
+                                    <span class="detail-label">Level:</span>
                                     <span class="detail-value">${level}</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Duration: </span>
+                                    <span class="detail-label">Duration:</span>
                                     <span class="detail-value">${duration} weeks</span>
                                 </div>
                                 <div class="detail-row">
-                                    <span class="detail-label">Status: </span>
+                                    <span class="detail-label">Status:</span>
                                     <span class="detail-value" style="color: ${
                                         newStatus === 'accepted' ? '#34C759' : 
                                         newStatus === 'rejected' ? '#EF4444' : 
@@ -279,13 +279,13 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                                 </div>
                                 ${startDate ? `
                                     <div class="detail-row">
-                                        <span class="detail-label">Start Date: </span>
+                                        <span class="detail-label">Start Date:</span>
                                         <span class="detail-value">${new Date(startDate).toLocaleDateString()}</span>
                                     </div>
                                 ` : ''}
                                 ${endDate ? `
                                     <div class="detail-row">
-                                        <span class="detail-label">End Date: </span>
+                                        <span class="detail-label">End Date:</span>
                                         <span class="detail-value">${new Date(endDate).toLocaleDateString()}</span>
                                     </div>
                                 ` : ''}
@@ -326,7 +326,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                                 </div>
                             ` : ''}
                             
-                           <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: ${statusContent.badgeColor || '#6b7280'};">support@codeunia.in</a></p>
+                           <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: #2563eb; text-decoration: underline;">support@codeunia.in</a></p>
                             
                             <p>Best regards,<br>
                             <strong>Codeunia Team</strong></p>
