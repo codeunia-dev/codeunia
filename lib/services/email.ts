@@ -53,10 +53,9 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
             .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
             .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
             .content { padding: 30px 20px; }
-            .success-badge { background: #10b981; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; margin-bottom: 20px; }
             .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #667eea; }
             .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-            .detail-label { font-weight: bold; color: #4b5563; }
+            .detail-label { font-weight: bold; color: #000000; }
             .detail-value { color: #1f2937; }
             .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
             .next-steps h3 { margin-top: 0; color: #1e40af; }
@@ -74,8 +73,6 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
             </div>
             
             <div class="content">
-              <div class="success-badge">✅ Successfully Applied</div>
-              
               <p>Hi ${applicantName},</p>
               
               <p>Great news! Your application for <strong>${internshipTitle}</strong> has been successfully submitted and confirmed.</p>
@@ -83,27 +80,27 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
               <div class="details-card">
                 <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
                 <div class="detail-row">
-                  <span class="detail-label">Internship:</span>
+                  <span class="detail-label">Internship: </span>
                   <span class="detail-value">${internshipTitle}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Domain:</span>
+                  <span class="detail-label">Domain: </span>
                   <span class="detail-value">${domain}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Level:</span>
+                  <span class="detail-label">Level: </span>
                   <span class="detail-value">${level}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Duration:</span>
+                  <span class="detail-label">Duration: </span>
                   <span class="detail-value">${duration} weeks</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Type:</span>
+                  <span class="detail-label">Type: </span>
                   <span class="detail-value">${isPaid ? `Paid (₹${amountPaid})` : 'Free'}</span>
                 </div>
                 <div class="detail-row">
-                  <span class="detail-label">Status:</span>
+                  <span class="detail-label">Status: </span>
                   <span class="detail-value" style="color: #10b981; font-weight: 600;">Under Review</span>
                 </div>
               </div>
@@ -111,28 +108,29 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
               <div class="next-steps">
                 <h3>What happens next?</h3>
                 <ul>
-                  <li><strong>Review Process:</strong> Our team will review your application within 2-3 business days</li>
-                  <li><strong>Status Updates:</strong> You'll receive email notifications about any status changes</li>
-                  <li><strong>Getting Started:</strong> Once approved, you'll receive detailed onboarding instructions</li>
-                  <li><strong>Mentor Assignment:</strong> You'll be paired with an experienced mentor in your domain</li>
-                </ul>
+    <li><strong>Application Review:</strong> Our team will carefully review your application within 2-3 business days</li>
+    <li><strong>Notification:</strong> You’ll be informed of the decision via email</li>
+    <li><strong>Onboarding:</strong> Once approved, you’ll receive detailed onboarding instructions</li>
+    <li><strong>Mentor Connect:</strong> You’ll be introduced to your assigned mentor for guidance throughout the internship</li>
+  </ul>
               </div>
               
               <p>In the meantime, feel free to:</p>
               <ul>
-                <li>Join our <a href="https://discord.gg/codeunia" style="color: #667eea;">Discord community</a></li>
-                <li>Follow us on <a href="https://linkedin.com/company/codeunia" style="color: #667eea;">LinkedIn</a> for updates</li>
-                <li>Check out our <a href="https://codeunia.com/blog" style="color: #667eea;">blog</a> for learning resources</li>
-              </ul>
+  <li>Join our <a href="https://chat.whatsapp.com/your-whatsapp-link" style="color: #667eea;">WhatsApp community</a> to stay connected with peers and mentors</li>
+  <li>Join our <a href="https://discord.gg/codeunia" style="color: #667eea;">Discord community</a> for discussions and resources</li>
+  <li>Follow us on <a href="https://linkedin.com/company/codeunia" style="color: #667eea;">LinkedIn</a> for the latest updates and announcements</li>
+  <li>Explore our <a href="https://codeunia.com/blog" style="color: #667eea;">blog</a> for learning resources and insights</li>
+</ul>
               
-              <p>If you have any questions, feel free to reply to this email or contact us at <a href="mailto:support@codeunia.com" style="color: #667eea;">support@codeunia.com</a></p>
+              <p>If you have any questions, feel free to contact us at <a href="mailto:support@codeunia.in" style="color: #667eea;">support@codeunia.in</a></p>
               
               <p>Best regards,<br>
               <strong>Codeunia Team</strong></p>
             </div>
             
             <div class="footer">
-              <p>© 2025 Codeunia. All rights reserved.</p>
+              <p> 2025 Codeunia. All rights reserved.</p>
               <p>Empowering the Next Generation of Coders</p>
             </div>
           </div>
@@ -154,12 +152,12 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                     title: 'Congratulations! Your Application is Accepted',
                     message: `Fantastic news! Your application for <strong>${internshipTitle}</strong> has been <strong>accepted</strong>. Welcome to the Codeunia family!`,
                     nextSteps: [
-                        '<strong>Onboarding:</strong> You\'ll receive detailed onboarding instructions within 24 hours',
-                        '<strong>Mentor Assignment:</strong> You\'ll be paired with an experienced mentor in your domain',
-                        '<strong>Project Setup:</strong> Access to your project repository and development environment',
-                        '<strong>Schedule:</strong> Weekly check-ins and milestone reviews will be scheduled',
-                        '<strong>Community Access:</strong> Join our exclusive intern Discord channels'
-                    ]
+                        '<strong>Share on LinkedIn:</strong> Post your attached offer letter on LinkedIn and tag <strong>Codeunia</strong> in your post',
+                        '<strong>Join WhatsApp Group:</strong> Connect with peers and mentors by joining our official WhatsApp group <a href="https://chat.whatsapp.com/your-group-link" target="_blank">here</a>',
+                        '<strong>Mentor Connect:</strong> Kindly follow your assigned mentors on LinkedIn for guidance and updates <a href="https://www.linkedin.com/in/848deepak/" target="_blank">Mentor 1</a>, <a href="https://www.linkedin.com/in/akshaykumar0611/" target="_blank">Mentor 2</a>',
+                        '<strong>Follow Us:</strong> Stay updated by following <a href="https://linkedin.com/company/codeunia" target="_blank">Codeunia on LinkedIn</a> and our <a href="https://github.com/Codeunia" target="_blank">GitHub organization</a>',
+                        '<strong>Guidelines:</strong> Please follow the internship guidelines that will be shared in the WhatsApp group throughout the program'
+                    ]                                              
                 }
             case 'rejected':
                 return {
@@ -223,9 +221,13 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                         .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
                         .content { padding: 30px 20px; }
                         .status-badge { background: ${statusContent.badgeColor || '#6b7280'}; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-size: 14px; font-weight: 500; margin-bottom: 20px; }
-                        .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid ${statusContent.badgeColor || '#6b7280'}; }
+                        .details-card { background: #f8fafc; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid ${
+                            newStatus === 'accepted' ? '#10b981' : 
+                            newStatus === 'rejected' ? '#ef4444' : 
+                            (statusContent.badgeColor || '#6b7280')
+                        }; }
                         .detail-row { display: flex; justify-content: space-between; margin: 8px 0; }
-                        .detail-label { font-weight: bold; color: #4b5563; }
+                        .detail-label { font-weight: bold; color: #000000; }
                         .detail-value { color: #1f2937; }
                         .next-steps { background: #eff6ff; border-radius: 8px; padding: 20px; margin: 20px 0; }
                         .next-steps h3 { margin-top: 0; color: #1e40af; }
@@ -269,7 +271,11 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                                 </div>
                                 <div class="detail-row">
                                     <span class="detail-label">Status: </span>
-                                    <span class="detail-value" style="color: ${statusContent.badgeColor || '#6b7280'}; font-weight: 600; text-transform: capitalize;">${newStatus}</span>
+                                    <span class="detail-value" style="color: ${
+                                        newStatus === 'accepted' ? '#34C759' : 
+                                        newStatus === 'rejected' ? '#EF4444' : 
+                                        (statusContent.badgeColor || '#6b7280')
+                                    }; font-weight: 600; text-transform: capitalize;">${newStatus}</span>
                                 </div>
                                 ${startDate ? `
                                     <div class="detail-row">
@@ -286,9 +292,17 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                             </div>
                             
                             ${repoUrl ? `
-                                <div class="details-card">
+                                <div class="details-card" style="border-left-color: ${
+                                    newStatus === 'accepted' ? '#10b981' : 
+                                    newStatus === 'rejected' ? '#ef4444' : 
+                                    (statusContent.badgeColor || '#6b7280')
+                                };">
                                     <h4 style="margin-top: 0; color: #1f2937;">Project Repository</h4>
-                                    <p><a href="${repoUrl}" style="color: ${statusContent.badgeColor}; text-decoration: none;">🔗 ${repoUrl}</a></p>
+                                    <p><a href="${repoUrl}" style="color: ${
+                                        newStatus === 'accepted' ? '#10b981' : 
+                                        newStatus === 'rejected' ? '#ef4444' : 
+                                        (statusContent.badgeColor || '#6b7280')
+                                    }; text-decoration: none;">🔗 ${repoUrl}</a></p>
                                 </div>
                             ` : ''}
                             
@@ -319,7 +333,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                         </div>
                         
                         <div class="footer">
-                            <p>© 2025 Codeunia. All rights reserved.</p>
+                            <p> 2025 Codeunia. All rights reserved.</p>
                             <p>Empowering the Next Generation of Coders</p>
                         </div>
                     </div>
