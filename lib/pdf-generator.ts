@@ -250,8 +250,8 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
       <div class="container">
         <!-- Header -->
         <div class="header">
-          <div class="logo">🚀 Codeunia</div>
-          <div class="company-info">Building the Next Generation of Developers</div>
+          <div class="logo">Codeunia</div>
+          <div class="company-info">Empowering the Next Generation of Coders</div>
           <div class="company-info">connect@codeunia.com | www.codeunia.com</div>
         </div>
         
@@ -281,17 +281,6 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
             Congratulations! We are delighted to offer you the position of <strong>${internshipTitle}</strong> 
             intern at Codeunia. After careful review of your application and qualifications, we believe 
             you will be a valuable addition to our team.
-          </p>
-          
-          <div class="highlight">
-            <p style="margin: 0; font-weight: 600; color: #10b981;">
-              🎉 Welcome to the Codeunia family! We're excited to have you join our mission of 
-              empowering the next generation of developers.
-            </p>
-          </div>
-          
-          <p>
-            This offer is contingent upon your acceptance of the terms and conditions outlined in this letter.
           </p>
         </div>
         
@@ -343,34 +332,19 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
         <!-- Benefits -->
         <div class="benefits">
           <h3>What You'll Get</h3>
-          <ul>
-            <li>Hands-on experience with real-world projects</li>
-            <li>One-on-one mentorship from industry professionals</li>
-            <li>Weekly code reviews and feedback sessions</li>
-            <li>Certificate of completion upon successful internship</li>
-            <li>Letter of recommendation (based on performance)</li>
-            <li>Access to exclusive Codeunia community and events</li>
-            <li>Portfolio projects to showcase your skills</li>
-            <li>Networking opportunities with fellow developers</li>
-            ${isPaid ? '<li>Competitive stipend for your contributions</li>' : ''}
-          </ul>
-        </div>
-        
-        <!-- Next Steps -->
-        <div class="next-steps">
-          <h3>Next Steps</h3>
-          <p><strong>To accept this offer:</strong></p>
-          <ul style="margin: 12px 0; padding-left: 20px;">
-            <li>Reply to this email confirming your acceptance</li>
-            <li>Join our Discord community for onboarding</li>
-            <li>Complete the intern onboarding checklist</li>
-            <li>Attend the orientation session (details will be shared)</li>
-          </ul>
-          <p>
-            Please confirm your acceptance by replying to this email within <strong>7 days</strong> 
-            of receiving this offer.
-          </p>
-        </div>
+         <ul>
+  <li>Hands-on experience with real-world projects</li>
+  <li>Certificate of completion upon successful internship</li>
+  <li>Weekly code reviews and feedback sessions</li>
+  <li>Mentorship sessions with industry professionals</li>
+  <li>Portfolio projects to showcase your skills</li>
+  ${isPaid ? `
+    <li>One-on-one mentorship from industry professionals</li>
+    <li>Letter of recommendation (based on performance)</li>
+    <li>Competitive stipend for your contributions</li>
+  ` : ''}
+</ul>
+        </div>   
         
         ${remarks ? `
           <div class="highlight">
@@ -387,22 +361,6 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           </p>
           
           <p>Welcome aboard!</p>
-        </div>
-        
-        <!-- Signature -->
-        <div class="signature-section">
-          <div class="signature-box">
-            <div class="signature-line"></div>
-            <div><strong>Codeunia Team</strong></div>
-            <div>Internship Program</div>
-            <div>connect@codeunia.com</div>
-          </div>
-          <div class="signature-box">
-            <div class="signature-line"></div>
-            <div><strong>Accepted by</strong></div>
-            <div>${applicantName}</div>
-            <div>Date: ___________</div>
-          </div>
         </div>
         
         <!-- Footer -->
