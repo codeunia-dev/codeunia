@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_CACHE_DIR": "/tmp/.cache/puppeteer"
+  },
+  "build": {
+    "env": {
+      "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    }
+  }
+}
