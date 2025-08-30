@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createCacheHeaders, CACHE_CONFIGS } from '@/lib/cache-headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -30,9 +31,10 @@ export async function GET() {
     // Check cache first
     const now = Date.now();
     if (cache && (now - cache.timestamp) < CACHE_DURATION) {
+      const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
       return NextResponse.json(cache.data, {
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          ...headers,
           'X-Cache': 'HIT'
         }
       });
@@ -95,9 +97,10 @@ export async function GET() {
       timestamp: now
     };
 
+    const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
     return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        ...headers,
         'X-Cache': 'MISS'
       }
     });
