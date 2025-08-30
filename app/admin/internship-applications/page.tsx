@@ -97,7 +97,8 @@ export default function AdminInternshipApplicationsPage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await apiFetch('/api/admin/internship-applications')
+      // Add cache-busting parameter to force fresh data
+      const res = await apiFetch(`/api/admin/internship-applications?t=${Date.now()}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to load applications')
       setRows(data.applications || [])
