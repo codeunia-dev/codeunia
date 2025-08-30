@@ -126,7 +126,7 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           <!-- Header Content -->
           <tr>
             <td style="padding:20px 20px 10px 20px;vertical-align:top;">
-              <img src="https://i.ibb.co/3Wn2Q7y/codeunia-logo-email.png" width="40" height="40" alt="Codeunia Logo" style="display:inline-block;vertical-align:middle;border-radius:12px;background:#007aff;">
+              <img src="https://ocnorlktyfswjqgvzrve.supabase.co/storage/v1/object/public/public-assets/codeunialogo.jpg" width="40" height="40" alt="Codeunia Logo" style="display:inline-block;vertical-align:middle;border-radius:12px;background:#007aff;">
               <span style="font-size:22px;color:#007aff;font-weight:bold;font-family:Arial,sans-serif;vertical-align:middle;margin-left:10px;">Codeunia</span>
             </td>
             <td style="padding:20px 20px 10px 0;text-align:right;vertical-align:top;font-size:13px;font-family:Arial,sans-serif;color:#111;border-left:3px solid #007bff;">
