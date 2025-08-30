@@ -32,7 +32,14 @@ export async function GET() {
     const { data: d3 } = await service.from('internship_applications').select('*').order('created_at', { ascending: false })
     data = d3 || []
   }
-  return NextResponse.json({ applications: data })
+  const response = NextResponse.json({ applications: data })
+  
+  // Prevent caching to ensure fresh data
+  response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  response.headers.set('Pragma', 'no-cache')
+  response.headers.set('Expires', '0')
+  
+  return response
 }
 
 // Update application: expects { id, status?, remarks? }
