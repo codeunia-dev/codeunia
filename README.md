@@ -4,9 +4,9 @@
 
 ## 🚀 Features
 
-- 🔍 Discover Upcoming Hackathons  
+- 🔍 Discover Upcoming Hackathons   
 - 🧠 Latest News in Artificial Intelligence & Machine Learning  
-- ✍ Developer-Focused Blog Posts  
+- ✍ Developer-Focused Blog Posts   
 - 📅 Event Calendar and Reminders  
 - 🧰 Curated Tools and Resources for Developers *(Coming Soon)*  
 - 📬 Newsletter Subscription *(Coming Soon)*  
