@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createCacheHeaders, CACHE_CONFIGS } from '@/lib/cache-headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -29,9 +30,10 @@ export async function GET(
     const now = Date.now();
     const cached = cache.get(userId);
     if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+      const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
       return NextResponse.json(cached.data, {
         headers: {
-          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+          ...headers,
           'X-Cache': 'HIT'
         }
       });
@@ -61,9 +63,10 @@ export async function GET(
         };
         
         cache.set(userId, { data: defaultData, timestamp: now });
+        const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
         return NextResponse.json(defaultData, {
           headers: {
-            'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+            ...headers,
             'X-Cache': 'MISS'
           }
         });
@@ -81,9 +84,10 @@ export async function GET(
       };
       
       cache.set(userId, { data: defaultData, timestamp: now });
+      const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
       return NextResponse.json(defaultData, {
         headers: {
-          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+          ...headers,
           'X-Cache': 'MISS'
         }
       });
@@ -115,9 +119,10 @@ export async function GET(
     // Update cache
     cache.set(userId, { data: responseData, timestamp: now });
 
+    const headers = createCacheHeaders(CACHE_CONFIGS.SHORT);
     return NextResponse.json(responseData, {
       headers: {
-        'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=300',
+        ...headers,
         'X-Cache': 'MISS'
       }
     });

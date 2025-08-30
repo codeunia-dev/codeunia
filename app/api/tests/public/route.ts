@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { serverCache } from "@/lib/cache";
+import { createCacheHeaders, CACHE_CONFIGS } from "@/lib/cache-headers";
+
+// In-memory cache for this API route
+const cache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // GET: Get public tests for display
 export async function GET() {
   try {
     // Check cache first
     const cacheKey = 'public-tests';
-    const cached = serverCache.get(cacheKey);
+    const now = Date.now();
+    const cached = cache.get(cacheKey);
     
-    if (cached) {
-      return NextResponse.json(cached);
+    if (cached && (now - cached.timestamp) < CACHE_DURATION) {
+      const headers = createCacheHeaders(CACHE_CONFIGS.MEDIUM);
+      return NextResponse.json(cached.data, {
+        headers: {
+          ...headers,
+          'X-Cache': 'HIT'
+        }
+      });
     }
 
     const supabase = await createClient();
@@ -60,9 +71,15 @@ export async function GET() {
     };
 
     // Cache the response for 5 minutes
-    serverCache.set(cacheKey, response, 300000);
+    cache.set(cacheKey, { data: response, timestamp: now });
 
-    return NextResponse.json(response);
+    const headers = createCacheHeaders(CACHE_CONFIGS.MEDIUM);
+    return NextResponse.json(response, {
+      headers: {
+        ...headers,
+        'X-Cache': 'MISS'
+      }
+    });
   } catch (error) {
     console.error('Error in public tests route:', error);
     // Return empty response instead of 500 error
