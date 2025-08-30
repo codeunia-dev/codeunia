@@ -112,10 +112,11 @@ export default function InternshipLandingPage() {
   const loadApplied = useCallback(async () => {
     try {
       if (!user?.id) return
-      const res = await apiFetch('/api/internships/my-applications')
+      // Add cache-busting parameter to force fresh data
+      const res = await apiFetch(`/api/internships/my-applications?t=${Date.now()}`)
       const data = await res.json()
       if (res.ok && Array.isArray(data.appliedIds)) setAppliedIds(data.appliedIds)
-    } finally {}
+    } finally { }
   }, [user?.id])
 
   // initial and on user change
@@ -159,17 +160,17 @@ export default function InternshipLandingPage() {
       }
       if (selected.type === 'Paid') {
         const basePrice = selectedDuration === 6 ? 999 : 699
-        
+
         // Check if user is a premium member for 50% discount
-        const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+        const isPremium = profile?.is_premium && profile?.premium_expires_at &&
           new Date(profile.premium_expires_at) > new Date()
-        
+
         const price = isPremium ? Math.floor(basePrice / 2) : basePrice
-        
+
         if (isPremium) {
           toast.success(`🎉 Premium member discount applied! 50% off (₹${basePrice} → ₹${price})`)
         }
-        
+
         // Create Razorpay order
         const orderRes = await apiFetch('/api/internships/create-order', {
           method: 'POST',
@@ -200,7 +201,7 @@ export default function InternshipLandingPage() {
             // On successful payment, record application with payment details
             try {
               const basePrice = selectedDuration === 6 ? 999 : 699
-              const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+              const isPremium = profile?.is_premium && profile?.premium_expires_at &&
                 new Date(profile.premium_expires_at) > new Date()
               const finalPrice = isPremium ? Math.floor(basePrice / 2) : basePrice
               const discountAmount = basePrice - finalPrice
@@ -226,7 +227,7 @@ export default function InternshipLandingPage() {
               })
               const data = await res.json()
               if (!res.ok) throw new Error(data.error || 'Failed to apply')
-              
+
               toast.success(`🎉 Payment successful! Application submitted for ${selected.title}`)
               setApplyOpen(false)
               loadApplied()
@@ -310,11 +311,11 @@ export default function InternshipLandingPage() {
                     <p className="text-sm text-muted-foreground">{i.description}</p>
                     {i.type === 'Paid' ? (
                       <div className="text-sm">
-                        <span className="font-semibold">Price:</span> 
+                        <span className="font-semibold">Price:</span>
                         {(() => {
-                          const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                          const isPremium = profile?.is_premium && profile?.premium_expires_at &&
                             new Date(profile.premium_expires_at) > new Date()
-                          
+
                           if (isPremium) {
                             return (
                               <div className="space-y-1">
@@ -360,7 +361,7 @@ export default function InternshipLandingPage() {
                       ) : i.type === 'Paid' ? (
                         <Button onClick={() => openApply(i)} className="w-full">
                           {(() => {
-                            const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                            const isPremium = profile?.is_premium && profile?.premium_expires_at &&
                               new Date(profile.premium_expires_at) > new Date()
                             return isPremium ? 'Apply • Pay ₹350/₹500 (Premium)' : 'Apply • Pay ₹699/₹999'
                           })()}
@@ -432,12 +433,12 @@ export default function InternshipLandingPage() {
                   {selected?.type === 'Paid' ? (
                     // Paid internships with pricing
                     (() => {
-                      const isPremium = profile?.is_premium && profile?.premium_expires_at && 
+                      const isPremium = profile?.is_premium && profile?.premium_expires_at &&
                         new Date(profile.premium_expires_at) > new Date()
-                      
+
                       const price4weeks = isPremium ? 350 : 699 // 50% discount
                       const price6weeks = isPremium ? 500 : 999 // 50% discount (rounded)
-                      
+
                       return (
                         <>
                           <option value="4">
@@ -457,12 +458,12 @@ export default function InternshipLandingPage() {
                     </>
                   )}
                 </select>
-                {selected?.type === 'Paid' && profile?.is_premium && profile?.premium_expires_at && 
+                {selected?.type === 'Paid' && profile?.is_premium && profile?.premium_expires_at &&
                   new Date(profile.premium_expires_at) > new Date() && (
-                  <p className="text-sm text-green-600 mt-1 font-medium">
-                    🎉 Premium Member Discount: 50% off applied!
-                  </p>
-                )}
+                    <p className="text-sm text-green-600 mt-1 font-medium">
+                      🎉 Premium Member Discount: 50% off applied!
+                    </p>
+                  )}
               </div>
             </div>
 

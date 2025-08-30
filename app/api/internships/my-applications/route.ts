@@ -23,7 +23,14 @@ export async function GET() {
     }
 
     const ids = (data || []).map((r) => r.internship_id)
-    return NextResponse.json({ appliedIds: ids })
+    const response = NextResponse.json({ appliedIds: ids })
+    
+    // Prevent caching to ensure fresh data
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (e) {
     console.error('Server error:', e)
     const msg = e instanceof Error ? e.message : 'Server error'
