@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:fast": "NODE_OPTIONS='--max-old-space-size=4096' next dev",
-    "build": "next build",
+    "build": "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true next build",
     "build:analyze": "ANALYZE=true next build",
     "build:production": "npm run build && npm run cache:invalidate",
     "start": "next start",
@@ -33,6 +33,7 @@
     "@react-pdf/renderer": "^4.3.0",
     "@react-three/drei": "^10.2.0",
     "@react-three/fiber": "^9.0.0-alpha.8",
+    "@sparticuz/chromium": "^138.0.2",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.39.0",
     "@tabler/icons-react": "^3.34.0",
@@ -57,6 +58,7 @@
     "node-fetch": "^3.3.2",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^24.16.2",
+    "puppeteer-core": "^24.17.1",
     "qrcode": "^1.5.4",
     "razorpay": "^2.9.6",
     "react": "^19.0.0",
@@ -75,6 +77,9 @@
     "three-globe": "^2.42.11",
     "typewriter-effect": "^2.22.0",
     "uuid": "^11.1.0"
+  },
+  "config": {
+    "puppeteer_skip_chromium_download": true
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

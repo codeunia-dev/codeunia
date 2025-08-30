@@ -392,6 +392,12 @@ export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
         if (data.newStatus === 'accepted' && data.startDate && data.endDate) {
             try {
                 console.log('🎯 Generating offer letter PDF for accepted application...')
+                console.log('Environment details:', {
+                    nodeEnv: process.env.NODE_ENV,
+                    platform: process.platform,
+                    arch: process.arch,
+                    nodeVersion: process.version
+                })
                 
                 // Map internship ID to title for PDF
                 const internshipTitles: Record<string, string> = {
@@ -409,10 +415,12 @@ export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
                     startDate: data.startDate,
                     endDate: data.endDate,
                     isPaid: data.internshipId === 'paid-pro',
-                    amountPaid: data.internshipId === 'paid-pro' ? 999 : undefined, // You might want to pass this from the data
+                    amountPaid: data.internshipId === 'paid-pro' ? 999 : undefined,
                     repoUrl: data.repoUrl,
                     remarks: data.remarks
                 })
+                
+                console.log('PDF generated successfully, size:', offerLetterPDF.length, 'bytes')
                 
                 // Add PDF attachment
                 emailData.attachments = [
@@ -427,6 +435,14 @@ export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
                 console.log('✅ Offer letter PDF generated and attached')
             } catch (pdfError) {
                 console.error('❌ Failed to generate offer letter PDF:', pdfError)
+                console.error('PDF Error Details:', {
+                    message: pdfError instanceof Error ? pdfError.message : 'Unknown error',
+                    stack: pdfError instanceof Error ? pdfError.stack?.substring(0, 500) : undefined,
+                    environment: process.env.NODE_ENV,
+                    platform: process.platform,
+                    arch: process.arch,
+                    nodeVersion: process.version
+                })
                 // Continue sending email without PDF attachment
             }
         }

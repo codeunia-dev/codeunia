@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+import { jsPDF } from 'jspdf';
 
 interface MembershipCardData {
   name: string;
@@ -21,6 +23,94 @@ export interface InternshipOfferLetterData {
   amountPaid?: number
   repoUrl?: string
   remarks?: string
+}
+
+// Fallback PDF generation using jsPDF for serverless environments
+async function generateOfferLetterFallback(data: InternshipOfferLetterData): Promise<Buffer> {
+  const {
+    applicantName,
+    internshipTitle,
+    domain,
+    level,
+    duration,
+    startDate,
+    endDate,
+    isPaid,
+    remarks
+  } = data
+
+  const doc = new jsPDF()
+
+  // Header
+  doc.setFontSize(20)
+  doc.setTextColor(0, 123, 255)
+  doc.text('Codeunia', 20, 30)
+
+  doc.setFontSize(24)
+  doc.setTextColor(0, 0, 0)
+  doc.text('Internship Offer Letter', 20, 50)
+
+  // Date
+  doc.setFontSize(12)
+  doc.text(`Date: ${new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })}`, 20, 70)
+
+  // Content
+  doc.setFontSize(14)
+  doc.text(`Dear ${applicantName},`, 20, 90)
+
+  const content = [
+    '',
+    'Congratulations! We are delighted to offer you the position of',
+    `${internshipTitle} intern at Codeunia.`,
+    '',
+    `We are pleased to offer you this ${duration}-week internship in the`,
+    `${domain} domain at the ${level} level, starting from`,
+    `${new Date(startDate).toLocaleDateString('en-GB')} to ${new Date(endDate).toLocaleDateString('en-GB')}.`,
+    '',
+    'What You\'ll Get:',
+    '• Hands-on experience with real-world projects',
+    '• Certificate of completion upon successful internship',
+    '• Regular mentorship and feedback through weekly code reviews',
+    ...(isPaid ? [
+      '• One-on-one mentorship from industry professionals',
+      '• Letter of recommendation (based on performance)'
+    ] : []),
+    '',
+    remarks || 'We are excited to have you join our team and look forward to your contributions.',
+    '',
+    'Welcome aboard!',
+    '',
+    'Best regards,',
+    'Codeunia Team'
+  ]
+
+  let yPosition = 110
+  content.forEach(line => {
+    if (line.startsWith('•')) {
+      doc.setFontSize(12)
+    } else {
+      doc.setFontSize(14)
+    }
+
+    if (yPosition > 270) {
+      doc.addPage()
+      yPosition = 20
+    }
+
+    doc.text(line, 20, yPosition)
+    yPosition += line === '' ? 5 : 8
+  })
+
+  // Footer
+  doc.setFontSize(10)
+  doc.setTextColor(100, 100, 100)
+  doc.text('Mohali, Punjab, India | +91-8699025107 | connect@codeunia.com', 20, 280)
+
+  return Buffer.from(doc.output('arraybuffer'))
 }
 
 export async function generateInternshipOfferLetterPDF(data: InternshipOfferLetterData): Promise<Buffer> {
@@ -240,14 +330,82 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
 
   let browser
   try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    // Use serverless-compatible Chrome for production
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    console.log('PDF Generation Environment:', {
+      isProduction,
+      platform: process.platform,
+      arch: process.arch,
+      nodeVersion: process.version,
+      chromiumAvailable: !!chromium,
+      memoryUsage: process.memoryUsage(),
+      env: {
+        VERCEL: process.env.VERCEL,
+        AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME,
+        NETLIFY: process.env.NETLIFY
+      }
     })
 
-    const page = await browser.newPage()
-    await page.setContent(htmlContent, { waitUntil: 'networkidle0' })
+    let executablePath
+    let browserArgs
 
+    // Use @sparticuz/chromium only on Linux platforms (serverless environments)
+    const isLinux = process.platform === 'linux'
+    const useChromium = isProduction && isLinux
+
+    if (useChromium) {
+      try {
+        executablePath = await chromium.executablePath()
+        browserArgs = chromium.args
+        console.log('✅ Using @sparticuz/chromium for Linux production')
+      } catch (error) {
+        console.warn('❌ Failed to get chromium executable path:', error)
+        executablePath = puppeteer.executablePath()
+        browserArgs = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      }
+    } else {
+      executablePath = puppeteer.executablePath()
+      browserArgs = ['--no-sandbox', '--disable-setuid-sandbox']
+      console.log(`✅ Using regular Puppeteer (platform: ${process.platform}, production: ${isProduction})`)
+    }
+
+    const launchOptions = {
+      args: browserArgs,
+      defaultViewport: { width: 1280, height: 720 },
+      executablePath,
+      headless: true,
+      timeout: 30000, // 30 second timeout
+    }
+
+    console.log('Puppeteer launch options:', {
+      argsLength: launchOptions.args?.length,
+      executablePath: typeof launchOptions.executablePath === 'string' ? 'custom' : 'default',
+      headless: launchOptions.headless,
+      timeout: launchOptions.timeout
+    })
+
+    // Launch browser with enhanced error handling
+    console.log('🚀 Attempting to launch browser...')
+    browser = await puppeteer.launch(launchOptions)
+    console.log('✅ Browser launched successfully')
+
+    console.log('📄 Creating new page...')
+    const page = await browser.newPage()
+
+    // Set a reasonable timeout
+    page.setDefaultTimeout(30000)
+
+    console.log('🔧 Setting page content...')
+    await page.setContent(htmlContent, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000
+    })
+
+    // Wait a bit for any dynamic content
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    console.log('📋 Generating PDF...')
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -256,11 +414,28 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
         right: '20px',
         bottom: '20px',
         left: '20px'
-      }
+      },
+      timeout: 30000
     })
+
+    console.log('✅ PDF generated successfully, size:', pdfBuffer.length, 'bytes')
 
     return Buffer.from(pdfBuffer)
 
+  } catch (error) {
+    console.error('❌ Puppeteer PDF generation failed, using fallback')
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack?.substring(0, 1000) : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      code: (error as any)?.code,
+      errno: (error as any)?.errno,
+      syscall: (error as any)?.syscall
+    })
+
+    // Use fallback PDF generation
+    console.log('🔄 Switching to jsPDF fallback...')
+    return await generateOfferLetterFallback(data)
   } finally {
     if (browser) {
       await browser.close()
@@ -539,10 +714,39 @@ export async function generateMembershipCardPDF(data: MembershipCardData): Promi
 
   let browser;
   try {
-    browser = await puppeteer.launch({
+    // Use serverless-compatible Chrome for production
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    let executablePath
+    let browserArgs
+
+    // Use @sparticuz/chromium only on Linux platforms (serverless environments)
+    const isLinux = process.platform === 'linux'
+    const useChromium = isProduction && isLinux
+
+    if (useChromium) {
+      try {
+        executablePath = await chromium.executablePath()
+        browserArgs = chromium.args
+      } catch (error) {
+        console.warn('Failed to get chromium executable path, using default:', error)
+        executablePath = puppeteer.executablePath()
+        browserArgs = ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      }
+    } else {
+      executablePath = puppeteer.executablePath()
+      browserArgs = ['--no-sandbox', '--disable-setuid-sandbox']
+    }
+
+    const launchOptions = {
+      args: browserArgs,
+      defaultViewport: { width: 1280, height: 720 },
+      executablePath,
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+      timeout: 30000,
+    }
+
+    browser = await puppeteer.launch(launchOptions)
 
     const page = await browser.newPage();
     await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
@@ -560,6 +764,10 @@ export async function generateMembershipCardPDF(data: MembershipCardData): Promi
 
     return Buffer.from(pdfBuffer);
 
+  } catch (error) {
+    console.error('Puppeteer membership card PDF generation failed:', error)
+    // For membership cards, we don't have a fallback, so we'll throw the error
+    throw error
   } finally {
     if (browser) {
       await browser.close();
