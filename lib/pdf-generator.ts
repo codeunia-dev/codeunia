@@ -26,7 +26,6 @@ export interface InternshipOfferLetterData {
 export async function generateInternshipOfferLetterPDF(data: InternshipOfferLetterData): Promise<Buffer> {
   const {
     applicantName,
-    applicantEmail,
     internshipTitle,
     domain,
     level,
@@ -34,243 +33,209 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
     startDate,
     endDate,
     isPaid,
-    amountPaid,
-    repoUrl,
     remarks
   } = data
 
   const htmlContent = `
     <!DOCTYPE html>
     <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: white;
-          padding: 40px;
-          width: 210mm;
-          min-height: 297mm;
-          line-height: 1.6;
-          color: #1f2937;
-        }
-        
-        .container {
-          max-width: 180mm;
-          margin: 0 auto;
-          background: white;
-        }
-        
-        .header {
-          text-align: center;
-          margin-bottom: 40px;
-          padding-bottom: 20px;
-          border-bottom: 3px solid #007AFF;
-        }
-        
-        .logo {
-          font-size: 36px;
-          font-weight: bold;
-          color: #007AFF;
-          margin-bottom: 8px;
-        }
-        
-        .company-info {
-          font-size: 14px;
-          color: #000000;
-          margin-bottom: 8px;
-        }
-        
-        .document-title {
-          font-size: 28px;
-          font-weight: bold;
-          color: #1f2937;
-          margin: 30px 0 20px 0;
-          text-align: center;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-        }
-        
-        .date-section {
-          text-align: right;
-          margin-bottom: 30px;
-          font-size: 14px;
-          color: #000000;
-        }
-        
-        .content {
-          font-size: 16px;
-          line-height: 1.8;
-          margin-bottom: 30px;
-        }
-        
-        .content p {
-          margin-bottom: 16px;
-        }
-        
-        .highlight {
-          background: #f0fdf4;
-          padding: 20px;
-          border-radius: 8px;
-          border-left: 4px solid #10b981;
-          margin: 20px 0;
-        }
-        
-        .internship-details {
-          margin-top: 20px;
-        }
-        
-        .internship-details h3 {
-          font-size: 20px;
-          font-weight: bold;
-          color: #10b981;
-          margin-bottom: 16px;
-        }
-        
-        .benefits {
-          margin: 30px 0;
-        }
-        
-        .benefits h3 {
-          font-size: 20px;
-          font-weight: bold;
-          color: #10b981;
-          margin-bottom: 16px;
-        }
-        
-        .benefits ul {
-          list-style: none;
-          padding: 0;
-        }
-        
-        .benefits li {
-          padding: 8px 0;
-          padding-left: 24px;
-          position: relative;
-        }
-        
-        .benefits li:before {
-          content: "•";
-          position: absolute;
-          left: 0;
-          font-size: 20px;
-          line-height: 1;
-        }
-        
-        .next-steps {
-          background: #eff6ff;
-          padding: 20px;
-          border-radius: 8px;
-          border-left: 4px solid #3b82f6;
-          margin: 20px 0;
-        }
-        
-        .next-steps h3 {
-          color: #1e40af;
-          margin-bottom: 12px;
-        }
-        
-        .footer {
-          margin-top: 50px;
-          padding-top: 20px;
-          border-top: 2px solid #e5e7eb;
-          text-align: center;
-          color: #6b7280;
-          font-size: 12px;
-        }
-      </style>
-    </head>
-    <body>
-      
-      <div class="container">
-        <!-- Header -->
-        <div class="header">
-          <div class="logo">Codeunia</div>
-          <div class="company-info">Empowering the Next Generation of Coders</div>
-          <div class="company-info">connect@codeunia.com | www.codeunia.com</div>
-        </div>
-        
-        <!-- Document Title -->
-        <div class="document-title">Internship Offer Letter</div>
-        
-        <!-- Date -->
-        <div class="date-section">
-          Date: ${new Date().toLocaleDateString('en-US', {
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    .document-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #1f2937;
+      margin: 30px 0 20px 0;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .date-section {
+      text-align: right;
+      margin-bottom: 30px;
+      font-size: 14px;
+      color: #000000;
+    }
+    
+    .content {
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 30px;
+    }
+    
+    .content p {
+      margin-bottom: 16px;
+    }
+    
+    .benefits {
+      margin: 30px 0;
+    }
+    
+    .benefits h3 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #10b981;
+      margin-bottom: 16px;
+    }
+    
+    .benefits ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .benefits li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+    }
+    
+    .benefits li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      font-size: 20px;
+      line-height: 1;
+    }
+    
+    .highlight {
+      background: #f0fdf4;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #10b981;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <table width="100%" bgcolor="#f4f6fa" cellpadding="0" cellspacing="0" style="margin:0;padding:0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="border:4px solid #6c63ff;border-radius:16px 0 0 16px;min-width:300px;max-width:600px;">
+          <!-- Header Bar -->
+          <tr>
+            <td colspan="2" bgcolor="#007bff" style="height:40px;border-top-left-radius:16px;border-bottom-right-radius:30px;"></td>
+          </tr>
+          <!-- Header Content -->
+          <tr>
+            <td style="padding:20px 20px 10px 20px;vertical-align:top;">
+              <img src="https://i.ibb.co/3Wn2Q7y/codeunia-logo-email.png" width="40" height="40" alt="Codeunia Logo" style="display:inline-block;vertical-align:middle;border-radius:12px;background:#007aff;">
+              <span style="font-size:22px;color:#007aff;font-weight:bold;font-family:Arial,sans-serif;vertical-align:middle;margin-left:10px;">Codeunia</span>
+            </td>
+            <td style="padding:20px 20px 10px 0;text-align:right;vertical-align:top;font-size:13px;font-family:Arial,sans-serif;color:#111;border-left:3px solid #007bff;">
+              <b style="color:#000;">Phone:</b> <a href="tel:+918699025107" style="color:#007bff;text-decoration:none;">+91-8699025107</a><br>
+              <b style="color:#000;">Web:</b> <a href="https://codeunia.com" style="color:#007bff;text-decoration:none;">codeunia.com</a><br>
+              <b style="color:#000;">ADD:</b> Mohali, Punjab, India
+            </td>
+          </tr>
+          <!-- Divider -->
+          <tr>
+            <td colspan="2" style="padding:0 20px 0 20px;">
+              <hr style="border:0;border-top:2px solid #007bff;margin:10px 0 0 0;">
+            </td>
+          </tr>
+          <!-- Main Content -->
+          <tr>
+            <td colspan="2" style="padding:20px;">
+              <!-- Document Title -->
+              <div class="document-title">Internship Offer Letter</div>
+              
+              <!-- Date -->
+              <div class="date-section">
+                Date: ${new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   })}
-        </div>
-        
-        <!-- Content -->
-        <div class="content">
-          <p>Dear <strong>${applicantName}</strong>,</p>
-          
-          <p>
-            Congratulations! We are delighted to offer you the position of <strong>${internshipTitle}</strong> 
-            intern at Codeunia. After careful review of your application and qualifications, we believe 
-            you will be a valuable addition to our team.
-          </p>
+              </div>
+              
+              <!-- Content -->
+              <div class="content">
+                <p>Dear <strong>${applicantName}</strong>,</p>
+                
+                <p>
+                  Congratulations! We are delighted to offer you the position of <strong>${internshipTitle}</strong> 
+                  intern at Codeunia. After careful review of your application and qualifications, we believe 
+                  you will be a valuable addition to our team.
+                </p>
 
-          <p>
-            We are pleased to offer you this <strong>${duration}-week</strong> internship in the <strong>${domain}</strong> domain at the <strong>${level}</strong> level, 
-            starting from <strong>${new Date(startDate).toLocaleDateString('en-GB')}</strong> to <strong>${new Date(endDate).toLocaleDateString('en-GB')}</strong>.
-          </p>
-          
-          <p>
-            ${remarks || 'We are excited to have you join our team and look forward to your contributions.'}
-          </p>
-        </div>
-        
-        <!-- Benefits -->
-        <div class="benefits">
-          <h3>What You'll Get</h3>
-        <ul>
-  <li>Hands-on experience with real-world projects</li>
-  <li>Certificate of completion upon successful internship</li>
-  <li>Regular mentorship and feedback through weekly code reviews with industry professionals</li>
-  ${isPaid ? `
-    <li>One-on-one mentorship from industry professionals</li>
-    <li>Letter of recommendation (based on performance)</li>
-  ` : ''}
-</ul>
-        </div>   
-        
-        ${remarks ? `
-          <div class="highlight">
-            <h4 style="color: #10b981; margin-bottom: 8px;">Additional Notes</h4>
-            <p style="margin: 0; font-style: italic;">${remarks}</p>
-          </div>
-        ` : ''}
-        
-        <div class="content" style="margin-bottom: 15px;">
-          <p>
-            We look forward to working with you and supporting your growth as a developer. 
-            If you have any questions about this offer or the internship program, please don't 
-            hesitate to reach out to us.
-          </p>
-          
-          <p style="margin-bottom: 8px;">Welcome aboard!</p>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-          <div>
-            This offer letter is confidential and intended solely for the named recipient.
-          </div>
-          <div style="margin-top: 8px;">
-            &copy; ${new Date().getFullYear()} Codeunia. All rights reserved.
-          </div>
-        </div>
-      </div>
-    </body>
-    </html>
+                <p>
+                  We are pleased to offer you this <strong>${duration}-week</strong> internship in the <strong>${domain}</strong> domain at the <strong>${level}</strong> level, 
+                  starting from <strong>${new Date(startDate).toLocaleDateString('en-GB')}</strong> to <strong>${new Date(endDate).toLocaleDateString('en-GB')}</strong>.
+                </p>
+                
+                <p>
+                  ${remarks || 'We are excited to have you join our team and look forward to your contributions.'}
+                </p>
+              </div>
+              
+              <!-- Benefits -->
+              <div class="benefits">
+                <h3>What You'll Get</h3>
+                <ul>
+                  <li>Hands-on experience with real-world projects</li>
+                  <li>Certificate of completion upon successful internship</li>
+                  <li>Regular mentorship and feedback through weekly code reviews with industry professionals</li>
+                  ${isPaid ? `
+                    <li>One-on-one mentorship from industry professionals</li>
+                    <li>Letter of recommendation (based on performance)</li>
+                  ` : ''}
+                </ul>
+              </div>   
+              
+              ${remarks ? `
+                <div class="highlight">
+                  <h4 style="color: #10b981; margin-bottom: 8px;">Additional Notes</h4>
+                  <p style="margin: 0; font-style: italic;">${remarks}</p>
+                </div>
+              ` : ''}
+              
+              <div class="content" style="margin-bottom: 15px;">
+                <p>
+                  We look forward to working with you and supporting your growth as a developer. 
+                  If you have any questions about this offer or the internship program, please don't 
+                  hesitate to reach out to us.
+                </p>
+                
+                <p style="margin-bottom: 8px;">Welcome aboard!</p>
+              </div>
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td colspan="2" style="padding:0 20px 18px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="font-size:14px;font-family:Arial,sans-serif;color:#222;">
+                    <span style="font-size:16px;">📍</span> Mohali, Punjab, India
+                  </td>
+                  <td style="font-size:14px;font-family:Arial,sans-serif;color:#222;text-align:center;">
+                    <span style="font-size:16px;">📞</span> +91-8699025107
+                  </td>
+                  <td style="font-size:14px;font-family:Arial,sans-serif;color:#222;text-align:right;">
+                    <span style="font-size:16px;">✉️</span> connect@codeunia.com
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Footer Bar -->
+          <tr>
+            <td colspan="2" bgcolor="#007bff" style="height:18px;border-bottom-left-radius:16px;border-bottom-right-radius:30px;"></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
   `
 
   let browser
