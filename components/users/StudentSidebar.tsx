@@ -7,6 +7,8 @@ import {
   ChevronDown,
   Menu,
   Settings,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -17,18 +19,18 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import {
-    SidebarContent,
-    SidebarFooter,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
-    SidebarHeader,
-    SidebarInset,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    SidebarProvider,
-  } from "@/components/ui/sidebar"
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import CodeuniaLogo from "../codeunia-logo";
@@ -54,7 +56,9 @@ interface StudentSidebarProps {
 
 export function StudentSidebar({ avatar, name, email, sidebarItems, children }: StudentSidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const closeSidebar = () => setMobileOpen(false);
+  const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const pathname = usePathname();
 
   // Lock background scroll when mobile sheet is open
@@ -93,7 +97,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                     </div>
                   </div>
                 </div>
-                
+
                 {/* mobile navigation */}
                 <div className="flex-1 overflow-y-auto overscroll-contain py-4">
                   {sidebarItems.map((group) => (
@@ -119,7 +123,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                     </div>
                   ))}
                 </div>
-                
+
                 {/* mobile footer */}
                 <div className="p-4 border-t border-zinc-800">
                   <DropdownMenu>
@@ -178,7 +182,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
               </div>
             </SheetContent>
           </Sheet>
-          
+
           {/* Mobile Logo/Title */}
           <div className="flex items-center gap-3 ml-4">
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
@@ -189,8 +193,8 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
         </div>
 
         {/* desktop sidebar */}
-        <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 bg-black border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30 overflow-y-auto">
-          <SidebarHeader>
+        <aside className={`hidden md:block fixed left-0 top-0 h-screen bg-black border-r border-zinc-800 flex flex-col z-40 shadow-xl shadow-black/30 overflow-y-auto transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-64'}`}>
+          <SidebarHeader className="relative">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton size="lg" asChild className="hover:bg-purple-700/20 transition-colors rounded-xl p-2">
@@ -198,32 +202,52 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                     <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
                       <CodeuniaLogo size="md" showText={false} noLink={true} />
                     </div>
-                    <div className="grid flex-1 text-left text-sm leading-tight ml-3">
-                      <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Student</span>
-                      <span className="truncate text-xs text-zinc-400">Student Portal</span>
-                    </div>
+                    {!sidebarCollapsed && (
+                      <div className="grid flex-1 text-left text-sm leading-tight ml-3">
+                        <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Student</span>
+                        <span className="truncate text-xs text-zinc-400">Student Portal</span>
+                      </div>
+                    )}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
+
+            {/* Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="absolute -right-3 top-4 h-6 w-6 rounded-full bg-black border border-zinc-700 hover:bg-purple-700/20 transition-colors z-50"
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="h-4 w-4 text-purple-400" />
+              ) : (
+                <ChevronLeft className="h-4 w-4 text-purple-400" />
+              )}
+            </Button>
           </SidebarHeader>
-         
+
           <SidebarContent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent py-2">
             {sidebarItems.map((group) => (
               <SidebarGroup key={group.title}>
-                <SidebarGroupLabel className="uppercase text-xs font-semibold text-purple-400 tracking-wider px-6 py-2 mt-2 mb-1">
-                  {group.title}
-                </SidebarGroupLabel>
+                {!sidebarCollapsed && (
+                  <SidebarGroupLabel className="uppercase text-xs font-semibold text-purple-400 tracking-wider px-6 py-2 mt-2 mb-1">
+                    {group.title}
+                  </SidebarGroupLabel>
+                )}
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {group.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton asChild className={`group flex items-center gap-3 px-6 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${pathname === item.url ? "bg-purple-800/30 text-white" : ""}`}>
-                          <Link href={item.url} className="flex items-center w-full">
-                            <span className="mr-3 text-purple-400 group-hover:text-purple-300">
+                        <SidebarMenuButton asChild className={`group flex items-center gap-3 ${sidebarCollapsed ? 'px-3 justify-center' : 'px-6'} py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${pathname === item.url ? "bg-purple-800/30 text-white" : ""}`}>
+                          <Link href={item.url} className="flex items-center w-full" title={sidebarCollapsed ? item.title : undefined}>
+                            <span className={`text-purple-400 group-hover:text-purple-300 ${sidebarCollapsed ? '' : 'mr-3'}`}>
                               {React.createElement(item.icon, { className: "size-5" })}
                             </span>
-                            <span className="truncate text-base">{item.title}</span>
+                            {!sidebarCollapsed && (
+                              <span className="truncate text-base">{item.title}</span>
+                            )}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -240,15 +264,19 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                       size="lg"
-                      className="w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                      className={`w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground ${sidebarCollapsed ? 'justify-center' : ''}`}
                     >
                       <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md">
                         {avatar}
                       </div>
-                      <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                        <span className="truncate font-semibold text-white">{name}</span>
-                      </div>
-                      <ChevronDown className="ml-auto size-4 text-zinc-400" />
+                      {!sidebarCollapsed && (
+                        <>
+                          <div className="grid flex-1 text-left text-sm leading-tight ml-2">
+                            <span className="truncate font-semibold text-white">{name}</span>
+                          </div>
+                          <ChevronDown className="ml-auto size-4 text-zinc-400" />
+                        </>
+                      )}
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -292,9 +320,9 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
             </SidebarMenu>
           </SidebarFooter>
         </aside>
-        
+
         {/* main content */}
-        <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
+        <div className={`flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36] transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
           {/* Add top padding on mobile to account for fixed header */}
           <div className="md:hidden h-16"></div>
           <SidebarInset className="bg-black">
