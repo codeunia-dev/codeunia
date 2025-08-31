@@ -138,11 +138,28 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
       box-sizing: border-box;
     }
     
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+    
     .document-title {
       font-size: 28px;
       font-weight: bold;
       color: #1f2937;
-      margin: 30px 0 20px 0;
+      margin: -5px 0 15px 0;
       text-align: center;
       text-transform: uppercase;
       letter-spacing: 2px;
@@ -150,30 +167,30 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
     
     .date-section {
       text-align: right;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       font-size: 14px;
       color: #000000;
     }
     
     .content {
       font-size: 16px;
-      line-height: 1.8;
-      margin-bottom: 30px;
+      line-height: 1.6;
+      margin-bottom: 20px;
     }
     
     .content p {
-      margin-bottom: 16px;
+      margin-bottom: 15px;
     }
     
     .benefits {
-      margin: 30px 0;
+      margin: 20px 0;
     }
     
     .benefits h3 {
       font-size: 20px;
       font-weight: bold;
       color: #10b981;
-      margin-bottom: 16px;
+      margin-bottom: 15px;
     }
     
     .benefits ul {
@@ -183,8 +200,9 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
     
     .benefits li {
       padding: 8px 0;
-      padding-left: 24px;
+      padding-left: 25px;
       position: relative;
+      font-size: 15px;
     }
     
     .benefits li:before {
@@ -193,47 +211,48 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
       left: 0;
       font-size: 20px;
       line-height: 1;
+      color: #10b981;
     }
     
     .highlight {
       background: #f0fdf4;
-      padding: 20px;
+      padding: 15px;
       border-radius: 8px;
       border-left: 4px solid #10b981;
-      margin: 20px 0;
+      margin: 15px 0;
     }
   </style>
 </head>
 <body>
-  <table width="100%" bgcolor="#f4f6fa" cellpadding="0" cellspacing="0" style="margin:0;padding:0;">
+  <table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" style="margin:0;padding:0;font-family:Arial,sans-serif;height:100vh;">
     <tr>
-      <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="border:4px solid #6c63ff;border-radius:16px 0 0 16px;min-width:300px;max-width:600px;">
+      <td style="padding:0;height:100%;">
+        <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="width:100%;height:100%;">
           <!-- Header Bar -->
           <tr>
-            <td colspan="2" bgcolor="#007bff" style="height:40px;border-top-left-radius:16px;border-bottom-right-radius:30px;"></td>
+            <td colspan="2" bgcolor="#007bff" style="height:25px;"></td>
           </tr>
           <!-- Header Content -->
           <tr>
-            <td style="padding:20px 20px 10px 20px;vertical-align:top;">
+            <td style="padding:25px 30px 15px 30px;vertical-align:top;">
               <img src="https://ocnorlktyfswjqgvzrve.supabase.co/storage/v1/object/public/public-assets/codeunialogo.jpg" width="40" height="40" alt="Codeunia Logo" style="display:inline-block;vertical-align:middle;border-radius:12px;background:#007aff;">
-              <span style="font-size:22px;color:#007aff;font-weight:bold;font-family:Arial,sans-serif;vertical-align:middle;margin-left:10px;">Codeunia</span>
+              <span style="font-size:24px;color:#007aff;font-weight:bold;font-family:Arial,sans-serif;vertical-align:middle;margin-left:12px;">Codeunia</span>
             </td>
-            <td style="padding:20px 20px 10px 0;text-align:right;vertical-align:top;font-size:13px;font-family:Arial,sans-serif;color:#111;border-left:3px solid #007bff;">
+            <td style="padding:25px 30px 15px 0;text-align:right;vertical-align:top;font-size:14px;font-family:Arial,sans-serif;color:#111;">
               <b style="color:#000;">Phone:</b> <a href="tel:+918699025107" style="color:#007bff;text-decoration:none;">+91-8699025107</a><br>
               <b style="color:#000;">Web:</b> <a href="https://codeunia.com" style="color:#007bff;text-decoration:none;">codeunia.com</a><br>
-              <b style="color:#000;">ADD:</b> Mohali, Punjab, India
+              <b style="color:#000;">Address:</b> Mohali, Punjab, India
             </td>
           </tr>
           <!-- Divider -->
           <tr>
-            <td colspan="2" style="padding:0 20px 0 20px;">
-              <hr style="border:0;border-top:2px solid #007bff;margin:10px 0 0 0;">
+            <td colspan="2" style="padding:0 30px;">
+              <hr style="border:0;border-top:2px solid #007bff;margin:5px 0 -5px 0;">
             </td>
           </tr>
           <!-- Main Content -->
           <tr>
-            <td colspan="2" style="padding:20px;">
+            <td colspan="2" style="padding:0px 30px 25px 30px;">
               <!-- Document Title -->
               <div class="document-title">Internship Offer Letter</div>
               
@@ -290,17 +309,16 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
               <div class="content" style="margin-bottom: 15px;">
                 <p>
                   We look forward to working with you and supporting your growth as a developer. 
-                  If you have any questions about this offer or the internship program, please don't 
-                  hesitate to reach out to us.
+                  If you have any questions, please reach out.
                 </p>
                 
-                <p style="margin-bottom: 8px;">Welcome aboard!</p>
+                <p style="margin-bottom: 8px;"><strong>Welcome aboard!</strong></p>
               </div>
             </td>
           </tr>
           <!-- Footer -->
           <tr>
-            <td colspan="2" style="padding:0 20px 18px 20px;">
+            <td colspan="2" style="padding:20px 30px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="font-size:14px;font-family:Arial,sans-serif;color:#222;">
@@ -318,7 +336,7 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
           </tr>
           <!-- Footer Bar -->
           <tr>
-            <td colspan="2" bgcolor="#007bff" style="height:18px;border-bottom-left-radius:16px;border-bottom-right-radius:30px;"></td>
+            <td colspan="2" bgcolor="#007bff" style="height:20px;"></td>
           </tr>
         </table>
       </td>
@@ -410,10 +428,10 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
       format: 'A4',
       printBackground: true,
       margin: {
-        top: '20px',
-        right: '20px',
-        bottom: '20px',
-        left: '20px'
+        top: '0mm',
+        right: '0mm',
+        bottom: '0mm',
+        left: '0mm'
       },
       timeout: 30000
     })
