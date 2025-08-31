@@ -6,6 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 
+// Cache-busting exports - MUST be at the top level
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 // Progress Bar Component
 function InternshipProgress({ startDate, endDate }: { startDate: Date, endDate: Date }) {
   const today = new Date()
@@ -28,8 +33,6 @@ function InternshipProgress({ startDate, endDate }: { startDate: Date, endDate: 
     </div>
   )
 }
-
-export const dynamic = "force-dynamic";
 
 // Internship mapping for proper display names
 const INTERNSHIP_NAMES: Record<string, string> = {
