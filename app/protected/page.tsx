@@ -15,13 +15,15 @@ export default async function ProtectedPage() {
     redirect("/auth/signin");
   }
 
-  const firstNameRaw = data.user.user_metadata?.first_name || "";
-  const lastNameRaw = data.user.user_metadata?.last_name || "";
+  // Fetch user profile from profiles table
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('first_name')
+    .eq('id', data.user.id)
+    .single();
 
-  const firstName = capitalize(firstNameRaw);
-  const lastName = capitalize(lastNameRaw);
-
-  const displayName = firstName || lastName ? `${firstName} ${lastName}`.trim() : "there";
+  // Use first_name from profiles table, with fallback
+  const displayName = profile?.first_name ? capitalize(profile.first_name) : "there";
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8 p-6 max-w-6xl mx-auto">

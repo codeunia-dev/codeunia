@@ -72,7 +72,7 @@ export function DashboardContent({ userId, displayName }: DashboardContentProps)
                 <Sparkles className="h-5 w-5 text-yellow-500 animate-pulse" />
               </div>
               <p className="text-yellow-700 dark:text-yellow-300 leading-relaxed">
-                Our user panel is under active development. We&apos;re crafting an amazing experience just for you. 
+                Our user panel is under active development. We&apos;re crafting an amazing experience just for you.
                 <span className="font-semibold"> Stay tuned for exciting updates!</span>
               </p>
               <div className="flex items-center gap-2 pt-2">
