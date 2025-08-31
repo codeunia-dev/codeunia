@@ -117,8 +117,8 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
               
               <p>In the meantime, feel free to:</p>
               <ul>
-  <li>Join our <a href="https://chat.whatsapp.com/your-whatsapp-link" style="color: #667eea;">WhatsApp community</a> to stay connected with peers and mentors</li>
-  <li>Join our <a href="https://discord.gg/codeunia" style="color: #667eea;">Discord community</a> for discussions and resources</li>
+  <li>Join our <a href="https://whatsapp.com/channel/0029VbAx4slKgsNpQoYM5N2P" style="color: #667eea;">WhatsApp community</a> to stay connected with peers and mentors</li>
+  <li>Join our <a href="https://discord.gg/6HXKJemk" style="color: #667eea;">Discord community</a> for discussions and resources</li>
   <li>Follow us on <a href="https://linkedin.com/company/codeunia" style="color: #667eea;">LinkedIn</a> for the latest updates and announcements</li>
   <li>Explore our <a href="https://codeunia.com/blog" style="color: #667eea;">website</a> for learning resources and insights</li>
 </ul>
@@ -153,7 +153,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
                     message: `Fantastic news! Your application for <strong>${internshipTitle}</strong> has been <strong>accepted</strong>. Welcome to the Codeunia family!`,
                     nextSteps: [
                         '<strong>Share on LinkedIn:</strong> Post your attached offer letter on LinkedIn and tag <strong>Codeunia</strong> in your post',
-                        '<strong>Join WhatsApp Group:</strong> Connect with peers and mentors by joining our official WhatsApp group <a href="https://chat.whatsapp.com/your-group-link" target="_blank">here</a>',
+                        '<strong>Join WhatsApp Group:</strong> Connect with peers and mentors by joining our official WhatsApp group <a href="https://chat.whatsapp.com/Blr6nmJ71EoKX0HXUDHzeh?mode=ems_copy_t" target="_blank">here</a>',
                         '<strong>Mentor Connect:</strong> Kindly follow your assigned mentors on LinkedIn for guidance and updates <a href="https://www.linkedin.com/in/848deepak/" target="_blank">Mentor 1</a>, <a href="https://www.linkedin.com/in/akshaykumar0611/" target="_blank">Mentor 2</a>',
                         '<strong>Follow Us:</strong> Stay updated by following <a href="https://linkedin.com/company/codeunia" target="_blank">Codeunia on LinkedIn</a> and our <a href="https://github.com/Codeunia" target="_blank">GitHub organization</a>',
                         '<strong>Guidelines:</strong> Please follow the internship guidelines that will be shared in the WhatsApp group throughout the program'
