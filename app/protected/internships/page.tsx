@@ -18,7 +18,7 @@ function InternshipProgress({ startDate, endDate }: { startDate: Date, endDate: 
   const daysPassed = Math.max(0, Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)))
   const progressPercentage = Math.min(100, Math.max(0, (daysPassed / totalDays) * 100))
   const daysLeft = Math.max(0, totalDays - daysPassed)
-  
+
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
@@ -61,11 +61,11 @@ type InternRow = {
   email: string;
   passed: boolean | null;
   domain:
-    | "Web Development"
-    | "Python"
-    | "Artificial Intelligence"
-    | "Machine Learning"
-    | "Java";
+  | "Web Development"
+  | "Python"
+  | "Artificial Intelligence"
+  | "Machine Learning"
+  | "Java";
   start_date: string; // date
   end_date: string; // date
   certificate_url: string | null;
@@ -144,7 +144,7 @@ export default async function InternshipsPage() {
         .eq('user_id', authData.user.id)
         .order('created_at', { ascending: false })
       applications = apps2 || []
-    } catch {}
+    } catch { }
   }
 
   if ((internError || !internships || internships.length === 0) && (!applications || applications.length === 0)) {
@@ -165,13 +165,8 @@ export default async function InternshipsPage() {
   return (
     <div className="flex-1 w-full p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Internship Certificate</h1>
-        <p className="text-muted-foreground">Your completed internships and certificate access.</p>
-      </div>
-
-      <div className="mb-6">
-        <div className="text-sm text-muted-foreground mb-1">Intern</div>
-        <div className="font-medium">{fullName || authEmailRaw}</div>
+        <h1 className="text-2xl font-semibold">My Internship Journey</h1>
+        <p className="text-muted-foreground">Track your progress, view achievements, and download certificates from your completed internships.</p>
       </div>
 
       {internships && internships.length > 0 && (
@@ -226,7 +221,7 @@ export default async function InternshipsPage() {
               {(applications as ExtendedInternshipApplication[]).filter((a) => a.status === 'accepted').map((a, idx) => {
                 const start = a.start_date ? new Date(a.start_date) : null
                 const end = a.end_date ? new Date(a.end_date) : null
-                
+
                 return (
                   <div key={idx} className="space-y-6 border rounded-lg p-6 mb-4">
                     {/* Internship Title */}
@@ -237,9 +232,9 @@ export default async function InternshipsPage() {
 
                     {/* Progress Bar */}
                     {start && end && (
-                      <InternshipProgress 
-                        startDate={start} 
-                        endDate={end} 
+                      <InternshipProgress
+                        startDate={start}
+                        endDate={end}
                       />
                     )}
 
@@ -274,7 +269,7 @@ export default async function InternshipsPage() {
         </div>
       )}
 
-      
+
     </div>
   );
 }
