@@ -89,7 +89,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                 <div className="p-4 border-b border-zinc-800">
                   <div className="flex items-center gap-3">
                     <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
-                      <CodeuniaLogo size="md" showText={false} noLink={true} />
+                      <CodeuniaLogo size="md" showText={false} noLink={true} instanceId="sidebar-mobile" />
                     </div>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">Codeunia Student</span>
@@ -186,7 +186,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
           {/* Mobile Logo/Title */}
           <div className="flex items-center gap-3 ml-4">
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
-              <CodeuniaLogo size="sm" showText={false} noLink={true} />
+              <CodeuniaLogo size="sm" showText={false} noLink={true} instanceId="mobile-header" />
             </div>
             <span className="font-bold text-white">Codeunia</span>
           </div>
@@ -200,7 +200,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                 <SidebarMenuButton size="lg" asChild className="hover:bg-purple-700/20 transition-colors rounded-xl p-2">
                   <Link href="/protected">
                     <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
-                      <CodeuniaLogo size="md" showText={false} noLink={true} />
+                      <CodeuniaLogo size="md" showText={false} noLink={true} instanceId="sidebar-desktop" />
                     </div>
                     {!sidebarCollapsed && (
                       <div className="grid flex-1 text-left text-sm leading-tight ml-3">

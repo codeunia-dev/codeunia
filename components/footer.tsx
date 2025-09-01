@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
        {/* codeunia branding */}
           <div className="space-y-6">
-            <CodeuniaLogo size="lg" showText={true} />
+            <CodeuniaLogo size="lg" showText={true} instanceId="footer" />
             <p className="text-foreground/80 leading-relaxed">
               Empowering the next generation of coders through real-world projects, vibrant community, and continuous
               learning.

@@ -69,7 +69,7 @@ export default function Header() {
         {/* logo section - left */}
         <div className="flex items-center flex-shrink-0">
           <Link href="/" className="hover:scale-105 transition-transform duration-200">
-            <CodeuniaLogo size="md" noLink={true} showText={true} />
+            <CodeuniaLogo size="md" noLink={true} showText={true} instanceId="header" />
           </Link>
         </div>
 
