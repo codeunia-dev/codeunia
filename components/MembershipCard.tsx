@@ -197,7 +197,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
         {/* PDF Header */}
       <div className="text-center mb-6 max-w-4xl pt-2">
         <div className="flex flex-col items-center justify-center gap-2 mb-2">
-         <CodeuniaLogo size="lg" showText={false} noLink className="" />
+         <CodeuniaLogo size="lg" showText={false} noLink className="" instanceId="pdf-header" />
          <h1 className="text-3xl font-bold text-purple-600">Codeunia</h1>
         </div>
         <p className="text-lg text-blue-600 font-semibold">
@@ -345,7 +345,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
             <div className="w-32 sm:w-48 bg-gradient-to-br from-purple-600 to-purple-800 p-2 sm:p-4 text-white flex flex-col justify-between items-center">
               {/* Logo */}
               <div className="flex flex-col items-center">
-                <CodeuniaLogo size="md" showText={false} noLink className="mb-2" />
+                <CodeuniaLogo size="md" showText={false} noLink className="mb-2" instanceId="card-visible" />
                 <h2
                   className="text-sm sm:text-xl font-bold tracking-wide mt-1 text-[#007AFF]"
                   style={{ fontFamily: 'Inter, sans-serif' }}
@@ -491,7 +491,7 @@ const MembershipCard: React.FC<MembershipCardProps> = ({ uid }) => {
   
   {/* Logo */}
   <div className="flex flex-col items-center">
-    <CodeuniaLogo size="md" showText={false} className="mb-2" />
+    <CodeuniaLogo size="md" showText={false} className="mb-2" instanceId="card-pdf" />
     <h2
       className="text-sm sm:text-xl font-bold tracking-wide mt-1 text-[#007AFF]"
       style={{ fontFamily: 'Inter, sans-serif' }}

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useId } from 'react';
 
 // Updated logo component with new design - force deployment
 interface CodeuniaLogoProps {
@@ -7,16 +6,18 @@ interface CodeuniaLogoProps {
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
   noLink?: boolean;
+  instanceId?: string; // Optional prop to make gradient unique when needed
 }
 
 export default function CodeuniaLogo({ 
   className = '', 
   size = 'md', 
   showText = true,
-  noLink = false
+  noLink = false,
+  instanceId = 'default'
 }: CodeuniaLogoProps) {
-  const uniqueId = useId().replace(/:/g, '');
-  const gradientId = `rainbowGradient-${uniqueId}`;
+  // Use a stable, deterministic ID to prevent hydration mismatches
+  const gradientId = `rainbowGradient-${instanceId}`;
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
