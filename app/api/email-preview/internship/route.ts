@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+// NextResponse imported but not used in GET handler - keeping for potential future use
 
 // Mock data for email preview
 const mockData = {
@@ -120,6 +120,8 @@ const getApplicantConfirmationTemplate = (data: typeof mockData) => {
   `
 }
 
+/*
+// Unused function - keeping for potential future use
 const getAdminNotificationTemplate = (data: typeof mockData) => {
   const { applicantName, applicantEmail, internshipTitle, domain, level, duration, isPaid, amountPaid, coverNote, applicationId } = data
   
@@ -238,6 +240,7 @@ const getAdminNotificationTemplate = (data: typeof mockData) => {
     </html>
   `
 }
+*/
 
 const getStatusUpdateTemplate = (data: {
   applicantName: string

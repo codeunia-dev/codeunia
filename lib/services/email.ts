@@ -141,7 +141,7 @@ const getApplicantConfirmationTemplate = (data: InternshipApplicationEmailData) 
 }
 
 const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
-    const { applicantName, internshipTitle, domain, level, duration, newStatus, remarks, repoUrl, startDate, endDate } = data
+    const { applicantName, internshipTitle, domain, level, duration, newStatus, /* remarks, */ repoUrl, startDate, endDate } = data
     
     // Status-specific content
     const getStatusContent = () => {
@@ -381,7 +381,13 @@ export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
         const statusTemplate = getStatusUpdateTemplate(data)
         
         // Prepare email data
-        const emailData: any = {
+        const emailData: {
+            from: string;
+            to: string[];
+            subject: string;
+            html: string;
+            attachments?: Array<{ filename: string; content: Buffer; contentType?: string; type?: string; disposition?: string }>;
+        } = {
             from: 'Codeunia <connect@codeunia.com>',
             to: [data.applicantEmail],
             subject: statusTemplate.subject,
@@ -452,7 +458,7 @@ export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
         return {
             success: true,
             result,
-            attachedOfferLetter: data.newStatus === 'accepted' && emailData.attachments?.length > 0
+            attachedOfferLetter: data.newStatus === 'accepted' && (emailData.attachments?.length ?? 0) > 0
         }
     } catch (error) {
         console.error('Failed to send status update email:', error)

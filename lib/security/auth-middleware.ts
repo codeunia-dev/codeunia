@@ -205,8 +205,8 @@ export async function validateSession(): Promise<boolean> {
 
 // Permission checking utility
 export async function hasPermission(
-  request: NextRequest, 
-  _permission: string
+  request: NextRequest
+  // permission parameter removed as it's not implemented yet
 ): Promise<boolean> {
   const user = await authenticateUser(request);
   

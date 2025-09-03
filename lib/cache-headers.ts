@@ -1,3 +1,11 @@
+/**
+ * DEPRECATED: Use lib/production-cache.ts instead
+ * This file is kept for backward compatibility during migration
+ */
+
+// Commented out unused imports
+// import { createCacheHeaders as productionCreateCacheHeaders, CACHE_STRATEGIES } from './production-cache'
+
 // Environment-aware cache headers utility
 export interface CacheConfig {
   maxAge: number;
@@ -6,9 +14,13 @@ export interface CacheConfig {
   mustRevalidate?: boolean;
 }
 
+/**
+ * @deprecated Use production-cache.ts createCacheHeaders instead
+ */
 export function createCacheHeaders(config: CacheConfig) {
+  console.warn('⚠️  createCacheHeaders from cache-headers.ts is deprecated. Use production-cache.ts instead.')
+  
   const isDev = process.env.NODE_ENV === 'development';
-  const isProd = process.env.NODE_ENV === 'production';
   
   // In development, disable caching for immediate feedback
   if (isDev) {
@@ -35,7 +47,7 @@ export function createCacheHeaders(config: CacheConfig) {
   };
 
   // Add CDN-specific headers for better control
-  if (isProd && config.cdnMaxAge) {
+  if (config.cdnMaxAge) {
     headers['CDN-Cache-Control'] = `public, s-maxage=${config.cdnMaxAge}`;
     headers['Cloudflare-CDN-Cache-Control'] = `public, s-maxage=${config.cdnMaxAge}`;
   }
@@ -79,7 +91,7 @@ export const CACHE_CONFIGS = {
 } as const;
 
 // Utility for API responses
-export function createCachedResponse(data: any, cacheConfig: CacheConfig) {
+export function createCachedResponse(data: unknown, cacheConfig: CacheConfig) {
   const headers = createCacheHeaders(cacheConfig);
   
   return new Response(JSON.stringify(data), {

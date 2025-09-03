@@ -45,7 +45,7 @@ export default function AIPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  // const [isTyping, setIsTyping] = useState(false); // Unused for now
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -149,11 +149,11 @@ export default function AIPage() {
     }
   };
 
-  const clearChat = () => {
-    localStorage.removeItem('codeunia-ai-chat-history');
-    setMessages([]);
-    // The welcome message will be recreated by the useEffect
-  };
+  // const clearChat = () => { // Unused for now
+  //   localStorage.removeItem('codeunia-ai-chat-history');
+  //   setMessages([]);
+  //   // The welcome message will be recreated by the useEffect
+  // };
 
   useEffect(() => {
     scrollToBottom();
@@ -184,7 +184,7 @@ export default function AIPage() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    setIsTyping(true);
+    // setIsTyping(true); // Typing indicator disabled
     setShowSuggestions(false);
 
     // Don't add typing message to the messages array anymore
@@ -205,7 +205,7 @@ export default function AIPage() {
 
       const data: AIResponse = await response.json();
       
-      setIsTyping(false);
+      // setIsTyping(false); // Typing indicator disabled
       
       if (data.success) {
         const aiMessage: Message = {
@@ -221,7 +221,7 @@ export default function AIPage() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setIsTyping(false);
+      // setIsTyping(false); // Typing indicator disabled
       
       const errorMessage: Message = {
         id: `page-error-${Date.now() + 1}`,

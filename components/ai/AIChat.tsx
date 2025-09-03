@@ -143,11 +143,11 @@ export default function AIChat() {
     }
   };
 
-  const clearChat = () => {
-    localStorage.removeItem('codeunia-ai-chat-history');
-    setMessages([]);
-    // The welcome message will be recreated by the useEffect
-  };
+  // const clearChat = () => { // Unused for now
+  //   localStorage.removeItem('codeunia-ai-chat-history');
+  //   setMessages([]);
+  //   // The welcome message will be recreated by the useEffect
+  // };
 
   useEffect(() => {
     scrollToBottom();
