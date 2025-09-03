@@ -67,7 +67,11 @@ export class RateLimiter {
 
 // CSRF protection
 export function generateCSRFToken(): string {
-  return crypto.randomUUID();
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // Fallback for Node.js environments without crypto.randomUUID
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
 export function validateCSRFToken(token: string, expectedToken: string): boolean {

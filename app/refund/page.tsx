@@ -1,4 +1,5 @@
 "use client"
+import { createSafeHtmlProps } from '@/lib/security/html-sanitizer';
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -249,7 +250,7 @@ export default function RefundPolicyPage() {
                           {item.description && (
                             <div 
                               className="text-muted-foreground leading-relaxed" 
-                              dangerouslySetInnerHTML={{ __html: item.description }} 
+                              dangerouslySetInnerHTML={createSafeHtmlProps(item.description, 'basic')}
                             />
                           )}
                           {item.bullets && item.bullets.length > 0 && (
@@ -258,7 +259,7 @@ export default function RefundPolicyPage() {
                                 <li 
                                   key={bulletIndex} 
                                   className="leading-relaxed" 
-                                  dangerouslySetInnerHTML={{ __html: bullet }} 
+                                  dangerouslySetInnerHTML={createSafeHtmlProps(bullet, 'basic')}
                                 />
                               ))}
                             </ul>
