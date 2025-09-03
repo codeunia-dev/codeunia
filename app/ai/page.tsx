@@ -45,6 +45,7 @@ export default function AIPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,13 +85,32 @@ export default function AIPage() {
     fetchProfile();
   }, [user]);
 
-  // Initialize welcome message after profile is loaded
+  // Load chat history from localStorage on mount (before welcome message)
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('codeunia-ai-chat-history');
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory);
+        if (Array.isArray(parsedHistory) && parsedHistory.length > 1) {
+          setMessages(parsedHistory.map(msg => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          })));
+          return; // Don't show welcome message if we loaded history
+        }
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
+      }
+    }
+  }, []);
+
+  // Initialize welcome message after profile is loaded (only if no history)
   useEffect(() => {
     if (profile && messages.length === 0) {
       const userName = profile.first_name || 'there';
       setMessages([
         {
-          id: '1',
+          id: 'page-welcome-1',
           text: `Hello ${userName}! I'm Unio, your AI assistant powered by Codeunia and OpenRouter. I can help you with information about events, hackathons, internships, blogs, and more. What would you like to know?`,
           sender: 'ai',
           timestamp: new Date(),
@@ -129,6 +149,12 @@ export default function AIPage() {
     }
   };
 
+  const clearChat = () => {
+    localStorage.removeItem('codeunia-ai-chat-history');
+    setMessages([]);
+    // The welcome message will be recreated by the useEffect
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -137,12 +163,19 @@ export default function AIPage() {
     autoResizeTextarea();
   }, [input]);
 
+  // Save chat history to localStorage
+  useEffect(() => {
+    if (messages.length > 1) { // Don't save just the initial message
+      localStorage.setItem('codeunia-ai-chat-history', JSON.stringify(messages));
+    }
+  }, [messages]);
+
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || input.trim();
     if (!textToSend || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `page-user-${Date.now()}`,
       text: textToSend,
       sender: 'user',
       timestamp: new Date()
@@ -151,16 +184,11 @@ export default function AIPage() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setIsTyping(true);
     setShowSuggestions(false);
 
-    const typingMessage: Message = {
-      id: 'typing',
-      text: '',
-      sender: 'ai',
-      timestamp: new Date(),
-      isTyping: true
-    };
-    setMessages(prev => [...prev, typingMessage]);
+    // Don't add typing message to the messages array anymore
+    // We'll handle it with a separate state
 
     try {
       const response = await fetch('/api/ai', {
@@ -177,11 +205,11 @@ export default function AIPage() {
 
       const data: AIResponse = await response.json();
       
-      setMessages(prev => prev.filter(m => m.id !== 'typing'));
+      setIsTyping(false);
       
       if (data.success) {
         const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `page-ai-${Date.now() + 1}`,
           text: data.response,
           sender: 'ai',
           timestamp: new Date(),
@@ -193,10 +221,10 @@ export default function AIPage() {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages(prev => prev.filter(m => m.id !== 'typing'));
+      setIsTyping(false);
       
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `page-error-${Date.now() + 1}`,
         text: 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.',
         sender: 'ai',
         timestamp: new Date(),

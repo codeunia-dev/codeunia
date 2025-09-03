@@ -6,10 +6,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import CodeuniaLogo from '@/components/codeunia-logo';
-import { MessageCircle, Send, User, Loader2, X, Minimize2, Maximize2, Copy, RotateCcw, Sparkles, Zap, Calendar, Trophy } from 'lucide-react';
+import { MessageCircle, Send, User, Loader2, X, Maximize2, Copy, RotateCcw, Sparkles, Zap, Calendar, Trophy } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
 interface Message {
@@ -38,17 +39,32 @@ const quickSuggestions = [
 
 export default function AIChat() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [profile, setProfile] = useState<{ first_name: string; last_name: string } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Don't show the floating widget on the dedicated AI page
+  const [currentPath, setCurrentPath] = useState('');
+  
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
+  const handleMaximize = () => {
+    // Ensure current conversation is saved to localStorage before navigating
+    if (messages.length > 1) {
+      localStorage.setItem('codeunia-ai-chat-history', JSON.stringify(messages));
+    }
+    setIsOpen(false); // Close the widget first
+    router.push('/ai');
+  };
 
   // Fetch user profile when authenticated
   useEffect(() => {
@@ -87,7 +103,7 @@ export default function AIChat() {
       const userName = profile.first_name || 'there';
       setMessages([
         {
-          id: '1',
+          id: 'widget-welcome-1',
           text: `Hello ${userName}! I'm Unio, your AI assistant powered by Codeunia and OpenRouter. I can help you with information about events, hackathons, internships, blogs, and more. What would you like to know?`,
           sender: 'ai',
           timestamp: new Date(),
@@ -127,6 +143,12 @@ export default function AIChat() {
     }
   };
 
+  const clearChat = () => {
+    localStorage.removeItem('codeunia-ai-chat-history');
+    setMessages([]);
+    // The welcome message will be recreated by the useEffect
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -160,12 +182,17 @@ export default function AIChat() {
     }
   }, []);
 
+  // Hide the widget if we're on the dedicated AI page
+  if (currentPath === '/ai') {
+    return null;
+  }
+
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || input.trim();
     if (!textToSend || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `widget-user-${Date.now()}`,
       text: textToSend,
       sender: 'user',
       timestamp: new Date()
@@ -176,37 +203,48 @@ export default function AIChat() {
     setIsLoading(true);
     setShowSuggestions(false);
 
-    // Add typing indicator
+    // Remove any existing typing indicators first, then add a new one
+    const typingId = `widget-typing-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const typingMessage: Message = {
-      id: 'typing',
+      id: typingId,
       text: '',
       sender: 'ai',
       timestamp: new Date(),
       isTyping: true
     };
-    setMessages(prev => [...prev, typingMessage]);
+    setMessages(prev => {
+      // Remove any existing typing messages first
+      const withoutTyping = prev.filter(m => !m.isTyping);
+      return [...withoutTyping, typingMessage];
+    });
 
     try {
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch('/api/ai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ message: textToSend }),
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          // Authentication error - refresh the page to trigger auth
+          window.location.reload();
+          return;
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data: AIResponse = await response.json();
       
       // Remove typing indicator
-      setMessages(prev => prev.filter(m => m.id !== 'typing'));
+      setMessages(prev => prev.filter(m => !m.isTyping));
       
       if (data.success) {
         const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: `widget-ai-${Date.now() + 1}`,
           text: data.response,
           sender: 'ai',
           timestamp: new Date(),
@@ -214,15 +252,20 @@ export default function AIChat() {
         };
         setMessages(prev => [...prev, aiMessage]);
       } else {
+        // Handle authentication errors in response
+        if (data.error === 'Authentication required') {
+          window.location.reload();
+          return;
+        }
         throw new Error(data.error || 'AI response was not successful');
       }
     } catch (error) {
       console.error('Error sending message:', error);
       // Remove typing indicator
-      setMessages(prev => prev.filter(m => m.id !== 'typing'));
+      setMessages(prev => prev.filter(m => !m.isTyping));
       
       const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: `widget-error-${Date.now() + 1}`,
         text: 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.',
         sender: 'ai',
         timestamp: new Date(),
@@ -268,9 +311,7 @@ export default function AIChat() {
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out ${
-      isMinimized ? 'w-72 sm:w-80 h-16' : 'w-[calc(100vw-2rem)] max-w-sm sm:max-w-md h-[calc(100vh-8rem)] max-h-[600px] sm:w-80 sm:h-[500px]'
-    }`}>
+    <div className="fixed bottom-4 right-4 z-50 transition-all duration-300 ease-in-out w-[calc(100vw-2rem)] max-w-sm sm:max-w-md h-[calc(100vh-8rem)] max-h-[600px] sm:w-80 sm:h-[500px]">
       <Card className="w-full h-full shadow-2xl border-0 bg-gray-900 backdrop-blur-sm">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg px-3 sm:px-6">
           <CardTitle className="text-sm sm:text-lg font-semibold flex items-center gap-2">
@@ -284,23 +325,25 @@ export default function AIChat() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setIsMinimized(!isMinimized)}
+              onClick={handleMaximize}
               className="text-white hover:bg-white/20 p-1 h-7 w-7 sm:h-8 sm:w-8 transition-colors"
+              title="Open in full screen"
             >
-              {isMinimized ? <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(false)}
               className="text-white hover:bg-white/20 p-1 h-7 w-7 sm:h-8 sm:w-8 transition-colors"
+              title="Close chat"
             >
               <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </CardHeader>
         
-        <CardContent className={`flex flex-col p-0 bg-gray-900 ${isMinimized ? 'hidden' : 'h-[calc(100%-4rem)]'}`}>
+        <CardContent className="flex flex-col p-0 bg-gray-900 h-[calc(100%-4rem)]">
           {/* Authentication Check */}
           {authLoading || profileLoading ? (
             <div className="flex-1 flex items-center justify-center p-6">

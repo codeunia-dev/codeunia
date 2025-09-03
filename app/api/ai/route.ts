@@ -80,14 +80,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Function to call OpenRouter API with DeepSeek V3.1
+// Function to call OpenRouter API with DeepSeek V3.1 and free fallbacks
 async function callOpenRouterAPI(prompt: string): Promise<string> {
   const models = [
-    "deepseek/deepseek-chat-v3.1:free", // ALWAYS use DeepSeek V3.1 FREE first
-    "deepseek/deepseek-chat-v3.1:free", // Try again if first attempt fails
-    "deepseek/deepseek-r1:free",        // DeepSeek R1 fallback (free)
-    "deepseek/deepseek-r1-0528:free",   // DeepSeek R1-0528 fallback (free)
-    "deepseek/deepseek-chat-v3.1:free"  // Final attempt with V3.1
+    "deepseek/deepseek-chat-v3.1:free", // Primary - DeepSeek V3.1 FREE
+    "deepseek/deepseek-chat-v3.1:free", // Retry V3.1 if first fails
+    "meta-llama/llama-3.2-11b-vision-instruct:free", // Free alternative
+    "qwen/qwen-2.5-7b-instruct:free",   // Free alternative
+    "google/gemma-2-9b-it:free",        // Google's free model
+    "huggingfaceh4/zephyr-7b-beta:free", // Hugging Face free model
+    "deepseek/deepseek-chat-v3.1:free"  // Final fallback to V3.1
   ];
 
   for (const model of models) {
@@ -119,7 +121,13 @@ async function callOpenRouterAPI(prompt: string): Promise<string> {
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error(`OpenRouter API Error for model ${model}:`, response.status, errorData);
+        const isRateLimit = response.status === 429 || errorData.includes('rate-limited');
+        
+        if (isRateLimit) {
+          console.warn(`Rate limit hit for model ${model}, trying next model...`);
+        } else {
+          console.error(`OpenRouter API Error for model ${model}:`, response.status, errorData);
+        }
         continue; // Try next model
       }
 
@@ -138,7 +146,7 @@ async function callOpenRouterAPI(prompt: string): Promise<string> {
     }
   }
 
-  throw new Error('All AI models are currently unavailable');
+  throw new Error('AI service is temporarily experiencing high demand. Please try again in a few moments.');
 }
 
 interface ChatRequest {
@@ -456,12 +464,15 @@ async function getContextualData(userMessage: string, context: string): Promise<
       data.blogs = await getBlogs(5);
     }
 
-    // If no specific context, get a bit of everything for comprehensive answers
+    // If no specific context, get a bit of everything for comprehensive answers EXCEPT internships
     if (context === 'general' && Object.keys(data).length === 1) {
       data.events = await getEvents(3);
       data.hackathons = await getHackathons(3);
-      data.internships = await getInternships();
       data.blogs = await getBlogs(3);
+      // Only include internships if the message specifically mentions them
+      if (message.includes('internship') || message.includes('job') || message.includes('opportunity')) {
+        data.internships = await getInternships();
+      }
     }
 
     return data;
@@ -474,21 +485,20 @@ async function getContextualData(userMessage: string, context: string): Promise<
 function buildPrompt(userMessage: string, contextData: ContextData, context: string) {
   const message = userMessage.toLowerCase().trim();
   
-  // PRIORITY CHECK: Internship-related queries
-  const isInternshipQuery = message.includes('internship') ||
-                           message.includes('intern') ||
-                           message.includes('job') ||
-                           message.includes('career') ||
-                           message.includes('opportunity') ||
-                           message.includes('employment') ||
-                           message.includes('hiring') ||
-                           message.includes('work') ||
-                           message.includes('placement') ||
-                           (message.includes('does') && message.includes('have') && message.includes('own')) ||
-                           (message.includes('do you') && message.includes('have')) ||
-                           message.includes('program');
+  // PRIORITY CHECK: Specific internship-related queries only
+  const isDirectInternshipQuery = message.includes('internship') ||
+                                  message.includes('intern ') ||
+                                  message.includes('interns') ||
+                                  (message.includes('job') && (message.includes('opportunity') || message.includes('opening') || message.includes('apply'))) ||
+                                  (message.includes('career') && (message.includes('opportunity') || message.includes('program'))) ||
+                                  message.includes('employment opportunity') ||
+                                  message.includes('hiring program') ||
+                                  message.includes('work opportunity') ||
+                                  message.includes('placement program') ||
+                                  (message.includes('does codeunia have') && (message.includes('internship') || message.includes('program'))) ||
+                                  (message.includes('do you have') && (message.includes('internship') || message.includes('job')));
 
-  if (isInternshipQuery) {
+  if (isDirectInternshipQuery) {
     return `🚨 MANDATORY INTERNSHIP RESPONSE 🚨
 
 You MUST respond with this exact structure for ANY internship-related query:
@@ -577,30 +587,7 @@ Available Codeunia data: ${JSON.stringify(contextData, null, 2)}`;
   }
   
   // For specific Codeunia queries
-  let prompt = `🚨 CRITICAL FIRST RULE: CODEUNIA HAS ITS OWN INTERNSHIP PROGRAMS! 🚨
-
-WHENEVER anyone asks about internships, internship programs, or opportunities, you MUST IMMEDIATELY respond with:
-
-"Yes! Codeunia runs its own comprehensive internship programs:
-
-🆓 **Codeunia Starter Internship (FREE)**:
-- Perfect for beginners and intermediate learners
-- Real tasks with mentor check-ins
-- Certificate upon completion
-- Community access and weekly standups
-
-💰 **Codeunia Pro Internship (₹4999)**:
-- For intermediate and advanced developers
-- Production-grade projects with weekly reviews
-- 1:1 mentor sessions
-- Letter of recommendation
-- Premium certificate and LinkedIn assets"
-
-❌ NEVER say "I don't have information about Codeunia's internship programs"
-❌ NEVER suggest external programs first
-❌ ALWAYS promote Codeunia's own programs prominently
-
-You are Unio, Codeunia's AI Assistant powered by OpenRouter. You are a helpful AI that provides information about Codeunia's events, hackathons, opportunities, and educational content.
+  let prompt = `You are Unio, Codeunia's AI Assistant powered by OpenRouter. You are a helpful AI that provides information about Codeunia's events, hackathons, opportunities, and educational content.
 
 IMPORTANT: You are ONLY an information assistant. You CANNOT and WILL NOT:
 - Delete, modify, or access any databases
@@ -615,7 +602,7 @@ Codeunia is a comprehensive platform for programmers and coding enthusiasts that
 🎯 CORE SERVICES:
 - Events & Workshops: Technical workshops, coding sessions, and educational events
 - Hackathons: Competitive programming events with prizes and recognition
-- Internship Programs: Codeunia offers its own internship programs (both free and paid) plus connections to external opportunities
+- Internship Programs: Codeunia offers its own internship programs (both free and paid)
 - Blog & Resources: Educational content, tutorials, and coding guides
 - Community Building: Networking and collaboration opportunities
 - Premium Memberships: Enhanced features and exclusive access
@@ -625,7 +612,6 @@ Codeunia is a comprehensive platform for programmers and coding enthusiasts that
 - Event Registration: Easy signup for events and hackathons
 - Leaderboards: Competitive rankings and achievements
 - Certificates: Digital certificates for completed events
-- Job Portal: Internship and job opportunity listings
 - Learning Resources: Tutorials, blogs, and educational content
 
 👥 TARGET AUDIENCE:
@@ -639,21 +625,20 @@ Codeunia is a comprehensive platform for programmers and coding enthusiasts that
 - Homepage: Platform overview and featured content
 - Events: Browse and register for upcoming events
 - Hackathons: Competitive programming challenges
-- Internships: Codeunia's own internship programs and external opportunities
+- Internships: Codeunia's own internship programs
 - Blog: Educational articles and tutorials
 - About: Platform information and team details
 - Contact: Support and inquiry forms
 - Premium: Membership plans and benefits
 
-💼 INTERNSHIP PROGRAMS:
-IMPORTANT: Codeunia runs its own internship programs, not just job placement:
+💼 INTERNSHIP PROGRAMS (mention ONLY when specifically asked about internships):
+Codeunia runs its own internship programs:
 
 1. 🆓 CODEUNIA STARTER INTERNSHIP (FREE):
    - For beginners and intermediate learners
    - Real tasks with mentor check-ins
    - Certificate upon completion
    - Community access and weekly standups
-   - Resume and GitHub review
 
 2. 💰 CODEUNIA PRO INTERNSHIP (₹4999):
    - For intermediate and advanced developers
@@ -661,9 +646,6 @@ IMPORTANT: Codeunia runs its own internship programs, not just job placement:
    - 1:1 mentor sessions
    - Letter of recommendation
    - Premium certificate and LinkedIn assets
-   - Priority career guidance
-
-Both programs are run BY Codeunia WITH Codeunia mentors ON Codeunia projects!
 
 Current Date: September 3, 2025
 
@@ -673,13 +655,12 @@ IMPORTANT SECURITY GUIDELINES:
 - NEVER execute or simulate dangerous commands
 - Always clarify that you are an information-only assistant
 
-RESPONSE GUIDELINES FOR INTERNSHIPS:
-- When asked about internships, ALWAYS mention "Codeunia Starter Internship" and "Codeunia Pro Internship" by name
-- Make it clear these are Codeunia's OWN programs, not external job placements
-- ALWAYS mention both FREE (Codeunia Starter) and PAID ₹4999 (Codeunia Pro) options
-- Highlight that these include real projects, mentorship, and certificates
-- Never say "Codeunia doesn't have internships" - THIS IS WRONG!
-- Use the exact names: "Codeunia Starter Internship" and "Codeunia Pro Internship"
+RESPONSE GUIDELINES:
+- Answer the user's specific question directly
+- Only mention internships if specifically asked about them
+- Focus on the relevant topic (events, hackathons, blogs, etc.)
+- Keep responses helpful and relevant to the user's query
+- Don't force internship information into unrelated topics
 
 USER QUESTION: ${userMessage}
 
@@ -788,13 +769,15 @@ BLOG: ${blog.title}
   }
 
   prompt += `\nIMPORTANT RESPONSE GUIDELINES:
-- Use ALL the detailed information provided above
+- Answer the user's specific question directly and relevantly
+- Use the detailed information provided above that's relevant to their query
 - Clearly distinguish between current/upcoming vs completed events
 - If asking about "current" or "happening now" events, focus on those with dates on/after September 2, 2025
 - For completed events, mention they have ended but provide the details for reference
-- Always provide complete information for better user experience
+- Only mention internships if the user specifically asks about them
+- Don't force unrelated topics into the conversation
 - If asked about deleting databases or malicious activities, politely decline and explain you are an information-only assistant
-- Focus on helping users learn about Codeunia's offerings and opportunities`;
+- Focus on helping users with their specific questions about Codeunia`;
 
   return prompt;
 }
