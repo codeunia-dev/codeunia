@@ -26,6 +26,8 @@ import { createClient } from "@/lib/supabase/client"
 import type { BlogPost } from "@/components/data/blog-posts"
 import { RealtimeChannel } from "@supabase/supabase-js"
 import { CacheAnalyticsDashboard } from "@/components/admin/CacheAnalyticsSimple"
+import PerformanceMonitoring from "@/components/admin/PerformanceMonitoring"
+import SecurityMonitoring from "@/components/admin/SecurityMonitoring"
 
 type SupabaseUser = {
   created_at: string;
@@ -568,37 +570,11 @@ export default function AdminDashboard() {
           </TabsContent>
           
           <TabsContent value="performance" className="mt-6">
-            <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-green-100/80 to-green-200/60 dark:from-green-900/60 dark:to-green-800/40">
-              <CardHeader>
-                <CardTitle className="text-zinc-900 dark:text-white">Performance Metrics</CardTitle>
-                <CardDescription className="text-zinc-700 dark:text-zinc-300">
-                  Application performance and optimization insights
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <TrendingUp className="w-12 h-12 mx-auto text-green-600 mb-4" />
-                  <p className="text-zinc-600 dark:text-zinc-400">Performance monitoring coming soon...</p>
-                </div>
-              </CardContent>
-            </Card>
+            <PerformanceMonitoring />
           </TabsContent>
           
           <TabsContent value="security" className="mt-6">
-            <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-red-100/80 to-red-200/60 dark:from-red-900/60 dark:to-red-800/40">
-              <CardHeader>
-                <CardTitle className="text-zinc-900 dark:text-white">Security Overview</CardTitle>
-                <CardDescription className="text-zinc-700 dark:text-zinc-300">
-                  Security events, threats, and system health
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <AlertTriangle className="w-12 h-12 mx-auto text-red-600 mb-4" />
-                  <p className="text-zinc-600 dark:text-zinc-400">Security monitoring coming soon...</p>
-                </div>
-              </CardContent>
-            </Card>
+            <SecurityMonitoring />
           </TabsContent>
         </Tabs>
       </div>
