@@ -1,66 +1,169 @@
 "use client"
 
-import React from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Download, RefreshCw, TrendingUp, TrendingDown, Activity, Zap } from 'lucide-react'
 
-// Simplified version without recharts for now
-export function CacheAnalyticsDashboard() {
-  const [timePeriod, setTimePeriod] = React.useState('24')
-  const [loading, setLoading] = React.useState(false)
-  
-  // Mock data for now - replace with real API call
-  const analytics = {
-    overview: {
-      hitRate: 87.5,
-      cacheHits: 12543,
-      totalRequests: 14321,
-      cacheMisses: 1778,
-      averageResponseTime: 45,
-      invalidations: 12,
-      errors: 3
-    },
-    byStrategy: {
-      'STATIC_ASSETS': { hits: 8932, misses: 123, total: 9055 },
-      'API_REALTIME': { hits: 2341, misses: 890, total: 3231 },
-      'PAGES_DYNAMIC': { hits: 1270, misses: 765, total: 2035 }
-    },
-    topRoutes: [
-      { route: '/api/hackathons', hits: 1234, misses: 123, total: 1357 },
-      { route: '/api/users/profile', hits: 987, misses: 234, total: 1221 },
-      { route: '/api/leaderboard/stats', hits: 876, misses: 89, total: 965 },
-      { route: '/_next/static/chunks/main.js', hits: 2341, misses: 12, total: 2353 }
-    ],
-    recentEvents: [
-      { type: 'hit', strategy: 'STATIC_ASSETS', route: '/_next/static/css/app.css', timestamp: Date.now() - 1000 },
-      { type: 'miss', strategy: 'API_REALTIME', route: '/api/hackathons', timestamp: Date.now() - 2000 },
-      { type: 'hit', strategy: 'PAGES_DYNAMIC', route: '/hackathons', timestamp: Date.now() - 3000 }
-    ]
+interface CacheAnalytics {
+  overview: {
+    totalRequests: number
+    cacheHits: number
+    cacheMisses: number
+    hitRate: number
+    averageResponseTime: number
+    invalidations: number
+    errors: number
+    lastUpdated: string
   }
-  
-  const handleExportCSV = async () => {
+  byStrategy: Record<string, { hits: number; misses: number; total: number }>
+  topRoutes: Array<{ route: string; hits: number; misses: number; total: number }>
+  recentEvents: Array<{ type: string; strategy: string; route: string; timestamp: number }>
+}
+
+export function CacheAnalyticsDashboard() {
+  const [timePeriod, setTimePeriod] = useState('24')
+  const [loading, setLoading] = useState(true)
+  const [analytics, setAnalytics] = useState<CacheAnalytics | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true)
-      // This would call the actual API
-      console.log('Exporting CSV for period:', timePeriod)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      setError(null)
+      
+      const periodHours = parseInt(timePeriod)
+      const periodMs = periodHours * 60 * 60 * 1000
+      
+      const response = await fetch(`/api/admin/cache-analytics?period=${periodMs}`)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch analytics: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      setAnalytics(data)
+    } catch (err) {
+      console.error('Error fetching cache analytics:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch analytics')
+      setAnalytics(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [timePeriod])
+
+  useEffect(() => {
+    fetchAnalytics()
+  }, [fetchAnalytics])
+
+  const handleRefresh = () => {
+    fetchAnalytics()
+  }
+
+  const handleGenerateTestData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/cache-test-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ events: 50 })
+      })
+      
+      if (response.ok) {
+        // Refresh analytics after generating test data
+        await fetchAnalytics()
+      } else {
+        console.error('Failed to generate test data')
+      }
     } catch (error) {
-      console.error('Failed to export CSV:', error)
+      console.error('Error generating test data:', error)
     } finally {
       setLoading(false)
     }
   }
-  
-  const refresh = () => {
-    setLoading(true)
-    // Simulate refresh
-    setTimeout(() => setLoading(false), 1000)
+
+  const handleExportCSV = async () => {
+    try {
+      const periodHours = parseInt(timePeriod)
+      const periodMs = periodHours * 60 * 60 * 1000
+      
+      const response = await fetch(`/api/admin/cache-analytics?period=${periodMs}&format=csv`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to export CSV')
+      }
+      
+      const csvContent = await response.text()
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `cache-analytics-${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error exporting CSV:', error)
+      alert('Failed to export CSV')
+    }
   }
-  
+
+  if (loading && !analytics) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4 animate-spin" />
+            Loading Cache Analytics...
+          </CardTitle>
+        </CardHeader>
+      </Card>
+    )
+  }
+
+  if (!analytics) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="w-5 h-5" />
+            Cache Analytics
+          </CardTitle>
+          <CardDescription>
+            {error ? `Error: ${error}` : 'No cache data available yet'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">
+              {error 
+                ? 'Failed to load cache analytics. Please try refreshing.' 
+                : 'No cache events have been recorded yet. Generate some test data or wait for real usage to populate analytics.'
+              }
+            </p>
+            <div className="flex justify-center gap-2">
+              <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Retry
+              </Button>
+              {process.env.NODE_ENV === 'development' && (
+                <Button onClick={handleGenerateTestData} variant="outline" size="sm" disabled={loading}>
+                  <Activity className="w-4 h-4 mr-2" />
+                  Generate Test Data
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -83,10 +186,33 @@ export function CacheAnalyticsDashboard() {
               <SelectItem value="168">Last 7 days</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={refresh} variant="outline" size="sm" disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+            <Button onClick={handleRefresh} variant="outline" size="sm" disabled={loading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            {process.env.NODE_ENV === 'development' && (
+              <Button onClick={handleGenerateTestData} variant="outline" size="sm" disabled={loading}>
+                <Activity className="w-4 h-4 mr-2" />
+                Generate Test Data
+              </Button>
+            )}          {process.env.NODE_ENV === 'development' && (
+            <Button 
+              onClick={handleGenerateTestData} 
+              variant="outline" 
+              size="sm" 
+              disabled={loading}
+              className="bg-blue-50 hover:bg-blue-100"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Generate Test Data
+            </Button>
+          )}
+          {process.env.NODE_ENV === 'development' && (
+            <Button onClick={handleGenerateTestData} variant="outline" size="sm" disabled={loading}>
+              <Zap className="w-4 h-4 mr-2" />
+              Generate Test Data
+            </Button>
+          )}
           <Button onClick={handleExportCSV} variant="outline" size="sm" disabled={loading}>
             <Download className="w-4 h-4 mr-2" />
             Export
