@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
+import AIProvider from "@/components/ai/AIProvider";
 
 // Only load dev tools in development
 const ReactDevTools = () => null;
@@ -63,6 +64,7 @@ export default function RootLayout({
             <GlobalErrorHandler />
             {children}
             <Toaster richColors position="top-center" />
+            <AIProvider />
 
             <ReactDevTools />
             <AuthDebug />
