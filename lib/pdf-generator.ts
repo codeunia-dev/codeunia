@@ -446,9 +446,9 @@ export async function generateInternshipOfferLetterPDF(data: InternshipOfferLett
       message: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack?.substring(0, 1000) : undefined,
       name: error instanceof Error ? error.name : undefined,
-      code: (error as any)?.code,
-      errno: (error as any)?.errno,
-      syscall: (error as any)?.syscall
+      code: (error as { code?: string })?.code,
+      errno: (error as { errno?: number })?.errno,
+      syscall: (error as { syscall?: string })?.syscall
     })
 
     // Use fallback PDF generation

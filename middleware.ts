@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { reservedUsernameService } from '@/lib/services/reserved-usernames';
+import { applyCacheHeaders, CacheUtils } from '@/lib/production-cache';
 
 // Function to award daily login points
 async function awardDailyLoginPoints(userId: string, supabase: any) {
@@ -219,11 +220,31 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    return res;
+    // Apply production-grade cache headers before returning response
+    let finalResponse = res;
+    if (finalResponse) {
+      // Apply appropriate cache strategy based on route
+      if (req.nextUrl.pathname.startsWith('/api/')) {
+        // API routes get real-time cache strategy
+        finalResponse = applyCacheHeaders(finalResponse, 'API_REALTIME');
+      } else if (req.nextUrl.pathname.startsWith('/protected/')) {
+        // Protected pages get private cache strategy
+        finalResponse = applyCacheHeaders(finalResponse, 'USER_PRIVATE');
+      } else {
+        // Public pages get dynamic cache strategy
+        finalResponse = applyCacheHeaders(finalResponse, 'PAGES_DYNAMIC');
+      }
+      
+      // Log cache strategy in development
+      CacheUtils.logCacheStatus(req, 'middleware-applied');
+    }
+
+    return finalResponse;
   } catch (error) {
     console.error('Middleware error:', error);
-    // On error, allow the request to continue
-    return res;
+    // On error, allow the request to continue with no-cache headers
+    const errorResponse = NextResponse.next();
+    return applyCacheHeaders(errorResponse, 'USER_PRIVATE');
   }
 }
 

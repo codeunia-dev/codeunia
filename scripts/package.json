@@ -1,0 +1,10 @@
+{
+  "name": "cache-invalidation",
+  "scripts": {
+    "invalidate-cache": "node production-cache-invalidation.js",
+    "clear-all-cache": "npm run invalidate-cache && npm cache clean --force",
+    "deploy-invalidate": "npm run invalidate-cache && echo '🚀 Cache invalidated for deployment'"
+  },
+  "description": "Production cache invalidation tools",
+  "main": "production-cache-invalidation.js"
+}

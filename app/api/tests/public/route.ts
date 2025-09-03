@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createCacheHeaders, CACHE_CONFIGS } from "@/lib/cache-headers";
 
 // In-memory cache for this API route
-const cache = new Map<string, { data: any; timestamp: number }>();
+const cache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 // GET: Get public tests for display

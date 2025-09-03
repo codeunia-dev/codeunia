@@ -74,17 +74,19 @@ type InternRow = {
   project_url: string | null;
 };
 
-type ProfileRow = {
-  email: string | null;
-  first_name: string | null;
-  last_name: string | null;
-};
+// interface ProfileRow { // Currently unused
+//   id: string;
+//   email: string;
+//   first_name: string | null;
+//   last_name: string | null;
+// }
 
-function formatNamePart(part: string | null | undefined): string {
-  if (!part) return "";
-  const lower = part.toLowerCase();
-  return lower.charAt(0).toUpperCase() + lower.slice(1);
-}
+// Helper function to format name parts (currently unused)
+// const formatNamePart = (name: string | null | undefined): string => {
+//   if (!part) return "";
+//   const lower = part.toLowerCase();
+//   return lower.charAt(0).toUpperCase() + lower.slice(1);
+// }
 
 export default async function InternshipsPage() {
   const supabase = await createClient();
@@ -96,12 +98,12 @@ export default async function InternshipsPage() {
 
   const authEmailRaw = authData.user.email || "";
 
-  // Fetch profile name by email
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("email, first_name, last_name")
-    .ilike("email", authEmailRaw)
-    .single<ProfileRow>();
+  // Fetch user profile from profiles table (currently unused)
+  // const { data: profile } = await supabase
+  //   .from("profiles")
+  //   .select("email, first_name, last_name")
+  //   .ilike("email", authEmailRaw)
+  //   .single<ProfileRow>();
 
   // Fetch internship records by email (completed only)
   const { data: internships, error: internError } = await supabase
@@ -158,9 +160,9 @@ export default async function InternshipsPage() {
     );
   }
 
-  const firstName = formatNamePart(profile?.first_name) || formatNamePart(authData.user.user_metadata?.first_name);
-  const lastName = formatNamePart(profile?.last_name) || formatNamePart(authData.user.user_metadata?.last_name);
-  const fullName = `${firstName} ${lastName}`.trim() || authEmailRaw || "";
+  // const firstName = formatNamePart(profile?.first_name) || formatNamePart(authData.user.user_metadata?.first_name); // Unused
+  // const lastName = formatNamePart(profile?.last_name) || formatNamePart(authData.user.user_metadata?.last_name); // Unused
+  // const fullName = `${firstName} ${lastName}`.trim() || authEmailRaw || ""; // Unused for now
 
   return (
     <div className="flex-1 w-full p-6 max-w-7xl mx-auto">

@@ -16,7 +16,7 @@ export default async function ProtectedPage() {
   }
 
   // Fetch user profile from profiles table
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase // Removed unused profileError
     .from('profiles')
     .select('first_name')
     .eq('id', data.user.id)

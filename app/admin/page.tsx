@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Users,
   FileText,
@@ -19,10 +20,12 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ClipboardCheck,
+  Zap,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import type { BlogPost } from "@/components/data/blog-posts"
 import { RealtimeChannel } from "@supabase/supabase-js"
+import { CacheAnalyticsDashboard } from "@/components/admin/CacheAnalyticsSimple"
 
 type SupabaseUser = {
   created_at: string;
@@ -535,7 +538,78 @@ export default function AdminDashboard() {
             <CardDescription className="text-zinc-700 dark:text-zinc-200 font-medium text-sm">Create new hackathons and workshops</CardDescription>
           </CardHeader>
         </Card>
+      </div>
 
+      {/* Advanced Analytics Section */}
+      <div className="flex items-center gap-3 mt-8 md:mt-10 mb-6 relative z-10">
+        <span className="inline-block w-1.5 h-6 bg-gradient-to-b from-cyan-400 to-blue-400 rounded-full" />
+        <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white tracking-tight">System Analytics</h2>
+      </div>
+
+      <div className="relative z-10">
+        <Tabs defaultValue="cache" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-zinc-900/60 border border-zinc-800">
+            <TabsTrigger value="cache" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <Zap className="w-4 h-4 mr-2" />
+              Cache Analytics
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="security" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Security
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="cache" className="mt-6">
+            <CacheAnalyticsDashboard />
+          </TabsContent>
+          
+          <TabsContent value="performance" className="mt-6">
+            <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-green-100/80 to-green-200/60 dark:from-green-900/60 dark:to-green-800/40">
+              <CardHeader>
+                <CardTitle className="text-zinc-900 dark:text-white">Performance Metrics</CardTitle>
+                <CardDescription className="text-zinc-700 dark:text-zinc-300">
+                  Application performance and optimization insights
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <TrendingUp className="w-12 h-12 mx-auto text-green-600 mb-4" />
+                  <p className="text-zinc-600 dark:text-zinc-400">Performance monitoring coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="security" className="mt-6">
+            <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-red-100/80 to-red-200/60 dark:from-red-900/60 dark:to-red-800/40">
+              <CardHeader>
+                <CardTitle className="text-zinc-900 dark:text-white">Security Overview</CardTitle>
+                <CardDescription className="text-zinc-700 dark:text-zinc-300">
+                  Security events, threats, and system health
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <AlertTriangle className="w-12 h-12 mx-auto text-red-600 mb-4" />
+                  <p className="text-zinc-600 dark:text-zinc-400">Security monitoring coming soon...</p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex items-center gap-3 mt-8 md:mt-10 mb-6 relative z-10">
+        <span className="inline-block w-1.5 h-6 bg-gradient-to-b from-purple-400 to-pink-400 rounded-full" />
+        <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-white tracking-tight">Quick Actions</h2>
+      </div>
+
+      <div className="grid gap-6 md:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 relative z-10">
         <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-purple-200/80 to-pink-200/60 dark:from-purple-900/60 dark:to-pink-800/40 card-hover cursor-pointer transition-transform duration-300 hover:-translate-y-2 hover:shadow-[0_8px_32px_0_rgba(168,85,247,0.18)] relative overflow-hidden group sm:col-span-2 lg:col-span-1">
           <CardHeader className="text-center relative z-10">
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-2 shadow-xl group-hover:scale-110 transition-transform">

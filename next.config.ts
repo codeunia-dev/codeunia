@@ -5,10 +5,16 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 })
 
 const nextConfig: NextConfig = {
-  // Add build ID for cache busting
+  // Production-grade build ID with deployment tracking
   generateBuildId: async () => {
-    // Use timestamp + random for unique build IDs
-    return `${Date.now()}-${Math.random().toString(36).substring(7)}`
+    // Use environment-specific build IDs for better cache control
+    const timestamp = Date.now()
+    const gitCommit = process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || 
+                     process.env.GITHUB_SHA?.substring(0, 7) || 
+                     Math.random().toString(36).substring(7)
+    const buildId = `${timestamp}-${gitCommit}`
+    console.log(`🏗️  Build ID: ${buildId}`)
+    return buildId
   },
 
   // Simplified webpack config for better Vercel compatibility
@@ -57,8 +63,25 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV === 'development'
     const isProd = process.env.NODE_ENV === 'production'
+    const buildId = process.env.BUILD_ID || Date.now().toString()
     
     return [
+      // Static assets - aggressive caching with build ID
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=2592000, immutable', // 30 days
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
+          },
+        ],
+      },
+      
+      // API routes - smart caching with immediate invalidation
       {
         source: '/api/leaderboard/stats',
         headers: [
@@ -66,11 +89,15 @@ const nextConfig: NextConfig = {
             key: 'Cache-Control',
             value: isDev 
               ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=60, stale-while-revalidate=120',
+              : 'public, s-maxage=30, max-age=0, must-revalidate',
           },
           {
             key: 'CDN-Cache-Control',
-            value: isProd ? 'public, s-maxage=60' : 'no-cache',
+            value: isProd ? 'public, s-maxage=30' : 'no-cache',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
           },
         ],
       },
@@ -81,17 +108,50 @@ const nextConfig: NextConfig = {
             key: 'Cache-Control',
             value: isDev 
               ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=30, stale-while-revalidate=60',
+              : 'public, s-maxage=15, max-age=0, must-revalidate',
           },
           {
             key: 'CDN-Cache-Control',
-            value: isProd ? 'public, s-maxage=30' : 'no-cache',
+            value: isProd ? 'public, s-maxage=15' : 'no-cache',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
           },
         ],
       },
+      
+      // Dynamic content - no client cache, short CDN cache
       {
-        source: '/(.*)',
+        source: '/api/:path*',
         headers: [
+          {
+            key: 'Cache-Control',
+            value: isDev 
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, s-maxage=10, max-age=0, must-revalidate',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
+          },
+        ],
+      },
+      
+      // Pages - immediate updates with smart CDN caching
+      {
+        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: isDev 
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, s-maxage=60, max-age=0, must-revalidate',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
+          },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
