@@ -355,7 +355,9 @@ export default function AIChat() {
           ) : !user ? (
             <div className="flex-1 flex items-center justify-center p-6">
               <div className="text-center">
-                <CodeuniaLogo size="md" showText={false} noLink={true} instanceId="chat-auth" />
+                <div className="flex justify-center">
+                  <CodeuniaLogo size="md" showText={false} noLink={true} instanceId="chat-auth" />
+                </div>
                 <h3 className="text-lg font-semibold text-white mt-3">Sign in Required</h3>
                 <p className="text-sm text-gray-400 mt-2 mb-4">Please sign in to chat with Unio</p>
                 <Link href="/auth/signin?returnUrl=/ai" className="inline-block">
