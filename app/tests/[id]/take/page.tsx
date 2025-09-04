@@ -24,6 +24,7 @@ export default function TakeTestPage() {
   const [timeRemaining, setTimeRemaining] = useState(0)
   const [testStarted, setTestStarted] = useState(false)
   const [attemptId, setAttemptId] = useState<string | null>(null)
+  const [testStartTime, setTestStartTime] = useState<Date | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [violations, setViolations] = useState(0)
   const [showWarning, setShowWarning] = useState(false)
@@ -63,7 +64,12 @@ export default function TakeTestPage() {
   }, [fetchTestAndQuestions])
 
   const handleSubmitTest = useCallback(async () => {
-    if (!attemptId || !test) return
+    console.log('🚀 handleSubmitTest called with:', { attemptId, test: !!test, testStartTime })
+    
+    if (!attemptId || !test) {
+      console.log('❌ Early return: missing attemptId or test', { attemptId, test: !!test })
+      return
+    }
 
     try {
       // Calculate score
@@ -83,36 +89,58 @@ export default function TakeTestPage() {
 
       const passed = (score / maxScore) * 100 >= test.passing_score
 
-      // Update attempt
-      const { error: updateError } = await supabase
-        .from('test_attempts')
-        .update({
-          submitted_at: new Date().toISOString(),
-          score,
-          max_score: maxScore,
-          passed,
-          time_taken_minutes: Math.floor((test.duration_minutes * 60 - timeRemaining) / 60),
-          status: 'submitted'
-        })
-        .eq('id', attemptId)
 
-      if (updateError) throw updateError
-
-      // Save answers
-      const answerRecords = Object.entries(answers).map(([questionId, selectedOptions]) => ({
-        attempt_id: attemptId,
-        question_id: questionId,
-        selected_options: selectedOptions,
-        answered_at: new Date().toISOString()
-      }))
-
-      if (answerRecords.length > 0) {
-        const { error: answersError } = await supabase
-          .from('test_answers')
-          .insert(answerRecords)
-
-        if (answersError) throw answersError
+      // Calculate time taken more accurately
+      const currentTime = new Date()
+      let timeTakenMinutes = 0
+      
+      if (testStartTime) {
+        // Use actual start time for most accurate calculation
+        const timeTakenMs = currentTime.getTime() - testStartTime.getTime()
+        timeTakenMinutes = Math.max(0, Math.floor(timeTakenMs / (1000 * 60)))
+      } else {
+        // Fallback to the original calculation if start time is not available
+        timeTakenMinutes = Math.max(0, Math.floor((test.duration_minutes * 60 - timeRemaining) / 60))
       }
+      
+      console.log('Time calculation:', {
+        timeTakenMinutes,
+        testStartTime: testStartTime?.toISOString(),
+        currentTime: currentTime.toISOString(),
+        usingStartTime: !!testStartTime
+      })
+
+
+
+      // Use API route to update the database (bypasses RLS)
+      
+      const response = await fetch('/api/tests/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          attemptId,
+          score,
+          maxScore,
+          passed,
+          timeTakenMinutes,
+          answers
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('API update failed:', errorData)
+        throw new Error(`API update failed: ${errorData.error}`)
+      }
+
+      const result = await response.json()
+
+      // Wait a moment to ensure the database update is fully committed
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Answers are now saved by the API route
 
       // Log activity for points
       try {
@@ -138,13 +166,15 @@ export default function TakeTestPage() {
       toast.error('Failed to submit test')
       console.error('Test submission error:', error)
     }
-  }, [attemptId, test, questions, answers, testId, timeRemaining, supabase, router])
+  }, [attemptId, test, questions, answers, testId, timeRemaining, testStartTime, supabase, router])
 
   useEffect(() => {
     if (testStarted && timeRemaining > 0) {
+      console.log('⏰ Timer started, timeRemaining:', timeRemaining)
       const timer = setInterval(() => {
         setTimeRemaining(prev => {
           if (prev <= 1) {
+            console.log('⏰ Timer expired, calling handleSubmitTest')
             handleSubmitTest()
             return 0
           }
@@ -188,8 +218,10 @@ export default function TakeTestPage() {
       
       // Auto-submit test after 2 violations
       if (newViolations >= 2) {
+        console.log('🚨 Maximum violations reached, auto-submitting test')
         toast.error('Maximum violations reached! Test will be submitted automatically.')
         setTimeout(() => {
+          console.log('🚨 Auto-submitting test due to violations')
           handleSubmitTest()
         }, 2000)
         return
@@ -387,6 +419,9 @@ export default function TakeTestPage() {
 
       setAttemptId(attemptDataResult.id)
       setTestStarted(true)
+      const startTime = new Date()
+      setTestStartTime(startTime) // Record the actual start time
+      console.log('🎯 Test started at:', startTime.toISOString())
       toast.success('Test started! Entering full-screen mode...')
       
       // Force full-screen immediately
@@ -654,7 +689,10 @@ export default function TakeTestPage() {
                 <div className="flex items-center gap-2">
                   {currentQuestionIndex === questions.length - 1 ? (
                     <Button
-                      onClick={handleSubmitTest}
+                      onClick={() => {
+                        console.log('🔘 Manual submit button clicked')
+                        handleSubmitTest()
+                      }}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       Submit Test
