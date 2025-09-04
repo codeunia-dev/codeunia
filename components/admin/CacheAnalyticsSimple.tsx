@@ -166,6 +166,20 @@ export function CacheAnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Status Notice */}
+      <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+        <CardContent className="pt-6">
+          <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+            <Activity className="w-4 h-4" />
+            <span className="font-medium">Cache Analytics Status</span>
+          </div>
+          <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-2">
+            Currently showing basic analytics data. The advanced real-time analytics system has been temporarily 
+            simplified to ensure system stability. Core cache functionality remains fully operational.
+          </p>
+        </CardContent>
+      </Card>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
