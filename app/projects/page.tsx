@@ -1,12 +1,22 @@
 "use client"
 
+import React, { useState, useMemo } from "react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
-import { Github, Linkedin, Code2, Sparkles, Briefcase, ExternalLink } from "lucide-react"
+import { Github, Linkedin, Code2, Sparkles, Briefcase, ExternalLink, Search, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Import projects data from JSON file
@@ -29,14 +39,39 @@ const projectsWithDetails = projectsData.projects.map((project, index) => {
   }
 })
 
-const projects = projectsWithDetails
+const allTags = [...new Set(projectsWithDetails.flatMap((p) => p.tags))].sort()
 
 export default function ProjectsPage() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    )
+  }
+
+  const filteredProjects = useMemo(() => {
+    return projectsWithDetails.filter((project) => {
+      const searchLower = searchTerm.toLowerCase()
+      const matchesSearch =
+        project.project_name.toLowerCase().includes(searchLower) ||
+        project.description.toLowerCase().includes(searchLower) ||
+        project.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.every((tag) => project.tags.includes(tag))
+
+      return matchesSearch && matchesTags
+    })
+  }, [searchTerm, selectedTags])
+
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-background to-muted/5">
       <Header />
 
-    {/* Hero Section */}
+      {/* Hero Section */}
       <section className="py-20 md:py-32 relative overflow-hidden">
         <div
           className={cn(
@@ -80,8 +115,46 @@ export default function ProjectsPage() {
 
       <section className="relative py-20 bg-gradient-to-b from-muted/20 to-background">
         <div className="container relative z-10 mx-auto px-4">
+          {/* Search and Filter Controls */}
+          <div className="mb-12 flex justify-center items-center gap-4 max-w-4xl mx-auto">
+            <div className="relative flex-grow">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search projects..."
+                className="w-full pl-12 pr-4 py-3 text-lg bg-background/70 backdrop-blur-sm rounded-full focus:ring-2 focus:ring-primary/50"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2 rounded-full text-lg py-3 bg-background/70 backdrop-blur-sm">
+                  <span>Tags</span>
+                  {selectedTags.length > 0 && (
+                    <Badge variant="secondary" className="rounded-full">{selectedTags.length}</Badge>
+                  )}
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-64">
+                <DropdownMenuLabel>Filter by Tags</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {allTags.map((tag) => (
+                  <DropdownMenuCheckboxItem
+                    key={tag}
+                    checked={selectedTags.includes(tag)}
+                    onCheckedChange={() => handleTagToggle(tag)}
+                  >
+                    {tag}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-            {projects.map((project, index) => (
+            {filteredProjects.map((project, index) => (
               <div key={project.project_name} className="group" style={{ animationDelay: `${index * 100}ms` }}>
                 <Card className="relative h-full overflow-hidden border-0 bg-background/60 backdrop-blur-sm shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
                   <div
