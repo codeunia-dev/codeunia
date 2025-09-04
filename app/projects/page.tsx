@@ -14,25 +14,6 @@ import projectsData from "./projects.json"
 
 // Define additional project details for UI display
 const projectsWithDetails = projectsData.projects.map((project, index) => {
-  // Define descriptions and tags for each project
-  const descriptions = [
-    "An intelligent task management system that uses AI to prioritize and categorize tasks.",
-    "A comprehensive dashboard for e-learning platforms with analytics and progress tracking.",
-    "A secure certificate verification system using blockchain technology for tamper-proof credentials.",
-    "A collaborative code editor with real-time syncing, syntax highlighting, and execution capabilities.",
-    "A simulation platform for sustainable smart city planning with energy consumption analytics.",
-    "An intelligent scheduling system for healthcare providers with AI-based optimization.",
-  ]
-
-  const tagsList = [
-    ["React", "Node.js", "AI", "MongoDB"],
-    ["Vue.js", "Express", "PostgreSQL", "Chart.js"],
-    ["Solidity", "Ethereum", "Web3.js", "React"],
-    ["Socket.io", "CodeMirror", "Express", "MongoDB"],
-    ["Three.js", "D3.js", "Node.js", "Python"],
-    ["React", "Django", "PostgreSQL", "TensorFlow"],
-  ]
-
   const gradients = [
     "from-blue-500 to-cyan-500",
     "from-emerald-500 to-teal-500",
@@ -44,8 +25,6 @@ const projectsWithDetails = projectsData.projects.map((project, index) => {
 
   return {
     ...project,
-    description: descriptions[index % descriptions.length],
-    tags: tagsList[index % tagsList.length],
     gradient: gradients[index % gradients.length],
   }
 })
