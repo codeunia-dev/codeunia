@@ -66,53 +66,98 @@ const nextConfig: NextConfig = {
     const buildId = process.env.BUILD_ID || Date.now().toString()
     
     return [
-      // Static assets - aggressive caching with build ID
+      // STATIC IMMUTABLE: Static assets (build files, immutable resources)
       {
         source: '/_next/static/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=2592000, immutable', // 30 days
-          },
-          {
-            key: 'X-Build-ID',
-            value: buildId,
-          },
-        ],
-      },
-      
-      // API routes - smart caching with immediate invalidation
-      {
-        source: '/api/leaderboard/stats',
-        headers: [
-          {
-            key: 'Cache-Control',
             value: isDev 
               ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=30, max-age=0, must-revalidate',
+              : 'public, max-age=31536000, immutable', // 1 year immutable
           },
           {
             key: 'CDN-Cache-Control',
-            value: isProd ? 'public, s-maxage=30' : 'no-cache',
+            value: isProd ? 'public, max-age=31536000, immutable' : 'no-cache',
           },
           {
             key: 'X-Build-ID',
             value: buildId,
           },
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding',
+          },
+          {
+            key: 'Cache-Tag',
+            value: 'static',
+          },
         ],
       },
+      
+      // STATIC IMMUTABLE: Images and media files
       {
-        source: '/api/leaderboard/user/:path*',
+        source: '/(images|media|assets)/:path*.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)',
         headers: [
           {
             key: 'Cache-Control',
             value: isDev 
               ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=15, max-age=0, must-revalidate',
+              : 'public, max-age=2592000, immutable', // 30 days immutable
           },
           {
             key: 'CDN-Cache-Control',
-            value: isProd ? 'public, s-maxage=15' : 'no-cache',
+            value: isProd ? 'public, max-age=2592000, immutable' : 'no-cache',
+          },
+          {
+            key: 'Cache-Tag',
+            value: 'media',
+          },
+        ],
+      },
+      
+      // DYNAMIC CONTENT: Dynamic pages (events, hackathons, etc.)
+      {
+        source: '/(hackathons|events|leaderboard|opportunities)/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: isDev 
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, max-age=60, stale-while-revalidate=300', // 1min cache, 5min SWR
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: isProd ? 'public, max-age=60, stale-while-revalidate=300' : 'no-cache',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
+          },
+          {
+            key: 'Cache-Tag',
+            value: 'content',
+          },
+        ],
+      },
+      
+      // DATABASE QUERIES: API routes that query database
+      {
+        source: '/api/(hackathons|leaderboard|tests|verify-certificate)/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: isDev 
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, max-age=300, stale-while-revalidate=600', // 5min cache, 10min SWR
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: isProd ? 'public, max-age=300, stale-while-revalidate=600' : 'no-cache',
+          },
+          {
+            key: 'Cache-Tag',
+            value: 'api',
           },
           {
             key: 'X-Build-ID',
@@ -121,42 +166,52 @@ const nextConfig: NextConfig = {
         ],
       },
       
-      // Dynamic content - no client cache, short CDN cache
+      // USER PRIVATE: Auth and user-specific routes
       {
-        source: '/api/:path*',
+        source: '/(protected|admin|profile|dashboard|auth)/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: isDev 
-              ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=10, max-age=0, must-revalidate',
+            value: 'private, no-cache, no-store, must-revalidate',
           },
           {
-            key: 'X-Build-ID',
-            value: buildId,
+            key: 'CDN-Cache-Control',
+            value: 'no-cache',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
           },
         ],
       },
       
-      // Pages - immediate updates with smart CDN caching
+      // API STANDARD: General API routes and public pages
       {
-        source: '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        source: '/((?!_next|protected|admin|profile|dashboard|auth).*)',
         headers: [
           {
             key: 'Cache-Control',
             value: isDev 
               ? 'no-cache, no-store, must-revalidate'
-              : 'public, s-maxage=60, max-age=0, must-revalidate',
+              : 'public, max-age=120, stale-while-revalidate=300', // 2min cache, 5min SWR
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: isProd ? 'public, max-age=120, stale-while-revalidate=300' : 'no-cache',
+          },
+          {
+            key: 'Cache-Tag',
+            value: 'pages',
           },
           {
             key: 'X-Build-ID',
             value: buildId,
           },
+          // Security headers
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'DENY' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
           { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
-          { key: 'Content-Security-Policy', value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https:; font-src 'self' https:; object-src 'none'; media-src 'self'; frame-src 'none';" },
         ],
       },
     ]

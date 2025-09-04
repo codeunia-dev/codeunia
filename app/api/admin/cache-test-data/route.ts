@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { cacheAnalytics } from '@/lib/cache-analytics-server'
-import { createCachedApiResponse } from '@/lib/production-cache'
+import { UnifiedCache } from '@/lib/unified-cache-system'
 
 const routes = [
   '/api/hackathons',
@@ -79,15 +79,15 @@ export async function POST(request: NextRequest) {
     // Return current analytics data
     const analytics = cacheAnalytics.getDetailedAnalytics()
     
-    return createCachedApiResponse({
+    return UnifiedCache.createResponse({
       success: true,
       message: `Generated ${totalGenerated} cache events`,
       analytics
-    }, 'API_REALTIME')
+    }, 'REALTIME')
     
   } catch (error) {
     console.error('Error generating cache test data:', error)
-    return createCachedApiResponse(
+    return UnifiedCache.createResponse(
       { 
         success: false,
         error: 'Failed to generate cache test data',
