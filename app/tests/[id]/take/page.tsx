@@ -135,7 +135,7 @@ export default function TakeTestPage() {
         throw new Error(`API update failed: ${errorData.error}`)
       }
 
-      const result = await response.json()
+      // const result = await response.json()
 
       // Wait a moment to ensure the database update is fully committed
       await new Promise(resolve => setTimeout(resolve, 500))

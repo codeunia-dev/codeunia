@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { cacheAnalytics } from '@/lib/cache-analytics-server'
-import { createCachedApiResponse } from '@/lib/production-cache'
+import { UnifiedCache } from '@/lib/unified-cache-system'
 
 /**
  * API endpoint to trigger manual cache invalidation - Admin only
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Here you could add additional invalidation logic
     // For example, clearing specific cache keys or triggering CDN purge
     
-    return createCachedApiResponse({
+    return UnifiedCache.createResponse({
       success: true,
       message: 'Cache invalidation triggered',
       timestamp: new Date().toISOString()
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     
   } catch (error) {
     console.error('Cache invalidation API error:', error)
-    return createCachedApiResponse(
+    return UnifiedCache.createResponse(
       { error: 'Failed to trigger cache invalidation' },
       'USER_PRIVATE'
     )

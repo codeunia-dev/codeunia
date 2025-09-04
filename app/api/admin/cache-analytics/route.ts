@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createCachedResponse } from '@/lib/simple-cache'
+import { UnifiedCache } from '@/lib/unified-cache-system'
 
 /**
  * API endpoint for cache analytics - Admin only
@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
     // }
     
     const url = new URL(request.url)
-    const period = url.searchParams.get('period')
+    // const period = url.searchParams.get('period')
     const format = url.searchParams.get('format') as 'json' | 'csv' | null
     
-    // Default to 24 hours
-    const periodMs = period ? parseInt(period) * 1000 : 24 * 60 * 60 * 1000
+    // Default to 24 hours - period is used for future analytics filtering
+    // const _periodMs = period ? parseInt(period) * 1000 : 24 * 60 * 60 * 1000
     
     // Provide basic analytics data for now
     const basicAnalytics = {
@@ -66,12 +66,12 @@ export async function GET(request: NextRequest) {
       })
     }
     
-    return createCachedResponse(basicAnalytics, 'API_SHORT')
+    return UnifiedCache.createResponse(basicAnalytics, 'API_STANDARD')
   } catch (error) {
     console.error('Cache analytics API error:', error)
-    return createCachedResponse(
+    return UnifiedCache.createResponse(
       { error: 'Failed to fetch cache analytics' },
-      'NO_CACHE'
+      'USER_PRIVATE'
     )
   }
 }
