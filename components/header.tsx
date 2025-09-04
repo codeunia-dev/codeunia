@@ -58,6 +58,7 @@ export default function Header() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/opportunities", label: "Opportunities" },
+    { href: "/projects", label: "Projects" },
     { href: "/blog", label: "Blog" },
     { href: "/join", label: "Join Codeunia" },
     { href: "/contact", label: "Contact Us" },
