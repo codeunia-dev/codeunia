@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSafeNavigation } from "@/lib/security/safe-navigation";
 import {
   Bell,
   LogOut,
@@ -58,6 +59,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
   const [mobileOpen, setMobileOpen] = useState(false);
   const closeSidebar = () => setMobileOpen(false);
   const pathname = usePathname();
+  const { navigateTo } = useSafeNavigation();
   return (
     <SidebarProvider>
       <div className="w-full bg-black">
@@ -145,20 +147,20 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/admin/account'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/admin/account" className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>Account</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/admin/notifications'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/admin/notifications" className="flex items-center w-full">
                         <Bell className="size-4 text-purple-400" />
                         <span>Notifications</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => { window.location.href = "/auth/signin" }} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
+                    <DropdownMenuItem onClick={() => navigateTo("/auth/signin")} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
                       <LogOut className="size-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>
@@ -251,20 +253,20 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/admin/account'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/admin/account" className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>Account</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/admin/notifications'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/admin/notifications" className="flex items-center w-full">
                         <Bell className="size-4 text-purple-400" />
                         <span>Notifications</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => { window.location.href = "/auth/signin" }} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
+                    <DropdownMenuItem onClick={() => navigateTo("/auth/signin")} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
                       <LogOut className="size-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>

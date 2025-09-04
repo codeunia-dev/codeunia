@@ -71,7 +71,12 @@ export default function TestResultsPage() {
 
   const shareResults = async () => {
     try {
-      const url = window.location.href
+      // Use window.location.href for sharing current URL (safe for clipboard operations)
+      const url = typeof window !== 'undefined' ? window.location.href : ''
+      if (!url) {
+        toast.error('Unable to get current URL')
+        return
+      }
       await navigator.clipboard.writeText(url)
       toast.success('Results link copied to clipboard!')
     } catch {

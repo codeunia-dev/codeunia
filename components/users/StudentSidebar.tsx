@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSafeNavigation } from "@/lib/security/safe-navigation";
 import {
   LogOut,
   User,
@@ -60,6 +61,7 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
   const closeSidebar = () => setMobileOpen(false);
   const toggleSidebar = () => setSidebarCollapsed(!sidebarCollapsed);
   const pathname = usePathname();
+  const { navigateTo } = useSafeNavigation();
 
   // Lock background scroll when mobile sheet is open
   useEffect(() => {
@@ -159,20 +161,20 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                         </div>
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile/view'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                         <Link href="/protected/profile/view" className="flex items-center w-full">
                           <User className="size-4 text-purple-400" />
                           <span>Profile</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/settings'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                      <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                         <Link href="/protected/settings" className="flex items-center w-full">
                           <Settings className="size-4 text-purple-400" />
                           <span>Settings</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => { window.location.href = "/auth/signin" }} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
+                      <DropdownMenuItem onClick={() => navigateTo("/auth/signin")} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
                         <LogOut className="size-4" />
                         <span>Log out</span>
                       </DropdownMenuItem>
@@ -297,20 +299,20 @@ export function StudentSidebar({ avatar, name, email, sidebarItems, children }: 
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/profile/view'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/protected/profile/view" className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild onSelect={(e) => { e.preventDefault(); window.location.href = '/protected/settings'; }} className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
+                    <DropdownMenuItem asChild className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer">
                       <Link href="/protected/settings" className="flex items-center w-full">
                         <Settings className="size-4 text-purple-400" />
                         <span>Settings</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => { window.location.href = "/auth/signin" }} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
+                    <DropdownMenuItem onClick={() => navigateTo("/auth/signin")} className="flex items-center gap-2 px-3 py-2 hover:bg-red-600/20 text-red-400 rounded-md cursor-pointer">
                       <LogOut className="size-4" />
                       <span>Log out</span>
                     </DropdownMenuItem>
