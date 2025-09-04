@@ -2,36 +2,48 @@
   "projects": [
     {
       "project_name": "AI-Powered Task Management System",
+      "description": "An intelligent task management system that uses AI to prioritize and categorize tasks.",
+      "tags": ["React", "Node.js", "AI", "MongoDB"],
       "github_repository_url": "https://github.com/codeunia/task-management-ai",
       "intern_name": "Rahul Sharma",
       "intern_linkedin": "https://linkedin.com/in/rahul-sharma"
     },
     {
       "project_name": "E-Learning Platform Dashboard",
+      "description": "A comprehensive dashboard for e-learning platforms with analytics and progress tracking.",
+      "tags": ["Vue.js", "Express", "PostgreSQL", "Chart.js"],
       "github_repository_url": "https://github.com/codeunia/elearning-dashboard",
       "intern_name": "Priya Patel",
       "intern_linkedin": "https://linkedin.com/in/priya-patel"
     },
     {
       "project_name": "Blockchain-based Certificate Verification",
+      "description": "A secure certificate verification system using blockchain technology for tamper-proof credentials.",
+      "tags": ["Solidity", "Ethereum", "Web3.js", "React"],
       "github_repository_url": "https://github.com/codeunia/blockchain-certificates",
       "intern_name": "Arjun Kumar",
       "intern_linkedin": "https://linkedin.com/in/arjun-kumar"
     },
     {
       "project_name": "Real-time Collaborative Code Editor",
+      "description": "A collaborative code editor with real-time syncing, syntax highlighting, and execution capabilities.",
+      "tags": ["Socket.io", "CodeMirror", "Express", "MongoDB"],
       "github_repository_url": "https://github.com/codeunia/collab-code-editor",
       "intern_name": "Sneha Gupta",
       "intern_linkedin": "https://linkedin.com/in/sneha-gupta"
     },
     {
       "project_name": "Sustainable Smart City Simulator",
+      "description": "A simulation platform for sustainable smart city planning with energy consumption analytics.",
+      "tags": ["Three.js", "D3.js", "Node.js", "Python"],
       "github_repository_url": "https://github.com/codeunia/smart-city-simulator",
       "intern_name": "Vikram Singh",
       "intern_linkedin": "https://linkedin.com/in/vikram-singh"
     },
     {
       "project_name": "Healthcare Appointment Scheduling System",
+      "description": "An intelligent scheduling system for healthcare providers with AI-based optimization.",
+      "tags": ["React", "Django", "PostgreSQL", "TensorFlow"],
       "github_repository_url": "https://github.com/codeunia/healthcare-scheduler",
       "intern_name": "Ananya Desai",
       "intern_linkedin": "https://linkedin.com/in/ananya-desai"
