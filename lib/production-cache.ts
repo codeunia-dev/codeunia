@@ -9,7 +9,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { cacheAnalytics } from './cache-analytics-server'
 
 // Build ID for cache busting - updated on each deployment
 export const BUILD_ID = process.env.BUILD_ID || process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || Date.now().toString()
@@ -105,15 +104,7 @@ export function createCacheHeaders(strategy: keyof typeof CACHE_STRATEGIES): Rec
     'Vary': 'Accept-Encoding, Authorization',
   }
   
-  // Record analytics event
-  if (typeof cacheAnalytics !== 'undefined') {
-    cacheAnalytics.recordEvent({
-      type: 'hit', // Assume hit for header generation
-      strategy,
-      route: 'header-generation',
-      buildId: BUILD_ID
-    })
-  }
+  // Note: Cache analytics removed to prevent circular dependencies
   
   return headers
 }
