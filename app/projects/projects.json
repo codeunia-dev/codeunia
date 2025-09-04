@@ -1,0 +1,40 @@
+{
+  "projects": [
+    {
+      "project_name": "AI-Powered Task Management System",
+      "github_repository_url": "https://github.com/codeunia/task-management-ai",
+      "intern_name": "Rahul Sharma",
+      "intern_linkedin": "https://linkedin.com/in/rahul-sharma"
+    },
+    {
+      "project_name": "E-Learning Platform Dashboard",
+      "github_repository_url": "https://github.com/codeunia/elearning-dashboard",
+      "intern_name": "Priya Patel",
+      "intern_linkedin": "https://linkedin.com/in/priya-patel"
+    },
+    {
+      "project_name": "Blockchain-based Certificate Verification",
+      "github_repository_url": "https://github.com/codeunia/blockchain-certificates",
+      "intern_name": "Arjun Kumar",
+      "intern_linkedin": "https://linkedin.com/in/arjun-kumar"
+    },
+    {
+      "project_name": "Real-time Collaborative Code Editor",
+      "github_repository_url": "https://github.com/codeunia/collab-code-editor",
+      "intern_name": "Sneha Gupta",
+      "intern_linkedin": "https://linkedin.com/in/sneha-gupta"
+    },
+    {
+      "project_name": "Sustainable Smart City Simulator",
+      "github_repository_url": "https://github.com/codeunia/smart-city-simulator",
+      "intern_name": "Vikram Singh",
+      "intern_linkedin": "https://linkedin.com/in/vikram-singh"
+    },
+    {
+      "project_name": "Healthcare Appointment Scheduling System",
+      "github_repository_url": "https://github.com/codeunia/healthcare-scheduler",
+      "intern_name": "Ananya Desai",
+      "intern_linkedin": "https://linkedin.com/in/ananya-desai"
+    }
+  ]
+}
