@@ -68,12 +68,7 @@ export const runtime = 'nodejs';
 
 // Initialize OpenRouter AI
 // OpenRouter API configuration
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-
-if (!OPENROUTER_API_KEY) {
-  throw new Error('OPENROUTER_API_KEY is required');
-}
 
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
@@ -84,6 +79,12 @@ function getSupabaseClient() {
 
 // Function to call OpenRouter API with DeepSeek V3.1 and free fallbacks
 async function callOpenRouterAPI(prompt: string): Promise<string> {
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  
+  if (!OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY is required');
+  }
+
   const models = [
     "deepseek/deepseek-chat-v3.1:free", // Primary - DeepSeek V3.1 FREE
     "deepseek/deepseek-chat-v3.1:free", // Retry V3.1 if first fails
