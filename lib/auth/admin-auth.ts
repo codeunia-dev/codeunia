@@ -3,11 +3,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
-// Create Supabase client for server-side operations
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export interface AuthenticatedUser {
   id: string;
@@ -52,7 +54,7 @@ export async function authenticateAdmin(request: NextRequest): Promise<Authentic
       }
 
       // Get user profile
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabaseClient
         .from('profiles')
         .select('id, first_name, last_name, is_admin')
         .eq('id', user.id)
@@ -82,6 +84,7 @@ export async function authenticateAdmin(request: NextRequest): Promise<Authentic
     const token = authHeader.replace('Bearer ', '');
     
     // Verify the JWT token
+    const supabase = getSupabaseClient();
     const { data: { user }, error: tokenError } = await supabase.auth.getUser(token);
     
     if (tokenError || !user) {

@@ -451,13 +451,15 @@ export class DatabaseConnectionManager {
   }
 }
 
-// Global backup manager instance
-export const backupManager = new DatabaseBackupManager({
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  backupRetentionDays: 30,
-  backupSchedule: '0 2 * * *' // Daily at 2 AM
-});
+// Function to create backup manager instance (lazy initialization)
+export function createBackupManager(): DatabaseBackupManager {
+  return new DatabaseBackupManager({
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    backupRetentionDays: 30,
+    backupSchedule: '0 2 * * *' // Daily at 2 AM
+  });
+}
 
 // Global connection manager instance
 export const connectionManager = DatabaseConnectionManager.getInstance();

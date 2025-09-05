@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { backupManager } from '@/lib/database/backup-strategy';
+import { createBackupManager } from '@/lib/database/backup-strategy';
 import { authenticateAdmin } from '@/lib/auth/admin-auth';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { RateLimitConfigs } from '@/lib/security/rate-limiting';
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
 
     if (backupId) {
       // Get specific backup details
+      const backupManager = createBackupManager();
       const backup = await backupManager.getBackupDetails(backupId);
       if (!backup) {
         return new Response(
@@ -33,6 +34,7 @@ export async function GET(request: NextRequest) {
       );
     } else {
       // Get backup list
+      const backupManager = createBackupManager();
       const backups = await backupManager.getBackupList();
       return new Response(
         JSON.stringify(backups),
@@ -72,6 +74,7 @@ export const POST = withRateLimit(
 
       if (action === 'create') {
         // Create new backup
+        const backupManager = createBackupManager();
         const result = await backupManager.createBackup();
         
         if (result.success) {
@@ -104,6 +107,7 @@ export const POST = withRateLimit(
           );
         }
 
+        const backupManager = createBackupManager();
         const result = await backupManager.restoreFromBackup(backupId);
         
         if (result.success) {
