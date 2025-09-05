@@ -2,11 +2,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Profile, ProfileUpdateData } from '@/types/profile'
 
 export class ProfileService {
-  private supabase = createClient()
+  private getSupabaseClient() {
+    return createClient()
+  }
 
   // Get user profile by ID
   async getProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -26,7 +29,7 @@ export class ProfileService {
 
   // Create a new profile
   async createProfile(userId: string): Promise<Profile> {
-    const { data: user } = await this.supabase.auth.getUser()
+    const { data: user } = await this.getSupabaseClient().auth.getUser()
     
     const profileData = {
       id: userId,
@@ -37,7 +40,8 @@ export class ProfileService {
       profile_completion_percentage: 0
     }
 
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .insert([profileData])
       .select()
@@ -62,7 +66,8 @@ export class ProfileService {
       updated_at: new Date().toISOString()
     }
 
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .update(updateData)
       .eq('id', userId)
@@ -106,7 +111,8 @@ export class ProfileService {
 
   // Get public profile (for viewing other users)
   async getPublicProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -128,7 +134,8 @@ export class ProfileService {
   async getPublicProfileByUsername(username: string): Promise<Profile | null> {
     console.log('profileService.getPublicProfileByUsername: Starting with username:', username)
     
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('username', username)
@@ -152,7 +159,8 @@ export class ProfileService {
 
   // Search public profiles
   async searchProfiles(query: string, limit: number = 10): Promise<Profile[]> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('is_public', true)

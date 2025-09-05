@@ -2,11 +2,14 @@ import { createClient } from '@/lib/supabase/client'
 import { UserSetupStatus } from '@/types/profile'
 
 export class UnifiedSetupService {
-  private supabase = createClient()
+  private getSupabaseClient() {
+    return createClient()
+  }
 
   // Get user setup status
   async getUserSetupStatus(userId: string): Promise<UserSetupStatus | null> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('get_user_setup_status', { user_id: userId })
 
     if (error) {
@@ -19,7 +22,8 @@ export class UnifiedSetupService {
 
   // Check if user setup is complete
   async isUserSetupComplete(userId: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('is_user_setup_complete', { user_id: userId })
 
     if (error) {
@@ -32,7 +36,8 @@ export class UnifiedSetupService {
 
   // Mark email as confirmed
   async markEmailConfirmed(userId: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('mark_email_confirmed', { user_id: userId })
 
     if (error) {
@@ -45,7 +50,8 @@ export class UnifiedSetupService {
 
   // Mark setup as completed
   async markSetupCompleted(userId: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('mark_setup_completed', { user_id: userId })
 
     if (error) {
@@ -58,7 +64,8 @@ export class UnifiedSetupService {
 
   // Set username (this also marks setup as completed)
   async setUsername(userId: string, username: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('set_username', { 
         user_id: userId, 
         new_username: username 
@@ -79,7 +86,8 @@ export class UnifiedSetupService {
     authProvider: string, 
     userMetadata: Record<string, unknown> = {}
   ): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('create_oauth_profile', {
         user_id: userId,
         email: email,
@@ -101,7 +109,8 @@ export class UnifiedSetupService {
     email: string, 
     userMetadata: Record<string, unknown> = {}
   ): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('create_email_profile', {
         user_id: userId,
         email: email,
@@ -118,7 +127,8 @@ export class UnifiedSetupService {
 
   // Check username availability
   async checkUsernameAvailability(username: string): Promise<boolean> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('check_username_availability', { username_param: username })
 
     if (error) {
@@ -131,7 +141,8 @@ export class UnifiedSetupService {
 
   // Generate safe username
   async generateSafeUsername(): Promise<string> {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .rpc('generate_safe_username')
 
     if (error) {
@@ -144,7 +155,8 @@ export class UnifiedSetupService {
 
   // Get incomplete setups (for admin purposes)
   async getIncompleteSetups() {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('incomplete_setups')
       .select('*')
       .order('created_at', { ascending: false })
@@ -159,7 +171,8 @@ export class UnifiedSetupService {
 
   // Get setup statistics (for admin purposes)
   async getSetupStatistics() {
-    const { data, error } = await this.supabase
+    const supabase = this.getSupabaseClient();
+    const { data, error } = await supabase
       .from('setup_statistics')
       .select('*')
       .single()
