@@ -105,13 +105,13 @@ export function generateMetadata(config: SEOConfig): Metadata {
       canonical: fullUrl
     },
 
-    // Verification tags (add your actual verification codes)
+    // Verification tags (DNS verification used instead)
     verification: {
-      google: process.env.GOOGLE_SITE_VERIFICATION,
-      yandex: process.env.YANDEX_VERIFICATION,
-      yahoo: process.env.YAHOO_VERIFICATION,
+      google: '', // Using DNS verification
+      yandex: '',
+      yahoo: '',
       other: {
-        'msvalidate.01': process.env.BING_VERIFICATION || ''
+        'msvalidate.01': ''
       }
     }
   };

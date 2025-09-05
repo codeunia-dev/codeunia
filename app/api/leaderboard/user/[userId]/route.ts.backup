@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createCacheHeaders, CACHE_CONFIGS } from '@/lib/cache-headers';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // Cache for 2 minutes (shorter than stats since this is user-specific)
 const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes in milliseconds
@@ -96,6 +98,7 @@ export async function GET(
     // Calculate rank efficiently
     let rank = null;
     if (rankResult.data) {
+      const supabaseAdmin = getSupabaseClient();
       // Count users with more points than current user
       const { count } = await supabaseAdmin
         .from('user_points')
