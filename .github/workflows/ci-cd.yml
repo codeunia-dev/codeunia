@@ -303,6 +303,10 @@ jobs:
 
       - name: Rollback deployment
         run: |
+          # Create .vercel directory and project.json to link the project
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
+          # Perform rollback
           npx vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
