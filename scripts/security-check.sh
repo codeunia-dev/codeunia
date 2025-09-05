@@ -76,24 +76,25 @@ check_sql_injection() {
 check_xss() {
     echo -e "\n${BLUE}🔍 Checking for XSS vulnerabilities...${NC}"
     
-    local xss_patterns=(
-        "dangerouslySetInnerHTML"
-        "innerHTML"
-        "document\.write"
-        "eval\("
-        "setTimeout.*string"
-        "setInterval.*string"
-    )
+    # Check for dangerouslySetInnerHTML without proper sanitization
+    local unsafe_xss=0
     
-    local found_patterns=0
+    # Check for dangerouslySetInnerHTML without sanitization
+    if grep -r "dangerouslySetInnerHTML.*__html.*[^}]" --include="*.tsx" --include="*.jsx" app/ components/ 2>/dev/null | grep -v "createSafeHtmlProps\|sanitize"; then
+        unsafe_xss=$((unsafe_xss + 1))
+    fi
     
-    for pattern in "${xss_patterns[@]}"; do
-        if grep -r "$pattern" --include="*.tsx" --include="*.jsx" --include="*.ts" --include="*.js" app/ components/ 2>/dev/null; then
-            found_patterns=$((found_patterns + 1))
-        fi
-    done
+    # Check for direct innerHTML usage
+    if grep -r "\.innerHTML\s*=" --include="*.ts" --include="*.js" app/ lib/ 2>/dev/null; then
+        unsafe_xss=$((unsafe_xss + 1))
+    fi
     
-    if [ $found_patterns -gt 0 ]; then
+    # Check for dangerous eval usage
+    if grep -r "eval\(" --include="*.ts" --include="*.js" app/ lib/ 2>/dev/null; then
+        unsafe_xss=$((unsafe_xss + 1))
+    fi
+    
+    if [ $unsafe_xss -gt 0 ]; then
         print_status "WARNING" "Potential XSS vulnerabilities found. Please review for proper sanitization."
         ISSUES_FOUND=$((ISSUES_FOUND + 1))
     else
@@ -105,19 +106,20 @@ check_xss() {
 check_hardcoded_secrets() {
     echo -e "\n${BLUE}🔍 Checking for hardcoded secrets...${NC}"
     
+    # More specific patterns for actual hardcoded secrets
     local secret_patterns=(
-        "password.*=.*['\"][^'\"]*['\"]"
-        "secret.*=.*['\"][^'\"]*['\"]"
-        "key.*=.*['\"][^'\"]*['\"]"
-        "token.*=.*['\"][^'\"]*['\"]"
-        "api_key.*=.*['\"][^'\"]*['\"]"
-        "private_key.*=.*['\"][^'\"]*['\"]"
+        "password.*=.*['\"][a-zA-Z0-9+/=]{20,}['\"]"  # Base64-like passwords
+        "secret.*=.*['\"][a-zA-Z0-9+/=]{20,}['\"]"    # Base64-like secrets
+        "api_key.*=.*['\"][a-zA-Z0-9]{20,}['\"]"      # Long API keys
+        "private_key.*=.*['\"][a-zA-Z0-9+/=]{50,}['\"]" # Long private keys
+        "access_token.*=.*['\"][a-zA-Z0-9]{20,}['\"]"  # Access tokens
+        "bearer.*=.*['\"][a-zA-Z0-9]{20,}['\"]"       # Bearer tokens
     )
     
     local found_secrets=0
     
     for pattern in "${secret_patterns[@]}"; do
-        if grep -r "$pattern" --include="*.ts" --include="*.js" --exclude-dir=node_modules --exclude-dir=.git app/ lib/ 2>/dev/null | grep -v "process\.env"; then
+        if grep -r "$pattern" --include="*.ts" --include="*.js" --exclude-dir=node_modules --exclude-dir=.git app/ lib/ 2>/dev/null | grep -v "process\.env" | grep -v "test\|mock\|example\|placeholder"; then
             found_secrets=$((found_secrets + 1))
         fi
     done

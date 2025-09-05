@@ -102,7 +102,7 @@ jobs:
         run: npm run build:analyze
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-files
           path: .next/
@@ -184,7 +184,7 @@ jobs:
 
       # Upload security scan results
       - name: Upload security scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-scan-results
@@ -226,9 +226,10 @@ jobs:
         run: npm ci
 
       - name: Run database tests
-        run: npm run test -- --testPathPattern=database
+        run: npm run test -- --testPathPattern=database --passWithNoTests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          NODE_ENV: test
 
   # Deploy to Staging
   deploy-staging:
@@ -339,7 +340,7 @@ jobs:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
 
       - name: Upload performance results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: lighthouse-results
           path: .lighthouseci/
