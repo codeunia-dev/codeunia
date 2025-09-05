@@ -9,6 +9,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isHydrated, setIsHydrated] = useState(false)
+  const [is_admin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     setIsHydrated(true)
@@ -30,8 +31,22 @@ export function useAuth() {
           if (sessionError) {
             console.error('Session error:', sessionError)
             setError(sessionError.message)
+            setIsAdmin(false)
           } else {
             setUser(session?.user ?? null)
+            
+            // Check admin status from profiles table
+            if (session?.user) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', session.user.id)
+                .single()
+              
+              setIsAdmin(profile?.is_admin || false)
+            } else {
+              setIsAdmin(false)
+            }
           }
           setLoading(false)
         }
@@ -41,6 +56,20 @@ export function useAuth() {
           async (event, session) => {
             if (mounted) {
               setUser(session?.user ?? null)
+              
+              // Check admin status from profiles table
+              if (session?.user) {
+                const { data: profile } = await supabase
+                  .from('profiles')
+                  .select('is_admin')
+                  .eq('id', session.user.id)
+                  .single()
+                
+                setIsAdmin(profile?.is_admin || false)
+              } else {
+                setIsAdmin(false)
+              }
+              
               setLoading(false)
             }
           }
@@ -65,13 +94,13 @@ export function useAuth() {
 
   // Return loading state during hydration
   if (!isHydrated) {
-    return { user: null, loading: true, error: null, isAdmin: false }
+    return { user: null, loading: true, error: null, is_admin: false }
   }
 
   return { 
     user, 
     loading, 
     error,
-    isAdmin: user?.user_metadata?.role === 'admin' 
+    is_admin
   }
 } 

@@ -22,6 +22,7 @@ import {
   ClipboardCheck,
   Zap,
   Webhook,
+  Bell,
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import type { BlogPost } from "@/components/data/blog-posts"
@@ -31,6 +32,8 @@ import { CacheAnalyticsDashboard } from "@/components/admin/CacheAnalyticsSimple
 import { WebhookManagementDashboard } from "@/components/admin/WebhookManagementDashboard"
 import PerformanceMonitoring from "@/components/admin/PerformanceMonitoring"
 import SecurityMonitoring from "@/components/admin/SecurityMonitoring"
+import AuditLogsDashboard from "@/components/admin/AuditLogsDashboard"
+import MonitoringDashboard from "@/components/admin/MonitoringDashboard"
 
 type SupabaseUser = {
   created_at: string;
@@ -553,7 +556,7 @@ export default function AdminDashboard() {
 
       <div className="relative z-10">
         <Tabs defaultValue="cache" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-zinc-900/60 border border-zinc-800">
+          <TabsList className="grid w-full grid-cols-6 bg-zinc-900/60 border border-zinc-800">
             <TabsTrigger value="cache" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Zap className="w-4 h-4 mr-2" />
               Cache Analytics
@@ -565,6 +568,14 @@ export default function AdminDashboard() {
             <TabsTrigger value="security" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">
               <AlertTriangle className="w-4 h-4 mr-2" />
               Security
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="data-[state=active]:bg-orange-600 data-[state=active]:text-white">
+              <ClipboardCheck className="w-4 h-4 mr-2" />
+              Audit Logs
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" className="data-[state=active]:bg-red-600 data-[state=active]:text-white">
+              <Bell className="w-4 h-4 mr-2" />
+              Monitoring
             </TabsTrigger>
             <TabsTrigger value="webhooks" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
               <Webhook className="w-4 h-4 mr-2" />
@@ -582,6 +593,14 @@ export default function AdminDashboard() {
           
           <TabsContent value="security" className="mt-6">
             <SecurityMonitoring />
+          </TabsContent>
+          
+          <TabsContent value="audit" className="mt-6">
+            <AuditLogsDashboard />
+          </TabsContent>
+          
+          <TabsContent value="monitoring" className="mt-6">
+            <MonitoringDashboard />
           </TabsContent>
           
           <TabsContent value="webhooks" className="mt-6">

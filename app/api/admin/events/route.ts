@@ -135,9 +135,14 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin (using user metadata)
-    const isAdmin = user.user_metadata?.role === 'admin'
-    if (!isAdmin) {
+    // Check if user is admin (using profiles table)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -186,9 +191,14 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin (using user metadata)
-    const isAdmin = user.user_metadata?.role === 'admin'
-    if (!isAdmin) {
+    // Check if user is admin (using profiles table)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

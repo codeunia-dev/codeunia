@@ -171,8 +171,17 @@ export async function middleware(req: NextRequest) {
       return res;
     }
 
-    // Allow all API routes to pass through
+    // Allow most API routes to pass through, but protect admin routes
     if (req.nextUrl.pathname.startsWith('/api/')) {
+      // Admin API routes require authentication
+      if (req.nextUrl.pathname.startsWith('/api/admin/')) {
+        if (!user) {
+          return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+          );
+        }
+      }
       return res;
     }
 

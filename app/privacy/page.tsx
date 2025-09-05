@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { createSafeHtmlProps } from '@/lib/security/html-sanitizer';
 import {
   Shield,
   FileText,
@@ -433,12 +434,12 @@ export default function PrivacyPage() {
                         >
                           <h4 className="text-lg font-semibold text-primary">{item.subtitle}</h4>
                           {item.description && (
-                            <p className="text-muted-foreground leading-relaxed mb-4" dangerouslySetInnerHTML={{ __html: item.description }} />
+                            <p className="text-muted-foreground leading-relaxed mb-4" dangerouslySetInnerHTML={createSafeHtmlProps(item.description, 'basic')} />
                           )}
                           {item.bullets && item.bullets.length > 0 && (
                             <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                               {item.bullets.map((bullet, bulletIndex) => (
-                                <li key={bulletIndex} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: bullet }} />
+                                <li key={bulletIndex} className="leading-relaxed" dangerouslySetInnerHTML={createSafeHtmlProps(bullet, 'basic')} />
                               ))}
                             </ul>
                           )}

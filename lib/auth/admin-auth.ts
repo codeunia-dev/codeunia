@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 
 // Create Supabase client for server-side operations
 const supabase = createClient(
@@ -28,16 +29,25 @@ export async function authenticateAdmin(request: NextRequest): Promise<Authentic
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       // Try to get session from cookies as fallback
-      await cookies();
-      const supabaseClient = createClient(
+      const cookieStore = await cookies();
+      const supabaseClient = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll() {
+              // This is for server-side rendering, not needed for API routes
+            },
+          },
+        }
       );
 
-      const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
       
-      if (sessionError || !session) {
-        console.log('No valid session found');
+      if (userError || !user) {
         return null;
       }
 
@@ -45,23 +55,23 @@ export async function authenticateAdmin(request: NextRequest): Promise<Authentic
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, is_admin')
-        .eq('id', session.user.id)
+        .eq('id', user.id)
         .single();
 
       if (profileError || !profile) {
-        console.log('Profile not found for user:', session.user.id);
+        console.log('Profile not found for user:', user.id);
         return null;
       }
 
       // Check if user is admin
       if (!profile.is_admin) {
-        console.log('User is not admin:', session.user.id);
+        console.log('User is not admin:', user.id);
         return null;
       }
 
       return {
         id: profile.id,
-        email: session.user.email || '',
+        email: user.email || '',
         first_name: profile.first_name,
         last_name: profile.last_name,
         is_admin: profile.is_admin

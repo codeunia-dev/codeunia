@@ -235,7 +235,14 @@ export function TestManager() {
         return;
       }
       
-      if (user.user_metadata?.role !== 'admin') {
+      // Check admin status from profiles table
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      
+      if (!profile?.is_admin) {
         toast.error('Admin access required');
         return;
       }

@@ -11,7 +11,7 @@ export async function GET() {
         authenticated: false, 
         user: null,
         error: error?.message || 'No user found'
-      });
+      }, { status: 401 });
     }
 
     return NextResponse.json({ 

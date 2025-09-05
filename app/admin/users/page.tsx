@@ -96,9 +96,12 @@ export default function UsersPage() {
   }, []);
 
   const filteredUsers = users.filter((user) => {
+    const name = user.name || '';
+    const email = user.email || '';
+    
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || user.status === statusFilter
 
     return matchesSearch && matchesStatus

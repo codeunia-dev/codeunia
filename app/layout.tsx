@@ -5,38 +5,24 @@ import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
 import AIProvider from "@/components/ai/AIProvider";
+import { getPageMetadata, getPageStructuredData } from "@/lib/seo/metadata";
 
 // Only load dev tools in development
 const ReactDevTools = () => null;
 const AuthDebug = () => null;
 import "./globals.css";
 
+// const defaultUrl = process.env.VERCEL_URL
+//   ? `https://${process.env.VERCEL_URL}`
+//   : "http://localhost:3000";
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
+export const metadata: Metadata = getPageMetadata('home', {
   title: "Codeunia – Empowering Coders Globally",
-  description: "The fastest way to build apps with Next.js and Supabase",
-  icons: {
-    icon: [
-      {
-        url: '/codeunia-favicon-light.svg',
-        type: 'image/svg+xml',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/codeunia-favicon-dark.svg',
-        type: 'image/svg+xml',
-        media: '(prefers-color-scheme: light)',
-      }
-    ],
-    shortcut: '/codeunia-favicon-dark.svg',
-    apple: '/codeunia-favicon-dark.svg',
-  },
-};
+  description: "Join the global coding community. Participate in hackathons, compete on leaderboards, and advance your coding skills with Codeunia.",
+  keywords: ['coding', 'hackathons', 'programming', 'developer', 'competition', 'leaderboard', 'coding community'],
+  url: '/',
+  type: 'website'
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,9 +35,39 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const structuredData = getPageStructuredData('home');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData)
+          }}
+        />
+        
+        {/* Preconnect to external domains for performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://ocnorlktyfswjqgvzrve.supabase.co" />
+        
+        {/* DNS prefetch for better performance */}
+        <link rel="dns-prefetch" href="//vercel.live" />
+        <link rel="dns-prefetch" href="//va.vercel-scripts.com" />
+        
+        {/* Theme color for mobile browsers */}
+        <meta name="theme-color" content="#000000" />
+        <meta name="msapplication-TileColor" content="#000000" />
+        
+        {/* Apple specific meta tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Codeunia" />
+        
+        {/* Viewport for mobile optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       </head>
       <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
         <ErrorBoundary>
