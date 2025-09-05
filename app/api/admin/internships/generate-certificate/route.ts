@@ -6,11 +6,13 @@ import path from "path";
 import { v4 as uuidv4 } from 'uuid';
 import qrcode from 'qrcode';
 
-// Initialize Supabase client with service role
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +22,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Fetch profile to get the name
+    const supabase = getSupabaseClient();
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("first_name, last_name")
