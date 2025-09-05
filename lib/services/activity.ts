@@ -4,7 +4,9 @@ import { globalLeaderboardService } from './global-leaderboard'
 import type { ActivityType as GlobalActivityType } from '@/types/global-leaderboard'
 
 export class ActivityService {
-  private supabase = createClient()
+  private getSupabaseClient() {
+    return createClient()
+  }
 
   // Log a new user activity
   async logActivity(
@@ -13,7 +15,8 @@ export class ActivityService {
     activityData?: Record<string, unknown>
   ): Promise<UserActivity | null> {
     try {
-      const { data, error } = await this.supabase
+      const supabase = this.getSupabaseClient();
+      const { data, error } = await supabase
         .from('user_activity')
         .insert([{
           user_id: userId,
@@ -60,7 +63,8 @@ export class ActivityService {
       const startDate = new Date(currentYear, 0, 1) // January 1st
       const endDate = new Date(currentYear, 11, 31) // December 31st
 
-      const { data: activities, error } = await this.supabase
+      const supabase = this.getSupabaseClient();
+      const { data: activities, error } = await supabase
         .from('user_activity')
         .select('*')
         .eq('user_id', userId)
@@ -90,7 +94,8 @@ export class ActivityService {
       const startDate = new Date(currentYear, 0, 1) // January 1st
       const endDate = new Date(currentYear, 11, 31) // December 31st
 
-      const { data: activities, error } = await this.supabase
+      const supabase = this.getSupabaseClient();
+      const { data: activities, error } = await supabase
         .from('user_activity')
         .select('*')
         .eq('user_id', userId)
@@ -229,8 +234,9 @@ export class ActivityService {
     try {
       const today = new Date().toISOString().split('T')[0]
       
+      const supabase = this.getSupabaseClient();
       // Check if already logged today
-      const { data: existing, error: checkError } = await this.supabase
+      const { data: existing, error: checkError } = await supabase
         .from('user_activity')
         .select('id')
         .eq('user_id', userId)
