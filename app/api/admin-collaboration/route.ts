@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Setup Supabase client with service role key (bypasses RLS)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // GET: List all collaboration applications
 export async function GET() {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("collaboration_applications")
     .select("*")
@@ -23,6 +26,7 @@ export async function GET() {
 // POST: Create a new collaboration application
 export async function POST(req: Request) {
   const body = await req.json();
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("collaboration_applications")
     .insert([body])
@@ -41,6 +45,7 @@ export async function PATCH(req: Request) {
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("collaboration_applications")
     .update(fields)
@@ -60,6 +65,7 @@ export async function DELETE(req: Request) {
   if (!id) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
+  const supabase = getSupabaseClient();
   const { error } = await supabase
     .from("collaboration_applications")
     .delete()
