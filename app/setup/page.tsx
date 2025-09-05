@@ -14,11 +14,14 @@ export default function SetupProfile() {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const router = useRouter();
-  const supabase = createClient();
+  
+  const getSupabaseClient = () => {
+    return createClient();
+  };
 
   const checkUser = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabaseClient().auth.getUser();
       if (!user) {
         router.push('/auth/signin');
         return;
@@ -26,7 +29,7 @@ export default function SetupProfile() {
       setUser(user);
 
       // Check user setup status using the new unified flow
-      const { data: setupStatus } = await supabase
+      const { data: setupStatus } = await getSupabaseClient()
         .rpc('get_user_setup_status', { user_id: user.id });
 
       if (!setupStatus) {
@@ -47,7 +50,7 @@ export default function SetupProfile() {
       }
 
       // Get profile for Codeunia ID and current username
-      const { data: profile } = await supabase
+      const { data: profile } = await getSupabaseClient()
         .from('profiles')
         .select('codeunia_id, username, username_editable')
         .eq('id', user.id)
@@ -66,7 +69,7 @@ export default function SetupProfile() {
       console.error('Error checking user:', error);
       toast.error('Error loading profile setup');
     }
-  }, [supabase, router]);
+  }, [router]);
 
   useEffect(() => {
     checkUser();
@@ -80,7 +83,7 @@ export default function SetupProfile() {
 
     setIsCheckingUsername(true);
     try {
-      const { data: isAvailable } = await supabase.rpc('check_username_availability', {
+      const { data: isAvailable } = await getSupabaseClient().rpc('check_username_availability', {
         username_param: username
       });
       setUsernameAvailable(isAvailable);
@@ -123,7 +126,7 @@ export default function SetupProfile() {
     setIsLoading(true);
     try {
       // Set username and mark profile as complete
-      const { data: success, error } = await supabase.rpc('set_username', {
+      const { data: success, error } = await getSupabaseClient().rpc('set_username', {
         user_id: user.id,
         new_username: username
       });
@@ -150,7 +153,7 @@ export default function SetupProfile() {
 
   const generateRandomUsername = async () => {
     try {
-      const { data: randomUsername } = await supabase.rpc('generate_safe_username');
+      const { data: randomUsername } = await getSupabaseClient().rpc('generate_safe_username');
       if (randomUsername) {
         setUsername(randomUsername);
         checkUsernameAvailability(randomUsername);
