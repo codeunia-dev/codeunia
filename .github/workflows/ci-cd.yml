@@ -279,15 +279,17 @@ jobs:
           sleep 30
           curl -f ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
 
-      - name: Notify deployment success
-        if: ${{ secrets.SLACK_WEBHOOK_URL }}
-        uses: 8398a7/action-slack@v3
-        with:
-          status: success
-          channel: '#deployments'
-          text: '🚀 Production deployment successful!'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Notify deployment success via email
+        run: |
+          curl -X POST "https://api.resend.com/emails" \
+            -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "from": "alerts@codeunia.com",
+              "to": ["connect@codeunia.com"],
+              "subject": "🚀 Production Deployment Successful",
+              "html": "<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>"
+            }'
 
   # Rollback on Failure
   rollback:
@@ -305,15 +307,17 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod --rollback'
 
-      - name: Notify rollback
-        if: ${{ secrets.SLACK_WEBHOOK_URL }}
-        uses: 8398a7/action-slack@v3
-        with:
-          status: failure
-          channel: '#deployments'
-          text: '⚠️ Production deployment failed, rollback initiated!'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Notify rollback via email
+        run: |
+          curl -X POST "https://api.resend.com/emails" \
+            -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "from": "alerts@codeunia.com",
+              "to": ["connect@codeunia.com"],
+              "subject": "⚠️ Production Deployment Failed - Rollback Initiated",
+              "html": "<h2>Production Deployment Failed</h2><p>Your Codeunia application deployment failed and rollback has been initiated.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Failed by:</strong> ${{ github.actor }}</p><p><strong>Action:</strong> Please check the deployment logs and fix the issues.</p>"
+            }'
 
   # Performance Monitoring
   performance:
