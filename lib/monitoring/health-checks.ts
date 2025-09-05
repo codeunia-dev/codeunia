@@ -268,7 +268,7 @@ export class HealthChecker {
       const requiredEnvVars = [
         'NEXT_PUBLIC_SUPABASE_URL',
         'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-        'NEXTAUTH_SECRET'
+        'SUPABASE_SERVICE_ROLE_KEY'
       ];
 
       const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
