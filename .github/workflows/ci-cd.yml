@@ -280,6 +280,7 @@ jobs:
           curl -f ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
 
       - name: Notify deployment success
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
         uses: 8398a7/action-slack@v3
         with:
           status: success
@@ -305,6 +306,7 @@ jobs:
           vercel-args: '--prod --rollback'
 
       - name: Notify rollback
+        if: ${{ secrets.SLACK_WEBHOOK_URL }}
         uses: 8398a7/action-slack@v3
         with:
           status: failure
