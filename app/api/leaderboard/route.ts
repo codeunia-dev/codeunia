@@ -2,10 +2,12 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { UnifiedCache } from '@/lib/unified-cache-system';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-
-const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,6 +42,7 @@ export async function GET(request: NextRequest) {
 
 // Extract the original leaderboard logic into a separate function
 async function fetchLeaderboardData(page: number, limit: number, timeRange: string, badge: string | null) {
+  const supabaseAdmin = getSupabaseClient();
   // Get all user points
   const { data: allPoints, error: allPointsError } = await supabaseAdmin
     .from('user_points')
