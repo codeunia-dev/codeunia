@@ -97,6 +97,9 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Analyze bundle size
         run: npm run build:analyze
@@ -284,12 +287,7 @@ jobs:
           curl -X POST "https://api.resend.com/emails" \
             -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "from": "alerts@codeunia.com",
-              "to": ["connect@codeunia.com"],
-              "subject": "🚀 Production Deployment Successful",
-              "html": "<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>"
-            }'
+            -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"🚀 Production Deployment Successful\",\"html\":\"<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>\"}"
 
   # Rollback on Failure
   rollback:
@@ -299,6 +297,9 @@ jobs:
     if: failure()
     environment: production
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Rollback deployment
         uses: amondnet/vercel-action@v25
         with:
@@ -312,12 +313,7 @@ jobs:
           curl -X POST "https://api.resend.com/emails" \
             -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d '{
-              "from": "alerts@codeunia.com",
-              "to": ["connect@codeunia.com"],
-              "subject": "⚠️ Production Deployment Failed - Rollback Initiated",
-              "html": "<h2>Production Deployment Failed</h2><p>Your Codeunia application deployment failed and rollback has been initiated.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Failed by:</strong> ${{ github.actor }}</p><p><strong>Action:</strong> Please check the deployment logs and fix the issues.</p>"
-            }'
+            -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"⚠️ Production Deployment Failed - Rollback Initiated\",\"html\":\"<h2>Production Deployment Failed</h2><p>Your Codeunia application deployment failed and rollback has been initiated.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Failed by:</strong> ${{ github.actor }}</p><p><strong>Action:</strong> Please check the deployment logs and fix the issues.</p>\"}"
 
   # Performance Monitoring
   performance:
