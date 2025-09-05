@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Create Resend client function to avoid build-time initialization
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 interface MembershipCardEmailData {
   userId: string;
@@ -259,6 +262,7 @@ export async function POST(request: NextRequest) {
     const membershipCardEmailContent = createMembershipCardEmail();
 
     console.log('📨 Sending beautiful membership card email via Resend...');
+    const resend = getResendClient();
     // Send email without PDF attachment, just the beautiful HTML template
     const emailResult = await resend.emails.send({
       from: 'Codeunia <connect@codeunia.com>',
