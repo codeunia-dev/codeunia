@@ -101,11 +101,14 @@ export default function PremiumPage() {
   const [processingPlans, setProcessingPlans] = useState<Set<string>>(new Set());
   const [premiumExpiry, setPremiumExpiry] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const supabase = createClient();
+  
+  const getSupabaseClient = () => {
+    return createClient();
+  };
 
   const checkPremiumStatus = useCallback(async () => {
     try {
-      const { data: profile } = await supabase
+      const { data: profile } = await getSupabaseClient()
         .from('profiles')
         .select('is_premium, premium_expires_at')
         .eq('id', user?.id)
@@ -121,7 +124,7 @@ export default function PremiumPage() {
     } catch (error) {
       console.error('Error checking premium status:', error);
     }
-  }, [supabase, user?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
     // Clear any existing toasts when component mounts
