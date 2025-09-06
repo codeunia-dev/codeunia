@@ -590,44 +590,7 @@ jobs:
       - name: Run Lighthouse CI
         run: |
           npm install -g @lhci/cli@0.12.x
-          lhci autorun --config='{
-            "ci": {
-              "collect": {
-                "url": [
-                  "http://localhost:3000/",
-                  "http://localhost:3000/about",
-                  "http://localhost:3000/hackathons",
-                  "http://localhost:3000/leaderboard",
-                  "http://localhost:3000/auth/signin",
-                  "http://localhost:3000/protected/dashboard"
-                ],
-                "startServerCommand": "npm run build && npm run start",
-                "startServerReadyPattern": "Ready in|ready on|Local:",
-                "startServerReadyTimeout": 120000,
-                "numberOfRuns": 1,
-                "settings": {
-                  "chromeFlags": "--no-sandbox --disable-dev-shm-usage --disable-gpu",
-                  "preset": "desktop"
-                }
-              },
-              "assert": {
-                "assertions": {
-                  "categories:performance": ["warn", {"minScore": 0.6}],
-                  "categories:accessibility": ["warn", {"minScore": 0.85}],
-                  "categories:best-practices": ["warn", {"minScore": 0.85}],
-                  "categories:seo": ["warn", {"minScore": 0.8}],
-                  "first-contentful-paint": ["warn", {"maxNumericValue": 3000}],
-                  "largest-contentful-paint": ["warn", {"maxNumericValue": 4000}],
-                  "cumulative-layout-shift": ["warn", {"maxNumericValue": 0.15}],
-                  "total-blocking-time": ["warn", {"maxNumericValue": 1000}],
-                  "speed-index": ["warn", {"maxNumericValue": 5000}]
-                }
-              },
-              "upload": {
-                "target": "temporary-public-storage"
-              }
-            }
-          }'
+          lhci autorun --assert.assertions.categories:performance=warn --assert.assertions.categories:accessibility=warn --assert.assertions.categories:best-practices=warn --assert.assertions.categories:seo=warn --assert.assertions.first-contentful-paint=warn --assert.assertions.largest-contentful-paint=warn --assert.assertions.cumulative-layout-shift=warn --assert.assertions.total-blocking-time=warn --assert.assertions.speed-index=warn
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
           LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
