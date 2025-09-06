@@ -24,7 +24,11 @@
     "test:ci": "jest --ci --coverage --watchAll=false",
     "security:check": "./scripts/security-check.sh",
     "security:audit": "npm audit --audit-level=moderate",
-    "security:test": "npm run test -- --testPathPattern=security"
+    "security:test": "npm run test -- --testPathPattern=security",
+    "test:local": "./scripts/test-ci-local.sh all",
+    "test:local:security": "./scripts/test-ci-local.sh security",
+    "test:local:build": "./scripts/test-ci-local.sh build",
+    "test:local:vercel": "./scripts/test-ci-local.sh vercel"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
