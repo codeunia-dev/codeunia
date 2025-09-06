@@ -68,20 +68,23 @@ export const runtime = 'nodejs';
 
 // Initialize OpenRouter AI
 // OpenRouter API configuration
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-if (!OPENROUTER_API_KEY) {
-  throw new Error('OPENROUTER_API_KEY is required');
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  return createClient(supabaseUrl, supabaseAnonKey);
 }
-
-// Initialize Supabase
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Function to call OpenRouter API with DeepSeek V3.1 and free fallbacks
 async function callOpenRouterAPI(prompt: string): Promise<string> {
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+  
+  if (!OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY is required');
+  }
+
   const models = [
     "deepseek/deepseek-chat-v3.1:free", // Primary - DeepSeek V3.1 FREE
     "deepseek/deepseek-chat-v3.1:free", // Retry V3.1 if first fails
@@ -248,6 +251,7 @@ interface ContextData {
 // Database service functions
 async function getEvents(limit = 10) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('events')
       .select(`
@@ -269,6 +273,7 @@ async function getEvents(limit = 10) {
 
 async function getHackathons(limit = 10) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('hackathons')
       .select(`
@@ -291,6 +296,7 @@ async function getHackathons(limit = 10) {
 
 async function getPlatformStats() {
   try {
+    const supabase = getSupabaseClient();
     const [eventsCount, hackathonsCount, blogsCount, internsCount] = await Promise.all([
       supabase.from('events').select('*', { count: 'exact', head: true }).eq('status', 'live'),
       supabase.from('hackathons').select('*', { count: 'exact', head: true }).eq('status', 'live'),
@@ -319,6 +325,7 @@ async function getPlatformStats() {
 
 async function getInternships() {
   try {
+    const supabase = getSupabaseClient();
     // Get count of completed successful internships for stats only (no personal data)
     const { count: completedCount } = await supabase
       .from('interns')
@@ -394,6 +401,7 @@ async function getInternships() {
 
 async function getBlogs(limit = 5) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('blogs')
       .select(`
@@ -857,6 +865,7 @@ export async function POST(request: NextRequest) {
     try {
       // Generate a proper UUID for session_id
       const sessionId = crypto.randomUUID();
+      const supabase = getSupabaseClient();
       
       const { error: dbError } = await supabase
         .from('ai_training_data')

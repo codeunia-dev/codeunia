@@ -13,6 +13,12 @@ import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 
 export function SponsorshipForm() {
+    const getSupabaseClient = () => {
+        return createBrowserClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        );
+    };
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // Company Information
@@ -93,11 +99,7 @@ export function SponsorshipForm() {
         setIsSubmitting(true);
 
         try {
-            const supabase = createBrowserClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-            );
-
+            const supabase = getSupabaseClient();
             const { error } = await supabase
                 .from('sponsorship_applications')
                 .insert([{

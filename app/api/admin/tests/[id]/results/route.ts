@@ -11,7 +11,21 @@ export async function GET(
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user || user.user_metadata?.role !== 'admin') {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Admin access required' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is admin (using profiles table)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
         { status: 401 }
@@ -98,7 +112,21 @@ export async function POST(
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user || user.user_metadata?.role !== 'admin') {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Admin access required' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is admin (using profiles table)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError || !profile?.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
         { status: 401 }

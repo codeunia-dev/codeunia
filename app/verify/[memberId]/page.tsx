@@ -7,11 +7,13 @@ import { CheckCircle2, AlertCircle, User, Mail, MapPin, Calendar } from 'lucide-
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase Init
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  );
+}
 
 // MemberData interface
 interface MemberData {
@@ -29,6 +31,7 @@ interface MemberData {
 async function getMemberData(memberId: string): Promise<MemberData | null> {
   const suffix = memberId.replace(/^CU-/, '').toLowerCase();
 
+  const supabase = getSupabaseClient();
   // Fetch all (or paginated) and find match by ID suffix
   const { data: profiles, error } = await supabase
     .from('profiles')

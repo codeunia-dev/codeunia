@@ -73,7 +73,10 @@ export default function TestsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [userRegistrations, setUserRegistrations] = useState<Set<string>>(new Set());
   const router = useRouter();
-  const supabase = createClient();
+  
+  const getSupabaseClient = () => {
+    return createClient();
+  };
 
   // Auto-categorize test based on name and description
   const autoCategorizеTest = (test: Test): string => {
@@ -91,7 +94,7 @@ export default function TestsPage() {
   const fetchTests = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await getSupabaseClient()
         .from('tests')
         .select(`
           *,
@@ -108,15 +111,15 @@ export default function TestsPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   const checkUserAndRegistrations = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabaseClient().auth.getUser();
       
       if (user) {
         // Fetch user's registrations
-        const { data: registrations, error } = await supabase
+        const { data: registrations, error } = await getSupabaseClient()
           .from('test_registrations')
           .select('test_id')
           .eq('user_id', user.id);
@@ -132,7 +135,7 @@ export default function TestsPage() {
     } catch (error) {
       console.error('Error checking user and registrations:', error);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     fetchTests();
@@ -143,7 +146,7 @@ export default function TestsPage() {
 
   const handleRegister = async (testId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabaseClient().auth.getUser();
       
       if (!user) {
         toast.error('Please sign in to register for tests');
@@ -165,7 +168,7 @@ export default function TestsPage() {
       console.log('Test details:', test);
 
       // Register for the test
-      const { error } = await supabase
+      const { error } = await getSupabaseClient()
         .from('test_registrations')
         .insert([{
           test_id: testId,
@@ -195,7 +198,7 @@ export default function TestsPage() {
 
   const handleStartTest = async (testId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabaseClient().auth.getUser();
       
       if (!user) {
         toast.error('Please sign in to take tests');
@@ -233,7 +236,7 @@ export default function TestsPage() {
       }
 
       // Check attempt limit
-      const { data: attempts } = await supabase
+      const { data: attempts } = await getSupabaseClient()
         .from('test_attempts')
         .select('*')
         .eq('test_id', testId)

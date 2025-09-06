@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Admin Internships CRUD using service role key
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // List all internships
 export async function GET() {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("interns")
     .select(
@@ -35,6 +38,7 @@ export async function GET() {
 // Create a new internship
 export async function POST(request: Request) {
   const body = await request.json();
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("interns")
     .insert([body])
@@ -57,6 +61,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Missing key { email, domain, start_date }" }, { status: 400 });
   }
 
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase
     .from("interns")
     .update(fields)
@@ -79,6 +84,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Missing key { email, domain, start_date }" }, { status: 400 });
   }
 
+  const supabase = getSupabaseClient();
   const { error } = await supabase
     .from("interns")
     .delete()

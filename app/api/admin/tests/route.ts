@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Define the type for round data
 interface RoundData {
@@ -59,6 +62,7 @@ interface RequestBody {
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient();
     const { data: tests, error } = await supabase
       .from('tests')
       .select(`
@@ -125,6 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user from request (temporary solution)
+    const supabase = getSupabaseClient();
     const { data: users, error: usersError } = await supabase
       .from('profiles')
       .select('id')

@@ -1,8 +1,27 @@
 User-agent: *
-Allow: /             # Allow all public pages
-Disallow: /admin/    # Block admin area
-Disallow: /auth/     # Block authentication routes
-Disallow: /protected/# Block protected content
-Disallow: /api/      # Block API endpoints
+Allow: /
 
-Sitemap: https://www.codeunia.com/sitemap.xml
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /protected/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /auth/
+Disallow: /setup/
+Disallow: /verify/
+
+# Allow important public pages
+Allow: /about
+Allow: /hackathons
+Allow: /leaderboard
+Allow: /opportunities
+Allow: /blog
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+
+# Sitemap location
+Sitemap: https://codeunia.com/sitemap.xml
+
+# Crawl delay (be respectful)
+Crawl-delay: 1

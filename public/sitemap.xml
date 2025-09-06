@@ -1,75 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.codeunia.com/</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>weekly</changefreq>
+    <loc>https://codeunia.com/</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/about</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://codeunia.com/about</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/blog</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.codeunia.com/contact</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://www.codeunia.com/hackathons</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.codeunia.com/join</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.codeunia.com/leaderboard</loc>
-    <lastmod>2025-08-04</lastmod>
+    <loc>https://codeunia.com/hackathons</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/opportunities</loc>
-    <lastmod>2025-08-04</lastmod>
+    <loc>https://codeunia.com/leaderboard</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://codeunia.com/opportunities</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/premium</loc>
-    <lastmod>2025-08-04</lastmod>
+    <loc>https://codeunia.com/blog</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://codeunia.com/contact</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/privacy</loc>
-    <lastmod>2025-08-04</lastmod>
+    <loc>https://codeunia.com/terms</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
     <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://codeunia.com/privacy</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://codeunia.com/auth/signin</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://www.codeunia.com/refund</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://www.codeunia.com/terms</loc>
-    <lastmod>2025-08-04</lastmod>
-    <changefreq>yearly</changefreq>
+    <loc>https://codeunia.com/auth/signup</loc>
+    <lastmod>2024-01-01T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 </urlset>

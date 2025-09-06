@@ -174,7 +174,7 @@ const sidebarItems: SidebarGroupType[] = [
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, error, isAdmin } = useAuth()
+  const { user, loading, error, is_admin } = useAuth()
 
   // Prevent hydration mismatch by using a consistent initial state
   const [mounted, setMounted] = useState(false)
@@ -213,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     )
   }
 
-  if (!isAdmin) {
+  if (!is_admin) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="text-center max-w-md">

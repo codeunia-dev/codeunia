@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { createSafeHtmlProps } from '@/lib/security/html-sanitizer';
 import {
   Scale,
   FileText,
@@ -523,8 +524,8 @@ Please read these terms carefully before using Codeunia. By using our platform, 
                           {item.bullets && item.bullets.length > 0 ? (
                             <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                               {item.bullets.map((bullet, bulletIndex) => (
-                                // Using dangerouslySetInnerHTML to allow HTML like links in bullet points
-                                <li key={bulletIndex} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: bullet }} />
+                                // Using safely sanitized HTML for bullet points
+                                <li key={bulletIndex} className="leading-relaxed" dangerouslySetInnerHTML={createSafeHtmlProps(bullet, 'basic')} />
                               ))}
                             </ul>
                           ) : (

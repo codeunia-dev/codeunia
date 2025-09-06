@@ -12,11 +12,14 @@ export default function EmailConfirmationRequired() {
   const [isResending, setIsResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
-  const supabase = createClient();
+  
+  const getSupabaseClient = () => {
+    return createClient();
+  };
 
   const checkUser = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await getSupabaseClient().auth.getUser();
       if (!user) {
         router.push('/auth/signin');
         return;
@@ -24,7 +27,7 @@ export default function EmailConfirmationRequired() {
       setUser(user);
 
       // Check if email is now confirmed
-      const { data: setupStatus } = await supabase
+      const { data: setupStatus } = await getSupabaseClient()
         .rpc('get_user_setup_status', { user_id: user.id });
 
       if (setupStatus && setupStatus.email_confirmed) {
@@ -36,7 +39,7 @@ export default function EmailConfirmationRequired() {
       console.error('Error checking user:', error);
       toast.error('Error loading user information');
     }
-  }, [router, supabase]);
+  }, [router]);
 
   useEffect(() => {
     checkUser();
@@ -57,7 +60,7 @@ export default function EmailConfirmationRequired() {
 
     setIsResending(true);
     try {
-      const { error } = await supabase.auth.resend({
+      const { error } = await getSupabaseClient().auth.resend({
         type: 'signup',
         email: user.email,
       });
@@ -78,7 +81,7 @@ export default function EmailConfirmationRequired() {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      await getSupabaseClient().auth.signOut();
       router.push('/auth/signin');
     } catch (error) {
       console.error('Error signing out:', error);

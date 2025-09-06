@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize the Supabase client with environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+// Create Supabase client function to avoid build-time initialization
+export function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false, // We don't need session persistence for server-side operations
+    },
+  });
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: false, // We don't need session persistence for server-side operations
-  },
-});
+// For backward compatibility, export a function that returns the client
+export const supabase = getSupabaseClient();
 
 // Type for the profiles table
 export type Profile = {

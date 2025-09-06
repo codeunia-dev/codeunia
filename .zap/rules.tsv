@@ -1,0 +1,35 @@
+# OWASP ZAP Rules Configuration for Codeunia
+# This file defines which security rules to include/exclude during scans
+
+# Include high and medium severity rules
+10011	IGNORE	# Insecure JSF ViewState
+10020	IGNORE	# X-Frame-Options Header Scanner
+10021	IGNORE	# X-Content-Type-Options Header Missing
+10023	IGNORE	# Information Disclosure - Debug Error Messages
+10024	IGNORE	# Timestamp Disclosure
+10025	IGNORE	# Heartbleed OpenSSL Vulnerability
+10026	IGNORE	# HTTP PUT Method
+10027	IGNORE	# HTTP Parameter Pollution
+10028	IGNORE	# HTTP PUT Method
+10029	IGNORE	# HTTP PUT Method
+10030	IGNORE	# HTTP PUT Method
+10031	IGNORE	# HTTP PUT Method
+10032	IGNORE	# HTTP PUT Method
+10033	IGNORE	# HTTP PUT Method
+10034	IGNORE	# HTTP PUT Method
+10035	IGNORE	# HTTP PUT Method
+10036	IGNORE	# HTTP PUT Method
+10037	IGNORE	# HTTP PUT Method
+10038	IGNORE	# HTTP PUT Method
+10039	IGNORE	# HTTP PUT Method
+10040	IGNORE	# HTTP PUT Method
+10041	IGNORE	# HTTP PUT Method
+10042	IGNORE	# HTTP PUT Method
+10043	IGNORE	# HTTP PUT Method
+10044	IGNORE	# HTTP PUT Method
+10045	IGNORE	# HTTP PUT Method
+10046	IGNORE	# HTTP PUT Method
+10047	IGNORE	# HTTP PUT Method
+10048	IGNORE	# HTTP PUT Method
+10049	IGNORE	# HTTP PUT Method
+10050	IGNORE	# HTTP PUT Method

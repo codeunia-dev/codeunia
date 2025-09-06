@@ -1,7 +1,10 @@
 import { Resend } from 'resend'
 import { generateInternshipOfferLetterPDF } from '@/lib/pdf-generator'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Create Resend client function to avoid build-time initialization
+function getResendClient() {
+  return new Resend(process.env.RESEND_API_KEY)
+}
 
 export interface InternshipApplicationEmailData {
     applicantName: string
@@ -345,6 +348,7 @@ const getStatusUpdateTemplate = (data: StatusUpdateEmailData) => {
 
 export async function sendInternshipApplicationEmails(data: InternshipApplicationEmailData & { applicationId: string }) {
     try {
+        const resend = getResendClient();
         // Send confirmation email to applicant only
         const applicantTemplate = getApplicantConfirmationTemplate(data)
         const applicantResult = await resend.emails.send({
@@ -369,6 +373,7 @@ export async function sendInternshipApplicationEmails(data: InternshipApplicatio
 
 export async function sendStatusUpdateEmail(data: StatusUpdateEmailData) {
     try {
+        const resend = getResendClient();
         // Don't send email if status hasn't actually changed
         if (data.oldStatus === data.newStatus) {
             return {

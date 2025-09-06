@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { hackathonsService, HackathonsFilters } from '@/lib/services/hackathons';
 import { UnifiedCache } from '@/lib/unified-cache-system';
 import { createClient } from '@/lib/supabase/server';
@@ -102,15 +102,24 @@ export async function POST(request: NextRequest) {
     let isAuthorized = false;
 
     // Check if user is authenticated and is admin
-    if (user && user.user_metadata?.role === 'admin') {
-      isAuthorized = true;
+    if (user) {
+      // Check admin status from profiles table
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile?.is_admin) {
+        isAuthorized = true;
+      }
     }
 
     // If not authorized through session, check if it's a direct admin request
     if (!isAuthorized) {
-      return UnifiedCache.createResponse(
+      return NextResponse.json(
         { error: 'Unauthorized: Admin access required' },
-        'USER_PRIVATE'
+        { status: 401 }
       );
     }
 
@@ -141,9 +150,9 @@ export async function POST(request: NextRequest) {
     // Invalidate hackathon caches after successful creation
     await UnifiedCache.purgeByTags(['content', 'api']);
 
-    return UnifiedCache.createResponse(
+    return NextResponse.json(
       { message: 'Hackathon created successfully', hackathon: data },
-      'USER_PRIVATE'
+      { status: 201 }
     );
 
   } catch (error) {

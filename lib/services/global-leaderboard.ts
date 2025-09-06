@@ -73,7 +73,9 @@ const BADGE_SYSTEM: BadgeInfo[] = [
 ]
 
 export class GlobalLeaderboardService {
-  private supabase = createClient()
+  private getSupabaseClient() {
+    return createClient()
+  }
   private pointSystem: PointSystem = DEFAULT_POINT_SYSTEM
 
   // Only create admin client on server side
@@ -87,7 +89,7 @@ export class GlobalLeaderboardService {
       )
     } else {
       // Client side - fall back to regular client
-      return this.supabase
+      return this.getSupabaseClient()
     }
   }
 
@@ -95,7 +97,8 @@ export class GlobalLeaderboardService {
   async getUserPoints(userId: string): Promise<UserPoints | null> {
     try {
       // Use admin client to bypass RLS
-      const { data, error } = await this.supabaseAdmin
+      const supabase = this.getSupabaseClient();
+    const { data, error } = await this.supabaseAdmin
         .from('user_points')
         .select('*')
         .eq('user_id', userId)
@@ -127,7 +130,8 @@ export class GlobalLeaderboardService {
   private async createUserPoints(userId: string): Promise<UserPoints | null> {
     try {
       // Use admin client to bypass RLS
-      const { data, error } = await this.supabaseAdmin
+      const supabase = this.getSupabaseClient();
+    const { data, error } = await this.supabaseAdmin
         .from('user_points')
         .insert([{
           user_id: userId,

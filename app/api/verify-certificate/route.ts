@@ -1,11 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { UnifiedCache } from "@/lib/unified-cache-system";
 
-// Initialize Supabase client with service role
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 interface CertificateData {
   verification_code: string;
@@ -36,6 +38,7 @@ export async function GET(request: Request) {
       cacheKey,
       async (): Promise<CertificateData | null> => {
         // Fetch the internship record by verification code
+        const supabase = getSupabaseClient();
         const { data: intern, error: internError } = await supabase
           .from("interns")
           .select("*, profiles(first_name, last_name)") // Join with profiles table

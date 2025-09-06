@@ -3,10 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Create Supabase client function to avoid build-time initialization
+function getSupabaseClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Initialize Razorpay only if environment variables are available
 const getRazorpayClient = () => {
@@ -23,6 +26,7 @@ const getRazorpayClient = () => {
 // POST: Create payment order for a round
 export async function POST(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const body = await request.json();
     const { test_id, round_id, user_id } = body;
 
@@ -147,6 +151,7 @@ export async function POST(request: NextRequest) {
 // POST: Verify payment and register for round
 export async function PUT(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const body = await request.json();
     const { orderId, paymentId, signature, test_id, round_id, user_id } = body;
 

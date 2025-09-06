@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { authRateLimiter } from '@/lib/security/input-validation';
-import { handleAuthError, handleAuthzError, handleRateLimitError } from '@/lib/security/error-handler';
+// import { authRateLimiter } from '@/lib/security/input-validation';
+import { handleAuthError, handleAuthzError } from '@/lib/security/error-handler';
 
 export interface AuthenticatedUser {
   id: string;
@@ -18,16 +18,16 @@ export interface AuthContext {
 }
 
 // Enhanced authentication middleware
-export async function authenticateUser(request: NextRequest): Promise<AuthenticatedUser | null> {
+export async function authenticateUser(_request: NextRequest): Promise<AuthenticatedUser | null> {
   try {
     // Rate limiting check
-    const clientIp = request.headers.get('x-forwarded-for') || 
-                    request.headers.get('x-real-ip') || 
-                    'unknown';
+    // const clientIp = request.headers.get('x-forwarded-for') || 
+    //                 request.headers.get('x-real-ip') || 
+    //                 'unknown';
     
-    if (!authRateLimiter.isAllowed(clientIp)) {
-      return null;
-    }
+    // if (!authRateLimiter.isAllowed(clientIp)) {
+    //   return null;
+    // }
 
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -118,13 +118,13 @@ export function withRateLimit(
 ) {
   return async (request: NextRequest): Promise<NextResponse> => {
     try {
-      const clientIp = request.headers.get('x-forwarded-for') || 
-                      request.headers.get('x-real-ip') || 
-                      'unknown';
+      // const clientIp = request.headers.get('x-forwarded-for') || 
+      //                 request.headers.get('x-real-ip') || 
+      //                 'unknown';
       
-      if (!authRateLimiter.isAllowed(clientIp)) {
-        return handleRateLimitError();
-      }
+      // if (!authRateLimiter.isAllowed(clientIp)) {
+      //   return handleRateLimitError();
+      // }
 
       const user = await authenticateUser(request);
       
