@@ -97,10 +97,12 @@ test_vercel_commands() {
     print_status "Vercel CLI version:"
     vercel --version
     
-    # Test direct deployment with scope flag
-    print_status "Testing Vercel direct deployment with scope flag..."
-    echo "vercel --token \$VERCEL_TOKEN --scope \$VERCEL_ORG_ID --yes"
-    echo "vercel --prod --token \$VERCEL_TOKEN --scope \$VERCEL_ORG_ID --yes"
+    # Test direct deployment with environment variables
+    print_status "Testing Vercel direct deployment with environment variables..."
+    echo "export VERCEL_ORG_ID=\$VERCEL_ORG_ID"
+    echo "export VERCEL_PROJECT_ID=\$VERCEL_PROJECT_ID"
+    echo "vercel --token \$VERCEL_TOKEN --yes"
+    echo "vercel --prod --token \$VERCEL_TOKEN --yes"
     
     print_success "Vercel command testing completed!"
 }

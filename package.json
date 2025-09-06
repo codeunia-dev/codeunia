@@ -28,7 +28,8 @@
     "test:local": "./scripts/test-ci-local.sh all",
     "test:local:security": "./scripts/test-ci-local.sh security",
     "test:local:build": "./scripts/test-ci-local.sh build",
-    "test:local:vercel": "./scripts/test-ci-local.sh vercel"
+    "test:local:vercel": "./scripts/test-ci-local.sh vercel",
+    "vercel:setup": "./scripts/setup-vercel-config.sh"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
