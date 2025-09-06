@@ -264,9 +264,10 @@ jobs:
 
       - name: Link Vercel Project
         run: |
-          # Create .vercel directory and project.json to link the project
-          mkdir -p .vercel
-          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
+          # Remove any existing .vercel directory to avoid conflicts
+          rm -rf .vercel
+          # Link the project using Vercel CLI
+          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -305,9 +306,10 @@ jobs:
 
       - name: Link Vercel Project
         run: |
-          # Create .vercel directory and project.json to link the project
-          mkdir -p .vercel
-          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
+          # Remove any existing .vercel directory to avoid conflicts
+          rm -rf .vercel
+          # Link the project using Vercel CLI
+          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
