@@ -172,9 +172,12 @@ jobs:
       # Start Next.js app for security testing
       - name: Start Next.js app
         run: |
+          echo "Building Next.js app for security testing..."
           npm run build
+          echo "Starting Next.js production server..."
           npm run start &
-          sleep 10
+          echo "Waiting for app to start..."
+          sleep 15
         env:
           NODE_ENV: production
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -462,12 +465,27 @@ jobs:
           
           # Try main health check with quick parameter (bypasses complex checks)
           echo "Testing main health check (quick mode): $DEPLOYMENT_URL/api/health?quick=true"
-          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health?quick=true"; then
+          # Add bypass token if available
+          if [ -n "${{ secrets.VERCEL_BYPASS_TOKEN }}" ]; then
+            HEALTH_URL="$DEPLOYMENT_URL/api/health?quick=true&x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=${{ secrets.VERCEL_BYPASS_TOKEN }}"
+            echo "Using bypass token for health check"
+          else
+            HEALTH_URL="$DEPLOYMENT_URL/api/health?quick=true"
+            echo "No bypass token available"
+          fi
+          
+          if curl -f -s --max-time 30 "$HEALTH_URL"; then
             echo "✅ Main health check passed (quick mode)"
           else
             echo "❌ Quick health check failed, trying full health check..."
             echo "Testing full health check: $DEPLOYMENT_URL/api/health"
-            if curl -f -s --max-time 60 "$DEPLOYMENT_URL/api/health"; then
+            # Try full health check with bypass token
+            if [ -n "${{ secrets.VERCEL_BYPASS_TOKEN }}" ]; then
+              FULL_HEALTH_URL="$DEPLOYMENT_URL/api/health&x-vercel-set-bypass-cookie=true&x-vercel-protection-bypass=${{ secrets.VERCEL_BYPASS_TOKEN }}"
+            else
+              FULL_HEALTH_URL="$DEPLOYMENT_URL/api/health"
+            fi
+            if curl -f -s --max-time 60 "$FULL_HEALTH_URL"; then
               echo "✅ Full health check passed"
             else
               echo "❌ Full health check also failed"
@@ -575,6 +593,7 @@ jobs:
           lhci autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
 
       - name: Upload performance results
         uses: actions/upload-artifact@v4
