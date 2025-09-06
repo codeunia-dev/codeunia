@@ -135,9 +135,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Note: Snyk and Semgrep removed to stick with GitHub-native tools only
-      # Dependency vulnerability scanning is handled by npm audit in the security job
-
       # CodeQL Analysis
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -155,25 +152,18 @@ jobs:
       - name: Run custom security checks
         run: |
           echo "Running custom security checks..."
-          
-          # Check for potential SQL injection patterns
           if grep -r "\.query\|\.raw\|\.exec" --include="*.ts" --include="*.js" app/ lib/; then
             echo "⚠️  Potential SQL injection patterns found"
             echo "Please review the above files for proper parameterization"
           fi
-          
-          # Check for potential XSS vulnerabilities
           if grep -r "dangerouslySetInnerHTML\|innerHTML" --include="*.tsx" --include="*.jsx" app/ components/; then
             echo "⚠️  Potential XSS vulnerabilities found"
             echo "Please review the above files for proper sanitization"
           fi
-          
-          # Check for hardcoded secrets
           if grep -r "password\|secret\|key\|token" --include="*.ts" --include="*.js" --exclude-dir=node_modules --exclude-dir=.git app/ lib/ | grep -v "process\.env"; then
             echo "⚠️  Potential hardcoded secrets found"
             echo "Please review the above files and use environment variables"
           fi
-          
           echo "✅ Custom security checks completed"
 
       # OWASP ZAP Baseline Scan
@@ -262,11 +252,17 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Debug Vercel Org/Project IDs
+        run: |
+          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}"
+          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}"
+
+      - name: Vercel whoami
+        run: vercel whoami --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel (Staging)
         run: |
-          # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Deploy directly using scope and project flags
           vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -297,11 +293,17 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Debug Vercel Org/Project IDs
+        run: |
+          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}"
+          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}"
+
+      - name: Vercel whoami
+        run: vercel whoami --token ${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel (Production)
         run: |
-          # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Deploy directly using scope and project flags
           vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -330,11 +332,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
       - name: Rollback deployment
         run: |
-          # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Perform rollback using scope flag
           vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
