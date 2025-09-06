@@ -325,9 +325,15 @@ jobs:
       - name: Run smoke tests
         run: |
           echo "⏳ Waiting for deployment to be ready..."
-          sleep 45
+          sleep 60
           echo "🔍 Testing health endpoint..."
           DEPLOYMENT_URL="${{ steps.deploy-staging.outputs.deployment-url }}"
+          
+          # Validate deployment URL is a full URL
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            echo "❌ Invalid deployment URL format: $DEPLOYMENT_URL"
+            exit 1
+          fi
           
           # Try main health check with quick parameter (bypasses complex checks)
           echo "Testing main health check (quick mode): $DEPLOYMENT_URL/api/health?quick=true"
@@ -343,10 +349,25 @@ jobs:
               echo "Deployment URL: $DEPLOYMENT_URL"
               echo "Trying staging domain instead..."
               if [ -n "${{ secrets.STAGING_URL }}" ]; then
-                if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health?quick=true"; then
-                  echo "✅ Staging domain health check passed"
+                STAGING_URL="${{ secrets.STAGING_URL }}"
+                # Ensure staging URL is a full URL
+                if [[ ! "$STAGING_URL" =~ ^https?:// ]]; then
+                  echo "⚠️ Staging URL is not a full URL: $STAGING_URL"
+                  STAGING_URL="https://$STAGING_URL"
+                fi
+                
+                echo "Testing staging domain reachability: $STAGING_URL"
+                if curl -f -s --max-time 10 "$STAGING_URL" > /dev/null; then
+                  echo "✅ Staging domain is reachable"
+                  echo "Trying staging domain health check: $STAGING_URL/api/health?quick=true"
+                  if curl -f -s --max-time 30 "$STAGING_URL/api/health?quick=true"; then
+                    echo "✅ Staging domain health check passed"
+                  else
+                    echo "❌ Both deployment URL and staging domain failed"
+                    echo "⚠️ Health check failed but deployment was successful"
+                  fi
                 else
-                  echo "❌ Both deployment URL and staging domain failed"
+                  echo "❌ Staging domain is not publicly reachable: $STAGING_URL"
                   echo "⚠️ Health check failed but deployment was successful"
                 fi
               else
@@ -429,9 +450,15 @@ jobs:
       - name: Run production health check
         run: |
           echo "⏳ Waiting for production deployment to be ready..."
-          sleep 45
+          sleep 60
           echo "🔍 Testing production health endpoint..."
           DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
+          
+          # Validate deployment URL is a full URL
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            echo "❌ Invalid deployment URL format: $DEPLOYMENT_URL"
+            exit 1
+          fi
           
           # Try main health check with quick parameter (bypasses complex checks)
           echo "Testing main health check (quick mode): $DEPLOYMENT_URL/api/health?quick=true"
@@ -446,17 +473,30 @@ jobs:
               echo "❌ Full health check also failed"
               echo "Deployment URL: $DEPLOYMENT_URL"
               
-              # Try production domain if available
+              # Try production domain if available and publicly reachable
               if [ -n "${{ secrets.PRODUCTION_URL }}" ]; then
-                echo "Trying production domain: ${{ secrets.PRODUCTION_URL }}/api/health?quick=true"
-                if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health?quick=true"; then
-                  echo "✅ Production domain health check passed"
+                PROD_URL="${{ secrets.PRODUCTION_URL }}"
+                # Ensure production URL is a full URL
+                if [[ ! "$PROD_URL" =~ ^https?:// ]]; then
+                  echo "⚠️ Production URL is not a full URL: $PROD_URL"
+                  PROD_URL="https://$PROD_URL"
+                fi
+                
+                echo "Testing production domain reachability: $PROD_URL"
+                if curl -f -s --max-time 10 "$PROD_URL" > /dev/null; then
+                  echo "✅ Production domain is reachable"
+                  echo "Trying production domain health check: $PROD_URL/api/health?quick=true"
+                  if curl -f -s --max-time 30 "$PROD_URL/api/health?quick=true"; then
+                    echo "✅ Production domain health check passed"
+                  else
+                    echo "❌ Production domain health check failed"
+                    echo "Both URLs failed - deployment may still be in progress"
+                    echo "Deployment URL: $DEPLOYMENT_URL"
+                    echo "Production URL: $PROD_URL"
+                    echo "⚠️ Health check failed but deployment was successful"
+                  fi
                 else
-                  echo "❌ Production domain health check also failed"
-                  echo "Both URLs failed - deployment may still be in progress"
-                  echo "Deployment URL: $DEPLOYMENT_URL"
-                  echo "Production URL: ${{ secrets.PRODUCTION_URL }}"
-                  # Don't fail the build - deployment was successful
+                  echo "❌ Production domain is not publicly reachable: $PROD_URL"
                   echo "⚠️ Health check failed but deployment was successful"
                 fi
               else
