@@ -9,7 +9,7 @@ module.exports = {
         'http://localhost:3000/auth/signin',
         'http://localhost:3000/protected/dashboard'
       ],
-      startServerCommand: 'npm run start',
+      startServerCommand: 'npm run build && npm run start',
       startServerReadyPattern: 'ready on',
       startServerReadyTimeout: 30000,
       numberOfRuns: 3,
