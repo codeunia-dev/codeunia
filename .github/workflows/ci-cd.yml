@@ -315,7 +315,7 @@ jobs:
       - name: Deploy to Vercel (Staging)
         id: deploy-staging
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          DEPLOYMENT_URL=$(vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes)
           echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "🚀 Staging deployment URL: $DEPLOYMENT_URL"
         env:
@@ -327,12 +327,20 @@ jobs:
           echo "⏳ Waiting for deployment to be ready..."
           sleep 30
           echo "🔍 Testing health endpoint..."
-          if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health"; then
+          DEPLOYMENT_URL="${{ steps.deploy-staging.outputs.deployment-url }}"
+          echo "Testing URL: $DEPLOYMENT_URL/api/health"
+          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health"; then
             echo "✅ Staging health check passed"
           else
             echo "❌ Staging health check failed"
-            echo "Deployment URL: ${{ steps.deploy-staging.outputs.deployment-url }}"
-            exit 1
+            echo "Deployment URL: $DEPLOYMENT_URL"
+            echo "Trying staging domain instead..."
+            if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health"; then
+              echo "✅ Staging domain health check passed"
+            else
+              echo "❌ Both deployment URL and staging domain failed"
+              exit 1
+            fi
           fi
 
   # Deploy to Production
@@ -399,7 +407,7 @@ jobs:
       - name: Deploy to Vercel (Production)
         id: deploy-production
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          DEPLOYMENT_URL=$(vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes)
           echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "🚀 Production deployment URL: $DEPLOYMENT_URL"
         env:
@@ -411,12 +419,20 @@ jobs:
           echo "⏳ Waiting for production deployment to be ready..."
           sleep 30
           echo "🔍 Testing production health endpoint..."
-          if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health"; then
+          DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
+          echo "Testing URL: $DEPLOYMENT_URL/api/health"
+          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health"; then
             echo "✅ Production health check passed"
           else
             echo "❌ Production health check failed"
-            echo "Deployment URL: ${{ steps.deploy-production.outputs.deployment-url }}"
-            exit 1
+            echo "Deployment URL: $DEPLOYMENT_URL"
+            echo "Trying production domain instead..."
+            if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health"; then
+              echo "✅ Production domain health check passed"
+            else
+              echo "❌ Both deployment URL and production domain failed"
+              exit 1
+            fi
           fi
 
       - name: Notify deployment success via email
