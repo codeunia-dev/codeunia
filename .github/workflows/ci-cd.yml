@@ -266,8 +266,10 @@ jobs:
         run: |
           # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Deploy directly with project ID (no linking required)
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
+          # Link project using environment variables
+          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Deploy to staging
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -301,8 +303,10 @@ jobs:
         run: |
           # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Deploy directly with project ID (no linking required)
-          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
+          # Link project using environment variables
+          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Deploy to production
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -332,11 +336,10 @@ jobs:
 
       - name: Rollback deployment
         run: |
-          # Create .vercel directory and project.json to link the project
-          mkdir -p .vercel
-          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
+          # Link project using environment variables
+          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
           # Perform rollback
-          npx vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --yes
+          vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
