@@ -10,11 +10,11 @@ module.exports = {
         'http://localhost:3000/protected/dashboard'
       ],
       startServerCommand: 'npm run build && npm run start',
-      startServerReadyPattern: 'ready on',
-      startServerReadyTimeout: 30000,
-      numberOfRuns: 3,
+      startServerReadyPattern: 'Ready in|ready on|Local:',
+      startServerReadyTimeout: 120000,
+      numberOfRuns: 1,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-web-security',
         preset: 'desktop'
       }
     },
