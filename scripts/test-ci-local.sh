@@ -97,15 +97,10 @@ test_vercel_commands() {
     print_status "Vercel CLI version:"
     vercel --version
     
-    # Test project configuration creation
-    print_status "Testing Vercel project configuration creation..."
-    echo "mkdir -p .vercel"
-    echo "echo '{\"orgId\":\"\$VERCEL_ORG_ID\",\"projectId\":\"\$VERCEL_PROJECT_ID\"}' > .vercel/project.json"
-    
-    # Test deployment command structure
-    print_status "Testing Vercel deployment command structure..."
-    echo "vercel --token \$VERCEL_TOKEN --yes"
-    echo "vercel --prod --token \$VERCEL_TOKEN --yes"
+    # Test direct deployment with scope flag
+    print_status "Testing Vercel direct deployment with scope flag..."
+    echo "vercel --token \$VERCEL_TOKEN --scope \$VERCEL_ORG_ID --yes"
+    echo "vercel --prod --token \$VERCEL_TOKEN --scope \$VERCEL_ORG_ID --yes"
     
     print_success "Vercel command testing completed!"
 }
