@@ -135,6 +135,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install wait-on for app readiness check
+        run: npm install -g wait-on
+
       # CodeQL Analysis
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -165,6 +168,22 @@ jobs:
             echo "Please review the above files and use environment variables"
           fi
           echo "✅ Custom security checks completed"
+
+      # Start Next.js app for security testing
+      - name: Start Next.js app
+        run: |
+          npm run build
+          npm run start &
+          sleep 10
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      - name: Wait for app to be ready
+        run: |
+          npx wait-on http://localhost:3000 --timeout 30000 || echo "App may not be ready, continuing with scan"
 
       # OWASP ZAP Baseline Scan
       - name: OWASP ZAP Baseline Scan
@@ -276,6 +295,9 @@ jobs:
           export VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
           ./scripts/setup-vercel-config.sh
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Build for Vercel
         run: |
           npm run build
@@ -351,6 +373,9 @@ jobs:
           export VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}
           export VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
           ./scripts/setup-vercel-config.sh
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build for Vercel
         run: |
