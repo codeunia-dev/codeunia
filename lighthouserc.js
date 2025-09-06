@@ -14,7 +14,7 @@ module.exports = {
       startServerReadyTimeout: 120000,
       numberOfRuns: 1,
       settings: {
-        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu --disable-web-security',
+        chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu',
         preset: 'desktop'
       }
     },
