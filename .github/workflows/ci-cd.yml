@@ -329,22 +329,22 @@ jobs:
           echo "🔍 Testing health endpoint..."
           DEPLOYMENT_URL="${{ steps.deploy-staging.outputs.deployment-url }}"
           
-          # Try simple health check first (more reliable)
-          echo "Testing simple health check: $DEPLOYMENT_URL/api/health/simple"
-          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health/simple"; then
-            echo "✅ Staging simple health check passed"
+          # Try main health check with quick parameter (bypasses complex checks)
+          echo "Testing main health check (quick mode): $DEPLOYMENT_URL/api/health?quick=true"
+          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health?quick=true"; then
+            echo "✅ Staging health check passed (quick mode)"
           else
-            echo "❌ Simple health check failed, trying main health endpoint..."
-            echo "Testing main health check: $DEPLOYMENT_URL/api/health"
-            if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health"; then
-              echo "✅ Staging main health check passed"
+            echo "❌ Quick health check failed, trying full health check..."
+            echo "Testing full health check: $DEPLOYMENT_URL/api/health"
+            if curl -f -s --max-time 60 "$DEPLOYMENT_URL/api/health"; then
+              echo "✅ Staging full health check passed"
             else
               echo "❌ Staging health check failed"
               echo "Deployment URL: $DEPLOYMENT_URL"
               echo "Trying staging domain instead..."
               if [ -n "${{ secrets.STAGING_URL }}" ]; then
-                if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health/simple"; then
-                  echo "✅ Staging domain simple health check passed"
+                if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health?quick=true"; then
+                  echo "✅ Staging domain health check passed"
                 else
                   echo "❌ Both deployment URL and staging domain failed"
                   echo "⚠️ Health check failed but deployment was successful"
@@ -433,24 +433,24 @@ jobs:
           echo "🔍 Testing production health endpoint..."
           DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
           
-          # Try simple health check first (more reliable)
-          echo "Testing simple health check: $DEPLOYMENT_URL/api/health/simple"
-          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health/simple"; then
-            echo "✅ Simple health check passed"
+          # Try main health check with quick parameter (bypasses complex checks)
+          echo "Testing main health check (quick mode): $DEPLOYMENT_URL/api/health?quick=true"
+          if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health?quick=true"; then
+            echo "✅ Main health check passed (quick mode)"
           else
-            echo "❌ Simple health check failed, trying main health endpoint..."
-            echo "Testing main health check: $DEPLOYMENT_URL/api/health"
-            if curl -f -s --max-time 30 "$DEPLOYMENT_URL/api/health"; then
-              echo "✅ Main health check passed"
+            echo "❌ Quick health check failed, trying full health check..."
+            echo "Testing full health check: $DEPLOYMENT_URL/api/health"
+            if curl -f -s --max-time 60 "$DEPLOYMENT_URL/api/health"; then
+              echo "✅ Full health check passed"
             else
-              echo "❌ Main health check also failed"
+              echo "❌ Full health check also failed"
               echo "Deployment URL: $DEPLOYMENT_URL"
               
               # Try production domain if available
               if [ -n "${{ secrets.PRODUCTION_URL }}" ]; then
-                echo "Trying production domain: ${{ secrets.PRODUCTION_URL }}/api/health/simple"
-                if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health/simple"; then
-                  echo "✅ Production domain simple health check passed"
+                echo "Trying production domain: ${{ secrets.PRODUCTION_URL }}/api/health?quick=true"
+                if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health?quick=true"; then
+                  echo "✅ Production domain health check passed"
                 else
                   echo "❌ Production domain health check also failed"
                   echo "Both URLs failed - deployment may still be in progress"
