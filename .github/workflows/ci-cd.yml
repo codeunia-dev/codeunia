@@ -252,26 +252,61 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Debug Vercel Org/Project IDs
+      - name: Validate Vercel Secrets
         run: |
-          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}"
-          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}"
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "❌ VERCEL_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "❌ VERCEL_ORG_ID is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID is not set"
+            exit 1
+          fi
+          echo "✅ All Vercel secrets are configured"
 
-      - name: Vercel whoami
-        run: vercel whoami --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Setup Vercel Configuration
+        run: |
+          chmod +x scripts/setup-vercel-config.sh
+          export VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}
+          export VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}
+          export VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
+          ./scripts/setup-vercel-config.sh
+
+      - name: Build for Vercel
+        run: |
+          npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Deploy to Vercel (Staging)
+        id: deploy-staging
         run: |
-          rm -rf .vercel
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --yes
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "🚀 Staging deployment URL: $DEPLOYMENT_URL"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Run smoke tests
         run: |
+          echo "⏳ Waiting for deployment to be ready..."
           sleep 30
-          curl -f ${{ secrets.STAGING_URL }}/api/health || exit 1
+          echo "🔍 Testing health endpoint..."
+          if curl -f -s --max-time 30 "${{ secrets.STAGING_URL }}/api/health"; then
+            echo "✅ Staging health check passed"
+          else
+            echo "❌ Staging health check failed"
+            echo "Deployment URL: ${{ steps.deploy-staging.outputs.deployment-url }}"
+            exit 1
+          fi
 
   # Deploy to Production
   deploy-production:
@@ -293,33 +328,68 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Debug Vercel Org/Project IDs
+      - name: Validate Vercel Secrets
         run: |
-          echo "VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}"
-          echo "VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}"
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "❌ VERCEL_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "❌ VERCEL_ORG_ID is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID is not set"
+            exit 1
+          fi
+          echo "✅ All Vercel secrets are configured"
 
-      - name: Vercel whoami
-        run: vercel whoami --token ${{ secrets.VERCEL_TOKEN }}
+      - name: Setup Vercel Configuration
+        run: |
+          chmod +x scripts/setup-vercel-config.sh
+          export VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}
+          export VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}
+          export VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
+          ./scripts/setup-vercel-config.sh
+
+      - name: Build for Vercel
+        run: |
+          npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
       - name: Deploy to Vercel (Production)
+        id: deploy-production
         run: |
-          rm -rf .vercel
-          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --yes
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --prod --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+          echo "🚀 Production deployment URL: $DEPLOYMENT_URL"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Run production health check
         run: |
+          echo "⏳ Waiting for production deployment to be ready..."
           sleep 30
-          curl -f ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
+          echo "🔍 Testing production health endpoint..."
+          if curl -f -s --max-time 30 "${{ secrets.PRODUCTION_URL }}/api/health"; then
+            echo "✅ Production health check passed"
+          else
+            echo "❌ Production health check failed"
+            echo "Deployment URL: ${{ steps.deploy-production.outputs.deployment-url }}"
+            exit 1
+          fi
 
       - name: Notify deployment success via email
         run: |
           curl -X POST "https://api.resend.com/emails" \
             -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
             -H "Content-Type: application/json" \
-            -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"🚀 Production Deployment Successful\",\"html\":\"<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>\"}"
+            -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"🚀 Production Deployment Successful\",\"html\":\"<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Deployment URL:</strong> <a href='${{ steps.deploy-production.outputs.deployment-url }}'>${{ steps.deploy-production.outputs.deployment-url }}</a></p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>\"}"
 
   # Rollback on Failure
   rollback:
@@ -335,10 +405,17 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Setup Vercel Configuration
+        run: |
+          chmod +x scripts/setup-vercel-config.sh
+          export VERCEL_ORG_ID=${{ secrets.VERCEL_ORG_ID }}
+          export VERCEL_PROJECT_ID=${{ secrets.VERCEL_PROJECT_ID }}
+          export VERCEL_TOKEN=${{ secrets.VERCEL_TOKEN }}
+          ./scripts/setup-vercel-config.sh
+
       - name: Rollback deployment
         run: |
-          rm -rf .vercel
-          vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes
+          vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
