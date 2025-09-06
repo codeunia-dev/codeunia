@@ -420,7 +420,7 @@ export class InputValidator {
   }
 
   /**
-   * Validate XSS patterns
+   * Validate XSS patterns using DOMPurify sanitization
    */
   static validateXssInput(input: string): ValidationResult {
     if (!input) {
@@ -430,40 +430,19 @@ export class InputValidator {
       };
     }
 
-    // Common XSS patterns
-    const xssPatterns = [
-      /<script[^>]*>.*?<\/script>/gi,
-      /<iframe[^>]*>.*?<\/iframe>/gi,
-      /<object[^>]*>.*?<\/object>/gi,
-      /<embed[^>]*>.*?<\/embed>/gi,
-      /<applet[^>]*>.*?<\/applet>/gi,
-      /<meta[^>]*>.*?<\/meta>/gi,
-      /<link[^>]*>.*?<\/link>/gi,
-      /<style[^>]*>.*?<\/style>/gi,
-      /javascript:/gi,
-      /vbscript:/gi,
-      /onload\s*=/gi,
-      /onerror\s*=/gi,
-      /onclick\s*=/gi,
-      /onmouseover\s*=/gi,
-      /onfocus\s*=/gi,
-      /onblur\s*=/gi,
-      /onchange\s*=/gi,
-      /onsubmit\s*=/gi,
-      /onreset\s*=/gi,
-      /onselect\s*=/gi,
-      /onkeydown\s*=/gi,
-      /onkeyup\s*=/gi,
-      /onkeypress\s*=/gi
-    ];
+    // Use DOMPurify to sanitize the input
+    const sanitizedInput = purify.sanitize(input, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true
+    });
 
-    for (const pattern of xssPatterns) {
-      if (pattern.test(input)) {
-        return {
-          isValid: false,
-          error: 'Invalid input detected'
-        };
-      }
+    // If the sanitized version differs from the input, it contained dangerous content
+    if (sanitizedInput !== input) {
+      return {
+        isValid: false,
+        error: 'Invalid input detected - potentially dangerous content found'
+      };
     }
 
     return {
