@@ -97,9 +97,10 @@ test_vercel_commands() {
     print_status "Vercel CLI version:"
     vercel --version
     
-    # Test linking (this will fail with dummy secrets, but we can see the command structure)
-    print_status "Testing Vercel link command structure..."
-    echo "vercel link --token \$VERCEL_TOKEN --yes"
+    # Test project configuration creation
+    print_status "Testing Vercel project configuration creation..."
+    echo "mkdir -p .vercel"
+    echo "echo '{\"orgId\":\"\$VERCEL_ORG_ID\",\"projectId\":\"\$VERCEL_PROJECT_ID\"}' > .vercel/project.json"
     
     # Test deployment command structure
     print_status "Testing Vercel deployment command structure..."

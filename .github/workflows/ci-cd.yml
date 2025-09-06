@@ -266,8 +266,9 @@ jobs:
         run: |
           # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Link project using environment variables
-          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Create .vercel directory with project configuration
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
           # Deploy to staging
           vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
@@ -303,8 +304,9 @@ jobs:
         run: |
           # Remove any existing .vercel directory to avoid conflicts
           rm -rf .vercel
-          # Link project using environment variables
-          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Create .vercel directory with project configuration
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
           # Deploy to production
           vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
@@ -336,8 +338,9 @@ jobs:
 
       - name: Rollback deployment
         run: |
-          # Link project using environment variables
-          vercel link --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Create .vercel directory with project configuration
+          mkdir -p .vercel
+          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
           # Perform rollback
           vercel rollback --token ${{ secrets.VERCEL_TOKEN }} --yes
         env:
