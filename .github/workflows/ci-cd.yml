@@ -262,18 +262,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Link Vercel Project
-        run: |
-          # Create .vercel directory and project.json to link the project
-          mkdir -p .vercel
-          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
       - name: Deploy to Vercel (Staging)
         run: |
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Remove any existing .vercel directory to avoid conflicts
+          rm -rf .vercel
+          # Deploy directly with project ID (no linking required)
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -303,18 +297,12 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
-      - name: Link Vercel Project
-        run: |
-          # Create .vercel directory and project.json to link the project
-          mkdir -p .vercel
-          echo '{"orgId":"${{ secrets.VERCEL_ORG_ID }}","projectId":"${{ secrets.VERCEL_PROJECT_ID }}"}' > .vercel/project.json
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
       - name: Deploy to Vercel (Production)
         run: |
-          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+          # Remove any existing .vercel directory to avoid conflicts
+          rm -rf .vercel
+          # Deploy directly with project ID (no linking required)
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes --project ${{ secrets.VERCEL_PROJECT_ID }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
