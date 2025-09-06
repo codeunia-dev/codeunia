@@ -6,8 +6,13 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
 
 jobs:
@@ -135,12 +140,12 @@ jobs:
 
       # CodeQL Analysis
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
           languages: javascript
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
 
       # Custom Security Tests
       - name: Run security tests
