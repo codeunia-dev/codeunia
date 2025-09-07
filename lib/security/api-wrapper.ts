@@ -16,23 +16,22 @@ export interface APIHandler {
  */
 export function withSecurity(handler: APIHandler) {
   return async (request: NextRequest): Promise<Response> => {
-    const requestId = crypto.randomUUID();
-    
-    try {
-      // Add request ID to headers for tracking
-      const response = await handler(request);
-      
-      // Add security headers
-      response.headers.set('X-Request-ID', requestId);
-      response.headers.set('X-Content-Type-Options', 'nosniff');
-      response.headers.set('X-Frame-Options', 'DENY');
-      response.headers.set('X-XSS-Protection', '1; mode=block');
-      
-      // Add CSP header
+    } catch (error) {
+      const res = ErrorSanitizer.createErrorResponse(
+        error,
+        500,
+        'api-wrapper-catch',
+        requestId
+      );
+      // Ensure error responses also include security headers/CSP
+      res.headers.set('X-Request-ID', requestId);
+      res.headers.set('X-Content-Type-Options', 'nosniff');
+      res.headers.set('X-Frame-Options', 'DENY');
+      res.headers.set('X-XSS-Protection', '1; mode=block');
       const cspConfig = getCSPConfig(request);
-      response.headers.set('Content-Security-Policy', cspConfig.policy);
-      
-      return response;
+      res.headers.set('Content-Security-Policy', cspConfig.policy);
+      return res;
+    }
     } catch (error) {
       return ErrorSanitizer.createErrorResponse(
         error,
