@@ -745,7 +745,7 @@ jobs:
       - name: Wait for staging deployment to be ready
         run: |
           echo "⏳ Waiting for staging deployment to be ready for Lighthouse testing..."
-          DEPLOYMENT_URL="${{ steps.deploy-staging.outputs.deployment-url }}"
+          DEPLOYMENT_URL="${{ needs.deploy-staging.outputs.deployment-url }}"
           
           # Wait up to 3 minutes for the staging deployment to be ready
           for i in {1..18}; do
@@ -762,7 +762,6 @@ jobs:
               echo "❌ Staging deployment not ready after 3 minutes, but continuing with Lighthouse test"
             fi
           done
-
       - name: Run Lighthouse CI on staging site
         run: |
           echo "🚀 Starting Lighthouse CI performance testing on staging..."
