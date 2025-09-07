@@ -72,9 +72,19 @@ export function createSecureErrorResponse(
   error: Error | unknown,
   statusCode: number = 500,
   context?: string,
+  request?: NextRequest,
   requestId?: string
 ): Response {
-  return ErrorSanitizer.createErrorResponse(error, statusCode, context, requestId);
+  const res = ErrorSanitizer.createErrorResponse(error, statusCode, context, requestId);
+  res.headers.set('X-Request-ID', requestId || crypto.randomUUID());
+  res.headers.set('X-Content-Type-Options', 'nosniff');
+  res.headers.set('X-Frame-Options', 'DENY');
+  res.headers.set('X-XSS-Protection', '1; mode=block');
+  if (request) {
+    const csp = getCSPConfig(request);
+    res.headers.set('Content-Security-Policy', csp.policy);
+  }
+  return res;
 }
 
 /**
