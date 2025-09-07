@@ -93,6 +93,7 @@ export function createSecureErrorResponse(
 export function createSecureSuccessResponse(
   data: unknown,
   statusCode: number = 200,
+  request?: NextRequest,
   requestId?: string
 ): Response {
   const response = NextResponse.json({
@@ -107,6 +108,12 @@ export function createSecureSuccessResponse(
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Add per-request CSP if request is provided
+  if (request) {
+    const csp = getCSPConfig(request);
+    response.headers.set('Content-Security-Policy', csp.policy);
+  }
   
   return response;
 }
