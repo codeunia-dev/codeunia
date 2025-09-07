@@ -15,6 +15,19 @@ export interface CSPConfig {
  * Generate a secure nonce for CSP
  */
 export function generateNonce(): string {
+  // Prefer Web Crypto (Edge/Browser)
+  const webCrypto = (globalThis as any).crypto;
+  if (webCrypto?.getRandomValues) {
+    const arr = new Uint8Array(16);
+    webCrypto.getRandomValues(arr);
+    // Base64 encode without Buffer dependency
+    let binary = '';
+    for (let i = 0; i < arr.length; i++) binary += String.fromCharCode(arr[i]);
+    // btoa is available in Edge/Browser
+    // @ts-ignore
+    return typeof btoa === 'function' ? btoa(binary) : Buffer.from(arr).toString('base64');
+  }
+  // Node.js fallback
   return crypto.randomBytes(16).toString('base64');
 }
 
