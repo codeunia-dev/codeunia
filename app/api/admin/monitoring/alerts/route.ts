@@ -6,7 +6,7 @@ import { monitoringAlerting } from '@/lib/monitoring/alerting';
  * GET /api/admin/monitoring/alerts
  * Get monitoring alerts
  */
-async function getAlerts(request: NextRequest, _user: AuthenticatedUser) {
+async function getAlerts(request: NextRequest, user: AuthenticatedUser) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') as 'active' | 'resolved' | 'acknowledged' | null;
@@ -31,6 +31,9 @@ async function getAlerts(request: NextRequest, _user: AuthenticatedUser) {
     // Sort by created_at descending
     alerts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
+    // Log the monitoring alerts access for security tracking
+    console.log(`Admin ${user.id} accessed monitoring alerts with filters:`, { status, type, severity });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -53,7 +56,7 @@ async function getAlerts(request: NextRequest, _user: AuthenticatedUser) {
  * POST /api/admin/monitoring/alerts
  * Acknowledge or resolve an alert
  */
-async function updateAlert(request: NextRequest, _user: AuthenticatedUser) {
+async function updateAlert(request: NextRequest, user: AuthenticatedUser) {
   try {
     const body = await request.json();
     const { alert_id, action } = body;
@@ -85,6 +88,9 @@ async function updateAlert(request: NextRequest, _user: AuthenticatedUser) {
         { status: 404 }
       );
     }
+
+    // Log the alert update for security tracking
+    console.log(`Admin ${user.id} ${action}d alert ${alert_id}`);
 
     return NextResponse.json({
       success: true,

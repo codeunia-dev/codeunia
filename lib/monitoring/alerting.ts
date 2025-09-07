@@ -411,8 +411,8 @@ export class MonitoringAlerting {
   /**
    * Send alert via email (using existing email system)
    */
-  private async sendEmailAlert(alert: Alert, _config: Record<string, unknown>): Promise<void> {
-    const emailRecipients = process.env.ALERT_EMAIL_RECIPIENTS || 'connect@codeunia.com';
+  private async sendEmailAlert(alert: Alert, config: Record<string, unknown>): Promise<void> {
+    const emailRecipients = (config.emailRecipients as string) || process.env.ALERT_EMAIL_RECIPIENTS || 'connect@codeunia.com';
     
     const emailContent = {
       subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,

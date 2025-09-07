@@ -6,7 +6,7 @@ import { createAuditLogger } from '@/lib/services/audit-logger';
  * GET /api/admin/audit-logs/stats
  * Get audit log statistics
  */
-async function getAuditStats(request: NextRequest, _user: AuthenticatedUser) {
+async function getAuditStats(request: NextRequest, user: AuthenticatedUser) {
   try {
     const { searchParams } = new URL(request.url);
     const periodDays = searchParams.get('period_days') 
@@ -23,6 +23,9 @@ async function getAuditStats(request: NextRequest, _user: AuthenticatedUser) {
 
     const auditLogger = createAuditLogger();
     const stats = await auditLogger.getAuditStats(periodDays);
+    
+    // Log the audit stats access for security tracking
+    console.log(`Admin ${user.id} accessed audit stats for ${periodDays} days`);
 
     return NextResponse.json({
       success: true,

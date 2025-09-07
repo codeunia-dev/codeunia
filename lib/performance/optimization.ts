@@ -280,7 +280,7 @@ export class PerformanceMonitor {
     new PerformanceObserver((list) => {
       const entries = list.getEntries();
       entries.forEach((entry) => {
-        const fidEntry = entry as any;
+        const fidEntry = entry as PerformanceEntry & { processingStart: number };
         console.log('FID:', fidEntry.processingStart - fidEntry.startTime);
       });
     }).observe({ entryTypes: ['first-input'] });
@@ -290,7 +290,7 @@ export class PerformanceMonitor {
       let clsValue = 0;
       const entries = list.getEntries();
       entries.forEach((entry) => {
-        const clsEntry = entry as any;
+        const clsEntry = entry as PerformanceEntry & { hadRecentInput: boolean; value: number };
         if (!clsEntry.hadRecentInput) {
           clsValue += clsEntry.value;
         }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { ErrorSanitizer } from '@/lib/security/error-sanitizer';
 
 export async function GET() {
   try {
@@ -7,10 +8,11 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ 
-        error: 'Unauthorized',
-        message: 'User not authenticated'
-      }, { status: 401 });
+      return ErrorSanitizer.createErrorResponse(
+        authError || new Error('User not authenticated'),
+        401,
+        'admin-check-status-auth'
+      );
     }
 
     // Check admin status in profiles table
@@ -20,7 +22,7 @@ export async function GET() {
       .eq('id', user.id)
       .single();
 
-    // If profile doesn't exist, create it
+    // If profile doesn't exist, create it with default user privileges
     if (profileError && profileError.code === 'PGRST116') {
       console.log('Profile not found, creating new profile...');
       const { data: newProfile, error: createError } = await supabase
@@ -28,35 +30,36 @@ export async function GET() {
         .insert({
           id: user.id,
           email: user.email,
-          is_admin: true // Grant admin by default for now
+          is_admin: false // SECURITY FIX: Default to regular user, not admin
         })
         .select('is_admin, first_name, last_name, username, email')
         .single();
 
       if (createError) {
-        console.error('Error creating profile:', createError);
-        return NextResponse.json({ 
-          error: 'Failed to create profile',
-          message: createError.message
-        }, { status: 500 });
+        return ErrorSanitizer.createErrorResponse(
+          createError,
+          500,
+          'admin-check-status-create-profile'
+        );
       }
 
-              return NextResponse.json({
-          user: {
-            id: user.id,
-            email: newProfile.email || user.email,
-            full_name: `${newProfile.first_name || ''} ${newProfile.last_name || ''}`.trim() || newProfile.username,
-            is_admin: newProfile.is_admin
-          },
-          message: 'Profile created with admin privileges'
-        });
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          email: newProfile.email || user.email,
+          full_name: `${newProfile.first_name || ''} ${newProfile.last_name || ''}`.trim() || newProfile.username,
+          is_admin: newProfile.is_admin
+        },
+        message: 'Profile created successfully'
+      });
     }
 
     if (profileError) {
-      return NextResponse.json({ 
-        error: 'Profile not found',
-        message: profileError.message
-      }, { status: 404 });
+      return ErrorSanitizer.createErrorResponse(
+        profileError,
+        404,
+        'admin-check-status-profile'
+      );
     }
 
     return NextResponse.json({
@@ -70,56 +73,19 @@ export async function GET() {
     });
 
   } catch (error) {
-    console.error('Error checking admin status:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: 'Failed to check admin status'
-    }, { status: 500 });
+    return ErrorSanitizer.createErrorResponse(
+      error,
+      500,
+      'admin-check-status-catch'
+    );
   }
 }
 
 export async function POST() {
-  try {
-    const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ 
-        error: 'Unauthorized',
-        message: 'User not authenticated'
-      }, { status: 401 });
-    }
-
-    // Grant admin privileges
-    const { data: profile, error: updateError } = await supabase
-      .from('profiles')
-      .update({ is_admin: true })
-      .eq('id', user.id)
-              .select('is_admin, first_name, last_name, username, email')
-      .single();
-
-    if (updateError) {
-      return NextResponse.json({ 
-        error: 'Failed to update admin status',
-        message: updateError.message
-      }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        email: profile.email || user.email,
-        full_name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.username,
-        is_admin: profile.is_admin
-      },
-      message: 'Admin privileges granted successfully'
-    });
-
-  } catch (error) {
-    console.error('Error granting admin privileges:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: 'Failed to grant admin privileges'
-    }, { status: 500 });
-  }
+  // SECURITY FIX: Remove this endpoint entirely as it allows privilege escalation
+  // Admin privileges should only be granted through proper admin workflows
+  return NextResponse.json({ 
+    error: 'Forbidden',
+    message: 'This endpoint has been disabled for security reasons'
+  }, { status: 403 });
 } 

@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: ci-cd-pipeline
 
 on:
   push:
@@ -587,18 +587,214 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Lighthouse CI
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Create Lighthouse configuration for deployed site
         run: |
-          npm install -g @lhci/cli@0.12.x
-          lhci autorun --assert.assertions.categories:performance=warn --assert.assertions.categories:accessibility=warn --assert.assertions.categories:best-practices=warn --assert.assertions.categories:seo=warn --assert.assertions.first-contentful-paint=warn --assert.assertions.largest-contentful-paint=warn --assert.assertions.cumulative-layout-shift=warn --assert.assertions.total-blocking-time=warn --assert.assertions.speed-index=warn
+          cat > lighthouserc-deployed.js << 'EOF'
+          module.exports = {
+            ci: {
+              collect: {
+                url: [
+                  '${{ steps.deploy-production.outputs.deployment-url }}/',
+                  '${{ steps.deploy-production.outputs.deployment-url }}/about',
+                  '${{ steps.deploy-production.outputs.deployment-url }}/hackathons',
+                  '${{ steps.deploy-production.outputs.deployment-url }}/leaderboard',
+                  '${{ steps.deploy-production.outputs.deployment-url }}/auth/signin'
+                ],
+                numberOfRuns: 3,
+                settings: {
+                  chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu',
+                  preset: 'desktop'
+                }
+              },
+              assert: {
+                assertions: {
+                  'categories:performance': ['warn', { minScore: 0.7 }],
+                  'categories:accessibility': ['warn', { minScore: 0.8 }],
+                  'categories:best-practices': ['warn', { minScore: 0.8 }],
+                  'categories:seo': ['warn', { minScore: 0.8 }],
+                  'first-contentful-paint': ['warn', { maxNumericValue: 3000 }],
+                  'largest-contentful-paint': ['warn', { maxNumericValue: 4000 }],
+                  'cumulative-layout-shift': ['warn', { maxNumericValue: 0.2 }],
+                  'total-blocking-time': ['warn', { maxNumericValue: 500 }],
+                  'speed-index': ['warn', { maxNumericValue: 4000 }]
+                }
+              },
+              upload: {
+                target: 'temporary-public-storage'
+              }
+            }
+          };
+          EOF
+
+      - name: Wait for deployment to be fully ready
+        run: |
+          echo "⏳ Waiting for deployment to be fully ready for Lighthouse testing..."
+          DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
+          
+          # Wait up to 5 minutes for the deployment to be ready
+          for i in {1..30}; do
+            echo "Attempt $i/30: Testing deployment readiness..."
+            if curl -f -s --max-time 10 "$DEPLOYMENT_URL" > /dev/null; then
+              echo "✅ Deployment is ready for Lighthouse testing"
+              break
+            else
+              echo "⏳ Deployment not ready yet, waiting 10 seconds..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 30 ]; then
+              echo "❌ Deployment not ready after 5 minutes, but continuing with Lighthouse test"
+            fi
+          done
+
+      - name: Run Lighthouse CI on deployed site
+        run: |
+          echo "🚀 Starting Lighthouse CI performance testing..."
+          echo "Testing URL: ${{ steps.deploy-production.outputs.deployment-url }}"
+          
+          # Run Lighthouse CI with the deployed configuration
+          lhci autorun --config=lighthouserc-deployed.js
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
           LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload performance results
+      - name: Verify Lighthouse results directory exists
+        run: |
+          echo "🔍 Checking Lighthouse results directory..."
+          if [ -d ".lighthouseci" ]; then
+            echo "✅ .lighthouseci directory exists"
+            ls -la .lighthouseci/
+            echo "📊 Lighthouse results found:"
+            find .lighthouseci -name "*.json" -o -name "*.html" | head -10
+          else
+            echo "❌ .lighthouseci directory not found"
+            echo "Creating directory for fallback..."
+            mkdir -p .lighthouseci
+            echo "{}" > .lighthouseci/manifest.json
+          fi
+
+      - name: Upload Lighthouse performance results
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: lighthouse-results
+          name: lighthouse-performance-results
           path: .lighthouseci/
           retention-days: 30
+          if-no-files-found: warn
+
+  # Performance Monitoring for Staging
+  performance-staging:
+    name: Performance Monitoring (Staging)
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli@0.12.x
+
+      - name: Create Lighthouse configuration for staging
+        run: |
+          cat > lighthouserc-staging.js << 'EOF'
+          module.exports = {
+            ci: {
+              collect: {
+                url: [
+                  '${{ steps.deploy-staging.outputs.deployment-url }}/',
+                  '${{ steps.deploy-staging.outputs.deployment-url }}/about',
+                  '${{ steps.deploy-staging.outputs.deployment-url }}/hackathons',
+                  '${{ steps.deploy-staging.outputs.deployment-url }}/leaderboard',
+                  '${{ steps.deploy-staging.outputs.deployment-url }}/auth/signin'
+                ],
+                numberOfRuns: 2,
+                settings: {
+                  chromeFlags: '--no-sandbox --disable-dev-shm-usage --disable-gpu',
+                  preset: 'desktop'
+                }
+              },
+              assert: {
+                assertions: {
+                  'categories:performance': ['warn', { minScore: 0.6 }],
+                  'categories:accessibility': ['warn', { minScore: 0.7 }],
+                  'categories:best-practices': ['warn', { minScore: 0.7 }],
+                  'categories:seo': ['warn', { minScore: 0.7 }]
+                }
+              },
+              upload: {
+                target: 'temporary-public-storage'
+              }
+            }
+          };
+          EOF
+
+      - name: Wait for staging deployment to be ready
+        run: |
+          echo "⏳ Waiting for staging deployment to be ready for Lighthouse testing..."
+          DEPLOYMENT_URL="${{ steps.deploy-staging.outputs.deployment-url }}"
+          
+          # Wait up to 3 minutes for the staging deployment to be ready
+          for i in {1..18}; do
+            echo "Attempt $i/18: Testing staging deployment readiness..."
+            if curl -f -s --max-time 10 "$DEPLOYMENT_URL" > /dev/null; then
+              echo "✅ Staging deployment is ready for Lighthouse testing"
+              break
+            else
+              echo "⏳ Staging deployment not ready yet, waiting 10 seconds..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 18 ]; then
+              echo "❌ Staging deployment not ready after 3 minutes, but continuing with Lighthouse test"
+            fi
+          done
+
+      - name: Run Lighthouse CI on staging site
+        run: |
+          echo "🚀 Starting Lighthouse CI performance testing on staging..."
+          echo "Testing URL: ${{ steps.deploy-staging.outputs.deployment-url }}"
+          
+          # Run Lighthouse CI with the staging configuration
+          lhci autorun --config=lighthouserc-staging.js
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+          LHCI_TOKEN: ${{ secrets.LHCI_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify Lighthouse results directory exists
+        run: |
+          echo "🔍 Checking Lighthouse results directory..."
+          if [ -d ".lighthouseci" ]; then
+            echo "✅ .lighthouseci directory exists"
+            ls -la .lighthouseci/
+            echo "📊 Lighthouse results found:"
+            find .lighthouseci -name "*.json" -o -name "*.html" | head -10
+          else
+            echo "❌ .lighthouseci directory not found"
+            echo "Creating directory for fallback..."
+            mkdir -p .lighthouseci
+            echo "{}" > .lighthouseci/manifest.json
+          fi
+
+      - name: Upload Lighthouse staging results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-staging-results
+          path: .lighthouseci/
+          retention-days: 7
+          if-no-files-found: warn
