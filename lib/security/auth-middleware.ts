@@ -18,12 +18,15 @@ export interface AuthContext {
 }
 
 // Enhanced authentication middleware
-export async function authenticateUser(_request: NextRequest): Promise<AuthenticatedUser | null> {
+export async function authenticateUser(request: NextRequest): Promise<AuthenticatedUser | null> {
   try {
     // Rate limiting check
-    // const clientIp = request.headers.get('x-forwarded-for') || 
-    //                 request.headers.get('x-real-ip') || 
-    //                 'unknown';
+    const clientIp = request.headers.get('x-forwarded-for') || 
+                     request.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    // Log authentication attempt for security monitoring
+    console.log(`Authentication attempt from IP: ${clientIp}`);
     
     // if (!authRateLimiter.isAllowed(clientIp)) {
     //   return null;

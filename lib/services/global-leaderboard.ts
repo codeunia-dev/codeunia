@@ -97,8 +97,7 @@ export class GlobalLeaderboardService {
   async getUserPoints(userId: string): Promise<UserPoints | null> {
     try {
       // Use admin client to bypass RLS
-      const supabase = this.getSupabaseClient();
-    const { data, error } = await this.supabaseAdmin
+      const { data, error } = await this.supabaseAdmin
         .from('user_points')
         .select('*')
         .eq('user_id', userId)
@@ -130,8 +129,7 @@ export class GlobalLeaderboardService {
   private async createUserPoints(userId: string): Promise<UserPoints | null> {
     try {
       // Use admin client to bypass RLS
-      const supabase = this.getSupabaseClient();
-    const { data, error } = await this.supabaseAdmin
+      const { data, error } = await this.supabaseAdmin
         .from('user_points')
         .insert([{
           user_id: userId,

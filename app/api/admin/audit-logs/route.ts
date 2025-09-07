@@ -6,7 +6,7 @@ import { createAuditLogger, AuditLogFilter, AuditActionType } from '@/lib/servic
  * GET /api/admin/audit-logs
  * Retrieve audit logs with filtering and pagination
  */
-async function getAuditLogs(request: NextRequest, _user: AuthenticatedUser) {
+async function getAuditLogs(request: NextRequest, user: AuthenticatedUser) {
   try {
     const { searchParams } = new URL(request.url);
     
@@ -39,6 +39,9 @@ async function getAuditLogs(request: NextRequest, _user: AuthenticatedUser) {
 
     const auditLogger = createAuditLogger();
     const result = await auditLogger.getLogs(filter);
+    
+    // Log the audit log access for security tracking
+    console.log(`Admin ${user.id} accessed audit logs with filter:`, filter);
 
     return NextResponse.json({
       success: true,
