@@ -597,11 +597,11 @@ jobs:
             ci: {
               collect: {
                 url: [
-                  '${{ steps.deploy-production.outputs.deployment-url }}/',
-                  '${{ steps.deploy-production.outputs.deployment-url }}/about',
-                  '${{ steps.deploy-production.outputs.deployment-url }}/hackathons',
-                  '${{ steps.deploy-production.outputs.deployment-url }}/leaderboard',
-                  '${{ steps.deploy-production.outputs.deployment-url }}/auth/signin'
+                  '${{ needs.deploy-production.outputs.deployment-url }}/',
+                  '${{ needs.deploy-production.outputs.deployment-url }}/about',
+                  '${{ needs.deploy-production.outputs.deployment-url }}/hackathons',
+                  '${{ needs.deploy-production.outputs.deployment-url }}/leaderboard',
+                  '${{ needs.deploy-production.outputs.deployment-url }}/auth/signin'
                 ],
                 numberOfRuns: 3,
                 settings: {
@@ -653,7 +653,7 @@ jobs:
       - name: Run Lighthouse CI on deployed site
         run: |
           echo "🚀 Starting Lighthouse CI performance testing..."
-          echo "Testing URL: ${{ steps.deploy-production.outputs.deployment-url }}"
+          echo "Testing URL: ${{ needs.deploy-production.outputs.deployment-url }}"
           
           # Run Lighthouse CI with the deployed configuration
           lhci autorun --config=lighthouserc-deployed.js
@@ -715,11 +715,11 @@ jobs:
             ci: {
               collect: {
                 url: [
-                  '${{ steps.deploy-staging.outputs.deployment-url }}/',
-                  '${{ steps.deploy-staging.outputs.deployment-url }}/about',
-                  '${{ steps.deploy-staging.outputs.deployment-url }}/hackathons',
-                  '${{ steps.deploy-staging.outputs.deployment-url }}/leaderboard',
-                  '${{ steps.deploy-staging.outputs.deployment-url }}/auth/signin'
+                  '${{ needs.deploy-staging.outputs.deployment-url }}/',
+                  '${{ needs.deploy-staging.outputs.deployment-url }}/about',
+                  '${{ needs.deploy-staging.outputs.deployment-url }}/hackathons',
+                  '${{ needs.deploy-staging.outputs.deployment-url }}/leaderboard',
+                  '${{ needs.deploy-staging.outputs.deployment-url }}/auth/signin'
                 ],
                 numberOfRuns: 2,
                 settings: {
@@ -765,7 +765,7 @@ jobs:
       - name: Run Lighthouse CI on staging site
         run: |
           echo "🚀 Starting Lighthouse CI performance testing on staging..."
-          echo "Testing URL: ${{ steps.deploy-staging.outputs.deployment-url }}"
+          echo "Testing URL: ${{ needs.deploy-staging.outputs.deployment-url }}"
           
           # Run Lighthouse CI with the staging configuration
           lhci autorun --config=lighthouserc-staging.js
