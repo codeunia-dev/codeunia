@@ -2,19 +2,16 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { UnifiedCache } from '@/lib/unified-cache-system';
 
-// Create Supabase client function to avoid build-time initialization
-function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(supabaseUrl, supabaseServiceKey);
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {
-    const supabaseAdmin = getSupabaseClient();
     const userId = params.userId;
 
     if (!userId) {
