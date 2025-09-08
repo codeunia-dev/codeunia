@@ -38,11 +38,11 @@ export function generateNonce(): string {
 export function getCSPConfig(request: NextRequest): CSPConfig {
   const nonce = generateNonce();
   
-  // Enhanced CSP policy without unsafe directives
+  // Enhanced CSP policy with Cloudflare Insights support
   const policy = [
     "default-src 'self'",
-    "script-src 'self' 'nonce-" + nonce + "' https://vercel.live https://va.vercel-scripts.com",
-    "style-src 'self' 'nonce-" + nonce + "' https://fonts.googleapis.com",
+    "script-src 'self' 'nonce-" + nonce + "' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com",
+    "style-src 'self' 'nonce-" + nonce + "' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
     "connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co",
@@ -77,7 +77,7 @@ export function applyCSPHeaders(response: Response, cspConfig: CSPConfig): Respo
 export function getDevelopmentCSP(): string {
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
