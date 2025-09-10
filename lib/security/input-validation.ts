@@ -3,6 +3,7 @@ import { JSDOM } from 'jsdom';
 
 // Create a DOMPurify instance for server-side use
 const window = new JSDOM('').window;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const purify = DOMPurify(window as any);
 
 export interface ValidationResult {

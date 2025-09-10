@@ -96,7 +96,7 @@ export default function ProjectsPage() {
                     <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 group-hover:opacity-100" />
                   </span>
                   <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-                    <span>Projects Showcase</span>
+                    <span>Hall of Excellence</span>
                     <Sparkles className="w-3 h-3" />
                   </div>
                   <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 group-hover:opacity-40" />
@@ -104,10 +104,10 @@ export default function ProjectsPage() {
               </div>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
-              Intern <span className="gradient-text">Projects</span> Showcase
+              <span className="gradient-text">Zenith</span> Hall
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Explore outstanding projects created by our talented interns during their internship at Codeunia.
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+              A tribute to Codeunia&apos;s finest minds who have risen above challenges with exceptional skill and innovation. Here, we showcase our best members whose remarkable projects and achievements reflect technical excellence, creative problem-solving, and the spirit of collaboration that defines our community.
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function ProjectsPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search projects..."
+                placeholder="Search our hall of excellence by project, technology, or member..."
                 className="w-full pl-12 pr-4 py-3 text-lg bg-background/70 backdrop-blur-sm rounded-full focus:ring-2 focus:ring-primary/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -130,7 +130,7 @@ export default function ProjectsPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2 rounded-full text-lg py-3 bg-background/70 backdrop-blur-sm">
-                  <span>Tags</span>
+                  <span>Technologies</span>
                   {selectedTags.length > 0 && (
                     <Badge variant="secondary" className="rounded-full">{selectedTags.length}</Badge>
                   )}
@@ -138,7 +138,7 @@ export default function ProjectsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-64">
-                <DropdownMenuLabel>Filter by Tags</DropdownMenuLabel>
+                <DropdownMenuLabel>Filter by Expertise Areas</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {allTags.map((tag) => (
                   <DropdownMenuCheckboxItem

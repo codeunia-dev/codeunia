@@ -68,6 +68,14 @@ export default function RootLayout({
         
         {/* Viewport for mobile optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        
+        {/* Favicon configuration */}
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/svg+xml" href="/codeunia-favicon-light.svg" media="(prefers-color-scheme: light)" />
+        <link rel="icon" type="image/svg+xml" href="/codeunia-favicon-dark.svg" media="(prefers-color-scheme: dark)" />
+        <link rel="icon" type="image/svg+xml" href="/codeunia-favicon-light.svg" />
+        <link rel="apple-touch-icon" href="/codeunia-favicon-light.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
       </head>
       <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
         <ErrorBoundary>

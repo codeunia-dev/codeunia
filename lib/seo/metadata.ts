@@ -55,6 +55,18 @@ export function generateMetadata(config: SEOConfig): Metadata {
     creator: author,
     publisher: defaultConfig.siteName,
     
+    // Favicon configuration
+    icons: {
+      icon: [
+        { url: '/favicon.ico', type: 'image/x-icon' },
+        { url: '/codeunia-favicon-light.svg', media: '(prefers-color-scheme: light)' },
+        { url: '/codeunia-favicon-dark.svg', media: '(prefers-color-scheme: dark)' },
+        { url: '/codeunia-favicon-light.svg' }
+      ],
+      apple: '/codeunia-favicon-light.svg',
+      shortcut: '/favicon.ico'
+    },
+    
     // Open Graph
     openGraph: {
       type,
