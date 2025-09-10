@@ -154,45 +154,53 @@ export default function TestsPage() {
         return;
       }
 
-      console.log('Attempting to register for test:', testId);
-      console.log('User ID:', user.id);
-
       // Check if already registered using local state
       if (userRegistrations.has(testId)) {
         toast.error('You are already registered for this test');
         return;
       }
 
-      // Get test details for debugging
-      const test = tests.find(t => t.id === testId);
-      console.log('Test details:', test);
-
-      // Register for the test
-      const { error } = await getSupabaseClient()
+      // Double-check with database to prevent duplicate registrations
+      const { data: existingRegistration } = await getSupabaseClient()
         .from('test_registrations')
-        .insert([{
-          test_id: testId,
-          user_id: user.id,
-          status: 'registered'
-        }]);
+        .select('id')
+        .eq('test_id', testId)
+        .eq('user_id', user.id)
+        .single();
 
-      if (error) {
-        console.error('Registration error:', error);
-        console.error('Error details:', {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        throw error;
+      if (existingRegistration) {
+        setUserRegistrations(prev => new Set([...prev, testId]));
+        toast.error('You are already registered for this test');
+        return;
+      }
+
+      // Register using the API endpoint
+      const response = await fetch('/api/tests/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          testId: testId,
+          userId: user.id,
+          userEmail: user.email,
+          userMetadata: user.user_metadata
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Registration failed');
       }
 
       toast.success('Successfully registered for the test!');
       // Update local state to reflect the new registration
       setUserRegistrations(prev => new Set([...prev, testId]));
       fetchTests(); // Refresh to update registration count
-    } catch {
-      toast.error('Failed to register for test');
+    } catch (error) {
+      console.error('Registration failed:', error);
+      toast.error('Failed to register for test. Please try again.');
     }
   };
 
@@ -332,25 +340,35 @@ export default function TestsPage() {
     const regStart = test.registration_start ? new Date(test.registration_start) : null;
     const regEnd = test.registration_end ? new Date(test.registration_end) : null;
     
+    console.log('🔍 Registration status check for test:', test.name);
+    console.log('  - Now:', now.toISOString());
+    console.log('  - Reg start:', regStart?.toISOString());
+    console.log('  - Reg end:', regEnd?.toISOString());
+    console.log('  - User registered:', userRegistrations.has(test.id));
+    
     // Check if user is registered for this test
     if (userRegistrations.has(test.id)) {
+      console.log('  - Status: registered');
       return { status: 'registered', badge: <Badge variant="default" className="pointer-events-none bg-blue-500/10 text-blue-500 border-blue-500/20">Registered</Badge> };
     }
     
     // Check registration dates
     if (regStart && now < regStart) {
+      console.log('  - Status: pending');
       return { 
         status: 'pending', 
         badge: <Badge variant="outline" className="pointer-events-none bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Registration Pending</Badge>,
         message: `Registration starts ${regStart.toLocaleDateString()} at ${regStart.toLocaleTimeString()}`
       };
     } else if (regEnd && now > regEnd) {
+      console.log('  - Status: closed');
       return { 
         status: 'closed', 
         badge: <Badge variant="destructive" className="pointer-events-none bg-red-500/10 text-red-500 border-red-500/20">Registration Closed</Badge>,
         message: `Registration ended ${regEnd.toLocaleDateString()} at ${regEnd.toLocaleTimeString()}`
       };
     } else {
+      console.log('  - Status: open');
       return { 
         status: 'open', 
         badge: <Badge variant="default" className="pointer-events-none bg-green-500/10 text-green-500 border-green-500/20">Registration Open</Badge>,

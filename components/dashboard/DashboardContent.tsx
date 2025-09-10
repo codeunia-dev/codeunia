@@ -44,6 +44,7 @@ export function DashboardContent({ userId, displayName }: DashboardContentProps)
         </div>
       </ClientOnly>
 
+
       {/* Contribution Graph Section */}
       <ClientOnly fallback={<div className="mt-8 h-64 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse" />}>
         <div className="mt-8">

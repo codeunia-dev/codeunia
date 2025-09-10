@@ -132,8 +132,6 @@ export class ProfileService {
 
   // Get public profile by username (for viewing other users)
   async getPublicProfileByUsername(username: string): Promise<Profile | null> {
-    console.log('profileService.getPublicProfileByUsername: Starting with username:', username)
-    
     const supabase = this.getSupabaseClient();
     const { data, error } = await supabase
       .from('profiles')
@@ -142,18 +140,14 @@ export class ProfileService {
       .eq('is_public', true)
       .single()
 
-    console.log('profileService.getPublicProfileByUsername: Supabase response:', { data, error })
-
     if (error) {
       if (error.code === 'PGRST116') {
-        console.log('profileService.getPublicProfileByUsername: Profile not found or not public')
         return null // Profile not found or not public
       }
       console.error('Error fetching public profile by username:', error)
       throw new Error(`Failed to fetch public profile: ${error.message}`)
     }
 
-    console.log('profileService.getPublicProfileByUsername: Returning profile:', data)
     return data
   }
 

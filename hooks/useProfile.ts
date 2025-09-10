@@ -130,10 +130,13 @@ export function usePublicProfileByUsername(username: string | null) {
     try {
       setLoading(true)
       setError(null)
-      console.log('usePublicProfileByUsername: Fetching profile for username:', username)
-      const profileData = await profileService.getPublicProfileByUsername(username)
-      console.log('usePublicProfileByUsername: Profile data received:', profileData)
-      setProfile(profileData)
+      const response = await fetch(`/api/profile/${username}`)
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch profile')
+      }
+      setProfile(data.profile)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch profile'
       console.error('usePublicProfileByUsername: Error fetching profile:', err)

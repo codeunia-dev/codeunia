@@ -71,6 +71,26 @@ const sidebarItems: SidebarGroupType[] = [
     ],
   },
   {
+    title: "Tests & Assessments",
+    items: [
+      {
+        title: "Test Dashboard",
+        url: "/protected/tests",
+        icon: Target,
+      },
+      {
+        title: "Browse Tests",
+        url: "/tests",
+        icon: BookOpen,
+      },
+      {
+        title: "Leaderboard",
+        url: "/leaderboard",
+        icon: Trophy,
+      },
+    ],
+  },
+  {
     title: "Activities",
     items: [
       {
