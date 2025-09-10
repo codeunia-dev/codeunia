@@ -182,8 +182,8 @@ export default function AIChat() {
     }
   }, []);
 
-  // Hide the widget if we're on the dedicated AI page
-  if (currentPath === '/ai') {
+  // Hide the widget if we're on the dedicated AI page or during test taking
+  if (currentPath === '/ai' || currentPath.includes('/tests/') && currentPath.includes('/take')) {
     return null;
   }
 

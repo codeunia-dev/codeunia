@@ -155,17 +155,43 @@ export default function TestDetailPage() {
         return
       }
 
-      // Register for the test with additional data
+      // Check if already registered to prevent duplicates
+      const { data: existingRegistration } = await supabase
+        .from('test_registrations')
+        .select('id')
+        .eq('test_id', testId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingRegistration) {
+        toast.error('You are already registered for this test');
+        setIsRegistered(true);
+        return;
+      }
+
+      // Register for the test with all required fields
       const { error } = await supabase
         .from('test_registrations')
         .insert([{
           test_id: testId,
           user_id: user.id,
           status: 'registered',
+          attempt_count: 0,
+          registration_date: new Date().toISOString(),
+          full_name: registrationData.full_name,
+          email: registrationData.email,
+          phone: registrationData.phone || null,
+          institution: registrationData.institution || null,
+          department: registrationData.department || null,
+          year_of_study: registrationData.year_of_study || null,
+          experience_level: registrationData.experience_level || null,
           registration_data: registrationData // Store additional data as JSON
         }])
 
-      if (error) throw error
+      if (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
 
       toast.success('Successfully registered for the test!')
       setIsRegistered(true)
@@ -183,8 +209,9 @@ export default function TestDetailPage() {
         experience_level: '',
         agree_to_terms: false
       })
-    } catch {
-      toast.error('Failed to register for test')
+    } catch (error) {
+      console.error('Registration failed:', error);
+      toast.error('Failed to register for test. Please try again.');
     }
   }
 

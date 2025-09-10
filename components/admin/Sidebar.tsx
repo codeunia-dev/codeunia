@@ -31,7 +31,7 @@ import {
     SidebarProvider,
   } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import AdminHeader from "./AdminHeader";
 import CodeuniaLogo from "../codeunia-logo";
 
@@ -71,6 +71,7 @@ export function Sidebar({ avatar, name, email, role, sidebarItems, children }: S
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 p-0 bg-black border-r border-zinc-800">
+            <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
             <div className="flex flex-col h-full">
               {/* mobile header */}
               <div className="p-4 border-b border-zinc-800">

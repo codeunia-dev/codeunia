@@ -60,6 +60,13 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
 
+  async redirects() {
+    return [
+      { source: '/projects', destination: '/zenith-hall', permanent: true },
+      { source: '/projects/:path*', destination: '/zenith-hall', permanent: true },
+    ];
+  },
+
   async headers() {
     const isDev = process.env.NODE_ENV === 'development'
     const isProd = process.env.NODE_ENV === 'production'

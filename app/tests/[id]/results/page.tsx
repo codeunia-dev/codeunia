@@ -15,9 +15,18 @@ import Footer from "@/components/footer"
 import type { Test, TestAttempt } from "@/types/test-management"
 import { CertificateGenerator } from '@/components/CertificateGenerator';
 
+interface TestAttemptWithProfile extends TestAttempt {
+  profiles?: {
+    first_name?: string;
+    last_name?: string;
+    username?: string;
+    email?: string;
+  };
+}
+
 export default function TestResultsPage() {
   const [test, setTest] = useState<Test | null>(null)
-  const [attempt, setAttempt] = useState<TestAttempt | null>(null)
+  const [attempt, setAttempt] = useState<TestAttemptWithProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const params = useParams()
   const searchParams = useSearchParams()
@@ -57,6 +66,20 @@ export default function TestResultsPage() {
 
       if (attemptError) throw attemptError
       setAttempt(attemptData)
+
+      // Fetch user profile separately
+      if (attemptData?.user_id) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, username, email')
+          .eq('id', attemptData.user_id)
+          .single()
+
+        if (!profileError && profileData) {
+          // Add profile data to attempt object
+          setAttempt(prev => prev ? { ...prev, profiles: profileData } : prev)
+        }
+      }
     } catch (error) {
       toast.error('Failed to load results')
       console.error('Error fetching results:', error)
@@ -368,11 +391,14 @@ export default function TestResultsPage() {
               <CertificateGenerator
                 context="test"
                 userData={{
-                  name: `User ${attempt.user_id?.slice(0, 8)}`,
+                  name: attempt.profiles?.username || 
+                        (attempt.profiles?.first_name && attempt.profiles?.last_name ? 
+                          `${attempt.profiles.first_name} ${attempt.profiles.last_name}` : 
+                          `User ${attempt.user_id?.slice(0, 8)}`),
                   score: attempt.score,
                   testName: test.name,
                   cert_id: `CU-TEST-${test.id}-${attempt.user_id}`,
-                  email: 'user@example.com',
+                  email: attempt.profiles?.email || 'user@example.com',
                   issued_date: new Date().toLocaleDateString(),
                   category: test.category || 'Test Completion',
                   duration: `${attempt.time_taken_minutes || 0} minutes`,

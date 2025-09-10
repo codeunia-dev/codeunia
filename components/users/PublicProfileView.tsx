@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ContributionGraph } from '@/components/ui/contribution-graph'
 import { useContributionGraph } from '@/hooks/useContributionGraph'
-import { Profile } from '@/types/profile'
+import { usePublicProfileByUsername } from '@/hooks/useProfile'
 import { 
   User, 
   MapPin, 
@@ -33,9 +33,7 @@ interface PublicProfileViewProps {
 
 export function PublicProfileView({ username }: PublicProfileViewProps) {
   const { user } = useAuth()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { profile, loading, error } = usePublicProfileByUsername(username)
   
   const {
     data: activityData,
@@ -43,33 +41,6 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
     handleFilterChange,
     refresh: refreshActivity
   } = useContributionGraph()
-
-  // Direct API call to fetch profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        
-        const response = await fetch(`/api/debug/profile/${username}`)
-        const data = await response.json()
-        
-        if (data.debug.profile) {
-          setProfile(data.debug.profile)
-        } else {
-          setError('Profile not found')
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch profile')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (username) {
-      fetchProfile()
-    }
-  }, [username])
 
   const isOwnProfile = user?.id === profile?.id
 
@@ -183,11 +154,6 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-2">
-                <div>
-                  <CardTitle className="text-2xl md:text-3xl">
-                    {getFullName()}
-                  </CardTitle>
-                </div>
                 {hasCompleteProfessionalInfo && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Briefcase className="h-4 w-4" />
@@ -271,11 +237,6 @@ export function PublicProfileView({ username }: PublicProfileViewProps) {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-2">
-              <div>
-                <CardTitle className="text-2xl md:text-3xl">
-                  {getFullName()}
-                </CardTitle>
-              </div>
               {hasCompleteProfessionalInfo && (
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Briefcase className="h-4 w-4" />

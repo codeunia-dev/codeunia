@@ -1,9 +1,6 @@
-import DOMPurify from 'dompurify';
-import { JSDOM } from 'jsdom';
-
-// Create a DOMPurify instance for server-side use
-const window = new JSDOM('').window;
-const purify = DOMPurify(window as any);
+import DOMPurify from 'isomorphic-dompurify';
+// Works in both server and client without jsdom
+const purify = DOMPurify;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -467,6 +464,10 @@ export function withInputValidation<T extends Record<string, unknown>>(
 
       for (const [key, options] of Object.entries(schema)) {
         const value = body[key];
+        if (typeof value !== 'string') {
+          errors.push(`${key}: must be a string`);
+          continue;
+        }
         const result = InputValidator.validateText(value, options);
 
         if (!result.isValid) {

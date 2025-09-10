@@ -86,24 +86,42 @@ export default function LeaderboardPage() {
 
       if (leaderboardError) throw leaderboardError
 
-      if (leaderboardError) throw leaderboardError
+      // Fetch user profiles for all participants
+      const userIds = leaderboardData?.map(entry => entry.user_id) || []
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, username, email')
+        .in('id', userIds)
 
-      // For now, we'll use user_id as display name since we can't easily fetch user details
-      // In a production app, you might want to store user display names in a separate table
+      // Create a map of user_id to profile data
+      const profilesMap = new Map()
+      if (!profilesError && profilesData) {
+        profilesData.forEach(profile => {
+          profilesMap.set(profile.id, profile)
+        })
+      }
 
-      // Process leaderboard data
-      const processedLeaderboard = (leaderboardData || []).map((entry, index) => ({
-        id: entry.id,
-        user_id: entry.user_id,
-        user_email: `User ${entry.user_id.slice(0, 8)}...`, // Show partial user ID
-        user_name: `User ${entry.user_id.slice(0, 8)}...`, // Show partial user ID
-        score: entry.score,
-        max_score: entry.max_score,
-        time_taken_minutes: entry.time_taken_minutes,
-        passed: entry.passed,
-        submitted_at: entry.submitted_at,
-        rank: index + 1
-      }))
+      // Process leaderboard data with proper user names
+      const processedLeaderboard = (leaderboardData || []).map((entry, index) => {
+        const profile = profilesMap.get(entry.user_id)
+        const displayName = profile?.username || 
+                           (profile?.first_name && profile?.last_name ? 
+                             `${profile.first_name} ${profile.last_name}` : 
+                             `User ${entry.user_id.slice(0, 8)}...`)
+        
+        return {
+          id: entry.id,
+          user_id: entry.user_id,
+          user_email: profile?.email || `User ${entry.user_id.slice(0, 8)}...`,
+          user_name: displayName,
+          score: entry.score,
+          max_score: entry.max_score,
+          time_taken_minutes: entry.time_taken_minutes,
+          passed: entry.passed,
+          submitted_at: entry.submitted_at,
+          rank: index + 1
+        }
+      })
 
       setLeaderboard(processedLeaderboard)
 
