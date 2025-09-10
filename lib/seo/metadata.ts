@@ -63,7 +63,9 @@ export function generateMetadata(config: SEOConfig): Metadata {
         { url: '/codeunia-favicon-dark.svg', media: '(prefers-color-scheme: dark)' },
         { url: '/codeunia-favicon-light.svg' }
       ],
-      apple: '/codeunia-favicon-light.svg',
+      apple: [
+        { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+      ],
       shortcut: '/favicon.ico'
     },
     

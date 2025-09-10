@@ -89,6 +89,11 @@ const sidebarItems: SidebarGroupType[] = [
         icon: Briefcase,
       },
       {
+        title: "Jobs",
+        url: "/protected/jobs",
+        icon: Briefcase,
+      },
+      {
         title: "Achievements",
         url: "/protected/achievements",
         icon: Star,

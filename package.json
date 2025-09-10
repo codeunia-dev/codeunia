@@ -68,6 +68,7 @@
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "ioredis": "^5.7.0",
+    "isomorphic-dompurify": "^2.26.0",
     "jspdf": "^3.0.1",
     "keen-slider": "^6.8.6",
     "lucide-react": "^0.511.0",
