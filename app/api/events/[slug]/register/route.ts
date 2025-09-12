@@ -12,16 +12,25 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    // Skip execution during build time when environment variables are not available
+    const { slug } = await params;
+    
+    // Check environment variables before creating Supabase client
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       return NextResponse.json(
         { error: 'Service temporarily unavailable' },
         { status: 503 }
       );
     }
-
-    const { slug } = await params;
-    const supabase = await createClient();
+    
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -123,16 +132,25 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    // Skip execution during build time when environment variables are not available
+    const { slug } = await params;
+    
+    // Check environment variables before creating Supabase client
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       return NextResponse.json(
         { error: 'Service temporarily unavailable' },
         { status: 503 }
       );
     }
-
-    const { slug } = await params;
-    const supabase = await createClient();
+    
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
