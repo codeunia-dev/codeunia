@@ -29,7 +29,12 @@
     "test:local:security": "./scripts/test-ci-local.sh security",
     "test:local:build": "./scripts/test-ci-local.sh build",
     "test:local:vercel": "./scripts/test-ci-local.sh vercel",
-    "vercel:setup": "./scripts/setup-vercel-config.sh"
+    "vercel:setup": "./scripts/setup-vercel-config.sh",
+    "lighthouse": "lhci autorun",
+    "lighthouse:local": "lhci autorun --config=lighthouserc.js",
+    "lighthouse:install": "npm install -g @lhci/cli@0.12.x",
+    "lighthouse:test": "./scripts/lighthouse-test.sh local",
+    "lighthouse:custom": "./scripts/lighthouse-test.sh custom"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
