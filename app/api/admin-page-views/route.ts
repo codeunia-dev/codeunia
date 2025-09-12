@@ -15,6 +15,6 @@ export async function GET() {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const totalViews = (data || []).reduce((sum, blog) => sum + (blog.views || 0), 0);
+  const totalViews = (data || []).reduce((sum: number, blog: any) => sum + (blog.views || 0), 0);
   return NextResponse.json({ totalViews });
 }

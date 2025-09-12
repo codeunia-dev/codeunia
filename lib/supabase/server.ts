@@ -9,11 +9,6 @@ export async function createClient() {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // During build time, return a mock client to prevent build failures
-    if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      console.warn('Supabase environment variables not available during build');
-      return createMockClient();
-    }
     throw new Error('Missing Supabase environment variables');
   }
 
@@ -49,34 +44,3 @@ export function createServiceClient(supabaseUrl: string, supabaseKey: string) {
   return createSupabaseClient(supabaseUrl, supabaseKey);
 }
 
-// Mock client for build time when environment variables are not available
-function createMockClient() {
-  return {
-    auth: {
-      getUser: async () => ({ data: { user: null }, error: null }),
-      signIn: async () => ({ data: null, error: null }),
-      signOut: async () => ({ error: null }),
-    },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: async () => ({ data: null, error: null }),
-        }),
-        limit: () => ({
-          order: () => ({
-            range: async () => ({ data: [], error: null }),
-          }),
-        }),
-      }),
-      insert: () => ({
-        select: async () => ({ data: null, error: null }),
-      }),
-      update: () => ({
-        eq: async () => ({ data: null, error: null }),
-      }),
-      delete: () => ({
-        eq: async () => ({ data: null, error: null }),
-      }),
-    }),
-  } as any;
-}

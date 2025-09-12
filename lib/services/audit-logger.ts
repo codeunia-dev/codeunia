@@ -167,7 +167,7 @@ export class AuditLogger {
       }
 
       // Transform the data to include admin name and email
-      const logs = data?.map(log => ({
+      const logs = data?.map((log: any) => ({
         id: log.id,
         admin_id: log.admin_id,
         action_type: log.action_type,
@@ -231,7 +231,7 @@ export class AuditLogger {
         .gte('created_at', startDate.toISOString());
 
       const actionsByTypeMap: Record<string, number> = {};
-      actionsByType?.forEach(action => {
+      actionsByType?.forEach((action: any) => {
         actionsByTypeMap[action.action_type] = (actionsByTypeMap[action.action_type] || 0) + 1;
       });
 
@@ -242,7 +242,7 @@ export class AuditLogger {
         .gte('created_at', startDate.toISOString());
 
       const adminCounts: Record<string, { name: string; count: number }> = {};
-      actionsByAdmin?.forEach(action => {
+      actionsByAdmin?.forEach((action: any) => {
         const adminId = action.admin_id;
         const adminName = 'Admin User'; // Will be populated when profiles table is available
         
