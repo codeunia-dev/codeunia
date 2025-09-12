@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const { metrics } = body
 
     // Process performance metrics
-    const processedMetrics = metrics.map((metric: any) => ({
+    const processedMetrics = metrics.map((metric: Record<string, unknown>) => ({
       ...metric,
       timestamp: new Date().toISOString(),
       processed: true
