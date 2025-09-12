@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ErrorSanitizer } from '@/lib/security/error-sanitizer';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     const supabase = await createClient();

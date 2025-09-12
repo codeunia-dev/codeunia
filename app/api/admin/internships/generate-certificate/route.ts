@@ -6,6 +6,10 @@ import path from "path";
 import { v4 as uuidv4 } from 'uuid';
 import qrcode from 'qrcode';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(

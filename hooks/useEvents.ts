@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { usePerformanceMonitor } from '@/lib/performance-monitor'
 
 export interface EventsParams {
   search?: string
@@ -14,39 +15,84 @@ export interface EventsResponse {
   hasMore: boolean
 }
 
+// Simple in-memory cache for API responses
+const cache = new Map<string, { data: EventsResponse; timestamp: number }>()
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
+
+// Request deduplication
+const pendingRequests = new Map<string, Promise<EventsResponse>>()
+
 export function useEvents(params: EventsParams = {}) {
   const [data, setData] = useState<EventsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { trackAPICall } = usePerformanceMonitor()
 
-  // Force useEffect to run by using a more explicit dependency
-  const paramsString = JSON.stringify(params)
+  // Memoize cache key to prevent unnecessary re-renders
+  const cacheKey = useMemo(() => {
+    return `events-${JSON.stringify(params)}`
+  }, [params])
+
+  // Optimized fetch function with caching and deduplication
+  const fetchEvents = useCallback(async (): Promise<EventsResponse> => {
+    // Check cache first
+    const cached = cache.get(cacheKey)
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data
+    }
+
+    // Check if request is already pending
+    if (pendingRequests.has(cacheKey)) {
+      return pendingRequests.get(cacheKey)!
+    }
+
+    // Build query parameters
+    const queryParams = new URLSearchParams()
+    if (params.search) queryParams.append('search', params.search)
+    if (params.category && params.category !== 'All') queryParams.append('category', params.category)
+    if (params.dateFilter) queryParams.append('dateFilter', params.dateFilter)
+    if (params.limit) queryParams.append('limit', params.limit.toString())
+    if (params.offset) queryParams.append('offset', params.offset.toString())
+
+    const url = `/api/events?${queryParams.toString()}`
+    
+    // Create and store the promise with performance tracking
+    const startTime = performance.now()
+    const fetchPromise = fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+        return response.json()
+      })
+      .then(result => {
+        // Cache the result
+        cache.set(cacheKey, { data: result, timestamp: Date.now() })
+        
+        // Track API performance
+        const duration = performance.now() - startTime
+        trackAPICall('events', duration)
+        
+        return result
+      })
+      .finally(() => {
+        // Remove from pending requests
+        pendingRequests.delete(cacheKey)
+      })
+
+    pendingRequests.set(cacheKey, fetchPromise)
+    return fetchPromise
+  }, [cacheKey, params])
   
   useEffect(() => {
     let isMounted = true
     
-    const fetchEvents = async () => {
+    const loadEvents = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        // Build query parameters
-        const queryParams = new URLSearchParams()
-        if (params.search) queryParams.append('search', params.search)
-        if (params.category && params.category !== 'All') queryParams.append('category', params.category)
-        if (params.dateFilter) queryParams.append('dateFilter', params.dateFilter)
-        if (params.limit) queryParams.append('limit', params.limit.toString())
-        if (params.offset) queryParams.append('offset', params.offset.toString())
-
-        const url = `/api/events?${queryParams.toString()}`
-        
-        const response = await fetch(url)
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-        }
-
-        const result = await response.json()
+        const result = await fetchEvents()
         
         if (isMounted) {
           setData(result)
@@ -62,12 +108,12 @@ export function useEvents(params: EventsParams = {}) {
       }
     }
 
-    fetchEvents()
+    loadEvents()
     
     return () => {
       isMounted = false
     }
-  }, [paramsString]) // Use paramsString instead of individual params
+  }, [fetchEvents])
 
   return { data, loading, error }
 }

@@ -2,6 +2,10 @@ import { NextRequest } from 'next/server';
 import { eventsService } from '@/lib/services/events';
 import { UnifiedCache } from '@/lib/unified-cache-system';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Fetch featured events
 export async function GET(request: NextRequest) {
   try {

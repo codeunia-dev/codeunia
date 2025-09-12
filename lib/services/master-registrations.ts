@@ -62,8 +62,9 @@ class MasterRegistrationsService {
     );
   }
 
-  // Register for any activity type
+  // Register for any activity type with optimized query
   async register(request: RegistrationRequest, userId: string): Promise<MasterRegistration> {
+    // Use a single transaction to insert registration and get user profile data
     const { data, error } = await this.supabase
       .from('master_registrations')
       .insert({
@@ -85,7 +86,17 @@ class MasterRegistrationsService {
         experience_level: request.experience_level,
         metadata: request.metadata || {}
       })
-      .select()
+      .select(`
+        *,
+        profiles!inner(
+          first_name,
+          last_name,
+          email,
+          phone,
+          company,
+          current_position
+        )
+      `)
       .single();
 
     if (error) {
@@ -95,11 +106,21 @@ class MasterRegistrationsService {
     return data;
   }
 
-  // Get user's registrations with filters
+  // Get user's registrations with filters and optimized joins
   async getUserRegistrations(filters: RegistrationFilters): Promise<MasterRegistration[]> {
     let query = this.supabase
       .from('master_registrations')
-      .select('*')
+      .select(`
+        *,
+        profiles!inner(
+          first_name,
+          last_name,
+          email,
+          phone,
+          company,
+          current_position
+        )
+      `)
       .order('created_at', { ascending: false });
 
     if (filters.user_id) {

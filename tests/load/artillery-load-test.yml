@@ -1,0 +1,184 @@
+# Artillery Load Testing Configuration for CodeUnia
+# 
+# This configuration simulates high-load scenarios for:
+# - Registration flow
+# - Login flow
+# - Event fetching with caching
+# - API endpoints
+# 
+# Usage:
+# 1. Install Artillery: npm install -g artillery
+# 2. Run: artillery run tests/load/artillery-load-test.yml
+# 3. For high load: artillery run --target http://localhost:3000 tests/load/artillery-load-test.yml
+
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Ramp up phase
+    - duration: 60
+      arrivalRate: 10
+      name: "Ramp up to 10 users/sec"
+    - duration: 120
+      arrivalRate: 50
+      name: "Ramp up to 50 users/sec"
+    - duration: 180
+      arrivalRate: 100
+      name: "Ramp up to 100 users/sec"
+    - duration: 300
+      arrivalRate: 200
+      name: "Sustained load at 200 users/sec"
+    - duration: 60
+      arrivalRate: 0
+      name: "Ramp down"
+  
+  # Performance thresholds
+  ensure:
+    p95: 2000  # 95% of requests under 2 seconds
+    p99: 5000  # 99% of requests under 5 seconds
+    maxErrorRate: 0.1  # Max 10% error rate
+  
+  # Custom metrics
+  plugins:
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+  
+  # Environment variables
+  variables:
+    baseUrl: "http://localhost:3000"
+    testEmail: "loadtest@codeunia.com"
+    testPassword: "LoadTest123!@#"
+
+# Test scenarios
+scenarios:
+  - name: "Registration Flow Load Test"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/register"
+          json:
+            email: "{{ $randomString() }}@loadtest.com"
+            password: "{{ testPassword }}"
+            first_name: "Load"
+            last_name: "Test"
+            phone: "+1234567890"
+            company: "Load Test Company"
+            current_position: "Tester"
+          capture:
+            - json: "$.success"
+              as: "registrationSuccess"
+          expect:
+            - statusCode: [201, 409]  # 201 for new, 409 for existing
+            - hasHeader: "X-Cache-Strategy"
+          think: 1
+
+  - name: "Login Flow Load Test"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/auth/signin"
+          json:
+            email: "{{ testEmail }}"
+            password: "{{ testPassword }}"
+          capture:
+            - json: "$.user"
+              as: "user"
+          expect:
+            - statusCode: [200, 401]  # 200 for success, 401 for failure
+          think: 1
+
+  - name: "Event Fetching Cache Test"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/events"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+            - contentType: "application/json"
+          capture:
+            - json: "$.events"
+              as: "events"
+          think: 0.5
+      
+      - get:
+          url: "/api/hackathons"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+          think: 0.5
+      
+      - get:
+          url: "/api/leaderboard"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+          think: 0.5
+
+  - name: "API Endpoints Load Test"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/tests/public"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+          think: 1
+      
+      - get:
+          url: "/api/events/featured"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+          think: 1
+      
+      - get:
+          url: "/api/hackathons/featured"
+          expect:
+            - statusCode: 200
+            - hasHeader: "X-Cache-Strategy"
+          think: 1
+
+  - name: "Protected Routes Test"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/user/registrations"
+          expect:
+            - statusCode: 401  # Should be unauthorized
+          think: 1
+      
+      - get:
+          url: "/protected/profile"
+          expect:
+            - statusCode: 401  # Should be unauthorized
+          think: 1
+
+# Custom functions for dynamic data
+functions: |
+  function generateRandomString() {
+    return Math.random().toString(36).substring(2, 15);
+  }
+
+# Before and after hooks
+before:
+  - log: "Starting CodeUnia load test"
+  - log: "Target: {{ target }}"
+  - log: "Test configuration loaded"
+
+after:
+  - log: "Load test completed"
+  - log: "Generating performance report"
+
+# Custom metrics collection
+metrics:
+  - name: "cache_hit_rate"
+    type: "counter"
+    description: "Cache hit rate percentage"
+  
+  - name: "registration_success_rate"
+    type: "counter"
+    description: "Registration success rate"
+  
+  - name: "api_response_time"
+    type: "histogram"
+    description: "API response time distribution"

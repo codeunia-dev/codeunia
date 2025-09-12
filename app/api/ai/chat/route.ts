@@ -1,5 +1,9 @@
 import { NextRequest } from 'next/server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST(request: NextRequest) {
   try {
     await request.json() // Parse body but don't assign to unused variable

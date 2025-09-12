@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { masterRegistrationsService } from '@/lib/services/master-registrations';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Fetch user's all registrations across all activity types
 export async function GET(request: NextRequest) {
   try {

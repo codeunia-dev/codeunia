@@ -1,6 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { UnifiedCache } from "@/lib/unified-cache-system";
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Type definition for test data
 interface PublicTest {
   id: string;

@@ -4,6 +4,10 @@ import { withRateLimit } from '@/lib/security/rate-limiting';
 import { RateLimitConfigs } from '@/lib/security/rate-limiting';
 import { networkInterfaces, cpus, loadavg } from 'os';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export const GET = withRateLimit(
   {
     ...RateLimitConfigs.API,

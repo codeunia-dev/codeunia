@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { performanceAnalytics } from '@/lib/performance-analytics-server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST() {
   try {
     // Generate test performance data

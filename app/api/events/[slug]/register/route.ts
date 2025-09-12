@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { masterRegistrationsService } from '@/lib/services/master-registrations';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // POST: Register for an event (backward compatible)
 export async function POST(
   request: NextRequest,

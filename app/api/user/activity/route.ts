@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { activityService } from '@/lib/services/activity'
 import { ActivityType } from '@/types/profile'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Fetch user activity data
 export async function GET(request: NextRequest) {
   try {

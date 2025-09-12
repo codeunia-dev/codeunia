@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     // Use service role key to bypass authentication for testing

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { masterRegistrationsService, RegistrationRequest } from '@/lib/services/master-registrations';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // POST: Universal registration endpoint for any activity type
 export async function POST(request: NextRequest) {
   try {
@@ -52,21 +56,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user profile for additional data
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('first_name, last_name, email, phone, company, current_position')
-      .eq('id', user.id)
-      .single();
-
-    // Enhance registration data with profile information
+    // Enhance registration data with user information (profile data will be fetched in the service)
     const enhancedRequest: RegistrationRequest = {
       ...body,
-      full_name: body.full_name || (profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : undefined),
-      email: body.email || profile?.email || user.email,
-      phone: body.phone || profile?.phone,
-      institution: body.institution || profile?.company,
-      department: body.department || profile?.current_position,
+      full_name: body.full_name || user.user_metadata?.full_name,
+      email: body.email || user.email,
+      phone: body.phone || user.user_metadata?.phone,
     };
 
     const registration = await masterRegistrationsService.register(enhancedRequest, user.id);

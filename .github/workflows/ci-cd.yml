@@ -106,6 +106,8 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
 
       - name: Analyze bundle size
         run: npm run build:analyze
@@ -183,6 +185,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
 
       - name: Wait for app to be ready
         run: |
@@ -314,6 +317,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
 
       - name: Deploy to Vercel (Staging)
         id: deploy-staging
@@ -439,6 +443,7 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
 
       - name: Deploy to Vercel (Production)
         id: deploy-production
@@ -592,16 +597,33 @@ jobs:
 
       - name: Create Lighthouse configuration for deployed site
         run: |
-          cat > lighthouserc-deployed.js << 'EOF'
+          # Get the deployment URL from the previous step
+          DEPLOYMENT_URL="${{ needs.deploy-production.outputs.deployment-url }}"
+          
+          # Validate deployment URL
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ Deployment URL is empty, using fallback URL"
+            DEPLOYMENT_URL="${{ secrets.PRODUCTION_URL }}"
+          fi
+          
+          # Ensure URL has protocol
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            echo "⚠️ Adding https:// protocol to URL: $DEPLOYMENT_URL"
+            DEPLOYMENT_URL="https://$DEPLOYMENT_URL"
+          fi
+          
+          echo "🔍 Using deployment URL for Lighthouse: $DEPLOYMENT_URL"
+          
+          cat > lighthouserc-deployed.js << EOF
           module.exports = {
             ci: {
               collect: {
                 url: [
-                  '${{ needs.deploy-production.outputs.deployment-url }}/',
-                  '${{ needs.deploy-production.outputs.deployment-url }}/about',
-                  '${{ needs.deploy-production.outputs.deployment-url }}/hackathons',
-                  '${{ needs.deploy-production.outputs.deployment-url }}/leaderboard',
-                  '${{ needs.deploy-production.outputs.deployment-url }}/auth/signin'
+                  '${DEPLOYMENT_URL}/',
+                  '${DEPLOYMENT_URL}/about',
+                  '${DEPLOYMENT_URL}/hackathons',
+                  '${DEPLOYMENT_URL}/leaderboard',
+                  '${DEPLOYMENT_URL}/auth/signin'
                 ],
                 numberOfRuns: 3,
                 settings: {
@@ -653,7 +675,21 @@ jobs:
       - name: Run Lighthouse CI on deployed site
         run: |
           echo "🚀 Starting Lighthouse CI performance testing..."
-          echo "Testing URL: ${{ needs.deploy-production.outputs.deployment-url }}"
+          
+          # Get the deployment URL
+          DEPLOYMENT_URL="${{ needs.deploy-production.outputs.deployment-url }}"
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            DEPLOYMENT_URL="${{ secrets.PRODUCTION_URL }}"
+          fi
+          
+          echo "Testing URL: $DEPLOYMENT_URL"
+          
+          # Validate that we have a URL before running Lighthouse
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ No deployment URL available for Lighthouse testing"
+            echo "Skipping Lighthouse CI test"
+            exit 0
+          fi
           
           # Run Lighthouse CI with the deployed configuration
           lhci autorun --config=lighthouserc-deployed.js
@@ -710,16 +746,33 @@ jobs:
 
       - name: Create Lighthouse configuration for staging
         run: |
-          cat > lighthouserc-staging.js << 'EOF'
+          # Get the deployment URL from the previous step
+          DEPLOYMENT_URL="${{ needs.deploy-staging.outputs.deployment-url }}"
+          
+          # Validate deployment URL
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ Staging deployment URL is empty, using fallback URL"
+            DEPLOYMENT_URL="${{ secrets.STAGING_URL }}"
+          fi
+          
+          # Ensure URL has protocol
+          if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
+            echo "⚠️ Adding https:// protocol to staging URL: $DEPLOYMENT_URL"
+            DEPLOYMENT_URL="https://$DEPLOYMENT_URL"
+          fi
+          
+          echo "🔍 Using staging deployment URL for Lighthouse: $DEPLOYMENT_URL"
+          
+          cat > lighthouserc-staging.js << EOF
           module.exports = {
             ci: {
               collect: {
                 url: [
-                  '${{ needs.deploy-staging.outputs.deployment-url }}/',
-                  '${{ needs.deploy-staging.outputs.deployment-url }}/about',
-                  '${{ needs.deploy-staging.outputs.deployment-url }}/hackathons',
-                  '${{ needs.deploy-staging.outputs.deployment-url }}/leaderboard',
-                  '${{ needs.deploy-staging.outputs.deployment-url }}/auth/signin'
+                  '${DEPLOYMENT_URL}/',
+                  '${DEPLOYMENT_URL}/about',
+                  '${DEPLOYMENT_URL}/hackathons',
+                  '${DEPLOYMENT_URL}/leaderboard',
+                  '${DEPLOYMENT_URL}/auth/signin'
                 ],
                 numberOfRuns: 2,
                 settings: {
@@ -765,7 +818,21 @@ jobs:
       - name: Run Lighthouse CI on staging site
         run: |
           echo "🚀 Starting Lighthouse CI performance testing on staging..."
-          echo "Testing URL: ${{ needs.deploy-staging.outputs.deployment-url }}"
+          
+          # Get the deployment URL
+          DEPLOYMENT_URL="${{ needs.deploy-staging.outputs.deployment-url }}"
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            DEPLOYMENT_URL="${{ secrets.STAGING_URL }}"
+          fi
+          
+          echo "Testing URL: $DEPLOYMENT_URL"
+          
+          # Validate that we have a URL before running Lighthouse
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ No staging deployment URL available for Lighthouse testing"
+            echo "Skipping Lighthouse CI test"
+            exit 0
+          fi
           
           # Run Lighthouse CI with the staging configuration
           lhci autorun --config=lighthouserc-staging.js

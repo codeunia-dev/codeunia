@@ -4,6 +4,10 @@ import { UnifiedCache } from '@/lib/unified-cache-system';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Define the type for event data in POST request
 interface EventData {
   slug: string;

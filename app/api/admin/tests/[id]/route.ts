@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, createServiceClient } from "@/lib/supabase/server";
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Define the type for question data
 interface QuestionData {
   question_text: string;

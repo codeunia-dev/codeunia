@@ -4,9 +4,57 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Rocket, Users, Sparkles, Code, Globe } from "lucide-react"
 import dynamic from 'next/dynamic'
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect, useMemo } from 'react'
 import Link from "next/link"
+import { usePerformanceMonitor } from '@/lib/performance-monitor'
 
+// Local performance monitoring hook for 3D components
+const useLocalPerformanceMonitor = () => {
+  const [fps, setFps] = useState(60)
+  const [quality, setQuality] = useState<'high' | 'medium' | 'low'>('high')
+  const { track3DPerformance } = usePerformanceMonitor()
+  
+  useEffect(() => {
+    let frameCount = 0
+    let lastTime = performance.now()
+    
+    const measureFPS = () => {
+      frameCount++
+      const currentTime = performance.now()
+      
+      if (currentTime - lastTime >= 1000) {
+        const currentFPS = Math.round((frameCount * 1000) / (currentTime - lastTime))
+        setFps(currentFPS)
+        
+        // Track performance metrics
+        track3DPerformance(currentFPS, quality)
+        
+        // Auto-adjust quality based on FPS
+        if (currentFPS < 30 && quality === 'high') {
+          setQuality('medium')
+        } else if (currentFPS < 20 && quality === 'medium') {
+          setQuality('low')
+        } else if (currentFPS > 50 && quality === 'low') {
+          setQuality('medium')
+        } else if (currentFPS > 55 && quality === 'medium') {
+          setQuality('high')
+        }
+        
+        frameCount = 0
+        lastTime = currentTime
+      }
+      
+      requestAnimationFrame(measureFPS)
+    }
+    
+    const rafId = requestAnimationFrame(measureFPS)
+    return () => cancelAnimationFrame(rafId)
+  }, [quality, track3DPerformance])
+  
+  return { fps, quality }
+}
+
+// Optimized World component with performance monitoring
 const World = dynamic(() => import("@/components/ui/globe").then(mod => mod.World), { 
   ssr: false,
   loading: () => (
@@ -16,37 +64,70 @@ const World = dynamic(() => import("@/components/ui/globe").then(mod => mod.Worl
   )
 })
 
+// Optimized Particles with conditional rendering
 const Particles = dynamic(() => import("@/components/ui/particles").then(mod => mod.Particles), { 
   ssr: false,
   loading: () => null
 })
 
 export function HeroSection2() {
-  const globeConfig = {
-    pointSize: 4,
-    globeColor: "#062056",
-    showAtmosphere: true,
-    atmosphereColor: "#FFFFFF",
-    atmosphereAltitude: 0.1,
-    emissive: "#062056",
-    emissiveIntensity: 0.1,
-    shininess: 0.9,
-    polygonColor: "rgba(255,255,255,0.7)",
-    ambientLight: "#38bdf8",
-    directionalLeftLight: "#ffffff",
-    directionalTopLight: "#ffffff",
-    pointLight: "#ffffff",
-    arcTime: 1000,
-    arcLength: 0.9,
-    rings: 1,
-    maxRings: 3,
-    initialPosition: { lat: 22.3193, lng: 114.1694 },
-    autoRotate: true,
-    autoRotateSpeed: 0.5,
-  };
+  const { quality } = useLocalPerformanceMonitor()
+  
+  // Memoized globe configuration with performance-based adjustments
+  const globeConfig = useMemo(() => {
+    const baseConfig = {
+      pointSize: 4,
+      globeColor: "#062056",
+      showAtmosphere: true,
+      atmosphereColor: "#FFFFFF",
+      atmosphereAltitude: 0.1,
+      emissive: "#062056",
+      emissiveIntensity: 0.1,
+      shininess: 0.9,
+      polygonColor: "rgba(255,255,255,0.7)",
+      ambientLight: "#38bdf8",
+      directionalLeftLight: "#ffffff",
+      directionalTopLight: "#ffffff",
+      pointLight: "#ffffff",
+      arcTime: 1000,
+      arcLength: 0.9,
+      rings: 1,
+      maxRings: 3,
+      initialPosition: { lat: 22.3193, lng: 114.1694 },
+      autoRotate: true,
+      autoRotateSpeed: 0.5,
+    }
+    
+    // Adjust quality based on performance
+    switch (quality) {
+      case 'low':
+        return {
+          ...baseConfig,
+          pointSize: 2,
+          showAtmosphere: false,
+          rings: 0,
+          maxRings: 1,
+          autoRotateSpeed: 0.2,
+        }
+      case 'medium':
+        return {
+          ...baseConfig,
+          pointSize: 3,
+          rings: 1,
+          maxRings: 2,
+          autoRotateSpeed: 0.3,
+        }
+      default:
+        return baseConfig
+    }
+  }, [quality])
 
-  const colors = ["#06b6d4", "#3b82f6", "#6366f1"];
-  const sampleArcs = [
+  // Memoized colors and optimized arc data
+  const colors = useMemo(() => ["#06b6d4", "#3b82f6", "#6366f1"], [])
+  
+  // Optimized arc data with performance-based reduction
+  const sampleArcs = useMemo(() => {
+    const allArcs = [
     {
       order: 1,
       startLat: -19.885592,
@@ -407,7 +488,18 @@ export function HeroSection2() {
       arcAlt: 0.3,
       color: colors[Math.floor(Math.random() * (colors.length - 1))],
     },
-  ];
+  ]
+    
+    // Reduce arcs based on quality for better performance
+    switch (quality) {
+      case 'low':
+        return allArcs.slice(0, 5) // Only show 5 arcs for low quality
+      case 'medium':
+        return allArcs.slice(0, 10) // Show 10 arcs for medium quality
+      default:
+        return allArcs // Show all arcs for high quality
+    }
+  }, [quality, colors])
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-background via-background/95 to-background/90 pt-20">
@@ -423,9 +515,12 @@ export function HeroSection2() {
       </div>
 
      
-      <Suspense fallback={null}>
-        <Particles />
-      </Suspense>
+      {/* Conditionally render particles based on performance */}
+      {quality !== 'low' && (
+        <Suspense fallback={null}>
+          <Particles />
+        </Suspense>
+      )}
 
      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 min-h-screen">

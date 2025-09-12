@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { securityAnalytics } from '@/lib/security-analytics-server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST(request: NextRequest) {
   try {
     const { eventId } = await request.json()

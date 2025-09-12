@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendStatusUpdateEmail } from '@/lib/services/email'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)

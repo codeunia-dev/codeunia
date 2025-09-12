@@ -1,6 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(

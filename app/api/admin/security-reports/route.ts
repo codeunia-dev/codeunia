@@ -3,6 +3,10 @@ import { authenticateAdmin } from '@/lib/auth/admin-auth';
 import { withRateLimit } from '@/lib/security/rate-limiting';
 import { RateLimitConfigs } from '@/lib/security/rate-limiting';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export const GET = withRateLimit(
   {
     ...RateLimitConfigs.API,

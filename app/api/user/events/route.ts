@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { masterRegistrationsService } from '@/lib/services/master-registrations';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Fetch user's event registrations (updated to use master system)
 export async function GET() {
   try {

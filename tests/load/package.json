@@ -1,0 +1,29 @@
+{
+  "name": "codeunia-load-tests",
+  "version": "1.0.0",
+  "description": "Load testing suite for CodeUnia performance validation",
+  "scripts": {
+    "test:k6": "k6 run k6-load-test.js",
+    "test:artillery": "artillery run artillery-load-test.yml",
+    "test:both": "npm run test:k6 && npm run test:artillery",
+    "test:high-load": "k6 run --vus 1000 --duration 5m k6-load-test.js",
+    "test:local": "k6 run --vus 100 --duration 2m k6-load-test.js",
+    "install-tools": "npm install -g k6 artillery",
+    "validate": "k6 check k6-load-test.js && artillery validate artillery-load-test.yml"
+  },
+  "devDependencies": {
+    "artillery": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "load-testing",
+    "performance",
+    "k6",
+    "artillery",
+    "codeunia"
+  ],
+  "author": "CodeUnia Team",
+  "license": "MIT"
+}

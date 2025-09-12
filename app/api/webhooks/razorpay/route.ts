@@ -13,6 +13,10 @@ import { NextRequest } from 'next/server'
 import crypto from 'crypto'
 import { createClient } from '@/lib/supabase/server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 interface RazorpayWebhookPayload {
   event: string
   account_id: string
