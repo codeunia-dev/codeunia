@@ -296,7 +296,7 @@ export class HealthChecker {
           message: `Database tables check failed: ${tablesError.message}`
         });
       } else {
-        const existingTables = tables?.map((t: any) => t.table_name) || [];
+        const existingTables = tables?.map((t: Record<string, unknown>) => t.table_name) || [];
         const requiredTables = ['profiles', 'user_points', 'user_activity_log'];
         const missingTables = requiredTables.filter(table => !existingTables.includes(table));
         

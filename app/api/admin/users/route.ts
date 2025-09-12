@@ -45,7 +45,7 @@ export const GET = withRateLimit(
         throw new Error(`Failed to fetch users: ${error.message}`);
       }
 
-      const users = profiles?.map((profile: any) => ({
+      const users = profiles?.map((profile: Record<string, unknown>) => ({
         id: profile.id,
         email: profile.email || '',
         username: profile.username || '',

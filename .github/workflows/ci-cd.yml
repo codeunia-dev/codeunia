@@ -327,7 +327,16 @@ jobs:
       - name: Deploy to Vercel (Staging)
         id: deploy-staging
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "🚀 Deploying to Vercel staging..."
+          DEPLOYMENT_URL=$(vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes 2>&1 | grep -o 'https://[^[:space:]]*' | head -1)
+          
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ Failed to get deployment URL from Vercel output"
+            echo "Vercel output:"
+            vercel deploy --token ${{ secrets.VERCEL_TOKEN }} --yes
+            exit 1
+          fi
+          
           echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "🚀 Staging deployment URL: $DEPLOYMENT_URL"
         env:
@@ -453,7 +462,16 @@ jobs:
       - name: Deploy to Vercel (Production)
         id: deploy-production
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes)
+          echo "🚀 Deploying to Vercel production..."
+          DEPLOYMENT_URL=$(vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes 2>&1 | grep -o 'https://[^[:space:]]*' | head -1)
+          
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "❌ Failed to get deployment URL from Vercel output"
+            echo "Vercel output:"
+            vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+            exit 1
+          fi
+          
           echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
           echo "🚀 Production deployment URL: $DEPLOYMENT_URL"
         env:
@@ -609,6 +627,10 @@ jobs:
           if [ -z "$DEPLOYMENT_URL" ]; then
             echo "❌ Deployment URL is empty, using fallback URL"
             DEPLOYMENT_URL="${{ secrets.PRODUCTION_URL }}"
+            if [ -z "$DEPLOYMENT_URL" ]; then
+              echo "❌ No fallback URL available, using default"
+              DEPLOYMENT_URL="https://codeunia.com"
+            fi
           fi
           
           # Ensure URL has protocol
@@ -685,6 +707,9 @@ jobs:
           DEPLOYMENT_URL="${{ needs.deploy-production.outputs.deployment-url }}"
           if [ -z "$DEPLOYMENT_URL" ]; then
             DEPLOYMENT_URL="${{ secrets.PRODUCTION_URL }}"
+            if [ -z "$DEPLOYMENT_URL" ]; then
+              DEPLOYMENT_URL="https://codeunia.com"
+            fi
           fi
           
           echo "Testing URL: $DEPLOYMENT_URL"
@@ -758,6 +783,10 @@ jobs:
           if [ -z "$DEPLOYMENT_URL" ]; then
             echo "❌ Staging deployment URL is empty, using fallback URL"
             DEPLOYMENT_URL="${{ secrets.STAGING_URL }}"
+            if [ -z "$DEPLOYMENT_URL" ]; then
+              echo "❌ No fallback URL available, using default"
+              DEPLOYMENT_URL="https://codeunia.com"
+            fi
           fi
           
           # Ensure URL has protocol
@@ -828,6 +857,9 @@ jobs:
           DEPLOYMENT_URL="${{ needs.deploy-staging.outputs.deployment-url }}"
           if [ -z "$DEPLOYMENT_URL" ]; then
             DEPLOYMENT_URL="${{ secrets.STAGING_URL }}"
+            if [ -z "$DEPLOYMENT_URL" ]; then
+              DEPLOYMENT_URL="https://codeunia.com"
+            fi
           fi
           
           echo "Testing URL: $DEPLOYMENT_URL"

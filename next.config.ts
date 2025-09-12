@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     return buildId
   },
 
-  // Simplified webpack config for better Vercel compatibility
+  // Minimal webpack config for better Vercel compatibility
   webpack: (config, { isServer }) => {
     // Only add essential configurations
     if (!isServer) {
