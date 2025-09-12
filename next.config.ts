@@ -17,8 +17,8 @@ const nextConfig: NextConfig = {
     return buildId
   },
 
-  // Simplified webpack config for better Vercel compatibility
-  webpack: (config, { isServer }) => {
+  // Enhanced webpack config for better Vercel compatibility
+  webpack: (config, { isServer, dev }) => {
     // Only add essential configurations
     if (!isServer) {
       config.resolve.fallback = {
@@ -27,6 +27,37 @@ const nextConfig: NextConfig = {
         net: false,
         tls: false,
         crypto: false,
+        stream: false,
+        util: false,
+        url: false,
+        assert: false,
+        http: false,
+        https: false,
+        os: false,
+        buffer: false,
+      }
+    }
+    
+    // Ensure proper chunk generation
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: -10,
+              chunks: 'all',
+            },
+          },
+        },
       }
     }
     
