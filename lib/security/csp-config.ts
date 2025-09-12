@@ -41,12 +41,12 @@ export function getCSPConfig(request: NextRequest): CSPConfig {
   // Enhanced CSP policy with Cloudflare Insights support
   const policy = [
     "default-src 'self'",
-    "script-src 'self' 'nonce-" + nonce + "' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com",
+    "script-src 'self' 'nonce-" + nonce + "' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com https://checkout.razorpay.com",
     "style-src 'self' 'nonce-" + nonce + "' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co",
-    "frame-src 'none'",
+    "connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://api.razorpay.com",
+    "frame-src 'self' https://checkout.razorpay.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
@@ -77,12 +77,12 @@ export function applyCSPHeaders(response: Response, cspConfig: CSPConfig): Respo
 export function getDevelopmentCSP(): string {
   return [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com",
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com https://static.cloudflareinsights.com https://checkout.razorpay.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co",
-    "frame-src 'none'",
+    "connect-src 'self' https://*.supabase.co https://*.vercel.app wss://*.supabase.co https://api.razorpay.com",
+    "frame-src 'self' https://checkout.razorpay.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",
