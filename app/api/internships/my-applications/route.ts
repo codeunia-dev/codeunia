@@ -26,7 +26,7 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const ids = (data || []).map((r: any) => r.internship_id)
+    const ids = (data || []).map((r: Record<string, unknown>) => r.internship_id)
     const response = NextResponse.json({ appliedIds: ids })
     
     // Prevent caching to ensure fresh data

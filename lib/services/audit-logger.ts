@@ -167,16 +167,16 @@ export class AuditLogger {
       }
 
       // Transform the data to include admin name and email
-      const logs = data?.map((log: any) => ({
-        id: log.id,
-        admin_id: log.admin_id,
-        action_type: log.action_type,
-        target_resource: log.target_resource,
-        target_id: log.target_id,
-        metadata: log.metadata,
-        ip_address: log.ip_address,
-        user_agent: log.user_agent,
-        created_at: log.created_at,
+      const logs = data?.map((log: Record<string, unknown>) => ({
+        id: log.id as string,
+        admin_id: log.admin_id as string,
+        action_type: log.action_type as AuditActionType,
+        target_resource: log.target_resource as string,
+        target_id: log.target_id as string | undefined,
+        metadata: log.metadata as Record<string, unknown>,
+        ip_address: log.ip_address as string | undefined,
+        user_agent: log.user_agent as string | undefined,
+        created_at: log.created_at as string,
         admin_name: 'Admin User', // Will be populated when profiles table is available
         admin_email: 'admin@codeunia.com' // Will be populated when profiles table is available
       })) || [];
@@ -231,8 +231,8 @@ export class AuditLogger {
         .gte('created_at', startDate.toISOString());
 
       const actionsByTypeMap: Record<string, number> = {};
-      actionsByType?.forEach((action: any) => {
-        actionsByTypeMap[action.action_type] = (actionsByTypeMap[action.action_type] || 0) + 1;
+      actionsByType?.forEach((action: Record<string, unknown>) => {
+        actionsByTypeMap[action.action_type as string] = (actionsByTypeMap[action.action_type as string] || 0) + 1;
       });
 
       // Get actions by admin
@@ -242,8 +242,8 @@ export class AuditLogger {
         .gte('created_at', startDate.toISOString());
 
       const adminCounts: Record<string, { name: string; count: number }> = {};
-      actionsByAdmin?.forEach((action: any) => {
-        const adminId = action.admin_id;
+      actionsByAdmin?.forEach((action: Record<string, unknown>) => {
+        const adminId = action.admin_id as string;
         const adminName = 'Admin User'; // Will be populated when profiles table is available
         
         if (!adminCounts[adminId]) {

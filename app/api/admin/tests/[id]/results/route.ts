@@ -84,9 +84,9 @@ export async function GET(
     const stats = {
       totalRegistrations: registrations?.length || 0,
       totalAttempts: allAttempts?.length || 0,
-      passedAttempts: allAttempts?.filter((a: any) => a.passed).length || 0,
-      averageScore: allAttempts ? allAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / allAttempts.length : 0,
-      averageTime: allAttempts ? allAttempts.reduce((sum: number, a: any) => sum + (a.time_taken_minutes || 0), 0) / allAttempts.length : 0
+      passedAttempts: allAttempts?.filter((a: Record<string, unknown>) => a.passed).length || 0,
+      averageScore: allAttempts ? allAttempts.reduce((sum: number, a: Record<string, unknown>) => sum + (a.score as number || 0), 0) / allAttempts.length : 0,
+      averageTime: allAttempts ? allAttempts.reduce((sum: number, a: Record<string, unknown>) => sum + (a.time_taken_minutes as number || 0), 0) / allAttempts.length : 0
     };
 
     return NextResponse.json({
