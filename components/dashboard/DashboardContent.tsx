@@ -1,11 +1,13 @@
 'use client'
 
 import React from 'react'
-import { Sparkles, Rocket, Shield, User } from 'lucide-react'
+import { Sparkles, Rocket, Shield, User, Calendar } from 'lucide-react'
 import { ContributionGraph } from '@/components/ui/contribution-graph'
 import { useContributionGraph } from '@/hooks/useContributionGraph'
 import MembershipCard from '@/components/MembershipCard'
 import { ClientOnly } from '@/components/ClientOnly'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface DashboardContentProps {
   userId: string
@@ -35,6 +37,34 @@ export function DashboardContent({ userId, displayName }: DashboardContentProps)
             Ready to explore Codeunia
           </p>
         </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-4 justify-center">
+        <Button asChild variant="outline" className="flex items-center gap-2">
+          <Link href="/events">
+            <Calendar className="h-4 w-4" />
+            Browse Events
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="flex items-center gap-2">
+          <Link href="/protected/events">
+            <User className="h-4 w-4" />
+            My Events
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="flex items-center gap-2">
+          <Link href="/hackathons">
+            <Rocket className="h-4 w-4" />
+            Browse Hackathons
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="flex items-center gap-2">
+          <Link href="/protected/hackathons">
+            <Rocket className="h-4 w-4" />
+            My Hackathons
+          </Link>
+        </Button>
       </div>
 
       {/* Membership Card Section */}

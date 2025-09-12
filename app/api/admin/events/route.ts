@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 // GET - Fetch all events (admin only)
 export async function GET(request: NextRequest) {
@@ -23,59 +23,38 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '50')
+    const limit = parseInt(searchParams.get('limit') || '100')
     const offset = parseInt(searchParams.get('offset') || '0')
-    const search = searchParams.get('search') || undefined
-    const status = searchParams.get('status') || undefined
-    const featured = searchParams.get('featured') === 'true' ? true : undefined
 
-    let query = supabase
-      .from('events')
-      .select('*', { count: 'exact' })
+    // Use service client for admin operations to bypass RLS
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    // Apply filters
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,excerpt.ilike.%${search}%,tags.cs.{${search}}`)
-    }
-
-    if (status) {
-      query = query.eq('status', status)
-    }
-
-    if (featured !== undefined) {
-      query = query.eq('featured', featured)
-    }
-
-    // Order by date (upcoming first, then by date)
-    query = query.order('date', { ascending: true })
-
-    // Apply pagination
-    query = query.range(offset, offset + limit - 1)
-
-    const { data: events, error, count } = await query
-
-    if (error) {
-      console.error('Error fetching events:', error)
+    if (!supabaseUrl || !supabaseServiceKey) {
       return NextResponse.json(
-        { error: 'Failed to fetch events' },
+        { error: 'Server configuration error' },
         { status: 500 }
       )
     }
 
-    const total = count || 0
-    const hasMore = offset + limit < total
+    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
 
-    return NextResponse.json({
-      events: events || [],
-      total,
-      hasMore
-    })
+    const { data: events, error } = await serviceSupabase
+      .from('events')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit - 1)
+
+    if (error) {
+      console.error('Error fetching events:', error)
+      return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 })
+    }
+
+    return NextResponse.json(events || [])
+
   } catch (error) {
-    console.error('Error fetching events:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in GET /api/admin/events:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -89,7 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin (using profiles table)
+    // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -100,32 +79,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const eventData = await request.json()
-    const { data: event, error } = await supabase
+    const formData = await request.json()
+
+    // Transform payment field for database constraint
+    const transformedData = { ...formData }
+    if (transformedData.payment === 'Required') {
+      transformedData.payment = 'Paid' // Transform 'Required' to 'Paid' for database constraint
+    } else if (transformedData.payment === 'Not Required') {
+      transformedData.payment = 'Free' // Transform 'Not Required' to 'Free' for database constraint
+    }
+
+    // Use service client for database operations
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+
+    const { data: newEvent, error } = await serviceSupabase
       .from('events')
-      .insert([eventData])
+      .insert(transformedData)
       .select()
       .single()
 
     if (error) {
       console.error('Error creating event:', error)
-      return NextResponse.json(
-        { error: 'Failed to create event' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to create event' }, { status: 500 })
     }
 
-    return NextResponse.json(event, { status: 201 })
+    return NextResponse.json(newEvent)
+
   } catch (error) {
-    console.error('Error creating event:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in POST /api/admin/events:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PUT - Update event (admin only)
+// PUT - Update existing event (admin only)
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -135,7 +131,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin (using profiles table)
+    // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -146,38 +142,106 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { slug, data } = await request.json()
+    const requestData = await request.json()
+    
+    // Handle nested data format from frontend
+    const { slug, data: eventData } = requestData as { slug: string; data?: Record<string, unknown> }
+    const formData = eventData || requestData // Use nested data if available, otherwise use direct data
     
     if (!slug) {
-      return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Event slug is required' }, { status: 400 })
     }
 
-    if (!data) {
-      return NextResponse.json({ error: 'Event data is required' }, { status: 400 })
+    // Transform payment field for database constraint
+    const transformedData = { ...formData }
+    if (transformedData.payment === 'Required') {
+      transformedData.payment = 'Paid' // Transform 'Required' to 'Paid' for database constraint
+    } else if (transformedData.payment === 'Not Required') {
+      transformedData.payment = 'Free' // Transform 'Not Required' to 'Free' for database constraint
     }
 
-    const { data: event, error } = await supabase
+    // Use service client for database operations
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+
+    // Check for event existence with the original slug
+    const { data: existingEvents, error: checkError } = await serviceSupabase
       .from('events')
-      .update(data)
+      .select('id, slug, title')
+      .eq('slug', slug)
+
+    if (checkError) {
+      return NextResponse.json(
+        { error: 'Failed to check event existence' },
+        { status: 500 }
+      )
+    }
+
+    if (!existingEvents || existingEvents.length === 0) {
+      return NextResponse.json(
+        { error: `Event with slug '${slug}' not found` },
+        { status: 404 }
+      )
+    }
+
+
+    // Check if slug is being changed
+    if (transformedData.slug && transformedData.slug !== slug) {
+      // Check if new slug already exists
+      const { data: existingWithNewSlug, error: slugCheckError } = await serviceSupabase
+        .from('events')
+        .select('id')
+        .eq('slug', transformedData.slug)
+
+      if (slugCheckError) {
+        return NextResponse.json(
+          { error: 'Failed to check new slug existence' },
+          { status: 500 }
+        )
+      }
+
+      if (existingWithNewSlug && existingWithNewSlug.length > 0) {
+        return NextResponse.json(
+          { error: `Event with slug '${transformedData.slug}' already exists` },
+          { status: 409 }
+        )
+      }
+    }
+
+    const { data: events, error } = await serviceSupabase
+      .from('events')
+      .update(transformedData)
       .eq('slug', slug)
       .select()
-      .single()
 
     if (error) {
-      console.error('Error updating event:', error)
       return NextResponse.json(
         { error: 'Failed to update event' },
         { status: 500 }
       )
     }
 
-    return NextResponse.json(event)
+    if (!events || events.length === 0) {
+      return NextResponse.json(
+        { error: `Event with slug '${slug}' not found` },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json(events[0])
+
   } catch (error) {
-    console.error('Error updating event:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in PUT /api/admin/events:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -191,7 +255,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is admin (using profiles table)
+    // Check if user is admin
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('is_admin')
@@ -204,30 +268,38 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const slug = searchParams.get('slug')
-    
+
     if (!slug) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
-    const { error } = await supabase
+    // Use service client for database operations
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      )
+    }
+
+    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+
+    const { error } = await serviceSupabase
       .from('events')
       .delete()
       .eq('slug', slug)
 
     if (error) {
       console.error('Error deleting event:', error)
-      return NextResponse.json(
-        { error: 'Failed to delete event' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ message: 'Event deleted successfully' })
+
   } catch (error) {
-    console.error('Error deleting event:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error('Error in DELETE /api/admin/events:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-} 
+}

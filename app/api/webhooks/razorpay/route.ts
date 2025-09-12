@@ -184,6 +184,30 @@ async function updateHackathonRegistration(userId: string, hackathonId: string, 
   }
 }
 
+/**
+ * Update event registration status
+ */
+async function updateEventRegistration(userId: string, eventId: string) {
+  const supabase = await createClient()
+  
+  const { error } = await supabase
+    .from('master_registrations')
+    .update({
+      payment_status: 'paid',
+      status: 'registered',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('activity_type', 'event')
+    .eq('activity_id', eventId)
+  
+  if (error) {
+    console.error('Failed to update event registration:', error)
+  } else {
+    console.log(`✅ Event registration confirmed: ${userId} -> ${eventId}`)
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const signature = request.headers.get('x-razorpay-signature')
@@ -282,8 +306,42 @@ export async function POST(request: NextRequest) {
         if (paidOrder) {
           console.log(`🎉 Order paid: ${paidOrder.id} (₹${paidOrder.amount / 100})`)
           
-          // Additional order completion logic here
-          response.message = `Order ${paidOrder.id} completed`
+          // Handle different order types based on notes
+          if (paidOrder.notes) {
+            const notes = paidOrder.notes as Record<string, unknown>
+            
+            // Handle event registrations
+            if (notes.event_id && notes.type === 'event_registration') {
+              await updateEventRegistration(
+                String(notes.user_id),
+                String(notes.event_id)
+              )
+              response.message = `Event registration completed for order ${paidOrder.id}`
+            }
+            // Handle hackathon registrations
+            else if (notes.hackathon_id && notes.type === 'hackathon_registration') {
+              await updateHackathonRegistration(
+                String(notes.user_id),
+                String(notes.hackathon_id),
+                paidOrder.id
+              )
+              response.message = `Hackathon registration completed for order ${paidOrder.id}`
+            }
+            // Handle internship applications
+            else if (notes.internshipId && notes.type === 'internship_application') {
+              await updateInternshipApplication(
+                String(notes.userId),
+                String(notes.internshipId),
+                paidOrder.id
+              )
+              response.message = `Internship application completed for order ${paidOrder.id}`
+            }
+            else {
+              response.message = `Order ${paidOrder.id} completed`
+            }
+          } else {
+            response.message = `Order ${paidOrder.id} completed`
+          }
         }
         break
 
