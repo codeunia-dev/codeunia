@@ -17,9 +17,8 @@ const nextConfig: NextConfig = {
     return buildId
   },
 
-  // Minimal webpack config for better Vercel compatibility
+  // Minimal webpack config to avoid build issues
   webpack: (config, { isServer }) => {
-    // Only add essential configurations
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -50,14 +49,31 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-tabs',
       '@radix-ui/react-tooltip',
     ],
+    // Performance optimizations
+    optimizeServerReact: true,
+  },
+  // Move serverComponentsExternalPackages to top level
+  serverExternalPackages: ['three', '@react-three/fiber', '@react-three/drei'],
+  // Move turbo to turbopack
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
   },
 
 
 
   // Optimize image handling
   images: {
-    formats: ['image/webp', 'image/avif'],
-    minimumCacheTTL: 60,
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000, // 1 year cache
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
@@ -240,9 +256,18 @@ const nextConfig: NextConfig = {
   },
 
   reactStrictMode: false,
-
-  // ❌ removed swcMinify (now default)
-  // swcMinify: true, // not needed anymore
+  
+  // Optimize for production builds
+  // swcMinify is now default in Next.js 15
+  
+  // Enable static optimization
+  trailingSlash: false,
+  
+  // Optimize for faster builds
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 2,
+  },
 
   typescript: {
     ignoreBuildErrors: false,

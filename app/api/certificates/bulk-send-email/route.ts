@@ -69,7 +69,12 @@ export async function POST(request: NextRequest) {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
       } catch (error) {
-        console.error(`Error sending email for ${cert.name}:`, error);
+        console.error('Error sending email for certificate:', {
+          certId: cert.certId,
+          certName: cert.name,
+          email: cert.email,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
         errors.push({
           certId: cert.certId,
           name: cert.name,

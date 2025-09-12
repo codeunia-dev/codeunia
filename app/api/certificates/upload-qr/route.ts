@@ -25,7 +25,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert data URL to blob
+    // Validate and convert data URL to blob (SSRF protection)
+    if (!qrCodeDataUrl.startsWith('data:image/')) {
+      return NextResponse.json(
+        { error: 'Invalid QR code data URL format' },
+        { status: 400 }
+      );
+    }
+    
+    // Additional validation for data URL format
+    const dataUrlPattern = /^data:image\/(png|jpeg|jpg|gif|webp);base64,/i;
+    if (!dataUrlPattern.test(qrCodeDataUrl)) {
+      return NextResponse.json(
+        { error: 'Invalid image format in data URL' },
+        { status: 400 }
+      );
+    }
+    
+    // Convert data URL to blob (safe - no external requests)
     const qrCodeBlob = await fetch(qrCodeDataUrl).then(r => r.blob());
     const qrFileName = `qr-codes/${certId}.png`;
     

@@ -40,6 +40,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Critical CSS for above-the-fold content */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Critical CSS for initial render */
+            body { margin: 0; font-family: var(--font-geist-sans), system-ui, sans-serif; }
+            .hero-section { min-height: 100vh; display: flex; align-items: center; }
+            .loading-spinner { animation: spin 1s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .fade-in { animation: fadeIn 0.5s ease-in; }
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+          `
+        }} />
+        
+        {/* Preload critical resources */}
+        <link rel="preload" href="/fonts/geist-sans.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/geist-mono.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        
         {/* Structured Data */}
         <script
           type="application/ld+json"
