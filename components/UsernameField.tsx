@@ -109,7 +109,11 @@ export function UsernameField({
       })
 
       if (error) {
-        if (error.message.includes('Username can only be changed once')) {
+        // Handle specific database errors
+        if (error.message.includes('relation "profiles" does not exist')) {
+          setError("Database setup incomplete. Please contact support.")
+          console.error('Profiles table does not exist. Database migration needed.')
+        } else if (error.message.includes('Username can only be changed once')) {
           setError("You can only change your username once")
         } else if (error.message.includes('Username is already taken')) {
           setError("Username is already taken")
