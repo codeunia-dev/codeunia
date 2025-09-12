@@ -1,6 +1,17 @@
 // GDPR-compliant analytics cookie management for Codeunia
 import { useState, useEffect } from 'react';
 
+// Secure ID generation using crypto.getRandomValues
+function generateSecureId(): string {
+  if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint8Array(16);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  }
+  // Fallback for environments without crypto.getRandomValues
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
 export interface AnalyticsConsent {
   necessary: boolean; // Always true
   analytics: boolean; // User consent required
@@ -88,7 +99,7 @@ export const analyticsCookies = {
     
     // Set session ID if not exists
     if (!analyticsData.sessionId) {
-      analyticsData.sessionId = Math.random().toString(36).substring(2);
+      analyticsData.sessionId = generateSecureId();
       analyticsData.firstVisit = Date.now();
     }
     
@@ -213,7 +224,7 @@ export const activityCookies = {
         activity,
         data,
         timestamp: Date.now(),
-        sessionId: Math.random().toString(36).substring(2)
+        sessionId: generateSecureId()
       });
       
       // Keep only last 100 activities

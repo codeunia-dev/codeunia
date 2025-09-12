@@ -72,13 +72,34 @@ const Particles = dynamic(() => import("@/components/ui/particles").then(mod => 
 
 export function HeroSection2() {
   const { quality } = useLocalPerformanceMonitor()
+  const [isVisible, setIsVisible] = useState(false)
+  
+  // Intersection observer for lazy loading 3D content
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.1 }
+    )
+    
+    const element = document.getElementById('hero-globe')
+    if (element) {
+      observer.observe(element)
+    }
+    
+    return () => observer.disconnect()
+  }, [])
   
   // Memoized globe configuration with performance-based adjustments
   const globeConfig = useMemo(() => {
     const baseConfig = {
-      pointSize: 4,
+      pointSize: 3, // Reduced from 4
       globeColor: "#062056",
-      showAtmosphere: true,
+      showAtmosphere: false, // Disabled by default for better performance
       atmosphereColor: "#FFFFFF",
       atmosphereAltitude: 0.1,
       emissive: "#062056",
@@ -91,11 +112,11 @@ export function HeroSection2() {
       pointLight: "#ffffff",
       arcTime: 1000,
       arcLength: 0.9,
-      rings: 1,
-      maxRings: 3,
+      rings: 0, // Reduced from 1
+      maxRings: 2, // Reduced from 3
       initialPosition: { lat: 22.3193, lng: 114.1694 },
       autoRotate: true,
-      autoRotateSpeed: 0.5,
+      autoRotateSpeed: 0.3, // Reduced from 0.5
     }
     
     // Adjust quality based on performance
@@ -103,19 +124,19 @@ export function HeroSection2() {
       case 'low':
         return {
           ...baseConfig,
-          pointSize: 2,
+          pointSize: 1,
           showAtmosphere: false,
           rings: 0,
-          maxRings: 1,
-          autoRotateSpeed: 0.2,
+          maxRings: 0,
+          autoRotateSpeed: 0.1,
         }
       case 'medium':
         return {
           ...baseConfig,
-          pointSize: 3,
-          rings: 1,
-          maxRings: 2,
-          autoRotateSpeed: 0.3,
+          pointSize: 2,
+          rings: 0,
+          maxRings: 1,
+          autoRotateSpeed: 0.2,
         }
       default:
         return baseConfig
@@ -634,17 +655,23 @@ export function HeroSection2() {
           </div>
 
          
-          <div className="relative animate-fade-in w-full lg:order-2" style={{ animationDelay: '0.6s' }}>
+          <div id="hero-globe" className="relative animate-fade-in w-full lg:order-2" style={{ animationDelay: '0.6s' }}>
             <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] w-full relative">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-2xl sm:rounded-3xl blur-2xl sm:blur-3xl opacity-30 animate-pulse" />
               <div className="relative z-10 h-full">
-                <Suspense fallback={
+                {isVisible ? (
+                  <Suspense fallback={
+                    <div className="h-full w-full flex items-center justify-center">
+                      <div className="animate-pulse text-primary">Loading...</div>
+                    </div>
+                  }>
+                    <World globeConfig={globeConfig} data={sampleArcs} />
+                  </Suspense>
+                ) : (
                   <div className="h-full w-full flex items-center justify-center">
                     <div className="animate-pulse text-primary">Loading...</div>
                   </div>
-                }>
-                  <World globeConfig={globeConfig} data={sampleArcs} />
-                </Suspense>
+                )}
               </div>
             </div>
             

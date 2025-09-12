@@ -62,7 +62,7 @@ function basicServerSideSanitize(html: string, level: 'rich' | 'basic' | 'text')
     return html.replace(/<[^>]*>/g, '');
   }
   
-  // Remove dangerous tags and attributes
+  // Remove dangerous tags and attributes with improved regex patterns
   let sanitized = html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
@@ -73,14 +73,16 @@ function basicServerSideSanitize(html: string, level: 'rich' | 'basic' | 'text')
     .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
     .replace(/javascript:/gi, '')
     .replace(/vbscript:/gi, '')
-    .replace(/data:/gi, '')
-    .replace(/on\w+="[^"]*"/gi, '')
-    .replace(/on\w+='[^']*'/gi, '');
+    .replace(/data:(?!image\/[png|jpg|jpeg|gif|webp])/gi, '') // Allow safe image data URLs
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '') // Fix regex for event handlers
+    .replace(/on\w+\s*=\s*[^>\s]+/gi, ''); // Catch unquoted event handlers
     
   if (level === 'basic') {
-    // Allow only basic formatting tags
+    // Allow only basic formatting tags with improved regex
     const allowedTags = ['p', 'br', 'strong', 'em', 'b', 'i'];
-    const tagPattern = new RegExp(`<(?!\/?(${allowedTags.join('|')})\b)[^>]*>`, 'gi');
+    // Escape special regex characters in tag names
+    const escapedTags = allowedTags.map(tag => tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const tagPattern = new RegExp(`<(?!\/?(${escapedTags.join('|')})\\b)[^>]*>`, 'gi');
     sanitized = sanitized.replace(tagPattern, '');
   }
   
@@ -129,7 +131,25 @@ export function sanitizeUrl(url: string): string | null {
     const parsed = new URL(url);
     const allowedProtocols = ['http:', 'https:', 'mailto:'];
     
+    // Check protocol
     if (!allowedProtocols.includes(parsed.protocol)) {
+      return null;
+    }
+    
+    // Additional security checks
+    // Block localhost and private IP ranges
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === 'localhost' || 
+        hostname.startsWith('127.') || 
+        hostname.startsWith('192.168.') || 
+        hostname.startsWith('10.') || 
+        hostname.startsWith('172.')) {
+      return null;
+    }
+    
+    // Block dangerous ports
+    const port = parsed.port;
+    if (port && ['22', '23', '25', '53', '80', '443', '993', '995'].includes(port)) {
       return null;
     }
     

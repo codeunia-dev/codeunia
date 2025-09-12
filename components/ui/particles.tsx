@@ -3,24 +3,28 @@
 import { useEffect, useState, useMemo } from "react"
 
 export function Particles() {
-  const [particleCount, setParticleCount] = useState(10);
+  const [particleCount, setParticleCount] = useState(5); // Reduced default
 
   useEffect(() => {
     // Optimize particle count based on device performance
     const isLowEndDevice = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
     const isMobile = window.innerWidth < 768;
+    const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
-    if (isLowEndDevice) {
-      setParticleCount(5);
+    if (isReducedMotion) {
+      setParticleCount(0); // Disable particles for users who prefer reduced motion
+    } else if (isLowEndDevice) {
+      setParticleCount(3); // Reduced from 5
     } else if (isMobile) {
-      setParticleCount(8);
+      setParticleCount(5); // Reduced from 8
     } else {
-      setParticleCount(15);
+      setParticleCount(8); // Reduced from 15
     }
   }, []);
 
   // Memoize particle positions to avoid recalculation
   const particles = useMemo(() => {
+    if (particleCount === 0) return [];
     return Array.from({ length: particleCount }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
@@ -29,6 +33,11 @@ export function Particles() {
       duration: 3 + Math.random() * 2
     }));
   }, [particleCount]);
+
+  // Early return if no particles
+  if (particleCount === 0) {
+    return null;
+  }
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">

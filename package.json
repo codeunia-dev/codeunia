@@ -40,7 +40,8 @@
     "performance-test": "node scripts/simple-performance-test.js",
     "lighthouse:install": "npm install -g @lhci/cli@0.12.x",
     "lighthouse:test": "./scripts/lighthouse-test.sh local",
-    "lighthouse:custom": "./scripts/lighthouse-test.sh custom"
+    "lighthouse:custom": "./scripts/lighthouse-test.sh custom",
+    "sync:reserved-usernames": "node scripts/sync-reserved-usernames.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

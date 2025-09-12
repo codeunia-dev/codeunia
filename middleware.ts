@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { reservedUsernameService } from '@/lib/services/reserved-usernames';
+import { reservedUsernameEdgeService } from '@/lib/services/reserved-usernames-edge';
 
 // Function to award daily login points
 async function awardDailyLoginPoints(userId: string, supabase: any) {
@@ -154,14 +154,14 @@ export async function middleware(req: NextRequest) {
       
       // Check if username is reserved
       try {
-        const isReserved = await reservedUsernameService.isReservedUsername(username);
+        const isReserved = await reservedUsernameEdgeService.isReservedUsername(username);
         if (isReserved) {
           // Return 404 for reserved usernames
           return NextResponse.rewrite(new URL('/_not-found', req.url));
         }
       } catch (error) {
         // Fallback to hardcoded check if database is not available
-        if (reservedUsernameService.isFallbackReservedUsername(username)) {
+        if (reservedUsernameEdgeService.isFallbackReservedUsername(username)) {
           return NextResponse.rewrite(new URL('/_not-found', req.url));
         }
       }

@@ -143,7 +143,11 @@ export async function POST(request: NextRequest) {
         await new Promise(resolve => setTimeout(resolve, 200));
 
       } catch (error) {
-        console.error(`Error generating certificate for ${participant.name}:`, error);
+        console.error('Error generating certificate for participant:', {
+          participantId: participant.id,
+          participantName: participant.name,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
         errors.push({
           participantId: participant.id,
           name: participant.name,

@@ -66,7 +66,10 @@ export async function POST(request: NextRequest) {
         template_url: templateUrl,
         placeholders
       });
-      console.log(`✅ Activity logged: certificate_earned for user ${user.id} with cert ${certId}`);
+      console.log('✅ Activity logged: certificate_earned', {
+        userId: user.id,
+        certId: certId
+      });
     } catch (activityError) {
       console.error('❌ Failed to log certificate earned activity:', activityError);
       // Don't fail the certificate generation if activity logging fails

@@ -4,6 +4,16 @@ export const runtime = 'nodejs';
 
 // NextResponse imported but not used in GET handler - keeping for potential future use
 
+// HTML escaping function to prevent XSS
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // Mock data for email preview
 const mockData = {
   applicantName: 'John Doe',
@@ -59,23 +69,23 @@ const getApplicantConfirmationTemplate = (data: typeof mockData) => {
           <div class="content">
             <div class="success-badge">✅ Successfully Applied</div>
             
-            <p>Hi ${applicantName},</p>
+            <p>Hi ${escapeHtml(applicantName)},</p>
             
-            <p>Great news! Your application for <strong>${internshipTitle}</strong> has been successfully submitted and confirmed.</p>
+            <p>Great news! Your application for <strong>${escapeHtml(internshipTitle)}</strong> has been successfully submitted and confirmed.</p>
             
             <div class="details-card">
               <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
               <div class="detail-row">
                 <span class="detail-label">Internship:</span>
-                <span class="detail-value">${internshipTitle}</span>
+                <span class="detail-value">${escapeHtml(internshipTitle)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Domain:</span>
-                <span class="detail-value">${domain}</span>
+                <span class="detail-value">${escapeHtml(domain)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Level:</span>
-                <span class="detail-value">${level}</span>
+                <span class="detail-value">${escapeHtml(level)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Duration:</span>
@@ -185,15 +195,15 @@ const getAdminNotificationTemplate = (data: typeof mockData) => {
               <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
               <div class="detail-row">
                 <span class="detail-label">Internship:</span>
-                <span class="detail-value">${internshipTitle}</span>
+                <span class="detail-value">${escapeHtml(internshipTitle)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Domain:</span>
-                <span class="detail-value">${domain}</span>
+                <span class="detail-value">${escapeHtml(domain)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Level:</span>
-                <span class="detail-value">${level}</span>
+                <span class="detail-value">${escapeHtml(level)}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">Duration:</span>
@@ -371,15 +381,15 @@ const getStatusUpdateTemplate = (data: {
                         <h3 style="margin-top: 0; color: #1f2937;">Application Details</h3>
                         <div class="detail-row">
                             <span class="detail-label">Internship:</span>
-                            <span class="detail-value">${internshipTitle}</span>
+                            <span class="detail-value">${escapeHtml(internshipTitle)}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Domain:</span>
-                            <span class="detail-value">${domain}</span>
+                            <span class="detail-value">${escapeHtml(domain)}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Level:</span>
-                            <span class="detail-value">${level}</span>
+                            <span class="detail-value">${escapeHtml(level)}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Duration:</span>
