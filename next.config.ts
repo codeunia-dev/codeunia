@@ -24,16 +24,10 @@ const nextConfig: NextConfig = {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
       }
-    }
-    
-    // Handle Edge Runtime compatibility for Supabase
-    config.externals = config.externals || []
-    if (!isServer) {
-      config.externals.push({
-        '@supabase/supabase-js': 'commonjs @supabase/supabase-js',
-        '@supabase/ssr': 'commonjs @supabase/ssr',
-      })
     }
     
     return config
