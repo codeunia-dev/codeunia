@@ -26,6 +26,16 @@ const nextConfig: NextConfig = {
         fs: false,
       }
     }
+    
+    // Handle Edge Runtime compatibility for Supabase
+    config.externals = config.externals || []
+    if (!isServer) {
+      config.externals.push({
+        '@supabase/supabase-js': 'commonjs @supabase/supabase-js',
+        '@supabase/ssr': 'commonjs @supabase/ssr',
+      })
+    }
+    
     return config
   },
 

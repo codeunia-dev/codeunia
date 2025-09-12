@@ -594,7 +594,7 @@ export class UnifiedCache {
   }
 
   // === STRUCTURED LOGGING ===
-  private static logCacheEvent(event: string, key: string, details: Record<string, any> = {}) {
+  private static logCacheEvent(event: string, key: string, details: Record<string, unknown> = {}) {
     const logEntry = {
       timestamp: new Date().toISOString(),
       level: 'info',
@@ -614,7 +614,7 @@ export class UnifiedCache {
     }
   }
 
-  private static logCacheError(error: Error, context: string, details: Record<string, any> = {}) {
+  private static logCacheError(error: Error, context: string, details: Record<string, unknown> = {}) {
     const logEntry = {
       timestamp: new Date().toISOString(),
       level: 'error',
