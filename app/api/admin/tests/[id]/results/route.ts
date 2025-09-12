@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Get test results and analytics (admin only)
 export async function GET(
   request: NextRequest,
@@ -80,9 +84,9 @@ export async function GET(
     const stats = {
       totalRegistrations: registrations?.length || 0,
       totalAttempts: allAttempts?.length || 0,
-      passedAttempts: allAttempts?.filter(a => a.passed).length || 0,
-      averageScore: allAttempts ? allAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / allAttempts.length : 0,
-      averageTime: allAttempts ? allAttempts.reduce((sum, a) => sum + (a.time_taken_minutes || 0), 0) / allAttempts.length : 0
+      passedAttempts: allAttempts?.filter((a: any) => a.passed).length || 0,
+      averageScore: allAttempts ? allAttempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / allAttempts.length : 0,
+      averageTime: allAttempts ? allAttempts.reduce((sum: number, a: any) => sum + (a.time_taken_minutes || 0), 0) / allAttempts.length : 0
     };
 
     return NextResponse.json({

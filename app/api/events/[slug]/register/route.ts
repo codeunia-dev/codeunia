@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { masterRegistrationsService } from '@/lib/services/master-registrations';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // POST: Register for an event (backward compatible)
 export async function POST(
   request: NextRequest,
@@ -9,7 +13,24 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    const supabase = await createClient();
+    
+    // Check environment variables before creating Supabase client
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+    
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -112,7 +133,24 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
-    const supabase = await createClient();
+    
+    // Check environment variables before creating Supabase client
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
+    
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable' },
+        { status: 503 }
+      );
+    }
     
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();

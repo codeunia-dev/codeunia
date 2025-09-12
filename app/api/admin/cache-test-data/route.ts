@@ -2,6 +2,10 @@ import { NextRequest } from 'next/server'
 import { cacheAnalytics } from '@/lib/cache-analytics-server'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 const routes = [
   '/api/hackathons',
   '/api/users/profile', 

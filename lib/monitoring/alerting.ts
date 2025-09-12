@@ -223,14 +223,63 @@ export class MonitoringAlerting {
   }
 
   /**
-   * Send alert through configured channels
+   * Send alert through configured channels with enhanced error handling
    */
   private async sendAlert(alert: Alert): Promise<void> {
     const promises = this.alertChannels
       .filter(channel => channel.enabled)
-      .map(channel => this.sendToChannel(alert, channel));
+      .map(channel => this.sendToChannelWithLogging(alert, channel));
 
     await Promise.allSettled(promises);
+  }
+
+  /**
+   * Send alert to a specific channel with structured logging
+   */
+  private async sendToChannelWithLogging(alert: Alert, channel: AlertChannel): Promise<void> {
+    try {
+      await this.sendToChannel(alert, channel);
+      this.logAlertDelivery(alert, channel.type, true);
+    } catch (error) {
+      this.logAlertDelivery(alert, channel.type, false, error as Error);
+      // Don't throw - implement graceful degradation
+      console.error(`Failed to send alert via ${channel.type}:`, error);
+    }
+  }
+
+  /**
+   * Log alert delivery attempts with structured logging
+   */
+  private logAlertDelivery(alert: Alert, channelType: string, success: boolean, error?: Error) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: success ? 'info' : 'error',
+      service: 'alerting',
+      event: 'alert_delivery',
+      alert: {
+        id: alert.id,
+        type: alert.type,
+        severity: alert.severity,
+        title: alert.title
+      },
+      channel: channelType,
+      success,
+      environment: process.env.NODE_ENV,
+      ...(error && {
+        error: {
+          message: error.message,
+          stack: error.stack,
+          name: error.name
+        }
+      })
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[ALERTING] ${success ? 'SUCCESS' : 'FAILED'} - ${channelType}:`, logEntry)
+    } else {
+      // In production, use structured JSON logging
+      console.log(JSON.stringify(logEntry))
+    }
   }
 
   /**

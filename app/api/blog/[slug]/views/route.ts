@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { activityService } from '@/lib/services/activity';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   

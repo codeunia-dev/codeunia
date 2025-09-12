@@ -1,3 +1,7 @@
+
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
 // NextResponse imported but not used in GET handler - keeping for potential future use
 
 // Mock data for email preview

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Color, Scene, Fog, PerspectiveCamera, Vector3, Group } from "three";
 import ThreeGlobe from "three-globe";
 import { useThree, Canvas, extend } from "@react-three/fiber";
@@ -65,7 +65,8 @@ export function Globe({ globeConfig, data }: WorldProps) {
   const groupRef = useRef<Group>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const defaultProps = {
+  // Memoize default props to prevent unnecessary re-renders
+  const defaultProps = useMemo(() => ({
     pointSize: 1,
     atmosphereColor: "#ffffff",
     showAtmosphere: true,
@@ -80,7 +81,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
     rings: 1,
     maxRings: 3,
     ...globeConfig,
-  };
+  }), [globeConfig]);
 
   // Initialize globe only once
   useEffect(() => {
@@ -113,14 +114,13 @@ export function Globe({ globeConfig, data }: WorldProps) {
     globeConfig.shininess,
   ]);
 
-  // Build data when globe is initialized or when data changes
-  useEffect(() => {
-    if (!globeRef.current || !isInitialized || !data) return;
-
-    const arcs = data;
+  // Memoize processed points to avoid recalculation
+  const processedPoints = useMemo(() => {
+    if (!data) return [];
+    
     const points = [];
-    for (let i = 0; i < arcs.length; i++) {
-      const arc = arcs[i];
+    for (let i = 0; i < data.length; i++) {
+      const arc = data[i];
       points.push({
         size: defaultProps.pointSize,
         order: arc.order,
@@ -138,7 +138,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
     }
 
     // remove duplicates for same lat and lng
-    const filteredPoints = points.filter(
+    return points.filter(
       (v, i, a) =>
         a.findIndex((v2) =>
           ["lat", "lng"].every(
@@ -146,6 +146,11 @@ export function Globe({ globeConfig, data }: WorldProps) {
           ),
         ) === i,
     );
+  }, [data, defaultProps.pointSize]);
+
+  // Build data when globe is initialized or when data changes
+  useEffect(() => {
+    if (!globeRef.current || !isInitialized || !data) return;
 
     globeRef.current
       .hexPolygonsData(countries.features)
@@ -171,7 +176,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
       .arcDashAnimateTime(() => defaultProps.arcTime);
 
     globeRef.current
-      .pointsData(filteredPoints)
+      .pointsData(processedPoints)
       .pointColor((e) => (e as { color: string }).color)
       .pointsMerge(true)
       .pointAltitude(0.0)
@@ -188,6 +193,7 @@ export function Globe({ globeConfig, data }: WorldProps) {
   }, [
     isInitialized,
     data,
+    processedPoints,
     defaultProps.pointSize,
     defaultProps.showAtmosphere,
     defaultProps.atmosphereColor,
@@ -237,9 +243,14 @@ export function WebGLRendererConfig() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    gl.setPixelRatio(window.devicePixelRatio);
+    // Optimize pixel ratio for performance
+    const pixelRatio = Math.min(window.devicePixelRatio, 2);
+    gl.setPixelRatio(pixelRatio);
     gl.setSize(size.width, size.height);
     gl.setClearColor(0xffaaff, 0);
+    
+    // Enable performance optimizations
+    gl.shadowMap.enabled = false; // Disable shadows for better performance
   }, [gl, size.width, size.height]);
 
   return null;

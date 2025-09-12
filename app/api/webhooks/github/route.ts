@@ -11,6 +11,10 @@ import { NextRequest } from 'next/server'
 import crypto from 'crypto'
 import { handleCachePurgeWebhook } from '@/lib/cloudflare-cache-purge'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 interface GitHubWebhookPayload {
   action?: string
   ref?: string

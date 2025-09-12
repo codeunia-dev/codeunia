@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedUser } from '@/lib/auth/admin-auth';
 import { createAuditLogger } from '@/lib/services/audit-logger';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/admin/audit-logs/stats
  * Get audit log statistics

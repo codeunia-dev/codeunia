@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST(request: NextRequest) {
   try {
     const { planId, amount, currency, userId } = await request.json();

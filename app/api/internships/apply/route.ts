@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { sendInternshipApplicationEmails } from '@/lib/services/email'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function POST(request: Request) {
   try {
     const body = await request.json()

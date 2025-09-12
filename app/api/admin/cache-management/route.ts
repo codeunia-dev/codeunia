@@ -11,6 +11,10 @@ import { NextRequest } from 'next/server'
 import { handleCachePurgeWebhook, CacheManager } from '@/lib/cloudflare-cache-purge'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(_request: NextRequest) {
   try {

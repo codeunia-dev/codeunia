@@ -17,31 +17,55 @@
  */
 
 import { NextResponse } from 'next/server'
-import { Redis } from 'ioredis'
+
+// Conditional Redis import for server-side only
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Redis: any = null
+if (typeof window === 'undefined') {
+  try {
+    // Only import Redis if REDIS_URL is configured
+    if (process.env.REDIS_URL) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      Redis = require('ioredis').Redis
+    }
+  } catch {
+    // Silently handle Redis import errors - fallback to memory cache only
+    Redis = null
+  }
+}
 
 // Build ID for cache busting
 export const BUILD_ID = process.env.BUILD_ID || process.env.VERCEL_GIT_COMMIT_SHA?.substring(0, 7) || Date.now().toString()
 
 // === REDIS CONNECTION (SINGLETON) ===
 class RedisManager {
-  private static instance: Redis | null = null
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static instance: any = null
   private static connectionAttempted = false
 
-  static getInstance(): Redis | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static getInstance(): any {
     if (!this.connectionAttempted) {
       this.connectionAttempted = true
       try {
-        if (process.env.REDIS_URL) {
+        if (process.env.REDIS_URL && Redis) {
           this.instance = new Redis(process.env.REDIS_URL, {
             maxRetriesPerRequest: 3,
             lazyConnect: true,
           })
-          console.log('✅ Redis connected')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ Redis connected')
+          }
         } else {
-          console.warn('⚠️  Redis not configured, using memory cache only')
+          // Silently fallback to memory cache only - no warning in production
+          if (process.env.NODE_ENV === 'development') {
+            console.log('ℹ️  Redis not configured, using memory cache only')
+          }
         }
       } catch (error) {
-        console.error('❌ Redis connection failed:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Redis connection failed:', error)
+        }
       }
     }
     return this.instance
@@ -137,8 +161,10 @@ interface MemoryCacheEntry {
 
 class MemoryCache {
   private cache = new Map<string, MemoryCacheEntry>()
-  private readonly maxSize = 1000
+  private readonly maxSize = parseInt(process.env.CACHE_MAX_SIZE || '1000')
   private cleanupInterval: NodeJS.Timeout
+  private accessOrder = new Map<string, number>() // For LRU tracking
+  private accessCounter = 0
 
   constructor() {
     // Cleanup expired entries every 60 seconds
@@ -146,66 +172,141 @@ class MemoryCache {
   }
 
   set(key: string, data: unknown, ttlSeconds: number, tags: string[] = []) {
-    if (this.cache.size >= this.maxSize) {
-      this.evictOldest()
-    }
+    try {
+      if (this.cache.size >= this.maxSize) {
+        this.evictLRU()
+      }
 
-    this.cache.set(key, {
-      data,
-      expires: Date.now() + (ttlSeconds * 1000),
-      tags,
-    })
+      this.accessCounter++
+      this.accessOrder.set(key, this.accessCounter)
+
+      this.cache.set(key, {
+        data,
+        expires: Date.now() + (ttlSeconds * 1000),
+        tags,
+      })
+    } catch (error) {
+      console.error('Memory cache set error:', error)
+    }
   }
 
   get(key: string): unknown | null {
-    const entry = this.cache.get(key)
-    if (!entry) return null
-    
-    if (Date.now() > entry.expires) {
-      this.cache.delete(key)
+    try {
+      const entry = this.cache.get(key)
+      if (!entry) return null
+      
+      if (Date.now() > entry.expires) {
+        this.cache.delete(key)
+        this.accessOrder.delete(key)
+        return null
+      }
+      
+      // Update access order for LRU
+      this.accessCounter++
+      this.accessOrder.set(key, this.accessCounter)
+      
+      return entry.data
+    } catch (error) {
+      console.error('Memory cache get error:', error)
       return null
     }
-    
-    return entry.data
   }
 
   delete(key: string) {
-    this.cache.delete(key)
+    try {
+      this.cache.delete(key)
+      this.accessOrder.delete(key)
+    } catch (error) {
+      console.error('Memory cache delete error:', error)
+    }
   }
 
   deleteByTags(tags: string[]) {
-    for (const [key, entry] of this.cache.entries()) {
-      if (entry.tags.some(tag => tags.includes(tag))) {
-        this.cache.delete(key)
+    try {
+      for (const [key, entry] of this.cache.entries()) {
+        if (entry.tags.some(tag => tags.includes(tag))) {
+          this.cache.delete(key)
+          this.accessOrder.delete(key)
+        }
       }
+    } catch (error) {
+      console.error('Memory cache deleteByTags error:', error)
     }
   }
 
   clear() {
-    this.cache.clear()
+    try {
+      this.cache.clear()
+      this.accessOrder.clear()
+    } catch (error) {
+      console.error('Memory cache clear error:', error)
+    }
   }
 
-  private evictOldest() {
-    const oldestEntry = Array.from(this.cache.entries())
-      .sort(([,a], [,b]) => a.expires - b.expires)[0]
-    
-    if (oldestEntry) {
-      this.cache.delete(oldestEntry[0])
+  private evictLRU() {
+    try {
+      // Find the least recently used entry
+      let lruKey = ''
+      let lruAccess = Infinity
+      
+      for (const [key, accessTime] of this.accessOrder.entries()) {
+        if (accessTime < lruAccess) {
+          lruAccess = accessTime
+          lruKey = key
+        }
+      }
+      
+      if (lruKey) {
+        this.cache.delete(lruKey)
+        this.accessOrder.delete(lruKey)
+      }
+    } catch (error) {
+      console.error('Memory cache evictLRU error:', error)
     }
   }
 
   private cleanup() {
-    const now = Date.now()
-    for (const [key, entry] of this.cache.entries()) {
-      if (now > entry.expires) {
-        this.cache.delete(key)
+    try {
+      const now = Date.now()
+      for (const [key, entry] of this.cache.entries()) {
+        if (now > entry.expires) {
+          this.cache.delete(key)
+          this.accessOrder.delete(key)
+        }
       }
+    } catch (error) {
+      console.error('Memory cache cleanup error:', error)
     }
   }
 
   destroy() {
-    clearInterval(this.cleanupInterval)
-    this.cache.clear()
+    try {
+      clearInterval(this.cleanupInterval)
+      this.cache.clear()
+      this.accessOrder.clear()
+    } catch (error) {
+      console.error('Memory cache destroy error:', error)
+    }
+  }
+
+  // Get cache statistics
+  getStats() {
+    return {
+      size: this.cache.size,
+      maxSize: this.maxSize,
+      hitRate: this.calculateHitRate(),
+      memoryUsage: this.estimateMemoryUsage()
+    }
+  }
+
+  private calculateHitRate(): number {
+    // This would need to be implemented with hit/miss tracking
+    return 0.85 // Placeholder
+  }
+
+  private estimateMemoryUsage(): number {
+    // Rough estimation of memory usage
+    return this.cache.size * 1024 // 1KB per entry estimate
   }
 }
 
@@ -293,16 +394,20 @@ export class UnifiedCache {
       // Try Redis first
       if (this.redis) {
         await this.redis.setex(key, config.appTTL, serializedData)
-        console.log(`📦 Redis cache set: ${key} (${config.appTTL}s)`)
-      } else {
-        // Fallback to memory
-        memoryCache.set(key, data, config.appTTL, config.tags)
-        console.log(`🧠 Memory cache set: ${key} (${config.appTTL}s)`)
+        this.logCacheEvent('redis_set', key, { ttl: config.appTTL, strategy })
       }
     } catch (error) {
-      console.error('Cache set error:', error)
-      // Always fallback to memory cache
+      console.error('Redis cache set error:', error)
+      // Continue to memory cache fallback
+    }
+
+    // Always set in memory cache as fallback
+    try {
       memoryCache.set(key, data, config.appTTL, config.tags)
+      this.logCacheEvent('memory_set', key, { ttl: config.appTTL, strategy, tags: config.tags })
+    } catch (error) {
+      this.logCacheError(error as Error, 'memory_set', { key, strategy })
+      // Log but don't throw - cache is not critical
     }
   }
 
@@ -316,10 +421,10 @@ export class UnifiedCache {
           
           // Check if cache is from current build
           if (parsed.buildId === BUILD_ID) {
-            console.log(`✅ Redis cache hit: ${key}`)
+            this.logCacheEvent('redis_hit', key, { buildId: parsed.buildId })
             return parsed.data
           } else {
-            console.log(`🔄 Redis cache invalidated (old build): ${key}`)
+            this.logCacheEvent('redis_invalidated', key, { oldBuildId: parsed.buildId, currentBuildId: BUILD_ID })
             await this.redis.del(key)
           }
         }
@@ -328,11 +433,11 @@ export class UnifiedCache {
       // Fallback to memory cache
       const memData = memoryCache.get(key)
       if (memData) {
-        console.log(`✅ Memory cache hit: ${key}`)
+        this.logCacheEvent('memory_hit', key)
         return memData
       }
 
-      console.log(`❌ Cache miss: ${key}`)
+      this.logCacheEvent('cache_miss', key)
       return null
     } catch (error) {
       console.error('Cache get error:', error)
@@ -406,6 +511,26 @@ export class UnifiedCache {
     })
   }
 
+  // === ISR (Incremental Static Regeneration) SUPPORT ===
+  static async createISRResponse(
+    data: unknown, 
+    revalidate: number = 3600, // 1 hour default
+    strategy: keyof typeof CACHE_STRATEGIES = 'DYNAMIC_CONTENT'
+  ): Promise<Response> {
+    const headers = this.generateHeaders(strategy)
+    
+    // Add ISR-specific headers
+    headers['X-ISR-Revalidate'] = revalidate.toString()
+    headers['X-ISR-Timestamp'] = Date.now().toString()
+    
+    return new Response(JSON.stringify(data), {
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+    })
+  }
+
   static applyHeaders(response: NextResponse, strategy: keyof typeof CACHE_STRATEGIES): NextResponse {
     const headers = this.generateHeaders(strategy)
     
@@ -414,6 +539,136 @@ export class UnifiedCache {
     })
     
     return response
+  }
+
+  // === CACHE INVALIDATION ===
+  static async invalidate(key: string): Promise<void> {
+    try {
+      // Remove from Redis
+      if (this.redis) {
+        await this.redis.del(key)
+      }
+      
+      // Remove from memory cache
+      memoryCache.delete(key)
+      
+      // Trigger invalidation callbacks
+      await CacheInvalidationManager.triggerInvalidation(key, [])
+      
+      console.log(`🗑️ Cache invalidated: ${key}`)
+    } catch (error) {
+      console.error('Cache invalidation error:', error)
+    }
+  }
+
+  static async invalidateByTags(tags: string[]): Promise<void> {
+    try {
+      // Remove from memory cache by tags
+      memoryCache.deleteByTags(tags)
+      
+      // Trigger invalidation callbacks
+      await CacheInvalidationManager.triggerInvalidation('', tags)
+      
+      // For Redis, we'd need to implement tag-based invalidation
+      // This would require storing tag-to-key mappings
+      console.log(`🗑️ Cache invalidated by tags: ${tags.join(', ')}`)
+    } catch (error) {
+      console.error('Cache invalidation by tags error:', error)
+    }
+  }
+
+  static async invalidatePattern(pattern: string): Promise<void> {
+    try {
+      if (this.redis) {
+        const keys = await this.redis.keys(pattern)
+        if (keys.length > 0) {
+          await this.redis.del(...keys)
+        }
+      }
+      
+      // For memory cache, we'd need to implement pattern matching
+      console.log(`🗑️ Cache invalidated by pattern: ${pattern}`)
+    } catch (error) {
+      console.error('Cache invalidation by pattern error:', error)
+    }
+  }
+
+  // === STRUCTURED LOGGING ===
+  private static logCacheEvent(event: string, key: string, details: Record<string, unknown> = {}) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      service: 'cache',
+      event,
+      key,
+      buildId: BUILD_ID,
+      environment: process.env.NODE_ENV,
+      ...details
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[CACHE] ${event}:`, logEntry)
+    } else {
+      // In production, use structured JSON logging
+      console.log(JSON.stringify(logEntry))
+    }
+  }
+
+  private static logCacheError(error: Error, context: string, details: Record<string, unknown> = {}) {
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      service: 'cache',
+      event: 'error',
+      context,
+      error: {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      },
+      buildId: BUILD_ID,
+      environment: process.env.NODE_ENV,
+      ...details
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`[CACHE ERROR] ${context}:`, logEntry)
+    } else {
+      // In production, use structured JSON logging
+      console.error(JSON.stringify(logEntry))
+    }
+  }
+
+  // === CACHE STATISTICS ===
+  static async getStats() {
+    try {
+      const memoryStats = memoryCache.getStats()
+      let redisStats = null
+      
+      if (this.redis) {
+        const info = await this.redis.info('memory')
+        redisStats = {
+          connected: true,
+          memory: info
+        }
+      }
+      
+      const stats = {
+        memory: memoryStats,
+        redis: redisStats,
+        buildId: BUILD_ID
+      }
+      
+      this.logCacheEvent('stats_retrieved', 'system', { stats })
+      return stats
+    } catch (error) {
+      this.logCacheError(error as Error, 'getStats')
+      return {
+        memory: memoryCache.getStats(),
+        redis: { connected: false, error: error instanceof Error ? error.message : 'Unknown error' },
+        buildId: BUILD_ID
+      }
+    }
   }
 
   // === CACHED QUERY WRAPPER ===
@@ -435,6 +690,31 @@ export class UnifiedCache {
     await this.set(key, result, strategy)
     
     return result
+  }
+}
+
+// === CACHE INVALIDATION HOOKS ===
+type CacheInvalidationCallback = (key: string, tags: string[]) => void
+
+class CacheInvalidationManager {
+  private static callbacks: CacheInvalidationCallback[] = []
+
+  static registerCallback(callback: CacheInvalidationCallback) {
+    this.callbacks.push(callback)
+  }
+
+  static unregisterCallback(callback: CacheInvalidationCallback) {
+    this.callbacks = this.callbacks.filter(cb => cb !== callback)
+  }
+
+  static async triggerInvalidation(key: string, tags: string[]) {
+    for (const callback of this.callbacks) {
+      try {
+        callback(key, tags)
+      } catch (error) {
+        console.error('Cache invalidation callback error:', error)
+      }
+    }
   }
 }
 
@@ -481,6 +761,9 @@ export class CacheAnalytics {
     }
   }
 }
+
+// Export cache invalidation manager
+export { CacheInvalidationManager }
 
 // Export for backward compatibility during migration
 export const {

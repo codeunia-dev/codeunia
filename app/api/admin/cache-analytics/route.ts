@@ -1,6 +1,10 @@
 import { NextRequest } from 'next/server'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 /**
  * API endpoint for cache analytics - Admin only
  * 

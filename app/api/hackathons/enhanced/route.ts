@@ -6,6 +6,10 @@ import { NextRequest } from 'next/server'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 import { createClient } from '@/lib/supabase/server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url)

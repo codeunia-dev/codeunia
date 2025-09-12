@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     // Get authenticated user using server-side Supabase client
@@ -22,7 +26,7 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    const ids = (data || []).map((r) => r.internship_id)
+    const ids = (data || []).map((r: any) => r.internship_id)
     const response = NextResponse.json({ appliedIds: ids })
     
     // Prevent caching to ensure fresh data

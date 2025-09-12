@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedUser } from '@/lib/auth/admin-auth';
 import { createAuditLogger, AuditLogFilter, AuditActionType } from '@/lib/services/audit-logger';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/admin/audit-logs
  * Retrieve audit logs with filtering and pagination

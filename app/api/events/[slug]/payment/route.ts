@@ -3,6 +3,10 @@ import Razorpay from 'razorpay';
 import { createClient } from '@/lib/supabase/server';
 import crypto from 'crypto';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Initialize Razorpay client
 const getRazorpayClient = () => {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {

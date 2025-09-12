@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Define the type for updateData
 interface UpdateData {
   last_contact_at: string;

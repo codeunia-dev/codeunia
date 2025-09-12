@@ -5,6 +5,10 @@
 
 import { UnifiedCache } from '@/lib/unified-cache-system'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET() {
   try {
     // Test the unified cache system

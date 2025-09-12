@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import crypto from 'crypto';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 const premiumPlans = {
   monthly: { duration: 30, pointsMultiplier: 2, price: 499 },
   biannual: { duration: 180, pointsMultiplier: 3, price: 2499 },

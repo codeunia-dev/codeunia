@@ -3,6 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Create Supabase client function to avoid build-time initialization
 function getSupabaseClient() {
   return createClient(

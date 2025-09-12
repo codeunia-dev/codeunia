@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // Email preview endpoint - create this at /app/api/email-preview/route.ts
 // This lets you see how emails look without sending them
 

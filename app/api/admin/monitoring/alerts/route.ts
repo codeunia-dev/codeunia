@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { withAdminAuth, AuthenticatedUser } from '@/lib/auth/admin-auth';
 import { monitoringAlerting } from '@/lib/monitoring/alerting';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 /**
  * GET /api/admin/monitoring/alerts
  * Get monitoring alerts

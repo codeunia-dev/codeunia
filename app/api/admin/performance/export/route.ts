@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { performanceAnalytics } from '@/lib/performance-analytics-server'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { hackathonsService } from '@/lib/services/hackathons'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 // GET: Fetch a single hackathon by slug
 export async function GET(request: NextRequest) {
   try {

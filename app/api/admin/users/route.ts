@@ -4,6 +4,10 @@ import { withRateLimit } from '@/lib/security/rate-limiting';
 import { RateLimitConfigs } from '@/lib/security/rate-limiting';
 import { createClient } from '@/lib/supabase/server';
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs';
+
+
 export const GET = withRateLimit(
   {
     ...RateLimitConfigs.API,
@@ -41,7 +45,7 @@ export const GET = withRateLimit(
         throw new Error(`Failed to fetch users: ${error.message}`);
       }
 
-      const users = profiles?.map(profile => ({
+      const users = profiles?.map((profile: any) => ({
         id: profile.id,
         email: profile.email || '',
         username: profile.username || '',
