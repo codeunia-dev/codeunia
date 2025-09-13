@@ -86,6 +86,15 @@ const Footer = dynamic(() => import("@/components/footer"), {
   ssr: true
 });
 
+/**
+ * Client-side Home page component that composes the header, multiple lazily loaded home sections, and footer.
+ *
+ * Renders a vertical layout with a Header, a content container that loads HeroSection2, FeaturesSection,
+ * CommunitySpotlight, SponsorsSection, and LatestContentPreview via Suspense fallbacks, and a Footer.
+ * Each section uses a tailored skeleton fallback while the dynamically imported component loads.
+ *
+ * @returns The Home page JSX element.
+ */
 export default function Home() {
   return (
     <>

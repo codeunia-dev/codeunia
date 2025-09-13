@@ -55,6 +55,17 @@ const sponsors = [
   },
 ];
 
+/**
+ * Renders a horizontally scrolling sponsors showcase section with header and animated sponsor tiles.
+ *
+ * Displays a decorative header ("Our Sponsors" pill, title, and subtitle) and a continuously scrolling
+ * marquee of sponsor cards (duplicated sequence to create a seamless scroll). Each card shows the
+ * sponsor logo, name, and title; when a sponsor has a link, its card is wrapped in an external anchor.
+ *
+ * Logos are rendered with Next/Image and certain sponsor names receive custom sizing classes.
+ *
+ * @returns The SponsorsSection React element.
+ */
 export function SponsorsSection() {
   return (
     <section className="py-20 relative overflow-hidden">
