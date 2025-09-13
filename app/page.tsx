@@ -57,6 +57,21 @@ const LatestContentPreview = dynamic(() => import("@/components/home/LatestConte
   ssr: false
 });
 
+// New: SponsorsSection on Home
+const SponsorsSection = dynamic(() => import("@/components/home/SponsorsSection").then(mod => ({ default: mod.SponsorsSection })), {
+  loading: () => (
+    <div className="py-16">
+      <div className="container px-4 mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
+
 const Footer = dynamic(() => import("@/components/footer"), {
   loading: () => (
     <footer className="border-t border-border/40 bg-gradient-to-b from-background/95 via-background to-background/95">
@@ -87,6 +102,11 @@ export default function Home() {
 
           <Suspense fallback={<div className="py-16"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <CommunitySpotlight />
+          </Suspense>
+
+          {/* New: Sponsors Section on Home */}
+          <Suspense fallback={<div className="py-16"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
+            <SponsorsSection />
           </Suspense>
 
           <Suspense fallback={<div className="py-24"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
