@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -28,6 +28,7 @@ export default function CompleteProfile() {
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
   const router = useRouter();
+  const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
     return createClient();
@@ -90,6 +91,15 @@ export default function CompleteProfile() {
     checkUser();
   }, [checkUser]);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (usernameCheckTimeout.current) {
+        clearTimeout(usernameCheckTimeout.current);
+      }
+    };
+  }, []);
+
   const checkUsernameAvailability = async (usernameToCheck: string) => {
     if (!usernameToCheck || usernameToCheck.length < 3) {
       setUsernameAvailable(null);
@@ -98,13 +108,14 @@ export default function CompleteProfile() {
 
     setIsCheckingUsername(true);
     try {
+      const clean = usernameToCheck.trim();
       const { data: isAvailable } = await getSupabaseClient().rpc('check_username_availability', {
-        username_param: usernameToCheck
+        username_param: clean
       });
       setUsernameAvailable(isAvailable);
     } catch (error) {
       console.error('Error checking username:', error);
-      setUsernameAvailable(false);
+      setUsernameAvailable(null);
     } finally {
       setIsCheckingUsername(false);
     }
@@ -112,12 +123,10 @@ export default function CompleteProfile() {
 
   const handleUsernameChange = (value: string) => {
     setUsername(value);
-    // Debounce username check
-    const timeoutId = setTimeout(() => {
-      checkUsernameAvailability(value);
+    if (usernameCheckTimeout.current) clearTimeout(usernameCheckTimeout.current);
+    usernameCheckTimeout.current = setTimeout(() => {
+      checkUsernameAvailability(value.trim());
     }, 500);
-
-    return () => clearTimeout(timeoutId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -151,22 +160,30 @@ export default function CompleteProfile() {
 
     setIsLoading(true);
     try {
-      // Update profile with the provided information
-      const { error } = await getSupabaseClient()
+      // Update profile with the provided information using upsert to handle missing profiles
+      const { data: upserted, error } = await getSupabaseClient()
         .from('profiles')
-        .update({
+        .upsert([{
+          id: user.id,
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           username: username.trim(),
           profile_complete: true,
           username_set: true,
           username_editable: false
-        })
-        .eq('id', user.id);
+        }], { onConflict: 'id' })
+        .select('id')
+        .single();
 
       if (error) {
         console.error('Profile update error:', error);
         toast.error(error.message || 'Failed to update profile. Please try again.');
+        return;
+      }
+
+      if (!upserted) {
+        console.error('Profile update failed: No data returned');
+        toast.error('Failed to update profile. Please try again.');
         return;
       }
 
