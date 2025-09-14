@@ -42,7 +42,7 @@ const AuthSection = dynamic(() => Promise.resolve(() => {
   )
 }), {
   ssr: false,
-  loading: () => <div className="text-sm text-muted-foreground">Loading...</div>
+  loading: () => null // Don't show loading state on server
 })
 
 // Mobile auth section
@@ -64,7 +64,8 @@ const MobileAuthSection = dynamic(() => Promise.resolve(() => {
   
   return null
 }), {
-  ssr: false
+  ssr: false,
+  loading: () => null
 })
 
 // Mobile menu auth section
@@ -102,7 +103,8 @@ const MobileMenuAuthSection = dynamic(() => Promise.resolve(() => {
     </div>
   )
 }), {
-  ssr: false
+  ssr: false,
+  loading: () => null
 })
 
 // Lazy load non-critical components
