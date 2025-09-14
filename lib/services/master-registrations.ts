@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createServiceClient } from '@/lib/supabase/server';
 
 // Types for master registration system
 export interface MasterRegistration {
@@ -56,10 +56,7 @@ class MasterRegistrationsService {
   private supabase;
 
   constructor() {
-    this.supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    this.supabase = createServiceClient();
   }
 
   // Register for any activity type with optimized query

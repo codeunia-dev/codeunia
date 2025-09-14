@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/lib/supabase/server'
 import { 
   UserPoints, 
   UserActivityLog, 
@@ -83,10 +83,7 @@ export class GlobalLeaderboardService {
     // Check if service role key is available
     if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
       // Server side - we can use service role key
-      return createSupabaseClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-      )
+      return createServiceClient()
     } else {
       // Client side - fall back to regular client
       return this.getSupabaseClient()
