@@ -87,8 +87,12 @@ export const csrfCookies = {
       return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
     }
     // Fallback for server-side or environments without crypto.getRandomValues
-    const crypto = require('crypto');
-    return crypto.randomBytes(16).toString('hex');
+    if (typeof require !== 'undefined') {
+      const crypto = require('crypto');
+      return crypto.randomBytes(16).toString('hex');
+    }
+    // Ultimate fallback
+    return Date.now().toString(36) + Math.random().toString(36).substring(2);
   },
 
   // Set CSRF token

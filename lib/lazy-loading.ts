@@ -4,7 +4,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { ComponentType, Suspense } from 'react';
+import { ComponentType, Suspense, useState, useEffect, useRef } from 'react';
 
 // Loading components
 const DefaultLoading = () => (
@@ -250,5 +250,3 @@ export function LazyWrapper({
   );
 }
 
-// Import React hooks
-import { useState, useEffect, useRef } from 'react';
