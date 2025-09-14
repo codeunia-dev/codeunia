@@ -11,6 +11,7 @@ import { Building2, FileText, Loader2 } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
+import Link from "next/link";
 
 export function CollaborationForm() {
     const { user, loading: authLoading } = useAuth();
@@ -143,9 +144,9 @@ export function CollaborationForm() {
                             </p>
                             <Button 
                                 className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                                onClick={() => window.location.href = '/auth/signin'}
+                                asChild
                             >
-                                Sign In to Continue
+                                <Link href="/auth/signin">Sign In to Continue</Link>
                             </Button>
                         </div>
                     </CardContent>

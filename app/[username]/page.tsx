@@ -41,7 +41,7 @@ export default async function UsernamePage({ params }: UsernamePageProps) {
     if (error || !profile) {
       notFound();
     }
-  } catch (error) {
+  } catch {
     // If there's any error, show 404
     notFound();
   }

@@ -12,6 +12,7 @@ import { Lightbulb, Send, Code2, Users, GraduationCap, MessageSquare } from "luc
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
+import Link from "next/link";
 
 export function MentorForm() {
     const { user, loading: authLoading } = useAuth();
@@ -229,9 +230,9 @@ export function MentorForm() {
                             </p>
                             <Button 
                                 className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white"
-                                onClick={() => window.location.href = '/auth/signin'}
+                                asChild
                             >
-                                Sign In to Continue
+                                <Link href="/auth/signin">Sign In to Continue</Link>
                             </Button>
                         </div>
                     </CardContent>
