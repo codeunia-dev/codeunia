@@ -109,6 +109,7 @@ export async function middleware(req: NextRequest) {
       '/auth/confirm',
       '/auth/sign-up-success',
       '/auth/email-confirmation-required',
+      '/complete-profile',
       '/verify/cert',
       '/terms',
       '/privacy',
