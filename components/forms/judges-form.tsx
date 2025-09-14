@@ -11,8 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Award, Send, Code2, Users, Globe } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function JudgesForm() {
+    const { user, loading: authLoading } = useAuth();
+    
     const getSupabaseClient = () => {
         return createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -90,6 +93,12 @@ export function JudgesForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!user) {
+            toast.error('Please sign in to submit your application.');
+            return;
+        }
+        
         setIsSubmitting(true);
 
         try {
@@ -98,6 +107,7 @@ export function JudgesForm() {
                 .from('judges_applications')
                 .insert([
                     {
+                        user_id: user.id,
                         first_name: formData.firstName,
                         last_name: formData.lastName,
                         email: formData.email,
@@ -145,6 +155,42 @@ export function JudgesForm() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading state while checking authentication
+    if (authLoading) {
+        return (
+            <div className="text-center p-8">
+                <div className="flex flex-col items-center space-y-4">
+                    <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show sign-in prompt if not authenticated
+    if (!user) {
+        return (
+            <div className="text-center p-8 space-y-4">
+                <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-orange-500 to-red-500 mb-4 w-fit">
+                    <Award className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold">Authentication Required</h3>
+                <p className="text-muted-foreground">
+                    Please sign in to submit your judges application
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    You need to be signed in to submit an application. This helps us track your submissions and provide better support.
+                </p>
+                <Button 
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                    onClick={() => window.location.href = '/auth/signin'}
+                >
+                    Sign In to Continue
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <motion.div

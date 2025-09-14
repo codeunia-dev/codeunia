@@ -22,6 +22,7 @@ import {
   HandHeart,
   ClipboardCheck,
   Award,
+  Crown,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -118,6 +119,11 @@ const sidebarItems: SidebarGroupType[] = [
         title: "Volunteer",
         url: "/admin/forms/volunteer",
         icon: HandHeart,
+      },
+      {
+        title: "Core Team",
+        url: "/admin/forms/core-team",
+        icon: Crown,
       },
     ],
   },
