@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hackathonsService, HackathonsFilters } from '@/lib/services/hackathons';
 import { UnifiedCache } from '@/lib/unified-cache-system';
-import { createClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { createClient, createServiceClient } from '@/lib/supabase/server';
 
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs';
@@ -128,9 +127,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service client for admin operations
-    const supabaseServiceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const supabaseService = createServiceClient(supabaseServiceUrl, supabaseServiceKey);
+    const supabaseService = createServiceClient();
 
     // Insert the new hackathon
     const { data, error } = await supabaseService

@@ -40,7 +40,19 @@ export async function createClient() {
   );
 }
 
-export function createServiceClient(supabaseUrl: string, supabaseKey: string) {
-  return createSupabaseClient(supabaseUrl, supabaseKey);
+export function createServiceClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase service role environment variables');
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
 }
 

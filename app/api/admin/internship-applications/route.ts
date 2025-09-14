@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceClient } from '@/lib/supabase/server'
 import { sendStatusUpdateEmail } from '@/lib/services/email'
 
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs';
 
-
-// Create Supabase client function to avoid build-time initialization
-function getSupabaseClient() {
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
-}
-
 // List applications (basic fields)
 export async function GET() {
-  const service = getSupabaseClient();
+  const service = createServiceClient();
   // Try to include remarks if the column exists; otherwise fall back
   let data: unknown[] | null = null
   let errorMsg: string | null = null
@@ -52,7 +46,7 @@ export async function GET() {
 // Update application: expects { id, status?, remarks? }
 export async function PATCH(request: Request) {
   try {
-    const service = getSupabaseClient();
+    const service = createServiceClient();
     const body = await request.json() as {
       id?: string
       status?: string
