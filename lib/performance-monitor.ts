@@ -1,7 +1,10 @@
 /**
  * Performance Monitoring Utilities
  * Tracks Web Vitals and custom performance metrics
+ * Updated to use centralized logging system
  */
+
+import { logger } from '@/lib/logging';
 
 // Type definitions for performance entries
 interface PerformanceEventTiming extends PerformanceEntry {
@@ -135,26 +138,14 @@ class PerformanceMonitor {
   }
 
   private logPerformanceIssue(metric: PerformanceMetric) {
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      level: 'warn',
-      service: 'performance',
-      event: 'performance_issue',
+    logger.performance.warn('performance_issue', `Performance threshold exceeded: ${metric.name} = ${metric.value}`, {
       metric: {
         name: metric.name,
         value: metric.value,
         type: metric.type,
         threshold: this.getThreshold(metric.name)
-      },
-      environment: process.env.NODE_ENV
-    }
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`[PERFORMANCE ISSUE] ${metric.name} = ${metric.value}`, logEntry)
-    } else {
-      // In production, use structured JSON logging
-      console.warn(JSON.stringify(logEntry))
-    }
+      }
+    });
   }
 
   private getThreshold(metricName: string): number {
