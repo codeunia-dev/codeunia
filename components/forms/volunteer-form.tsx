@@ -12,6 +12,7 @@ import { HandHeart, Send, Calendar, MapPin, Users, Code2, Heart } from "lucide-r
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
+import Link from "next/link";
 
 export function VolunteerForm() {
     const { user, loading: authLoading } = useAuth();
@@ -176,9 +177,9 @@ export function VolunteerForm() {
                             </p>
                             <Button 
                                 className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
-                                onClick={() => window.location.href = '/auth/signin'}
+                                asChild
                             >
-                                Sign In to Continue
+                                <Link href="/auth/signin">Sign In to Continue</Link>
                             </Button>
                         </div>
                     </CardContent>

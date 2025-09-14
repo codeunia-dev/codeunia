@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { apiFetch } from "@/lib/api-fetch";
+import { useAuth } from "@/lib/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -61,6 +62,7 @@ interface CoreTeamApplication {
 }
 
 export default function AdminCoreTeamPage() {
+  const { loading: authLoading, is_admin } = useAuth();
   const [applications, setApplications] = useState<CoreTeamApplication[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -69,6 +71,13 @@ export default function AdminCoreTeamPage() {
   const [selectedApplication, setSelectedApplication] = useState<CoreTeamApplication | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [savingStatus, setSavingStatus] = useState<Record<number, boolean>>({});
+
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
+  }
+  if (!is_admin) {
+    return <div className="text-center text-sm text-muted-foreground py-12">Forbidden: admin access required.</div>;
+  }
 
   // Fetch applications
   useEffect(() => {
@@ -161,18 +170,19 @@ export default function AdminCoreTeamPage() {
 
   // Export to CSV
   const handleExportCSV = () => {
+    const sanitize = (v: string) => (/^[-+=@]/.test(v) ? `'${v}` : v);
     const csvContent = [
       ["Name", "Email", "Phone", "Location", "Occupation", "Company", "Preferred Role", "Status", "Applied Date"],
       ...filteredApplications.map(app => [
-        `${app.first_name} ${app.last_name}`,
-        app.email,
-        app.phone || "",
-        app.location,
-        app.occupation,
-        app.company || "",
-        app.preferred_role,
-        app.status,
-        new Date(app.created_at).toLocaleDateString()
+        sanitize(`${app.first_name} ${app.last_name}`),
+        sanitize(app.email),
+        sanitize(app.phone || ""),
+        sanitize(app.location),
+        sanitize(app.occupation),
+        sanitize(app.company || ""),
+        sanitize(app.preferred_role),
+        sanitize(app.status),
+        sanitize(new Date(app.created_at).toLocaleDateString())
       ])
     ].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
 
