@@ -80,8 +80,15 @@ export const authCookies = {
 export const csrfCookies = {
   // Generate CSRF token
   generateCSRFToken: (): string => {
-    const token = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    return token;
+    // Use crypto.getRandomValues for secure random generation
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+      const array = new Uint8Array(16);
+      window.crypto.getRandomValues(array);
+      return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    // Fallback for server-side or environments without crypto.getRandomValues
+    const crypto = require('crypto');
+    return crypto.randomBytes(16).toString('hex');
   },
 
   // Set CSRF token

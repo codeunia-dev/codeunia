@@ -25,34 +25,19 @@ export const GET = withRateLimit(
         );
       }
 
-      // Get real system information
+      // Get safe system information (no sensitive details)
       const systemInfo = {
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development',
         version: process.env.npm_package_version || '1.0.0',
-        nodeVersion: process.version,
-        platform: process.platform,
-        uptime: process.uptime(),
+        uptime: Math.floor(process.uptime()),
         memory: {
-          total: process.memoryUsage().heapTotal,
-          used: process.memoryUsage().heapUsed,
-          free: process.memoryUsage().heapTotal - process.memoryUsage().heapUsed,
           percentage: Math.round((process.memoryUsage().heapUsed / process.memoryUsage().heapTotal) * 100)
         },
         cpu: {
-          cores: cpus().length,
-          loadAverage: loadavg()
+          cores: cpus().length
         },
-        network: {
-          interfaces: Object.entries(networkInterfaces()).map(([name, interfaces]) => ({
-            name,
-            addresses: interfaces?.map(iface => ({
-              address: iface.address,
-              family: iface.family,
-              internal: iface.internal
-            })) || []
-          }))
-        }
+        status: 'operational'
       };
 
       return new Response(
