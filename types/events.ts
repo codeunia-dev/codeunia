@@ -1,5 +1,5 @@
 export interface Event {
-  id?: number
+  id: number
   slug: string
   title: string
   excerpt: string
@@ -23,10 +23,9 @@ export interface Event {
   locations: string[]
   capacity: number
   registered: number
-  team_size?: {
-    min?: number
-    max?: number
-    [key: string]: number | undefined
+  team_size: {
+    min: number
+    max: number
   }
   user_types: string[]
   price: string
@@ -34,18 +33,13 @@ export interface Event {
   status: 'live' | 'draft' | 'published' | 'cancelled' | 'completed'
   event_type: string[]
   registration_required: boolean
-  rules?: string[]
-  schedule?: Record<string, unknown> | { date: string; label: string }[]
+  rules: string[]
+  schedule: Record<string, unknown>
   prize?: string
   prize_details?: string
-  faq?: Record<string, unknown> | { question: string; answer: string }[]
-  socials?: {
-    linkedin?: string
-    whatsapp?: string
-    instagram?: string
-    [key: string]: string | undefined
-  }
-  sponsors?: { logo: string; name: string; type: string }[]
+  faq: Record<string, unknown>
+  socials: Record<string, unknown>
+  sponsors: Record<string, unknown>[]
   marking_scheme?: Record<string, unknown>
   created_at?: string
   updated_at?: string

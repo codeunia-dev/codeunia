@@ -39,7 +39,7 @@ export default async function EventPage({ params }: EventPageProps) {
     // Fetch event data server-side
     const event = await eventsService.getEventBySlug(slug)
     
-    if (!event) {
+    if (!event || !event.id) {
       notFound()
     }
 

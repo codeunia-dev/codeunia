@@ -170,10 +170,7 @@ export async function PUT(
     const testData: TestData = await request.json();
 
     // Use service role client for admin operations
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const serviceSupabase = createServiceClient();
 
     // Start a transaction
     const testInsertData: TestData = {
@@ -297,10 +294,7 @@ export async function DELETE(
     }
 
     // Use service role client for admin operations to bypass RLS
-    const serviceSupabase = createServiceClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const serviceSupabase = createServiceClient();
 
     // Delete related data first (cascading delete)
     console.log(`Deleting test ${id} and all related data...`);

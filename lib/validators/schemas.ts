@@ -78,7 +78,7 @@ export const commonSchemas = {
 }
 
 // Event validation schemas
-export const eventSchemas = {
+export const eventSchemas: Record<string, z.ZodSchema> = {
   create: z.object({
     slug: commonSchemas.slug,
     title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -123,7 +123,19 @@ export const eventSchemas = {
     marking_scheme: z.record(z.unknown()).optional(),
   }),
 
-  update: eventSchemas.create.partial(),
+  update: z.object({
+    slug: commonSchemas.slug.optional(),
+    title: z.string().min(1, 'Title is required').max(200, 'Title too long').optional(),
+    excerpt: z.string().min(1, 'Excerpt is required').max(500, 'Excerpt too long').optional(),
+    description: z.string().min(1, 'Description is required').max(10000, 'Description too long').optional(),
+    organizer: z.string().min(1, 'Organizer is required').optional(),
+    date: z.string().min(1, 'Date is required').optional(),
+    time: z.string().min(1, 'Time is required').optional(),
+    duration: z.string().min(1, 'Duration is required').optional(),
+    category: z.string().min(1, 'Category is required').optional(),
+    featured: z.boolean().optional(),
+    status: z.enum(['live', 'draft', 'published', 'cancelled', 'completed']).optional(),
+  }),
 
   filters: z.object({
     search: z.string().optional(),
@@ -137,8 +149,19 @@ export const eventSchemas = {
 }
 
 // Hackathon validation schemas
-export const hackathonSchemas = {
-  create: eventSchemas.create.extend({
+export const hackathonSchemas: Record<string, z.ZodSchema> = {
+  create: z.object({
+    slug: commonSchemas.slug,
+    title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+    excerpt: z.string().min(1, 'Excerpt is required').max(500, 'Excerpt too long'),
+    description: z.string().min(1, 'Description is required').max(10000, 'Description too long'),
+    organizer: z.string().min(1, 'Organizer is required'),
+    date: z.string().min(1, 'Date is required'),
+    time: z.string().min(1, 'Time is required'),
+    duration: z.string().min(1, 'Duration is required'),
+    category: z.string().min(1, 'Category is required'),
+    featured: z.boolean(),
+    status: z.enum(['live', 'draft', 'published', 'cancelled', 'completed']),
     // Hackathons can have additional fields
     teamSize: z.object({
       min: z.number().int().min(1).max(100),
@@ -146,7 +169,23 @@ export const hackathonSchemas = {
     }).optional(),
   }),
 
-  update: hackathonSchemas.create.partial(),
+  update: z.object({
+    slug: commonSchemas.slug.optional(),
+    title: z.string().min(1, 'Title is required').max(200, 'Title too long').optional(),
+    excerpt: z.string().min(1, 'Excerpt is required').max(500, 'Excerpt too long').optional(),
+    description: z.string().min(1, 'Description is required').max(10000, 'Description too long').optional(),
+    organizer: z.string().min(1, 'Organizer is required').optional(),
+    date: z.string().min(1, 'Date is required').optional(),
+    time: z.string().min(1, 'Time is required').optional(),
+    duration: z.string().min(1, 'Duration is required').optional(),
+    category: z.string().min(1, 'Category is required').optional(),
+    featured: z.boolean().optional(),
+    status: z.enum(['live', 'draft', 'published', 'cancelled', 'completed']).optional(),
+    teamSize: z.object({
+      min: z.number().int().min(1).max(100),
+      max: z.number().int().min(1).max(100),
+    }).optional(),
+  }),
 
   filters: eventSchemas.filters,
 }

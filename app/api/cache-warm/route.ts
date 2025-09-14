@@ -81,7 +81,7 @@ class CacheWarmer {
             .select('*', { count: 'exact' })
 
           // Apply filters
-          if (filters.search) {
+          if ('search' in filters && filters.search) {
             query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
           }
           if (filters.category) {
@@ -152,7 +152,7 @@ class CacheWarmer {
             .select('*', { count: 'exact' })
 
           // Apply filters
-          if (filters.search) {
+          if ('search' in filters && filters.search) {
             query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
           }
           if (filters.category) {

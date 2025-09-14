@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+    const serviceSupabase = createServiceClient()
 
     const { data: events, error } = await serviceSupabase
       .from('events')
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+    const serviceSupabase = createServiceClient()
 
     const { data: newEvent, error } = await serviceSupabase
       .from('events')
@@ -175,7 +175,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+    const serviceSupabase = createServiceClient()
 
     // Check for event existence with the original slug
     const { data: existingEvents, error: checkError } = await serviceSupabase
@@ -288,7 +288,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
+    const serviceSupabase = createServiceClient()
 
     const { error } = await serviceSupabase
       .from('events')

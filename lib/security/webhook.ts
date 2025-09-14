@@ -290,7 +290,7 @@ export function withWebhookVerification(
         const timestamp = timestampHeader ? request.headers.get(timestampHeader) : undefined;
         const payload = await request.text();
 
-        const verification = verifier.verifySignature(payload, signature || '', timestamp);
+        const verification = verifier.verifySignature(payload, signature || '', timestamp || '');
         
         if (!verification.isValid) {
           logger.security.warn('webhook_verification_failed', 'Webhook verification failed', {

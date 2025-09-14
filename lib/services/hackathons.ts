@@ -73,7 +73,7 @@ class HackathonsService {
 
   async getHackathonBySlug(slug: string): Promise<Hackathon | null> {
     const cacheKey = `hackathon:${slug}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as Hackathon
     }
@@ -100,7 +100,7 @@ class HackathonsService {
 
   async getFeaturedHackathons(limit: number = 5) {
     const cacheKey = `featured_hackathons:${limit}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as Hackathon[]
     }
@@ -147,7 +147,7 @@ class HackathonsService {
     }
 
     // Clear cache after creating new hackathon
-    cache.clear()
+    UnifiedCache.purgeByTags(['hackathons', 'content'])
     return hackathon
   }
 
@@ -167,7 +167,7 @@ class HackathonsService {
     }
 
     // Clear cache after updating hackathon
-    cache.clear()
+    UnifiedCache.purgeByTags(['hackathons', 'content'])
     return hackathon
   }
 
@@ -185,7 +185,7 @@ class HackathonsService {
     }
 
     // Clear cache after deleting hackathon
-    cache.clear()
+    UnifiedCache.purgeByTags(['hackathons', 'content'])
     return true
   }
 }
