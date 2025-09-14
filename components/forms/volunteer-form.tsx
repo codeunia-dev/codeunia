@@ -11,8 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { HandHeart, Send, Calendar, MapPin, Users, Code2, Heart } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function VolunteerForm() {
+    const { user, loading: authLoading } = useAuth();
+    
     const getSupabaseClient = () => {
         return createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -68,6 +71,11 @@ export function VolunteerForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        if (!user) {
+            toast.error('Please sign in to submit your application.');
+            return;
+        }
+        
         setIsSubmitting(true);
 
         try {
@@ -76,6 +84,7 @@ export function VolunteerForm() {
                 .from('volunteer_applications')
                 .insert([
                     {
+                        user_id: user.id,
                         first_name: formData.firstName,
                         last_name: formData.lastName,
                         email: formData.email,
@@ -119,6 +128,64 @@ export function VolunteerForm() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading state while checking authentication
+    if (authLoading) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+            >
+                <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+                    <CardContent className="p-8 text-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-muted-foreground">Loading...</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
+
+    // Show sign-in prompt if not authenticated
+    if (!user) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+            >
+                <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+                    <CardHeader className="text-center pb-6">
+                        <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 mb-4">
+                            <HandHeart className="h-8 w-8 text-white" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold">Authentication Required</CardTitle>
+                        <p className="text-muted-foreground">
+                            Please sign in to submit your volunteer application
+                        </p>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                You need to be signed in to submit an application. This helps us track your submissions and provide better support.
+                            </p>
+                            <Button 
+                                className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white"
+                                onClick={() => window.location.href = '/auth/signin'}
+                            >
+                                Sign In to Continue
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div

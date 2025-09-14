@@ -17,6 +17,7 @@ import {
     Users,
     Award,
     HandHeart,
+    Crown,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -62,6 +63,14 @@ export default function JoinPage() {
             href: "/join/volunteer",
             color: "text-pink-500",
         },
+        {
+            icon: Crown,
+            title: "Codeunia Core Team Application",
+            description: "Join our core team including media, content, and leadership roles to help shape Codeunia's future.",
+            gradient: "from-amber-500 to-yellow-500",
+            href: "/join/core-team",
+            color: "text-amber-500",
+        },
     ];
 
     const stats = [
@@ -88,6 +97,12 @@ export default function JoinPage() {
             label: "Volunteers",
             icon: HandHeart,
             color: "text-orange-500",
+        },
+        {
+            number: "15+",
+            label: "Core Team",
+            icon: Crown,
+            color: "text-amber-500",
         },
     ];
 

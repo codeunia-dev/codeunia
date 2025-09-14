@@ -11,8 +11,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trophy, Send, Building2 } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function SponsorshipForm() {
+    const { user, loading: authLoading } = useAuth();
+    
     const getSupabaseClient = () => {
         return createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -91,6 +94,11 @@ export function SponsorshipForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        if (!user) {
+            toast.error('Please sign in to submit your application.');
+            return;
+        }
+        
         if (!formData.agreeToContact || !formData.agreeToTerms) {
             toast.error("Please accept all required agreements");
             return;
@@ -103,6 +111,7 @@ export function SponsorshipForm() {
             const { error } = await supabase
                 .from('sponsorship_applications')
                 .insert([{
+                    user_id: user.id,
                     company_name: formData.companyName,
                     company_size: formData.companySize,
                     contact_name: formData.contactName,
@@ -150,6 +159,42 @@ export function SponsorshipForm() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading state while checking authentication
+    if (authLoading) {
+        return (
+            <div className="text-center p-8">
+                <div className="flex flex-col items-center space-y-4">
+                    <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-muted-foreground">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show sign-in prompt if not authenticated
+    if (!user) {
+        return (
+            <div className="text-center p-8 space-y-4">
+                <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 mb-4 w-fit">
+                    <Trophy className="h-8 w-8 text-white" />
+                </div>
+                <h3 className="text-xl font-bold">Authentication Required</h3>
+                <p className="text-muted-foreground">
+                    Please sign in to submit your sponsorship application
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    You need to be signed in to submit an application. This helps us track your submissions and provide better support.
+                </p>
+                <Button 
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                    onClick={() => window.location.href = '/auth/signin'}
+                >
+                    Sign In to Continue
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8">

@@ -10,8 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Building2, FileText, Loader2 } from "lucide-react";
 import { createBrowserClient } from "@supabase/ssr";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 export function CollaborationForm() {
+    const { user, loading: authLoading } = useAuth();
+    
     const getSupabaseClient = () => {
         return createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -44,6 +47,11 @@ export function CollaborationForm() {
             return;
         }
 
+        if (!user) {
+            toast.error('Please sign in to submit your application.');
+            return;
+        }
+        
         if (formData.website && !formData.website.startsWith("http")) {
             toast.error("Please enter a valid website URL starting with http:// or https://");
             return;
@@ -57,6 +65,7 @@ export function CollaborationForm() {
                 .from('collaboration_applications')
                 .insert([
                     {
+                        user_id: user.id,
                         organization_name: formData.organizationName,
                         website: formData.website,
                         contact_person: formData.contactPerson,
@@ -86,6 +95,64 @@ export function CollaborationForm() {
             setIsSubmitting(false);
         }
     };
+
+    // Show loading state while checking authentication
+    if (authLoading) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+            >
+                <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+                    <CardContent className="p-8 text-center">
+                        <div className="flex flex-col items-center space-y-4">
+                            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                            <p className="text-muted-foreground">Loading...</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
+
+    // Show sign-in prompt if not authenticated
+    if (!user) {
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+            >
+                <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+                    <CardHeader className="text-center pb-6">
+                        <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 mb-4">
+                            <Building2 className="h-8 w-8 text-white" />
+                        </div>
+                        <CardTitle className="text-2xl font-bold">Authentication Required</CardTitle>
+                        <p className="text-muted-foreground">
+                            Please sign in to submit your collaboration application
+                        </p>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <div className="space-y-4">
+                            <p className="text-sm text-muted-foreground">
+                                You need to be signed in to submit an application. This helps us track your submissions and provide better support.
+                            </p>
+                            <Button 
+                                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                                onClick={() => window.location.href = '/auth/signin'}
+                            >
+                                Sign In to Continue
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div
