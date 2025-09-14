@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useAuth as useAuthStore, useAuthActions, initializeAuth, setupAuthListener } from "@/lib/stores/auth-store"
 
 /**
@@ -10,9 +10,12 @@ import { useAuth as useAuthStore, useAuthActions, initializeAuth, setupAuthListe
 export function useAuth() {
   const { user, profile, loading, initialized, isLoggedIn, isAdmin } = useAuthStore()
   const { refreshSession } = useAuthActions()
+  const initializationStarted = useRef(false)
 
   useEffect(() => {
-    if (!initialized) {
+    // Only initialize once, even if the component re-renders
+    if (!initialized && !initializationStarted.current) {
+      initializationStarted.current = true
       initializeAuth()
       setupAuthListener()
     }

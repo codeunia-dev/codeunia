@@ -280,7 +280,12 @@ export const useAuthStore = create<AuthState>()(
 
 // Initialize auth state on app start
 export const initializeAuth = async () => {
-  const { setUser, setProfile, setInitialized, setLoading, fetchProfile } = useAuthStore.getState()
+  const { setUser, setProfile, setInitialized, setLoading, fetchProfile, initialized } = useAuthStore.getState()
+  
+  // Don't initialize if already initialized
+  if (initialized) {
+    return
+  }
   
   setLoading(true)
   try {
@@ -301,7 +306,13 @@ export const initializeAuth = async () => {
 }
 
 // Listen for auth state changes
+let authListenerSetup = false
 export const setupAuthListener = () => {
+  if (authListenerSetup) {
+    return
+  }
+  
+  authListenerSetup = true
   const supabase = createClient()
   const { setUser, setProfile, setLoading, fetchProfile } = useAuthStore.getState()
 
