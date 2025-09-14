@@ -11,6 +11,100 @@ import { useAuth } from "@/lib/hooks/useAuth"
 import CodeuniaLogo from "./codeunia-logo";
 import dynamic from "next/dynamic";
 
+// Client-side only auth section to prevent hydration mismatch
+const AuthSection = dynamic(() => Promise.resolve(() => {
+  const { user, loading, initialized } = useAuth()
+  const pathname = usePathname()
+  
+  if (!initialized || loading) {
+    return <div className="text-sm text-muted-foreground">Loading...</div>
+  }
+  
+  if (user) {
+    return (
+      <div className="flex items-center space-x-2">
+        <PremiumButton user={user} />
+        <UserDisplay userId={user.id} showCodeuniaId={false} />
+        <UserIcon />
+      </div>
+    )
+  }
+  
+  return (
+    <>
+      <Button variant="ghost" asChild className="hover:scale-105 transition-transform">
+        <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
+      </Button>
+      <Button asChild className="glow-effect hover:scale-105 transition-all duration-300">
+        <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
+      </Button>
+    </>
+  )
+}), {
+  ssr: false,
+  loading: () => <div className="text-sm text-muted-foreground">Loading...</div>
+})
+
+// Mobile auth section
+const MobileAuthSection = dynamic(() => Promise.resolve(() => {
+  const { user, loading, initialized } = useAuth()
+  
+  if (!initialized || loading) {
+    return null
+  }
+  
+  if (user) {
+    return (
+      <div className="flex items-center space-x-1">
+        <PremiumButton user={user} />
+        <UserIcon />
+      </div>
+    )
+  }
+  
+  return null
+}), {
+  ssr: false
+})
+
+// Mobile menu auth section
+const MobileMenuAuthSection = dynamic(() => Promise.resolve(() => {
+  const { user, loading, initialized } = useAuth()
+  const pathname = usePathname()
+  
+  if (!initialized || loading) {
+    return null
+  }
+  
+  if (user) {
+    return (
+      <div className="pt-3 border-t border-border">
+        <div className="flex items-center space-x-2 py-2 px-3">
+          <UserIcon />
+          <div className="flex-1 min-w-0">
+            <UserDisplay userId={user.id} showCodeuniaId={false} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+  
+  return (
+    <div className="pt-3 border-t border-border">
+      <div className="flex space-x-2">
+        <Button variant="ghost" asChild className="flex-1 text-sm">
+          <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
+        </Button>
+        <Button asChild className="flex-1 glow-effect text-sm">
+          <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
+        </Button>
+      </div>
+    </div>
+  )
+}), {
+  ssr: false
+})
+
 // Lazy load non-critical components
 const PremiumButton = dynamic(() => import("./PremiumButton"), {
   loading: () => <div className="w-8 h-8 bg-gray-200 rounded animate-pulse" />,
@@ -101,35 +195,13 @@ export default function Header() {
         {/* desktop auth & theme - right */}
         <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
           {/* <ThemeToggle /> */}
-          {!initialized || loading ? (
-            <div className="text-sm text-muted-foreground">Loading...</div>
-          ) : user ? (
-            <div className="flex items-center space-x-2">
-              <PremiumButton user={user} />
-              <UserDisplay userId={user.id} showCodeuniaId={false} />
-              <UserIcon />
-            </div>
-          ) : (
-            <>
-              <Button variant="ghost" asChild className="hover:scale-105 transition-transform">
-                <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
-              </Button>
-              <Button asChild className="glow-effect hover:scale-105 transition-all duration-300">
-                <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
-              </Button>
-            </>
-          )}
+          <AuthSection />
         </div>
 
         {/* mobile menu button */}
         <div className="flex md:hidden items-center space-x-1">
           {/* <ThemeToggle /> */}
-          {initialized && !loading && user && (
-            <div className="flex items-center space-x-1">
-              <PremiumButton user={user} />
-              <UserIcon />
-            </div>
-          )}
+          <MobileAuthSection />
           <Button
             variant="ghost"
             size="icon"
@@ -169,30 +241,7 @@ export default function Header() {
             </div>
 
             {/* User Actions */}
-            {initialized && !loading && user && (
-              <div className="pt-3 border-t border-border">
-                <div className="flex items-center space-x-2 py-2 px-3">
-                  <UserIcon />
-                  <div className="flex-1 min-w-0">
-                    <UserDisplay userId={user.id} showCodeuniaId={false} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Auth Buttons for non-authenticated users */}
-            {initialized && !loading && !user && (
-              <div className="pt-3 border-t border-border">
-                <div className="flex space-x-2">
-                  <Button variant="ghost" asChild className="flex-1 text-sm">
-                    <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
-                  </Button>
-                  <Button asChild className="flex-1 glow-effect text-sm">
-                    <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
-                  </Button>
-                </div>
-              </div>
-            )}
+            <MobileMenuAuthSection />
           </nav>
         </div>
       )}
