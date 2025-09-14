@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>()(
       // Initial state
       user: null,
       profile: null,
-      loading: false,
+      loading: true, // Start with loading true to prevent hydration mismatch
       initialized: false,
 
       // Basic setters
@@ -272,7 +272,7 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         profile: state.profile,
-        initialized: state.initialized,
+        // Don't persist loading or initialized - they should always start fresh
       }),
     }
   )

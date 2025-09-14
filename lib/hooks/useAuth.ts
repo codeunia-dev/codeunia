@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useAuth as useAuthStore, useAuthActions, initializeAuth, setupAuthListener } from "@/lib/stores/auth-store"
 
 /**
@@ -11,15 +11,34 @@ export function useAuth() {
   const { user, profile, loading, initialized, isLoggedIn, isAdmin } = useAuthStore()
   const { refreshSession } = useAuthActions()
   const initializationStarted = useRef(false)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
 
   useEffect(() => {
     // Only initialize once, even if the component re-renders
-    if (!initialized && !initializationStarted.current) {
+    if (!initialized && !initializationStarted.current && isHydrated) {
       initializationStarted.current = true
       initializeAuth()
       setupAuthListener()
     }
-  }, [initialized])
+  }, [initialized, isHydrated])
+
+  // Return loading state until hydrated to prevent hydration mismatch
+  if (!isHydrated) {
+    return {
+      user: null,
+      profile: null,
+      loading: true,
+      initialized: false,
+      isLoggedIn: false,
+      is_admin: false,
+      error: null,
+    }
+  }
 
   return {
     user,
