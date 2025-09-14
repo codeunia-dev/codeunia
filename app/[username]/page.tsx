@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { PublicProfileView } from "@/components/users/PublicProfileView";
 import { reservedUsernameService } from '@/lib/services/reserved-usernames';
+import { createClient } from '@/lib/supabase/server';
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -26,8 +27,26 @@ export default async function UsernamePage({ params }: UsernamePageProps) {
     }
   }
 
-  // For now, treat all non-reserved usernames as profile routes
-  // In the future, this could be expanded to handle other username-based routes
+  // Check if the username actually exists in the database
+  try {
+    const supabase = await createClient();
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('id, username, is_public')
+      .eq('username', username)
+      .eq('is_public', true)
+      .single();
+    
+    // If there's an error or no profile found, show 404
+    if (error || !profile) {
+      notFound();
+    }
+  } catch (error) {
+    // If there's any error, show 404
+    notFound();
+  }
+
+  // If we get here, the username exists and is public
   return (
     <>
       <Header />
