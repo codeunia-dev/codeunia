@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { useGlobalLeaderboard } from '@/hooks/useGlobalLeaderboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,7 +21,50 @@ import {
 } from 'lucide-react'
 import { BadgeType } from '@/types/global-leaderboard'
 
-export function GlobalLeaderboard() {
+// Memoized leaderboard item component
+const LeaderboardItem = React.memo(({ 
+  user, 
+  rank, 
+  getRankIcon, 
+  getRankBadge, 
+  getBadgeInfo 
+}: {
+  user: any;
+  rank: number;
+  getRankIcon: (rank: number) => React.ReactNode;
+  getRankBadge: (rank: number) => React.ReactNode;
+  getBadgeInfo: (badge: string) => any;
+}) => {
+  const badgeInfo = useMemo(() => getBadgeInfo(user.badge), [user.badge, getBadgeInfo]);
+  
+  return (
+    <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {getRankIcon(rank)}
+          {getRankBadge(rank)}
+        </div>
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={user.avatar_url} alt={user.username} />
+          <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div>
+          <div className="font-medium">{user.username}</div>
+          <div className="text-sm text-muted-foreground">{user.points.toLocaleString()} points</div>
+        </div>
+      </div>
+      {badgeInfo && (
+        <Badge variant="outline" className="text-xs">
+          {badgeInfo.name}
+        </Badge>
+      )}
+    </div>
+  );
+});
+
+LeaderboardItem.displayName = 'LeaderboardItem';
+
+export const GlobalLeaderboard = React.memo(function GlobalLeaderboard() {
   const {
     leaderboard,
     userRank,
@@ -38,34 +81,34 @@ export function GlobalLeaderboard() {
   const [timeRange, setTimeRange] = useState<'all' | 'month' | 'week'>('all')
   const [badgeFilter, setBadgeFilter] = useState<BadgeType | 'all'>('all')
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query)
     updateFilters({ search: query })
-  }
+  }, [updateFilters])
 
-  const handleTimeRangeChange = (range: 'all' | 'month' | 'week') => {
+  const handleTimeRangeChange = useCallback((range: 'all' | 'month' | 'week') => {
     setTimeRange(range)
     updateFilters({ timeRange: range })
-  }
+  }, [updateFilters])
 
-  const handleBadgeFilterChange = (badge: BadgeType | 'all') => {
+  const handleBadgeFilterChange = useCallback((badge: BadgeType | 'all') => {
     setBadgeFilter(badge)
     updateFilters({ badge: badge === 'all' ? undefined : badge })
-  }
+  }, [updateFilters])
 
-  const getRankIcon = (rank: number) => {
+  const getRankIcon = useCallback((rank: number) => {
     if (rank === 1) return <Crown className="h-6 w-6 text-yellow-500" />
     if (rank === 2) return <Medal className="h-6 w-6 text-gray-400" />
     if (rank === 3) return <Award className="h-6 w-6 text-amber-600" />
     return null
-  }
+  }, [])
 
-  const getRankBadge = (rank: number) => {
+  const getRankBadge = useCallback((rank: number) => {
     if (rank === 1) return <Badge className="bg-yellow-500 text-white text-sm font-bold">🥇 1st</Badge>
     if (rank === 2) return <Badge className="bg-gray-400 text-white text-sm font-bold">🥈 2nd</Badge>
     if (rank === 3) return <Badge className="bg-amber-600 text-white text-sm font-bold">🥉 3rd</Badge>
     return <Badge variant="secondary" className="text-sm font-medium">#{rank}</Badge>
-  }
+  }, [])
 
   if (loading && leaderboard.length === 0) {
     return (
@@ -282,4 +325,6 @@ export function GlobalLeaderboard() {
       </Card>
     </div>
   )
-}
+});
+
+GlobalLeaderboard.displayName = 'GlobalLeaderboard';
