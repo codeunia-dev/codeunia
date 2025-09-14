@@ -25,7 +25,7 @@ const UserDisplay = dynamic(() => import("./UserDisplay"), {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
-  const { user, loading } = useAuth()
+  const { user, loading, initialized } = useAuth()
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function Header() {
         {/* desktop auth & theme - right */}
         <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
           {/* <ThemeToggle /> */}
-          {loading ? (
+          {!initialized || loading ? (
             <div className="text-sm text-muted-foreground">Loading...</div>
           ) : user ? (
             <div className="flex items-center space-x-2">
@@ -124,7 +124,7 @@ export default function Header() {
         {/* mobile menu button */}
         <div className="flex md:hidden items-center space-x-1">
           {/* <ThemeToggle /> */}
-          {!loading && user && (
+          {initialized && !loading && user && (
             <div className="flex items-center space-x-1">
               <PremiumButton user={user} />
               <UserIcon />
@@ -169,7 +169,7 @@ export default function Header() {
             </div>
 
             {/* User Actions */}
-            {!loading && user && (
+            {initialized && !loading && user && (
               <div className="pt-3 border-t border-border">
                 <div className="flex items-center space-x-2 py-2 px-3">
                   <UserIcon />
@@ -181,7 +181,7 @@ export default function Header() {
             )}
 
             {/* Auth Buttons for non-authenticated users */}
-            {!loading && !user && (
+            {initialized && !loading && !user && (
               <div className="pt-3 border-t border-border">
                 <div className="flex space-x-2">
                   <Button variant="ghost" asChild className="flex-1 text-sm">

@@ -280,8 +280,9 @@ export const useAuthStore = create<AuthState>()(
 
 // Initialize auth state on app start
 export const initializeAuth = async () => {
-  const { setUser, setProfile, setInitialized, fetchProfile } = useAuthStore.getState()
+  const { setUser, setProfile, setInitialized, setLoading, fetchProfile } = useAuthStore.getState()
   
+  setLoading(true)
   try {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
@@ -294,6 +295,7 @@ export const initializeAuth = async () => {
   } catch (error) {
     console.error('Error initializing auth:', error)
   } finally {
+    setLoading(false)
     setInitialized(true)
   }
 }
@@ -301,16 +303,19 @@ export const initializeAuth = async () => {
 // Listen for auth state changes
 export const setupAuthListener = () => {
   const supabase = createClient()
-  const { setUser, setProfile, fetchProfile } = useAuthStore.getState()
+  const { setUser, setProfile, setLoading, fetchProfile } = useAuthStore.getState()
 
   supabase.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session?.user) {
+      setLoading(true)
       setUser(session.user)
       const profile = await fetchProfile(session.user.id)
       setProfile(profile)
+      setLoading(false)
     } else if (event === 'SIGNED_OUT') {
       setUser(null)
       setProfile(null)
+      setLoading(false)
     } else if (event === 'TOKEN_REFRESHED' && session?.user) {
       setUser(session.user)
     }

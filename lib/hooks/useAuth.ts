@@ -22,6 +22,7 @@ export function useAuth() {
     user,
     profile,
     loading,
+    initialized,
     isLoggedIn,
     is_admin: isAdmin,
     // Legacy compatibility
