@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
 import AIProvider from "@/components/ai/AIProvider";
+import AuthProvider from "@/components/AuthProvider";
 import { getPageMetadata, getPageStructuredData } from "@/lib/seo/metadata";
 
 // Only load dev tools in development
@@ -94,13 +95,15 @@ export default function RootLayout({
             enableSystem={true}
             disableTransitionOnChange
           >
-            <GlobalErrorHandler />
-            {children}
-            <Toaster richColors position="top-center" />
-            <AIProvider />
+            <AuthProvider>
+              <GlobalErrorHandler />
+              {children}
+              <Toaster richColors position="top-center" />
+              <AIProvider />
 
-            <ReactDevTools />
-            <AuthDebug />
+              <ReactDevTools />
+              <AuthDebug />
+            </AuthProvider>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
