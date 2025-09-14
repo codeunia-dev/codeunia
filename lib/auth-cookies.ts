@@ -87,6 +87,7 @@ export const csrfCookies = {
       return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
     }
     // Fallback for server-side or environments without crypto.getRandomValues
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     if (typeof require !== 'undefined') {
       const crypto = require('crypto');
       return crypto.randomBytes(16).toString('hex');

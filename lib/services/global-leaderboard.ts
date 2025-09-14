@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client'
-import { createServiceClient } from '@/lib/supabase/server'
 import { 
   UserPoints, 
   UserActivityLog, 
@@ -78,16 +77,9 @@ export class GlobalLeaderboardService {
   }
   private pointSystem: PointSystem = DEFAULT_POINT_SYSTEM
 
-  // Only create admin client on server side
+  // Use regular client for all operations
   private get supabaseAdmin() {
-    // Check if service role key is available
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      // Server side - we can use service role key
-      return createServiceClient()
-    } else {
-      // Client side - fall back to regular client
-      return this.getSupabaseClient()
-    }
+    return this.getSupabaseClient()
   }
 
   // Get or create user points record
