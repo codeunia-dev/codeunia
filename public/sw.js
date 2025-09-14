@@ -1,6 +1,7 @@
-const CACHE_NAME = 'codeunia-v1';
-const STATIC_CACHE = 'codeunia-static-v1';
-const DYNAMIC_CACHE = 'codeunia-dynamic-v1';
+const CACHE_NAME = 'codeunia-v2';
+const STATIC_CACHE = 'codeunia-static-v2';
+const DYNAMIC_CACHE = 'codeunia-dynamic-v2';
+const API_CACHE = 'codeunia-api-v2';
 
 // Files to cache for offline functionality
 const STATIC_FILES = [
@@ -46,7 +47,7 @@ self.addEventListener('activate', (event) => {
       .then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE && cacheName !== API_CACHE) {
               console.log('Service Worker: Deleting old cache', cacheName);
               return caches.delete(cacheName);
             }
@@ -59,6 +60,43 @@ self.addEventListener('activate', (event) => {
       })
   );
 });
+
+// Helper function to check if a request is for a public API endpoint
+function isPublicAPIRequest(url) {
+  const publicAPIPatterns = [
+    '/api/events',
+    '/api/hackathons',
+    '/api/featured',
+    '/api/leaderboard',
+    '/api/stats',
+    '/api/health'
+  ];
+  
+  return publicAPIPatterns.some(pattern => url.includes(pattern));
+}
+
+// Helper function to check if a request contains auth headers
+function hasAuthHeaders(request) {
+  return request.headers.get('authorization') || 
+         request.headers.get('cookie')?.includes('supabase') ||
+         request.headers.get('x-user-id');
+}
+
+// Helper function to check if response should be cached
+function shouldCacheResponse(response) {
+  // Don't cache error responses
+  if (!response || response.status !== 200) {
+    return false;
+  }
+  
+  // Don't cache responses with no-cache headers
+  const cacheControl = response.headers.get('cache-control');
+  if (cacheControl && (cacheControl.includes('no-cache') || cacheControl.includes('no-store'))) {
+    return false;
+  }
+  
+  return true;
+}
 
 // Fetch event - serve from cache or network
 self.addEventListener('fetch', (event) => {
@@ -75,8 +113,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API requests (let them go to network)
+  // Handle API requests with stale-while-revalidate strategy
   if (url.pathname.startsWith('/api/')) {
+    // Only cache public API endpoints without auth headers
+    if (isPublicAPIRequest(url.pathname) && !hasAuthHeaders(request)) {
+      event.respondWith(
+        caches.open(API_CACHE)
+          .then((cache) => {
+            return cache.match(request)
+              .then((cachedResponse) => {
+                // Always fetch from network in background for revalidation
+                const networkFetch = fetch(request)
+                  .then((networkResponse) => {
+                    // Cache the response if it's valid
+                    if (shouldCacheResponse(networkResponse)) {
+                      const responseToCache = networkResponse.clone();
+                      cache.put(request, responseToCache);
+                    }
+                    return networkResponse;
+                  })
+                  .catch(() => {
+                    // Network failed, but we don't want to throw
+                    console.log('Service Worker: Network fetch failed for API', request.url);
+                  });
+
+                // Return cached response immediately if available
+                if (cachedResponse) {
+                  console.log('Service Worker: Serving API from cache (stale-while-revalidate)', request.url);
+                  // Don't wait for network fetch to complete
+                  networkFetch;
+                  return cachedResponse;
+                }
+
+                // No cached response, wait for network
+                console.log('Service Worker: Fetching API from network', request.url);
+                return networkFetch;
+              });
+          })
+      );
+    }
+    // For private API endpoints, let them go to network without caching
     return;
   }
 
