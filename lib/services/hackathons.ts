@@ -1,30 +1,15 @@
 // Server-side service for hackathons
 import { createClient } from '@/lib/supabase/server'
+import { UnifiedCache } from '@/lib/unified-cache-system'
 import { Hackathon, HackathonsFilters, HackathonsResponse } from '@/types/hackathons'
 
 // Re-export types for convenience
 export type { Hackathon, HackathonsFilters, HackathonsResponse }
 
-// Simple in-memory cache for development
-const cache = new Map<string, { data: unknown; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-
-function getCachedData(key: string) {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return cached.data
-  }
-  return null
-}
-
-function setCachedData(key: string, data: unknown) {
-  cache.set(key, { data, timestamp: Date.now() })
-}
-
 class HackathonsService {
   async getHackathons(filters: HackathonsFilters = {}): Promise<HackathonsResponse> {
     const cacheKey = `hackathons:${JSON.stringify(filters)}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as HackathonsResponse
     }
@@ -82,7 +67,7 @@ class HackathonsService {
       hasMore
     }
 
-    setCachedData(cacheKey, result)
+    await UnifiedCache.set(cacheKey, result, 'DATABASE_QUERIES')
     return result
   }
 
@@ -109,7 +94,7 @@ class HackathonsService {
       throw new Error('Failed to fetch hackathon')
     }
 
-    setCachedData(cacheKey, hackathon)
+    await UnifiedCache.set(cacheKey, hackathon, 'DATABASE_QUERIES')
     return hackathon
   }
 
@@ -138,7 +123,7 @@ class HackathonsService {
       }
 
       const result = hackathons || []
-      setCachedData(cacheKey, result)
+      await UnifiedCache.set(cacheKey, result, 'DATABASE_QUERIES')
       return result
     } catch (error) {
       console.error('Error in getFeaturedHackathons:', error)

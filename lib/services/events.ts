@@ -1,30 +1,15 @@
 // Server-side service for events
 import { createClient } from '@/lib/supabase/server'
+import { UnifiedCache } from '@/lib/unified-cache-system'
 import { Event, EventsFilters, EventsResponse } from '@/types/events'
 
 // Re-export types for convenience
 export type { Event, EventsFilters, EventsResponse }
 
-// Simple in-memory cache for development
-const cache = new Map<string, { data: unknown; timestamp: number }>()
-const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
-
-function getCachedData(key: string) {
-  const cached = cache.get(key)
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return cached.data
-  }
-  return null
-}
-
-function setCachedData(key: string, data: unknown) {
-  cache.set(key, { data, timestamp: Date.now() })
-}
-
 class EventsService {
   async getEvents(filters: EventsFilters = {}): Promise<EventsResponse> {
     const cacheKey = `events:${JSON.stringify(filters)}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as EventsResponse
     }
@@ -88,13 +73,13 @@ class EventsService {
       hasMore
     }
 
-    setCachedData(cacheKey, result)
+    await UnifiedCache.set(cacheKey, result, 'DATABASE_QUERIES')
     return result
   }
 
   async getEventBySlug(slug: string): Promise<Event | null> {
     const cacheKey = `event:${slug}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as Event
     }
@@ -121,7 +106,7 @@ class EventsService {
 
   async getFeaturedEvents(limit: number = 5) {
     const cacheKey = `featured_events:${limit}`
-    const cached = getCachedData(cacheKey)
+    const cached = await UnifiedCache.get(cacheKey)
     if (cached) {
       return cached as Event[]
     }
@@ -144,7 +129,7 @@ class EventsService {
       }
 
       const result = events || []
-      setCachedData(cacheKey, result)
+      await UnifiedCache.set(cacheKey, result, 'DATABASE_QUERIES')
       return result
     } catch (error) {
       console.error('Error in getFeaturedEvents:', error)
