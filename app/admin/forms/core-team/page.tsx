@@ -72,13 +72,6 @@ export default function AdminCoreTeamPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [savingStatus, setSavingStatus] = useState<Record<number, boolean>>({});
 
-  if (authLoading) {
-    return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
-  }
-  if (!is_admin) {
-    return <div className="text-center text-sm text-muted-foreground py-12">Forbidden: admin access required.</div>;
-  }
-
   // Fetch applications
   useEffect(() => {
     const fetchApplications = async () => {
@@ -132,6 +125,14 @@ export default function AdminCoreTeamPage() {
     const roles = applications.map(app => app.preferred_role);
     return Array.from(new Set(roles)).sort();
   }, [applications]);
+
+  // Admin access check (after all hooks)
+  if (authLoading) {
+    return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
+  }
+  if (!is_admin) {
+    return <div className="text-center text-sm text-muted-foreground py-12">Forbidden: admin access required.</div>;
+  }
 
   // Handle status update
   const handleStatusUpdate = async (id: number, newStatus: string) => {
