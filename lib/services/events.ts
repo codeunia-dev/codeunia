@@ -100,7 +100,7 @@ class EventsService {
       throw new Error('Failed to fetch event')
     }
 
-    setCachedData(cacheKey, event)
+    await UnifiedCache.set(cacheKey, event, 'DATABASE_QUERIES')
     return event
   }
 
@@ -153,7 +153,7 @@ class EventsService {
     }
 
     // Clear cache after creating new event
-    cache.clear()
+    await UnifiedCache.purgeByTags(['events', 'content'])
     return event
   }
 
@@ -173,7 +173,7 @@ class EventsService {
     }
 
     // Clear cache after updating event
-    cache.clear()
+    await UnifiedCache.purgeByTags(['events', 'content'])
     return event
   }
 
@@ -191,7 +191,7 @@ class EventsService {
     }
 
     // Clear cache after deleting event
-    cache.clear()
+    await UnifiedCache.purgeByTags(['events', 'content'])
     return true
   }
 }
