@@ -29,11 +29,11 @@ function OAuthCallbackContent() {
         }
 
         if (session?.user) {
-          // User is authenticated, ensure profile exists
+          // User is authenticated, check profile completeness
           try {
             const { data: profile } = await supabase
               .from('profiles')
-              .select('id')
+              .select('id, first_name, last_name, username, profile_complete')
               .eq('id', session.user.id)
               .single();
               
@@ -46,14 +46,33 @@ function OAuthCallbackContent() {
                 auth_provider: provider,
                 user_metadata: session.user.user_metadata || {}
               });
+              
+              // After creating profile, redirect to complete profile
+              console.log('Profile created, redirecting to complete profile');
+              router.replace('/complete-profile');
+              return;
+            }
+            
+            // Check if profile is complete (has first_name, last_name, and username)
+            const isProfileComplete = profile.first_name && 
+                                    profile.last_name && 
+                                    profile.username && 
+                                    profile.profile_complete;
+            
+            if (!isProfileComplete) {
+              console.log('Profile incomplete, redirecting to complete profile');
+              router.replace('/complete-profile');
+              return;
             }
           } catch (profileError) {
-            console.error('Error creating profile for OAuth user:', profileError);
-            // Continue anyway, the user can still proceed
+            console.error('Error checking profile for OAuth user:', profileError);
+            // If there's an error, redirect to complete profile to be safe
+            router.replace('/complete-profile');
+            return;
           }
           
-          // User is authenticated, redirect to return URL
-          console.log('User authenticated, redirecting to:', returnUrl);
+          // User is authenticated and profile is complete, redirect to return URL
+          console.log('User authenticated with complete profile, redirecting to:', returnUrl);
           toast.success("Signed in successfully!");
           router.replace(returnUrl);
           return;
@@ -87,11 +106,11 @@ function OAuthCallbackContent() {
             }
 
             if (retrySession?.user) {
-              // User is authenticated, ensure profile exists
+              // User is authenticated, check profile completeness
               try {
                 const { data: profile } = await supabase
                   .from('profiles')
-                  .select('id')
+                  .select('id, first_name, last_name, username, profile_complete')
                   .eq('id', retrySession.user.id)
                   .single();
                   
@@ -104,13 +123,32 @@ function OAuthCallbackContent() {
                     auth_provider: provider,
                     user_metadata: retrySession.user.user_metadata || {}
                   });
+                  
+                  // After creating profile, redirect to complete profile
+                  console.log('Profile created on retry, redirecting to complete profile');
+                  router.replace('/complete-profile');
+                  return;
+                }
+                
+                // Check if profile is complete (has first_name, last_name, and username)
+                const isProfileComplete = profile.first_name && 
+                                        profile.last_name && 
+                                        profile.username && 
+                                        profile.profile_complete;
+                
+                if (!isProfileComplete) {
+                  console.log('Profile incomplete on retry, redirecting to complete profile');
+                  router.replace('/complete-profile');
+                  return;
                 }
               } catch (profileError) {
-                console.error('Error creating profile for OAuth user:', profileError);
-                // Continue anyway, the user can still proceed
+                console.error('Error checking profile for OAuth user on retry:', profileError);
+                // If there's an error, redirect to complete profile to be safe
+                router.replace('/complete-profile');
+                return;
               }
               
-              console.log('User authenticated on retry, redirecting to:', returnUrl);
+              console.log('User authenticated with complete profile on retry, redirecting to:', returnUrl);
               toast.success("Signed in successfully!");
               router.replace(returnUrl);
             } else {
@@ -120,11 +158,11 @@ function OAuthCallbackContent() {
                 const { data: { session: finalSession } } = await supabase.auth.getSession();
                 console.log('Final session check:', { session: !!finalSession });
                 if (finalSession?.user) {
-                  // User is authenticated, ensure profile exists
+                  // User is authenticated, check profile completeness
                   try {
                     const { data: profile } = await supabase
                       .from('profiles')
-                      .select('id')
+                      .select('id, first_name, last_name, username, profile_complete')
                       .eq('id', finalSession.user.id)
                       .single();
                       
@@ -137,13 +175,32 @@ function OAuthCallbackContent() {
                         auth_provider: provider,
                         user_metadata: finalSession.user.user_metadata || {}
                       });
+                      
+                      // After creating profile, redirect to complete profile
+                      console.log('Profile created on final try, redirecting to complete profile');
+                      router.replace('/complete-profile');
+                      return;
+                    }
+                    
+                    // Check if profile is complete (has first_name, last_name, and username)
+                    const isProfileComplete = profile.first_name && 
+                                            profile.last_name && 
+                                            profile.username && 
+                                            profile.profile_complete;
+                    
+                    if (!isProfileComplete) {
+                      console.log('Profile incomplete on final try, redirecting to complete profile');
+                      router.replace('/complete-profile');
+                      return;
                     }
                   } catch (profileError) {
-                    console.error('Error creating profile for OAuth user:', profileError);
-                    // Continue anyway, the user can still proceed
+                    console.error('Error checking profile for OAuth user on final try:', profileError);
+                    // If there's an error, redirect to complete profile to be safe
+                    router.replace('/complete-profile');
+                    return;
                   }
                   
-                  console.log('User authenticated on final try, redirecting to:', returnUrl);
+                  console.log('User authenticated with complete profile on final try, redirecting to:', returnUrl);
                   toast.success("Signed in successfully!");
                   router.replace(returnUrl);
                 } else {
