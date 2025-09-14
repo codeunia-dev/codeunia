@@ -484,6 +484,43 @@ jobs:
           sleep 60
           echo "🔍 Testing production health endpoint..."
           DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
+
+      - name: Warm production cache
+        run: |
+          echo "🔥 Starting cache warming for production..."
+          DEPLOYMENT_URL="${{ steps.deploy-production.outputs.deployment-url }}"
+          
+          # Wait for deployment to be fully ready
+          echo "⏳ Waiting for deployment to be ready for cache warming..."
+          for i in {1..30}; do
+            echo "Attempt $i/30: Testing deployment readiness..."
+            if curl -f -s --max-time 10 "$DEPLOYMENT_URL/api/health?quick=true" > /dev/null; then
+              echo "✅ Deployment is ready for cache warming"
+              break
+            else
+              echo "⏳ Deployment not ready yet, waiting 10 seconds..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 30 ]; then
+              echo "❌ Deployment not ready after 5 minutes, but continuing with cache warming"
+            fi
+          done
+          
+          # Run cache warming
+          echo "🔥 Warming production cache..."
+          if curl -f -s --max-time 300 "$DEPLOYMENT_URL/api/cache-warm" > /dev/null; then
+            echo "✅ Production cache warming completed successfully"
+          else
+            echo "⚠️ Cache warming failed or timed out, but deployment was successful"
+          fi
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          CACHE_WARMING_ENABLED: true
           
           # Validate deployment URL is a full URL
           if [[ ! "$DEPLOYMENT_URL" =~ ^https?:// ]]; then
