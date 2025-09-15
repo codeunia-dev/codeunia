@@ -53,9 +53,7 @@ export default function RootLayout({
           `
         }} />
         
-        {/* Preload critical resources */}
-        <link rel="preload" href="/fonts/geist-sans.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href="/fonts/geist-mono.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        {/* Preload critical resources - removed local font preloads since we use Google Fonts */}
         
         {/* Structured Data */}
         <script

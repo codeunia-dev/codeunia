@@ -68,6 +68,9 @@ export default function CompleteProfile() {
           if (profile.first_name) setFirstName(profile.first_name);
           if (profile.last_name) setLastName(profile.last_name);
           if (profile.username) setUsername(profile.username);
+        } else {
+          // Profile is null, which means there was an error but we can continue
+          console.log('Profile not found, continuing with form setup');
         }
       } catch (profileError) {
         console.error('Error checking profile:', profileError);
@@ -283,14 +286,14 @@ export default function CompleteProfile() {
             <label className="block text-sm font-semibold text-gray-700">
               First Name *
             </label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-              placeholder="Enter your first name"
-              required
-            />
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                  placeholder="Enter your first name"
+                  required
+                />
           </div>
 
           {/* Last Name */}
@@ -298,14 +301,14 @@ export default function CompleteProfile() {
             <label className="block text-sm font-semibold text-gray-700">
               Last Name *
             </label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-              placeholder="Enter your last name"
-              required
-            />
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                  placeholder="Enter your last name"
+                  required
+                />
           </div>
 
           {/* Username Input */}
@@ -315,23 +318,23 @@ export default function CompleteProfile() {
             </label>
             <div className="relative">
               <div className="relative">
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  className={`w-full border rounded-xl px-4 py-3 pr-20 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 ${
-                    usernameAvailable === true
-                      ? 'border-green-300 bg-green-50/50'
-                      : usernameAvailable === false || usernameError
-                      ? 'border-red-300 bg-red-50/50'
-                      : 'border-gray-200'
-                  }`}
-                  placeholder="Enter your username"
-                  minLength={3}
-                  maxLength={30}
-                  title="Username can only contain letters, numbers, hyphens, and underscores"
-                  required
-                />
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      className={`w-full border rounded-xl px-4 py-3 pr-20 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900 ${
+                        usernameAvailable === true
+                          ? 'border-green-300 bg-green-50/50'
+                          : usernameAvailable === false || usernameError
+                          ? 'border-red-300 bg-red-50/50'
+                          : 'border-gray-200'
+                      }`}
+                      placeholder="Enter your username"
+                      minLength={3}
+                      maxLength={30}
+                      title="Username can only contain letters, numbers, hyphens, and underscores"
+                      required
+                    />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
                   {isCheckingUsername && (
                     <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
