@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -23,6 +23,10 @@ interface User {
 }
 
 export default function CompleteProfile() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/protected/dashboard';
+  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -32,7 +36,6 @@ export default function CompleteProfile() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
-  const router = useRouter();
   const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
@@ -60,7 +63,7 @@ export default function CompleteProfile() {
           
           if (isProfileComplete) {
             // Profile is already complete, redirect to dashboard
-            router.push('/protected/dashboard');
+            router.push(returnUrl);
             return;
           }
           
@@ -223,7 +226,7 @@ export default function CompleteProfile() {
       }
 
       toast.success('Profile completed successfully! Welcome to CodeUnia! 🎉');
-      router.push('/protected/dashboard');
+      router.push(returnUrl);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Error completing profile setup');

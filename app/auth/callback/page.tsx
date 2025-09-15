@@ -43,12 +43,12 @@ function OAuthCallbackContent() {
               try {
                 await profileService.getProfile(session.user.id);
                 console.log('Profile created via profileService, redirecting to complete profile');
-                router.replace('/complete-profile');
+                router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                 return;
               } catch (profileError) {
                 console.error('Error creating profile:', profileError);
                 // Continue to complete profile page anyway
-                router.replace('/complete-profile');
+                router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                 return;
               }
             }
@@ -119,12 +119,12 @@ function OAuthCallbackContent() {
                   try {
                     await profileService.getProfile(retrySession.user.id);
                     console.log('Profile created via profileService on retry, redirecting to complete profile');
-                    router.replace('/complete-profile');
+                    router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                     return;
                   } catch (profileError) {
                     console.error('Error creating profile on retry:', profileError);
                     // Continue to complete profile page anyway
-                    router.replace('/complete-profile');
+                    router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                     return;
                   }
                 }
@@ -137,13 +137,13 @@ function OAuthCallbackContent() {
                 
                 if (!isProfileComplete) {
                   console.log('Profile incomplete on retry, redirecting to complete profile');
-                  router.replace('/complete-profile');
+                  router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                   return;
                 }
               } catch (profileError) {
                 console.error('Error checking profile for OAuth user on retry:', profileError);
                 // If there's an error, redirect to complete profile to be safe
-                router.replace('/complete-profile');
+                router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                 return;
               }
               
@@ -170,12 +170,12 @@ function OAuthCallbackContent() {
                       try {
                         await profileService.getProfile(finalSession.user.id);
                         console.log('Profile created via profileService on final try, redirecting to complete profile');
-                        router.replace('/complete-profile');
+                        router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                         return;
                       } catch (profileError) {
                         console.error('Error creating profile on final try:', profileError);
                         // Continue to complete profile page anyway
-                        router.replace('/complete-profile');
+                        router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                         return;
                       }
                     }
@@ -188,13 +188,13 @@ function OAuthCallbackContent() {
                     
                     if (!isProfileComplete) {
                       console.log('Profile incomplete on final try, redirecting to complete profile');
-                      router.replace('/complete-profile');
+                      router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                       return;
                     }
                   } catch (profileError) {
                     console.error('Error checking profile for OAuth user on final try:', profileError);
                     // If there's an error, redirect to complete profile to be safe
-                    router.replace('/complete-profile');
+                    router.replace(`/complete-profile?returnUrl=${encodeURIComponent(returnUrl)}`);
                     return;
                   }
                   
