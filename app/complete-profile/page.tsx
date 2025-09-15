@@ -271,7 +271,7 @@ export default function CompleteProfile() {
           <div className="flex justify-center mb-6">
             <CodeuniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+          <h1 className="text-2xl font-bold text-black font-medium mb-3">
             Welcome! Let&apos;s set up your profile
           </h1>
           <p className="text-gray-600 leading-relaxed">
@@ -290,7 +290,7 @@ export default function CompleteProfile() {
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-black font-medium"
                   placeholder="Enter your first name"
                   required
                 />
@@ -305,7 +305,7 @@ export default function CompleteProfile() {
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-black font-medium"
                   placeholder="Enter your last name"
                   required
                 />
@@ -322,11 +322,11 @@ export default function CompleteProfile() {
                       type="text"
                       value={username}
                       onChange={(e) => handleUsernameChange(e.target.value)}
-                      className={`w-full border rounded-xl px-4 py-3 pr-20 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-gray-900 ${
+                      className={`w-full border rounded-xl px-4 py-3 pr-20 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 text-black font-medium ${
                         usernameAvailable === true
-                          ? 'border-green-300 bg-green-50/50'
+                          ? 'border-green-300 bg-green-50'
                           : usernameAvailable === false || usernameError
-                          ? 'border-red-300 bg-red-50/50'
+                          ? 'border-red-300 bg-red-50'
                           : 'border-gray-200'
                       }`}
                       placeholder="Enter your username"

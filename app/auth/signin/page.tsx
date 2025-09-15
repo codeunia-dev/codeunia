@@ -94,6 +94,10 @@ function SignInForm() {
           redirectTo: typeof window !== "undefined"
             ? `${window.location.origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
             : undefined,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
     } catch (error) {
