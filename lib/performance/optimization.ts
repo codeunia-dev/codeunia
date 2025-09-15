@@ -209,7 +209,6 @@ export function generateResourceHints(): string {
     <link rel="preconnect" href="https://ocnorlktyfswjqgvzrve.supabase.co">
     
     <!-- Preload critical resources -->
-    <link rel="preload" href="/fonts/geist-sans.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/images/hero-bg.webp" as="image">
   `;
 }

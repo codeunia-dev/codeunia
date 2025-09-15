@@ -9,22 +9,29 @@ export class ProfileService {
   // Get user profile by ID
   async getProfile(userId: string): Promise<Profile | null> {
     const supabase = this.getSupabaseClient();
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // Profile doesn't exist, create one
-        return await this.createProfile(userId)
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // Profile doesn't exist, create one
+          return await this.createProfile(userId)
+        }
+        console.error('Error fetching profile:', error)
+        throw new Error(`Failed to fetch profile: ${error.message}`)
       }
-      console.error('Error fetching profile:', error)
-      throw new Error(`Failed to fetch profile: ${error.message}`)
-    }
 
-    return data
+      return data
+    } catch (error) {
+      console.error('Profile fetch error:', error)
+      // Return null instead of throwing to allow graceful fallback
+      return null
+    }
   }
 
   // Create a new profile
