@@ -31,13 +31,17 @@ export class ProfileService {
   async createProfile(userId: string): Promise<Profile> {
     const { data: user } = await this.getSupabaseClient().auth.getUser()
     
+    // Generate a simple codeunia_id if needed
+    const codeuniaId = `CU-${userId.slice(-8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
+    
     const profileData = {
       id: userId,
       first_name: user.user?.user_metadata?.first_name || '',
       last_name: user.user?.user_metadata?.last_name || '',
       is_public: true,
       email_notifications: true,
-      profile_completion_percentage: 0
+      profile_completion_percentage: 0,
+      codeunia_id: codeuniaId
     }
 
     const supabase = this.getSupabaseClient();
