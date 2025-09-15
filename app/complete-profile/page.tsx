@@ -139,15 +139,20 @@ export default function CompleteProfile() {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        throw error;
+        console.error('Username check error:', error);
+        // If there's a database error, assume username is available to allow form submission
+        setUsernameAvailable(true);
+        setUsernameError('');
+        return;
       }
 
       // If no data found, username is available
       setUsernameAvailable(!data);
     } catch (error) {
       console.error('Error checking username:', error);
-      setUsernameAvailable(null);
-      setUsernameError('Unable to check username availability');
+      // On any error, assume username is available to allow form submission
+      setUsernameAvailable(true);
+      setUsernameError('');
     } finally {
       setIsCheckingUsername(false);
     }
@@ -186,7 +191,7 @@ export default function CompleteProfile() {
       return;
     }
 
-    if (!usernameAvailable) {
+    if (usernameAvailable === false) {
       toast.error('Username is not available');
       return;
     }
@@ -275,7 +280,7 @@ export default function CompleteProfile() {
             Welcome! Let&apos;s set up your profile
           </h1>
           <p className="text-gray-600 leading-relaxed">
-            Complete your profile to get started with CodeUnia. This will only take a moment.
+            Complete your profile to get started with Codeunia. This will only take a moment.
           </p>
         </div>
 
@@ -419,9 +424,9 @@ export default function CompleteProfile() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError}
+            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || usernameAvailable === false}
             className={`w-full py-4 px-6 rounded-xl font-semibold text-sm transition-all duration-200 ${
-              isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError
+              isLoading || !firstName.trim() || !lastName.trim() || !username || usernameAvailable === false
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
             }`}
