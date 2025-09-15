@@ -71,6 +71,8 @@ export default function CompleteProfile() {
         }
       } catch (profileError) {
         console.error('Error checking profile:', profileError);
+        // Show a more user-friendly error message
+        toast.error('Unable to load profile data. Please refresh the page and try again.');
         // Continue with the form - profileService will handle creation if needed
       }
 
@@ -351,15 +353,15 @@ export default function CompleteProfile() {
                 </div>
               </div>
               
-              {/* Username Preview */}
-              {username && (
-                <div className="mt-2 flex items-center space-x-2">
-                  <span className="text-xs text-gray-500">Preview:</span>
-                  <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded-md">
-                    @{username.toLowerCase()}
-                  </span>
-                </div>
-              )}
+                  {/* Username Preview */}
+                  {username && (
+                    <div className="mt-2 flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700">Preview:</span>
+                      <span className="text-sm font-mono bg-gray-200 text-gray-800 px-2 py-1 rounded-md border">
+                        @{username.toLowerCase()}
+                      </span>
+                    </div>
+                  )}
               
               {/* Username Status Messages */}
               {isCheckingUsername && (
@@ -369,45 +371,45 @@ export default function CompleteProfile() {
                 </div>
               )}
               
-              {!isCheckingUsername && usernameAvailable === true && (
-                <div className="flex items-center space-x-2 mt-2">
-                  <CheckCircle className="h-3 w-3 text-green-500" />
-                  <p className="text-xs text-green-600">Username is available!</p>
-                </div>
-              )}
+                  {!isCheckingUsername && usernameAvailable === true && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <p className="text-sm font-medium text-green-700">Username is available!</p>
+                    </div>
+                  )}
               
-              {!isCheckingUsername && usernameAvailable === false && !usernameError && (
-                <div className="flex items-center space-x-2 mt-2">
-                  <XCircle className="h-3 w-3 text-red-500" />
-                  <p className="text-xs text-red-600">Username is already taken</p>
-                </div>
-              )}
+                  {!isCheckingUsername && usernameAvailable === false && !usernameError && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <XCircle className="h-4 w-4 text-red-500" />
+                      <p className="text-sm font-medium text-red-700">Username is already taken</p>
+                    </div>
+                  )}
               
-              {usernameError && (
-                <div className="flex items-center space-x-2 mt-2">
-                  <AlertCircle className="h-3 w-3 text-red-500" />
-                  <p className="text-xs text-red-600">{usernameError}</p>
-                </div>
-              )}
+                  {usernameError && (
+                    <div className="flex items-center space-x-2 mt-2">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
+                      <p className="text-sm font-medium text-red-700">{usernameError}</p>
+                    </div>
+                  )}
               
-              {/* Username Requirements */}
-              <div className="mt-3 p-3 bg-gray-50/50 rounded-lg border border-gray-100">
-                <p className="text-xs font-medium text-gray-700 mb-2">Username Requirements:</p>
-                <ul className="text-xs text-gray-600 space-y-1">
-                  <li className="flex items-center space-x-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${username.length >= 3 && username.length <= 30 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                    <span>3-30 characters long</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${/^[a-zA-Z0-9_-]+$/.test(username) || !username ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-                    <span>Letters, numbers, hyphens, and underscores only</span>
-                  </li>
-                  <li className="flex items-center space-x-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${usernameAvailable === true ? 'bg-green-500' : usernameAvailable === false ? 'bg-red-500' : 'bg-gray-300'}`}></div>
-                    <span>Must be unique across all users</span>
-                  </li>
-                </ul>
-              </div>
+                  {/* Username Requirements */}
+                  <div className="mt-3 p-4 bg-gray-100/80 rounded-lg border border-gray-200">
+                    <p className="text-sm font-semibold text-gray-800 mb-3">Username Requirements:</p>
+                    <ul className="text-sm text-gray-700 space-y-2">
+                      <li className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full ${username.length >= 3 && username.length <= 30 ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                        <span className="font-medium">3-30 characters long</span>
+                      </li>
+                      <li className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full ${/^[a-zA-Z0-9_-]+$/.test(username) || !username ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                        <span className="font-medium">Letters, numbers, hyphens, and underscores only</span>
+                      </li>
+                      <li className="flex items-center space-x-3">
+                        <div className={`w-2 h-2 rounded-full ${usernameAvailable === true ? 'bg-green-500' : usernameAvailable === false ? 'bg-red-500' : 'bg-gray-400'}`}></div>
+                        <span className="font-medium">Must be unique across all users</span>
+                      </li>
+                    </ul>
+                  </div>
             </div>
           </div>
 
@@ -435,15 +437,15 @@ export default function CompleteProfile() {
           </button>
         </form>
 
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-100">
-          <p className="text-xs text-gray-500 text-center leading-relaxed">
-            By continuing, you agree to CodeUnia&apos;s{' '}
-            <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors">Terms of Service</Link>
-            {' '}and{' '}
-            <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors">Privacy Policy</Link>
-          </p>
-        </div>
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-700 text-center leading-relaxed">
+                By continuing, you agree to CodeUnia&apos;s{' '}
+                <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Privacy Policy</Link>
+              </p>
+            </div>
       </div>
     </div>
   );
