@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import CodeuniaLogo from '@/components/codeunia-logo';
+import CodeUniaLogo from '@/components/codeunia-logo';
 import { InputValidator } from '@/lib/security/input-validation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { profileService } from '@/lib/services/profile';
@@ -36,7 +36,6 @@ function CompleteProfileContent() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
-  const [oauthProvider, setOauthProvider] = useState<string>('');
   const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
@@ -107,8 +106,6 @@ function CompleteProfileContent() {
           setLastName(oauthLastName);
         }
         
-        // Set OAuth provider for UI display
-        setOauthProvider(metadata.provider || 'unknown');
         
         console.log('OAuth provider data:', {
           provider: metadata.provider || 'unknown',
@@ -298,7 +295,7 @@ function CompleteProfileContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <CodeuniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
+            <CodeUniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
           </div>
           <h1 className="text-2xl font-bold text-black font-medium mb-3">
             Welcome! Let&apos;s set up your profile
@@ -313,11 +310,7 @@ function CompleteProfileContent() {
           {/* First Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              First Name * {oauthProvider && firstName && (
-                <span className="text-xs text-green-600 font-normal">
-                  (pre-filled from {oauthProvider})
-                </span>
-              )}
+              First Name *
             </label>
                 <input
                   type="text"
@@ -332,11 +325,7 @@ function CompleteProfileContent() {
           {/* Last Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Last Name * {oauthProvider && lastName && (
-                <span className="text-xs text-green-600 font-normal">
-                  (pre-filled from {oauthProvider})
-                </span>
-              )}
+              Last Name *
             </label>
                 <input
                   type="text"
