@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -22,7 +22,7 @@ interface User {
   };
 }
 
-export default function CompleteProfile() {
+function CompleteProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('returnUrl') || '/protected/dashboard';
@@ -36,6 +36,7 @@ export default function CompleteProfile() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
+  const [oauthProvider, setOauthProvider] = useState<string>('');
   const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
@@ -82,15 +83,40 @@ export default function CompleteProfile() {
         // Continue with the form - profileService will handle creation if needed
       }
 
-      // Pre-fill from OAuth provider data if available
+      // Pre-fill from OAuth provider data if available (prioritize OAuth data over existing profile data)
       if (user.user_metadata) {
         const metadata = user.user_metadata;
-        if (!firstName && (metadata.first_name || metadata.given_name)) {
-          setFirstName(metadata.first_name || metadata.given_name || '');
+        
+        // Extract first name from various OAuth provider formats
+        const oauthFirstName = metadata.first_name || 
+                              metadata.given_name || 
+                              metadata.name?.split(' ')[0] || 
+                              '';
+        
+        // Extract last name from various OAuth provider formats
+        const oauthLastName = metadata.last_name || 
+                             metadata.family_name || 
+                             metadata.name?.split(' ').slice(1).join(' ') || 
+                             '';
+        
+        // Use OAuth data if available, otherwise keep existing profile data
+        if (oauthFirstName) {
+          setFirstName(oauthFirstName);
         }
-        if (!lastName && (metadata.last_name || metadata.family_name)) {
-          setLastName(metadata.last_name || metadata.family_name || '');
+        if (oauthLastName) {
+          setLastName(oauthLastName);
         }
+        
+        // Set OAuth provider for UI display
+        setOauthProvider(metadata.provider || 'unknown');
+        
+        console.log('OAuth provider data:', {
+          provider: metadata.provider || 'unknown',
+          firstName: oauthFirstName,
+          lastName: oauthLastName,
+          fullName: metadata.name,
+          metadata: metadata
+        });
       }
 
     } catch (error) {
@@ -99,7 +125,7 @@ export default function CompleteProfile() {
     } finally {
       setIsValidating(false);
     }
-  }, [router, firstName, lastName]);
+  }, [router, returnUrl]);
 
   useEffect(() => {
     checkUser();
@@ -287,7 +313,11 @@ export default function CompleteProfile() {
           {/* First Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              First Name *
+              First Name * {oauthProvider && firstName && (
+                <span className="text-xs text-green-600 font-normal">
+                  (pre-filled from {oauthProvider})
+                </span>
+              )}
             </label>
                 <input
                   type="text"
@@ -302,7 +332,11 @@ export default function CompleteProfile() {
           {/* Last Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Last Name *
+              Last Name * {oauthProvider && lastName && (
+                <span className="text-xs text-green-600 font-normal">
+                  (pre-filled from {oauthProvider})
+                </span>
+              )}
             </label>
                 <input
                   type="text"
@@ -454,5 +488,21 @@ export default function CompleteProfile() {
             </div>
       </div>
     </div>
+  );
+}
+
+export default function CompleteProfile() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-muted/50">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping"></div>
+        </div>
+        <span className="ml-4 text-lg text-muted-foreground">Loading...</span>
+      </div>
+    }>
+      <CompleteProfileContent />
+    </Suspense>
   );
 }
