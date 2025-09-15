@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import CodeuniaLogo from '@/components/codeunia-logo';
 import { InputValidator } from '@/lib/security/input-validation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { profileService } from '@/lib/services/profile';
 
 interface User {
   id: string;
@@ -47,29 +48,30 @@ export default function CompleteProfile() {
       }
       setUser(user);
 
-      // Check if profile already exists and is complete
-      const { data: profile } = await getSupabaseClient()
-        .from('profiles')
-        .select('first_name, last_name, username, profile_complete')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        const isProfileComplete = profile.first_name && 
-                                profile.last_name && 
-                                profile.username && 
-                                profile.profile_complete;
+      // Check if profile already exists and is complete using profileService
+      try {
+        const profile = await profileService.getProfile(user.id);
         
-        if (isProfileComplete) {
-          // Profile is already complete, redirect to dashboard
-          router.push('/protected/dashboard');
-          return;
+        if (profile) {
+          const isProfileComplete = profile.first_name && 
+                                  profile.last_name && 
+                                  profile.username && 
+                                  profile.profile_complete;
+          
+          if (isProfileComplete) {
+            // Profile is already complete, redirect to dashboard
+            router.push('/protected/dashboard');
+            return;
+          }
+          
+          // Pre-fill existing data
+          if (profile.first_name) setFirstName(profile.first_name);
+          if (profile.last_name) setLastName(profile.last_name);
+          if (profile.username) setUsername(profile.username);
         }
-        
-        // Pre-fill existing data
-        if (profile.first_name) setFirstName(profile.first_name);
-        if (profile.last_name) setLastName(profile.last_name);
-        if (profile.username) setUsername(profile.username);
+      } catch (profileError) {
+        console.error('Error checking profile:', profileError);
+        // Continue with the form - profileService will handle creation if needed
       }
 
       // Pre-fill from OAuth provider data if available
@@ -186,30 +188,32 @@ export default function CompleteProfile() {
 
     setIsLoading(true);
     try {
-      // Update profile with the provided information using upsert to handle missing profiles
-      const { data: upserted, error } = await getSupabaseClient()
-        .from('profiles')
-        .upsert([{
-          id: user.id,
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          username: username.trim(),
-          profile_complete: true,
-          username_set: true,
-          username_editable: false
-        }], { onConflict: 'id' })
-        .select('id')
-        .single();
+      // First update the basic profile information using profileService
+      const updatedProfile = await profileService.updateProfile(user.id, {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        username: username.trim()
+      });
 
-      if (error) {
-        console.error('Profile update error:', error);
-        toast.error(error.message || 'Failed to update profile. Please try again.');
+      if (!updatedProfile) {
+        console.error('Profile update failed: No data returned');
+        toast.error('Failed to update profile. Please try again.');
         return;
       }
 
-      if (!upserted) {
-        console.error('Profile update failed: No data returned');
-        toast.error('Failed to update profile. Please try again.');
+      // Then update the completion status fields directly
+      const { error: completionError } = await getSupabaseClient()
+        .from('profiles')
+        .update({
+          profile_complete: true,
+          username_set: true,
+          username_editable: false
+        })
+        .eq('id', user.id);
+
+      if (completionError) {
+        console.error('Error updating completion status:', completionError);
+        toast.error('Profile updated but completion status failed. Please try again.');
         return;
       }
 
