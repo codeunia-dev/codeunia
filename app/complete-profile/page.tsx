@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
-import CodeUniaLogo from '@/components/codeunia-logo';
+import CodeuniaLogo from '@/components/codeunia-logo';
 import { InputValidator } from '@/lib/security/input-validation';
 import { CheckCircle, XCircle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
 import { profileService } from '@/lib/services/profile';
@@ -248,7 +248,7 @@ function CompleteProfileContent() {
         return;
       }
 
-      toast.success('Profile completed successfully! Welcome to CodeUnia! 🎉');
+      toast.success('Profile completed successfully! Welcome to Codeunia! 🎉');
       router.push(returnUrl);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -295,13 +295,13 @@ function CompleteProfileContent() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <CodeUniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
+            <CodeuniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
           </div>
           <h1 className="text-2xl font-bold text-black font-medium mb-3">
             Welcome! Let&apos;s set up your profile
           </h1>
           <p className="text-gray-600 leading-relaxed">
-            Complete your profile to get started with CodeUnia. This will only take a moment.
+            Complete your profile to get started with Codeunia. This will only take a moment.
           </p>
         </div>
 
@@ -469,7 +469,7 @@ function CompleteProfileContent() {
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-700 text-center leading-relaxed">
-                By continuing, you agree to CodeUnia&apos;s{' '}
+                By continuing, you agree to Codeunia&apos;s{' '}
                 <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Terms of Service</Link>
                 {' '}and{' '}
                 <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Privacy Policy</Link>
