@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
@@ -23,6 +23,10 @@ interface User {
 }
 
 export default function CompleteProfile() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get('returnUrl') || '/protected/dashboard';
+  
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
@@ -32,7 +36,6 @@ export default function CompleteProfile() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
-  const router = useRouter();
   const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
@@ -60,7 +63,7 @@ export default function CompleteProfile() {
           
           if (isProfileComplete) {
             // Profile is already complete, redirect to dashboard
-            router.push('/protected/dashboard');
+            router.push(returnUrl);
             return;
           }
           
@@ -139,20 +142,15 @@ export default function CompleteProfile() {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Username check error:', error);
-        // If there's a database error, assume username is available to allow form submission
-        setUsernameAvailable(true);
-        setUsernameError('');
-        return;
+        throw error;
       }
 
       // If no data found, username is available
       setUsernameAvailable(!data);
     } catch (error) {
       console.error('Error checking username:', error);
-      // On any error, assume username is available to allow form submission
-      setUsernameAvailable(true);
-      setUsernameError('');
+      setUsernameAvailable(null);
+      setUsernameError('Unable to check username availability');
     } finally {
       setIsCheckingUsername(false);
     }
@@ -191,7 +189,7 @@ export default function CompleteProfile() {
       return;
     }
 
-    if (usernameAvailable === false) {
+    if (!usernameAvailable) {
       toast.error('Username is not available');
       return;
     }
@@ -228,7 +226,7 @@ export default function CompleteProfile() {
       }
 
       toast.success('Profile completed successfully! Welcome to CodeUnia! 🎉');
-      router.push('/protected/dashboard');
+      router.push(returnUrl);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Error completing profile setup');
@@ -280,7 +278,7 @@ export default function CompleteProfile() {
             Welcome! Let&apos;s set up your profile
           </h1>
           <p className="text-gray-600 leading-relaxed">
-            Complete your profile to get started with Codeunia. This will only take a moment.
+            Complete your profile to get started with CodeUnia. This will only take a moment.
           </p>
         </div>
 
@@ -424,9 +422,9 @@ export default function CompleteProfile() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || usernameAvailable === false}
+            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError}
             className={`w-full py-4 px-6 rounded-xl font-semibold text-sm transition-all duration-200 ${
-              isLoading || !firstName.trim() || !lastName.trim() || !username || usernameAvailable === false
+              isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
             }`}
