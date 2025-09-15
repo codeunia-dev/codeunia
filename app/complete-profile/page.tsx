@@ -36,7 +36,6 @@ function CompleteProfileContent() {
   const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
-  const [oauthProvider, setOauthProvider] = useState<string>('');
   const usernameCheckTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   const getSupabaseClient = () => {
@@ -107,8 +106,6 @@ function CompleteProfileContent() {
           setLastName(oauthLastName);
         }
         
-        // Set OAuth provider for UI display
-        setOauthProvider(metadata.provider || 'unknown');
         
         console.log('OAuth provider data:', {
           provider: metadata.provider || 'unknown',
@@ -251,7 +248,7 @@ function CompleteProfileContent() {
         return;
       }
 
-      toast.success('Profile completed successfully! Welcome to CodeUnia! 🎉');
+      toast.success('Profile completed successfully! Welcome to Codeunia! 🎉');
       router.push(returnUrl);
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -304,7 +301,7 @@ function CompleteProfileContent() {
             Welcome! Let&apos;s set up your profile
           </h1>
           <p className="text-gray-600 leading-relaxed">
-            Complete your profile to get started with CodeUnia. This will only take a moment.
+            Complete your profile to get started with Codeunia. This will only take a moment.
           </p>
         </div>
 
@@ -313,11 +310,7 @@ function CompleteProfileContent() {
           {/* First Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              First Name * {oauthProvider && firstName && (
-                <span className="text-xs text-green-600 font-normal">
-                  (pre-filled from {oauthProvider})
-                </span>
-              )}
+              First Name *
             </label>
                 <input
                   type="text"
@@ -332,11 +325,7 @@ function CompleteProfileContent() {
           {/* Last Name */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-gray-700">
-              Last Name * {oauthProvider && lastName && (
-                <span className="text-xs text-green-600 font-normal">
-                  (pre-filled from {oauthProvider})
-                </span>
-              )}
+              Last Name *
             </label>
                 <input
                   type="text"
@@ -480,7 +469,7 @@ function CompleteProfileContent() {
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-700 text-center leading-relaxed">
-                By continuing, you agree to CodeUnia&apos;s{' '}
+                By continuing, you agree to Codeunia&apos;s{' '}
                 <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Terms of Service</Link>
                 {' '}and{' '}
                 <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors font-medium">Privacy Policy</Link>
