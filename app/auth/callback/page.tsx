@@ -4,6 +4,7 @@ import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { profileService } from "@/lib/services/profile";
 
 function OAuthCallbackContent() {
   const router = useRouter();
@@ -38,19 +39,18 @@ function OAuthCallbackContent() {
               .single();
               
             if (!profile) {
-              // Create profile for OAuth user
-              const provider = session.user.app_metadata?.provider || 'google';
-              await supabase.rpc('create_oauth_profile', {
-                user_id: session.user.id,
-                email: session.user.email || '',
-                auth_provider: provider,
-                user_metadata: session.user.user_metadata || {}
-              });
-              
-              // After creating profile, redirect to complete profile
-              console.log('Profile created, redirecting to complete profile');
-              router.replace('/complete-profile');
-              return;
+              // Create profile for OAuth user using profileService
+              try {
+                await profileService.getProfile(session.user.id);
+                console.log('Profile created via profileService, redirecting to complete profile');
+                router.replace('/complete-profile');
+                return;
+              } catch (profileError) {
+                console.error('Error creating profile:', profileError);
+                // Continue to complete profile page anyway
+                router.replace('/complete-profile');
+                return;
+              }
             }
             
             // Check if profile is complete (has first_name, last_name, and username)
@@ -115,19 +115,18 @@ function OAuthCallbackContent() {
                   .single();
                   
                 if (!profile) {
-                  // Create profile for OAuth user
-                  const provider = retrySession.user.app_metadata?.provider || 'google';
-                  await supabase.rpc('create_oauth_profile', {
-                    user_id: retrySession.user.id,
-                    email: retrySession.user.email || '',
-                    auth_provider: provider,
-                    user_metadata: retrySession.user.user_metadata || {}
-                  });
-                  
-                  // After creating profile, redirect to complete profile
-                  console.log('Profile created on retry, redirecting to complete profile');
-                  router.replace('/complete-profile');
-                  return;
+                  // Create profile for OAuth user using profileService
+                  try {
+                    await profileService.getProfile(retrySession.user.id);
+                    console.log('Profile created via profileService on retry, redirecting to complete profile');
+                    router.replace('/complete-profile');
+                    return;
+                  } catch (profileError) {
+                    console.error('Error creating profile on retry:', profileError);
+                    // Continue to complete profile page anyway
+                    router.replace('/complete-profile');
+                    return;
+                  }
                 }
                 
                 // Check if profile is complete (has first_name, last_name, and username)
@@ -167,19 +166,18 @@ function OAuthCallbackContent() {
                       .single();
                       
                     if (!profile) {
-                      // Create profile for OAuth user
-                      const provider = finalSession.user.app_metadata?.provider || 'google';
-                      await supabase.rpc('create_oauth_profile', {
-                        user_id: finalSession.user.id,
-                        email: finalSession.user.email || '',
-                        auth_provider: provider,
-                        user_metadata: finalSession.user.user_metadata || {}
-                      });
-                      
-                      // After creating profile, redirect to complete profile
-                      console.log('Profile created on final try, redirecting to complete profile');
-                      router.replace('/complete-profile');
-                      return;
+                      // Create profile for OAuth user using profileService
+                      try {
+                        await profileService.getProfile(finalSession.user.id);
+                        console.log('Profile created via profileService on final try, redirecting to complete profile');
+                        router.replace('/complete-profile');
+                        return;
+                      } catch (profileError) {
+                        console.error('Error creating profile on final try:', profileError);
+                        // Continue to complete profile page anyway
+                        router.replace('/complete-profile');
+                        return;
+                      }
                     }
                     
                     // Check if profile is complete (has first_name, last_name, and username)
