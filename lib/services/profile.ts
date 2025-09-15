@@ -41,10 +41,25 @@ export class ProfileService {
     // Generate a simple codeunia_id if needed
     const codeuniaId = `CU-${userId.slice(-8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
     
+    // Extract name data from OAuth provider metadata
+    const metadata = user.user?.user_metadata || {};
+    
+    // Extract first name from various OAuth provider formats
+    const firstName = metadata.first_name || 
+                     metadata.given_name || 
+                     metadata.name?.split(' ')[0] || 
+                     '';
+    
+    // Extract last name from various OAuth provider formats  
+    const lastName = metadata.last_name || 
+                    metadata.family_name || 
+                    metadata.name?.split(' ').slice(1).join(' ') || 
+                    '';
+    
     const profileData = {
       id: userId,
-      first_name: user.user?.user_metadata?.first_name || '',
-      last_name: user.user?.user_metadata?.last_name || '',
+      first_name: firstName,
+      last_name: lastName,
       is_public: true,
       email_notifications: true,
       profile_completion_percentage: 0,
