@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import CodeuniaLogo from '@/components/codeunia-logo';
+import { InputValidator } from '@/lib/security/input-validation';
+import { CheckCircle, XCircle, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { profileService } from '@/lib/services/profile';
 
 interface User {
   id: string;
@@ -25,6 +29,7 @@ export default function CompleteProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameError, setUsernameError] = useState<string>('');
   const [user, setUser] = useState<User | null>(null);
   const [isValidating, setIsValidating] = useState(true);
   const router = useRouter();
@@ -43,29 +48,30 @@ export default function CompleteProfile() {
       }
       setUser(user);
 
-      // Check if profile already exists and is complete
-      const { data: profile } = await getSupabaseClient()
-        .from('profiles')
-        .select('first_name, last_name, username, profile_complete')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        const isProfileComplete = profile.first_name && 
-                                profile.last_name && 
-                                profile.username && 
-                                profile.profile_complete;
+      // Check if profile already exists and is complete using profileService
+      try {
+        const profile = await profileService.getProfile(user.id);
         
-        if (isProfileComplete) {
-          // Profile is already complete, redirect to dashboard
-          router.push('/protected/dashboard');
-          return;
+        if (profile) {
+          const isProfileComplete = profile.first_name && 
+                                  profile.last_name && 
+                                  profile.username && 
+                                  profile.profile_complete;
+          
+          if (isProfileComplete) {
+            // Profile is already complete, redirect to dashboard
+            router.push('/protected/dashboard');
+            return;
+          }
+          
+          // Pre-fill existing data
+          if (profile.first_name) setFirstName(profile.first_name);
+          if (profile.last_name) setLastName(profile.last_name);
+          if (profile.username) setUsername(profile.username);
         }
-        
-        // Pre-fill existing data
-        if (profile.first_name) setFirstName(profile.first_name);
-        if (profile.last_name) setLastName(profile.last_name);
-        if (profile.username) setUsername(profile.username);
+      } catch (profileError) {
+        console.error('Error checking profile:', profileError);
+        // Continue with the form - profileService will handle creation if needed
       }
 
       // Pre-fill from OAuth provider data if available
@@ -101,21 +107,42 @@ export default function CompleteProfile() {
   }, []);
 
   const checkUsernameAvailability = async (usernameToCheck: string) => {
-    if (!usernameToCheck || usernameToCheck.length < 3) {
+    const clean = usernameToCheck.trim();
+    
+    // First validate the username format
+    const validation = InputValidator.validateUsername(clean);
+    if (!validation.isValid) {
+      setUsernameError(validation.error || 'Invalid username');
+      setUsernameAvailable(false);
+      return;
+    }
+    
+    setUsernameError('');
+    
+    if (!clean || clean.length < 3) {
       setUsernameAvailable(null);
       return;
     }
 
     setIsCheckingUsername(true);
     try {
-      const clean = usernameToCheck.trim();
-      const { data: isAvailable } = await getSupabaseClient().rpc('check_username_availability', {
-        username_param: clean
-      });
-      setUsernameAvailable(isAvailable);
+      // Use direct query instead of RPC function (same approach as UsernameField component)
+      const { data, error } = await getSupabaseClient()
+        .from('profiles')
+        .select('username')
+        .eq('username', clean)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      // If no data found, username is available
+      setUsernameAvailable(!data);
     } catch (error) {
       console.error('Error checking username:', error);
       setUsernameAvailable(null);
+      setUsernameError('Unable to check username availability');
     } finally {
       setIsCheckingUsername(false);
     }
@@ -123,9 +150,10 @@ export default function CompleteProfile() {
 
   const handleUsernameChange = (value: string) => {
     setUsername(value);
+    setUsernameError(''); // Clear previous errors
     if (usernameCheckTimeout.current) clearTimeout(usernameCheckTimeout.current);
     usernameCheckTimeout.current = setTimeout(() => {
-      checkUsernameAvailability(value.trim());
+      checkUsernameAvailability(value);
     }, 500);
   };
 
@@ -160,30 +188,32 @@ export default function CompleteProfile() {
 
     setIsLoading(true);
     try {
-      // Update profile with the provided information using upsert to handle missing profiles
-      const { data: upserted, error } = await getSupabaseClient()
-        .from('profiles')
-        .upsert([{
-          id: user.id,
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          username: username.trim(),
-          profile_complete: true,
-          username_set: true,
-          username_editable: false
-        }], { onConflict: 'id' })
-        .select('id')
-        .single();
+      // First update the basic profile information using profileService
+      const updatedProfile = await profileService.updateProfile(user.id, {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        username: username.trim()
+      });
 
-      if (error) {
-        console.error('Profile update error:', error);
-        toast.error(error.message || 'Failed to update profile. Please try again.');
+      if (!updatedProfile) {
+        console.error('Profile update failed: No data returned');
+        toast.error('Failed to update profile. Please try again.');
         return;
       }
 
-      if (!upserted) {
-        console.error('Profile update failed: No data returned');
-        toast.error('Failed to update profile. Please try again.');
+      // Then update the completion status fields directly
+      const { error: completionError } = await getSupabaseClient()
+        .from('profiles')
+        .update({
+          profile_complete: true,
+          username_set: true,
+          username_editable: false
+        })
+        .eq('id', user.id);
+
+      if (completionError) {
+        console.error('Error updating completion status:', completionError);
+        toast.error('Profile updated but completion status failed. Please try again.');
         return;
       }
 
@@ -199,11 +229,17 @@ export default function CompleteProfile() {
 
   const generateRandomUsername = async () => {
     try {
-      const { data: randomUsername } = await getSupabaseClient().rpc('generate_safe_username');
-      if (randomUsername) {
-        setUsername(randomUsername);
-        checkUsernameAvailability(randomUsername);
-      }
+      // Generate a simple random username since RPC might not be available
+      const adjectives = ['cool', 'smart', 'bright', 'quick', 'bold', 'wise', 'keen', 'sharp'];
+      const nouns = ['coder', 'dev', 'builder', 'creator', 'maker', 'hacker', 'ninja', 'wizard'];
+      const numbers = Math.floor(Math.random() * 9999);
+      
+      const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+      const noun = nouns[Math.floor(Math.random() * nouns.length)];
+      const randomUsername = `${adjective}${noun}${numbers}`;
+      
+      setUsername(randomUsername);
+      checkUsernameAvailability(randomUsername);
     } catch (error) {
       console.error('Error generating username:', error);
       toast.error('Error generating username');
@@ -223,17 +259,17 @@ export default function CompleteProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl font-bold">CU</span>
+          <div className="flex justify-center mb-6">
+            <CodeuniaLogo size="lg" showText={true} noLink={true} instanceId="complete-profile" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome! Let&apos;s set up your CodeUnia profile.
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            Welcome! Let&apos;s set up your profile
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 leading-relaxed">
             Complete your profile to get started with CodeUnia. This will only take a moment.
           </p>
         </div>
@@ -241,119 +277,171 @@ export default function CompleteProfile() {
         {/* Setup Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* First Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               First Name *
             </label>
             <input
               type="text"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               placeholder="Enter your first name"
               required
             />
           </div>
 
           {/* Last Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
               Last Name *
             </label>
             <input
               type="text"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               placeholder="Enter your last name"
               required
             />
           </div>
 
           {/* Username Input */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700">
               Choose Your Username *
             </label>
             <div className="relative">
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => handleUsernameChange(e.target.value)}
-                className={`w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  usernameAvailable === true
-                    ? 'border-green-300 bg-green-50'
-                    : usernameAvailable === false
-                    ? 'border-red-300 bg-red-50'
-                    : 'border-gray-300'
-                }`}
-                placeholder="Enter your username"
-                minLength={3}
-                maxLength={20}
-                pattern="[a-zA-Z0-9_-]+"
-                title="Username can only contain letters, numbers, hyphens, and underscores"
-                required
-              />
-              <button
-                type="button"
-                onClick={generateRandomUsername}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-blue-600 hover:text-blue-700"
-                title="Generate random username"
-              >
-                🎲
-              </button>
-            </div>
-            
-            {/* Username Status */}
-            {isCheckingUsername && (
-              <p className="text-xs text-gray-500 mt-1">Checking availability...</p>
-            )}
-            {usernameAvailable === true && (
-              <p className="text-xs text-green-600 mt-1">✅ Username is available!</p>
-            )}
-            {usernameAvailable === false && (
-              <p className="text-xs text-red-600 mt-1">❌ Username is already taken</p>
-            )}
-            
-            {/* Username Requirements */}
-            <div className="mt-2 text-xs text-gray-500">
-              <p>• 3-20 characters long</p>
-              <p>• Letters, numbers, hyphens, and underscores only</p>
-              <p>• Must be unique across all users</p>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  className={`w-full border rounded-xl px-4 py-3 pr-20 text-sm bg-white/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400 ${
+                    usernameAvailable === true
+                      ? 'border-green-300 bg-green-50/50'
+                      : usernameAvailable === false || usernameError
+                      ? 'border-red-300 bg-red-50/50'
+                      : 'border-gray-200'
+                  }`}
+                  placeholder="Enter your username"
+                  minLength={3}
+                  maxLength={30}
+                  title="Username can only contain letters, numbers, hyphens, and underscores"
+                  required
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                  {isCheckingUsername && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  )}
+                  {!isCheckingUsername && usernameAvailable === true && (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  )}
+                  {!isCheckingUsername && (usernameAvailable === false || usernameError) && (
+                    <XCircle className="h-4 w-4 text-red-500" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={generateRandomUsername}
+                    className="p-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Generate random username"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Username Preview */}
+              {username && (
+                <div className="mt-2 flex items-center space-x-2">
+                  <span className="text-xs text-gray-500">Preview:</span>
+                  <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded-md">
+                    @{username.toLowerCase()}
+                  </span>
+                </div>
+              )}
+              
+              {/* Username Status Messages */}
+              {isCheckingUsername && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
+                  <p className="text-xs text-blue-600">Checking availability...</p>
+                </div>
+              )}
+              
+              {!isCheckingUsername && usernameAvailable === true && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <CheckCircle className="h-3 w-3 text-green-500" />
+                  <p className="text-xs text-green-600">Username is available!</p>
+                </div>
+              )}
+              
+              {!isCheckingUsername && usernameAvailable === false && !usernameError && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <XCircle className="h-3 w-3 text-red-500" />
+                  <p className="text-xs text-red-600">Username is already taken</p>
+                </div>
+              )}
+              
+              {usernameError && (
+                <div className="flex items-center space-x-2 mt-2">
+                  <AlertCircle className="h-3 w-3 text-red-500" />
+                  <p className="text-xs text-red-600">{usernameError}</p>
+                </div>
+              )}
+              
+              {/* Username Requirements */}
+              <div className="mt-3 p-3 bg-gray-50/50 rounded-lg border border-gray-100">
+                <p className="text-xs font-medium text-gray-700 mb-2">Username Requirements:</p>
+                <ul className="text-xs text-gray-600 space-y-1">
+                  <li className="flex items-center space-x-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${username.length >= 3 && username.length <= 30 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span>3-30 characters long</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${/^[a-zA-Z0-9_-]+$/.test(username) || !username ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <span>Letters, numbers, hyphens, and underscores only</span>
+                  </li>
+                  <li className="flex items-center space-x-2">
+                    <div className={`w-1.5 h-1.5 rounded-full ${usernameAvailable === true ? 'bg-green-500' : usernameAvailable === false ? 'bg-red-500' : 'bg-gray-300'}`}></div>
+                    <span>Must be unique across all users</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable}
-            className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
-              isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700'
+            disabled={isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError}
+            className={`w-full py-4 px-6 rounded-xl font-semibold text-sm transition-all duration-200 ${
+              isLoading || !firstName.trim() || !lastName.trim() || !username || !usernameAvailable || !!usernameError
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
             }`}
           >
             {isLoading ? (
               <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
                 Completing profile...
               </span>
             ) : (
-              'Complete Profile & Continue'
+              <span className="flex items-center justify-center">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Complete Profile & Continue
+              </span>
             )}
           </button>
         </form>
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <p className="text-xs text-gray-500 text-center leading-relaxed">
             By continuing, you agree to CodeUnia&apos;s{' '}
-            <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
+            <Link href="/terms" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors">Terms of Service</Link>
             {' '}and{' '}
-            <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
+            <Link href="/privacy" className="text-blue-600 hover:text-blue-700 hover:underline transition-colors">Privacy Policy</Link>
           </p>
         </div>
       </div>
