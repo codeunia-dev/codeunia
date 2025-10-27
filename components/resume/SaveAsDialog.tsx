@@ -60,7 +60,7 @@ export function SaveAsDialog({ open, onOpenChange }: SaveAsDialogProps) {
       });
       
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to save as', {
         description: 'Please try again.',
       });

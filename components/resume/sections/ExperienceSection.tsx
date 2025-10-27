@@ -125,7 +125,7 @@ export function ExperienceSection({ content, onChange }: ExperienceSectionProps)
           <div className="text-center py-8 text-muted-foreground">
             <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No work experience entries yet</p>
-            <p className="text-xs mt-1">Click "Add Experience" to get started</p>
+            <p className="text-xs mt-1">Click &ldquo;Add Experience&rdquo; to get started</p>
           </div>
         ) : (
           content.map((experience, index) => (

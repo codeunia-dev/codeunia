@@ -80,7 +80,7 @@ export function ResumeList({ onResumeSelect, onCreateNew }: ResumeListProps) {
       toast.success('Resume loaded', {
         description: `Loaded "${resume.title}"`,
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to load resume', {
         description: 'Please try again.',
       });
@@ -94,7 +94,7 @@ export function ResumeList({ onResumeSelect, onCreateNew }: ResumeListProps) {
       toast.success('Resume duplicated', {
         description: `Created "${duplicated.title}"`,
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to duplicate resume', {
         description: 'Please try again.',
       });
@@ -119,7 +119,7 @@ export function ResumeList({ onResumeSelect, onCreateNew }: ResumeListProps) {
       });
       setDeleteDialogOpen(false);
       setResumeToDelete(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete resume', {
         description: 'Please try again.',
       });
@@ -136,7 +136,7 @@ export function ResumeList({ onResumeSelect, onCreateNew }: ResumeListProps) {
       toast.success('Resume created', {
         description: `Created "${newResume.title}"`,
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to create resume', {
         description: 'Please try again.',
       });
@@ -277,7 +277,7 @@ export function ResumeList({ onResumeSelect, onCreateNew }: ResumeListProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Resume</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{resumeToDelete?.title}"? This action cannot be undone.
+              Are you sure you want to delete &ldquo;{resumeToDelete?.title}&rdquo;? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

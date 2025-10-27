@@ -314,7 +314,7 @@ export function StyleCustomizer() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="margin-top">Top Margin</Label>
-              <span className="text-sm text-muted-foreground">{styling.margin_top}"</span>
+              <span className="text-sm text-muted-foreground">{styling.margin_top}&rdquo;</span>
             </div>
             <Slider
               id="margin-top"
@@ -326,8 +326,8 @@ export function StyleCustomizer() {
               className="w-full"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0.5"</span>
-              <span>1.5"</span>
+              <span>0.5&rdquo;</span>
+              <span>1.5&rdquo;</span>
             </div>
           </div>
 
@@ -335,7 +335,7 @@ export function StyleCustomizer() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="margin-bottom">Bottom Margin</Label>
-              <span className="text-sm text-muted-foreground">{styling.margin_bottom}"</span>
+              <span className="text-sm text-muted-foreground">{styling.margin_bottom}&rdquo;</span>
             </div>
             <Slider
               id="margin-bottom"
@@ -347,8 +347,8 @@ export function StyleCustomizer() {
               className="w-full"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0.5"</span>
-              <span>1.5"</span>
+              <span>0.5&rdquo;</span>
+              <span>1.5&rdquo;</span>
             </div>
           </div>
 
@@ -356,7 +356,7 @@ export function StyleCustomizer() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="margin-left">Left Margin</Label>
-              <span className="text-sm text-muted-foreground">{styling.margin_left}"</span>
+              <span className="text-sm text-muted-foreground">{styling.margin_left}&rdquo;</span>
             </div>
             <Slider
               id="margin-left"
@@ -368,8 +368,8 @@ export function StyleCustomizer() {
               className="w-full"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0.5"</span>
-              <span>1.5"</span>
+              <span>0.5&rdquo;</span>
+              <span>1.5&rdquo;</span>
             </div>
           </div>
 
@@ -377,7 +377,7 @@ export function StyleCustomizer() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label htmlFor="margin-right">Right Margin</Label>
-              <span className="text-sm text-muted-foreground">{styling.margin_right}"</span>
+              <span className="text-sm text-muted-foreground">{styling.margin_right}&rdquo;</span>
             </div>
             <Slider
               id="margin-right"
@@ -389,8 +389,8 @@ export function StyleCustomizer() {
               className="w-full"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>0.5"</span>
-              <span>1.5"</span>
+              <span>0.5&rdquo;</span>
+              <span>1.5&rdquo;</span>
             </div>
           </div>
 

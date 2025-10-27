@@ -4,6 +4,7 @@
  * since the last time it was invoked
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -25,6 +26,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * Debounce with promise support
  * Returns a promise that resolves when the debounced function executes
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
   func: T,
   wait: number
@@ -60,6 +62,7 @@ export function debounceAsync<T extends (...args: any[]) => Promise<any>>(
  * Throttle utility for performance optimization
  * Ensures function is called at most once per specified time period
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number

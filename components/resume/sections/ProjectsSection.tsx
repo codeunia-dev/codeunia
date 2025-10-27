@@ -132,7 +132,7 @@ export function ProjectsSection({ content, onChange }: ProjectsSectionProps) {
           <div className="text-center py-8 text-muted-foreground">
             <Code className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No projects yet</p>
-            <p className="text-xs mt-1">Click "Add Project" to get started</p>
+            <p className="text-xs mt-1">Click &ldquo;Add Project&rdquo; to get started</p>
           </div>
         ) : (
           content.map((project, index) => (
