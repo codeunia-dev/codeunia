@@ -193,7 +193,12 @@ describe('Resume Builder Integration Tests', () => {
           title: 'Personal Information',
           order: 0,
           visible: true,
-          content: {},
+          content: {
+            full_name: '',
+            email: '',
+            phone: '',
+            location: '',
+          },
         },
         {
           id: 'section-2',
@@ -238,7 +243,12 @@ describe('Resume Builder Integration Tests', () => {
           title: 'Personal Information',
           order: 0,
           visible: true,
-          content: {},
+          content: {
+            full_name: '',
+            email: '',
+            phone: '',
+            location: '',
+          },
         },
         {
           id: 'section-2',
