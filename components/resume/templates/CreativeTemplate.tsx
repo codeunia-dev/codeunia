@@ -126,7 +126,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     if (!items || items.length === 0) return null;
     return (
       <div className="space-y-5">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div 
             key={item.id} 
             className="relative pl-6 border-l-4 border-gradient-to-b from-purple-500 to-pink-500"
@@ -176,7 +176,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     if (!items || items.length === 0) return null;
     return (
       <div className="space-y-5">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div 
             key={item.id}
             className="relative pl-6 border-l-4"
@@ -224,7 +224,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     if (!items || items.length === 0) return null;
     return (
       <div className="space-y-5">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div 
             key={item.id}
             className="relative pl-6 border-l-4"
@@ -326,7 +326,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     if (!items || items.length === 0) return null;
     return (
       <div className="space-y-4">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div 
             key={item.id}
             className="relative pl-6 border-l-4"
@@ -368,7 +368,7 @@ export function CreativeTemplate({ resume }: CreativeTemplateProps) {
     if (!items || items.length === 0) return null;
     return (
       <div className="space-y-4">
-        {items.map((item, index) => (
+        {items.map((item) => (
           <div 
             key={item.id}
             className="relative pl-6 border-l-4"

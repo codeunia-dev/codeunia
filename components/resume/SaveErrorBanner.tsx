@@ -37,7 +37,7 @@ export function SaveErrorBanner({ onRetry, onDismiss }: SaveErrorBannerProps) {
     } else {
       try {
         await saveResume();
-      } catch (err) {
+      } catch {
         // Error is handled by context
       }
     }

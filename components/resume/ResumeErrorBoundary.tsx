@@ -4,7 +4,7 @@ import React, { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { ResumeError, ErrorLogger, getErrorMessage } from '@/lib/errors/resume-errors';
+import { ResumeError, ResumeErrorCode, ErrorLogger, getErrorMessage } from '@/lib/errors/resume-errors';
 
 interface Props {
   children: ReactNode;
@@ -45,7 +45,7 @@ export class ResumeErrorBoundary extends Component<Props, State> {
       });
     } else {
       ErrorLogger.log(
-        new ResumeError(error.message, 'UNKNOWN_ERROR' as any, {
+        new ResumeError(error.message, ResumeErrorCode.UNKNOWN_ERROR, {
           originalError: error,
           componentStack: errorInfo.componentStack,
         })

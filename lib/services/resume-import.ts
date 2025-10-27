@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Resume, ResumeSection, SectionType, SectionContent } from '@/types/resume';
 import { v4 as uuidv4 } from 'uuid';
 

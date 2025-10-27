@@ -88,7 +88,7 @@ export function CertificationsSection({ content, onChange }: CertificationsSecti
           <div className="text-center py-8 text-muted-foreground">
             <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No certifications yet</p>
-            <p className="text-xs mt-1">Click "Add Certification" to get started</p>
+            <p className="text-xs mt-1">Click &ldquo;Add Certification&rdquo; to get started</p>
           </div>
         ) : (
           content.map((certification, index) => (

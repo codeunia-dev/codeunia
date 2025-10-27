@@ -2,7 +2,6 @@
 
 import { Skill } from '@/types/resume';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +49,7 @@ function SortableSkillCategory({
   onRemove: (id: string) => void;
 }) {
   const [inputValue, setInputValue] = useState('');
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded] = useState(true);
 
   const {
     attributes,
@@ -222,7 +221,8 @@ export function SkillsSection({ content, onChange }: SkillsSectionProps) {
     };
     const newSkills = [...skillsWithIds, newSkill];
     setSkillsWithIds(newSkills);
-    onChange(newSkills.map(({ id, ...skill }) => skill));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onChange(newSkills.map(({ id: _id, ...skill }) => skill));
   };
 
   const handleUpdateCategory = (id: string, updates: Partial<Skill>) => {
@@ -230,13 +230,15 @@ export function SkillsSection({ content, onChange }: SkillsSectionProps) {
       skill.id === id ? { ...skill, ...updates } : skill
     );
     setSkillsWithIds(newSkills);
-    onChange(newSkills.map(({ id, ...skill }) => skill));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onChange(newSkills.map(({ id: _id, ...skill }) => skill));
   };
 
   const handleRemoveCategory = (id: string) => {
     const newSkills = skillsWithIds.filter((skill) => skill.id !== id);
     setSkillsWithIds(newSkills);
-    onChange(newSkills.map(({ id, ...skill }) => skill));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    onChange(newSkills.map(({ id: _id, ...skill }) => skill));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -250,7 +252,8 @@ export function SkillsSection({ content, onChange }: SkillsSectionProps) {
 
       const newSkills = arrayMove(skillsWithIds, oldIndex, newIndex);
       setSkillsWithIds(newSkills);
-      onChange(newSkills.map(({ id, ...skill }) => skill));
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      onChange(newSkills.map(({ id: _id, ...skill }) => skill));
     }
   };
 
@@ -280,7 +283,7 @@ export function SkillsSection({ content, onChange }: SkillsSectionProps) {
             <Wrench className="h-12 w-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">No skill categories yet</p>
             <p className="text-xs mt-1">
-              Click "Add Category" to organize your skills
+              Click &ldquo;Add Category&rdquo; to organize your skills
             </p>
           </div>
         ) : (
@@ -326,7 +329,7 @@ export function SkillsSection({ content, onChange }: SkillsSectionProps) {
                 </Alert>
               ) : null;
             })()}
-            
+
             <div className="pt-2">
               <p className="text-xs text-muted-foreground">
                 💡 Tip: Drag categories to reorder them. Organize skills by type

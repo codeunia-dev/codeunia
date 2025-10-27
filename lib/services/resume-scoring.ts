@@ -495,7 +495,6 @@ export class ResumeScoringService {
       totalEntries += entries.length;
 
       entries.forEach((entry, index) => {
-        const requiredFields = ['name', 'description', 'technologies'];
         const missingFields: string[] = [];
 
         if (!entry.name || entry.name.trim().length === 0) missingFields.push('name');
@@ -583,11 +582,9 @@ export class ResumeScoringService {
     }
 
     let totalSkills = 0;
-    let totalCategories = 0;
 
     visibleSections.forEach((section) => {
       const skills = section.content as Skill[];
-      totalCategories += skills.length;
 
       skills.forEach((skill) => {
         if (skill.items && skill.items.length > 0) {
@@ -637,8 +634,6 @@ export class ResumeScoringService {
     suggestions: ResumeSuggestion[];
   } {
     const maxScore = this.WEIGHTS.certifications;
-    const issues: string[] = [];
-    const suggestions: ResumeSuggestion[] = [];
 
     const visibleSections = sections.filter((s) => s.visible);
 
@@ -696,8 +691,6 @@ export class ResumeScoringService {
     suggestions: ResumeSuggestion[];
   } {
     const maxScore = this.WEIGHTS.awards;
-    const issues: string[] = [];
-    const suggestions: ResumeSuggestion[] = [];
 
     const visibleSections = sections.filter((s) => s.visible);
 

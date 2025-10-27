@@ -64,28 +64,6 @@ export function SuggestionPanel({ className }: SuggestionPanelProps) {
     return 'Needs Work';
   };
 
-  const getSeverityIcon = (severity: ResumeSuggestion['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-500" />;
-      case 'info':
-        return <Info className="h-4 w-4 text-blue-500" />;
-    }
-  };
-
-  const getSeverityBadgeVariant = (severity: ResumeSuggestion['severity']) => {
-    switch (severity) {
-      case 'critical':
-        return 'destructive';
-      case 'warning':
-        return 'default';
-      case 'info':
-        return 'secondary';
-    }
-  };
-
   // Group suggestions by severity
   const criticalSuggestions = suggestions.filter((s) => s.severity === 'critical');
   const warningSuggestions = suggestions.filter((s) => s.severity === 'warning');

@@ -9,7 +9,6 @@ import { useState, useEffect, useRef } from 'react';
 
 // Constants for page calculations
 const PAGE_HEIGHT_INCHES = 11;
-const PAGE_WIDTH_INCHES = 8.5;
 const PIXELS_PER_INCH = 96; // Standard screen DPI
 const PAGE_HEIGHT_PX = PAGE_HEIGHT_INCHES * PIXELS_PER_INCH;
 
