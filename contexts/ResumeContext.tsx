@@ -15,7 +15,6 @@ import {
   DEFAULT_METADATA,
   DEFAULT_PERSONAL_INFO,
   SECTION_TYPES,
-  DeepPartial,
   ResumeInsert,
   ResumeUpdate,
 } from '@/types/resume';
@@ -23,7 +22,7 @@ import { Profile } from '@/types/profile';
 import { ResumeImportService, ImportResult } from '@/lib/services/resume-import';
 import { updateResumeMetadata } from '@/lib/services/resume-metadata';
 import { ResumeScoringService, ScoringResult } from '@/lib/services/resume-scoring';
-import { saveToLocalStorage, loadFromLocalStorage, removeFromLocalStorage } from '@/lib/storage/offline-storage';
+import { saveToLocalStorage, removeFromLocalStorage } from '@/lib/storage/offline-storage';
 
 // Context Type Definition
 export interface ResumeContextType {
@@ -84,7 +83,7 @@ interface ResumeProviderProps {
 }
 
 // Helper function to generate unique IDs
-const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 
 // Helper function to create default section
 const createDefaultSection = (type: SectionType, order: number): ResumeSection => {
@@ -299,12 +298,12 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
       const errorMessage = err instanceof ResumeError ? err.message : 'Failed to save resume';
       setError(errorMessage);
       setSaveStatus('error');
-      
+
       // Keep in local storage if save failed
       if (resume) {
         saveToLocalStorage(resume);
       }
-      
+
       throw err;
     } finally {
       setSaving(false);
@@ -402,10 +401,10 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
   const updateResumeTitle = useCallback((title: string) => {
     setResume((prev) => {
       if (!prev) return null;
-      
+
       // Store previous state for potential rollback
       optimisticStateRef.current = prev;
-      
+
       // Apply optimistic update immediately
       return { ...prev, title };
     });
@@ -423,10 +422,10 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
       const sectionInfo = SECTION_TYPES[type];
       setAnnouncement(`${sectionInfo.defaultTitle} section added`);
       setLastAddedSectionId(newSection.id);
-      
+
       // Clear the lastAddedSectionId after a short delay
       setTimeout(() => setLastAddedSectionId(null), 500);
-      
+
       // Apply optimistic update immediately
       return {
         ...prev,
@@ -492,7 +491,14 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
       return {
         ...prev,
         sections: prev.sections.map((s) =>
-          s.id === sectionId ? { ...s, content: { ...s.content, ...content } as SectionContent } : s
+          s.id === sectionId
+            ? {
+              ...s,
+              content: Array.isArray(s.content) && Array.isArray(content)
+                ? (content as SectionContent) // If both are arrays, replace directly with proper type
+                : { ...(s.content as object), ...(content as object) } as SectionContent, // Otherwise, merge objects
+            }
+            : s
         ),
       };
     });
@@ -721,7 +727,7 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
     if (isSavingRef.current || saveQueueRef.current.length === 0) return;
 
     isSavingRef.current = true;
-    
+
     // Get the latest resume from the queue (discard intermediate states)
     const latestResume = saveQueueRef.current[saveQueueRef.current.length - 1];
     saveQueueRef.current = [];
@@ -774,13 +780,13 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
       const errorMessage = err instanceof ResumeError ? err.message : 'Failed to save resume';
       setError(errorMessage);
       setSaveStatus('error');
-      
+
       // Rollback to previous state if available
       if (optimisticStateRef.current) {
         setResume(optimisticStateRef.current);
         setAnnouncement('Changes reverted due to save error');
       }
-      
+
       // Keep in local storage if save failed
       if (latestResume) {
         saveToLocalStorage(latestResume);
@@ -788,7 +794,7 @@ export function ResumeProvider({ children, initialResumes = [], userProfile }: R
     } finally {
       setSaving(false);
       isSavingRef.current = false;
-      
+
       // Process any new items that were added to the queue while saving
       if (saveQueueRef.current.length > 0) {
         processSaveQueue();
