@@ -1,12 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -17,6 +16,7 @@ import { AlertCircle, FileText, Search, MoreHorizontal, Edit, Star, Trash2, Plus
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { categories, BlogPost } from "@/components/data/blog-posts"
 import { OptimizedImage } from '@/components/ui/optimized-image'
+import { RichTextEditor } from '@/components/ui/rich-text-editor'
 
 // types
 interface BlogFormData {
@@ -86,17 +86,17 @@ const useBlogPosts = () => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       // First, fetch all blog posts
       const { data: postsData, error: fetchError } = await supabase
         .from("blogs")
         .select("*")
         .order("date", { ascending: false })
-      
+
       if (fetchError) {
         throw new Error(fetchError.message)
       }
-      
+
       if (postsData) {
         // Fetch real like counts and ensure views are up-to-date for each blog post
         const postsWithRealCounts = await Promise.all(
@@ -106,30 +106,30 @@ const useBlogPosts = () => {
               .from('blog_likes')
               .select('*', { count: 'exact', head: true })
               .eq('blog_slug', post.slug || post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''))
-            
+
             if (likeError) {
               console.error('Error fetching likes for post:', post.title, likeError)
             }
-            
+
             // Get the most up-to-date view count from blogs table
             const { data: viewData, error: viewError } = await supabase
               .from('blogs')
               .select('views')
               .eq('id', post.id)
               .single()
-            
+
             if (viewError) {
               console.error('Error fetching views for post:', post.title, viewError)
             }
-            
-            return { 
-              ...post, 
+
+            return {
+              ...post,
               likes: likeCount || 0,
               views: viewData?.views?.toString() || post.views || '0'
             }
           })
         )
-        
+
         setBlogPosts(postsWithRealCounts as BlogPost[])
       }
     } catch (err) {
@@ -168,8 +168,8 @@ const FeaturedBadge = ({ featured }: { featured: boolean }) => (
   )
 )
 
-const BlogPostForm = ({ 
-  formData, 
+const BlogPostForm = ({
+  formData,
   onFormChange
 }: {
   formData: BlogFormData;
@@ -188,9 +188,6 @@ const BlogPostForm = ({
   const handleCheckboxChange = (checked: boolean) => {
     onFormChange({ featured: checked })
   }
-
-  // ref for the content textarea
-  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   // Article image upload handler (for main blog image)
   const handleArticleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,48 +214,6 @@ const BlogPostForm = ({
 
     if (publicUrlData?.publicUrl) {
       onFormChange({ image: publicUrlData.publicUrl });
-    }
-  }
-
-  // image upload handler for inserting into content
-  const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const supabase = createClient();
-    const filePath = `public/${Date.now()}-${file.name}`;
-
-    // upload to supabase storage
-    const { error } = await supabase.storage
-      .from('blog-images')
-      .upload(filePath, file);
-
-    if (error) {
-      alert("Image upload failed: " + error.message);
-      return;
-    }
-
-    // Get public url
-    const { data: publicUrlData } = supabase.storage
-      .from('blog-images')
-      .getPublicUrl(filePath);
-
-    if (publicUrlData?.publicUrl) {
-      // insert html <img> tag at cursor in content
-      if (contentRef.current) {
-        const textarea = contentRef.current;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const before = formData.content.slice(0, start);
-        const after = formData.content.slice(end);
-        const htmlImg = `<img src="${publicUrlData.publicUrl}" alt="Alt text" style="max-width:100%;height:auto;" />\n`;
-        const newContent = before + htmlImg + after;
-        onFormChange({ content: newContent });
-        setTimeout(() => {
-          textarea.focus();
-          textarea.selectionStart = textarea.selectionEnd = start + htmlImg.length;
-        }, 0);
-      }
     }
   }
 
@@ -312,25 +267,16 @@ const BlogPostForm = ({
         />
       </div>
 
-      {/* Content image upload button */}
+      {/* Rich Text Editor for Content */}
       <div className="grid gap-2">
         <Label htmlFor="content">Content *</Label>
-        <Textarea
-          id="content"
-          ref={contentRef}
-          placeholder="Write your blog post content here..."
-          value={formData.content}
-          onChange={handleInputChange('content')}
-          className="text-sm min-h-[120px]"
+        <RichTextEditor
+          content={formData.content}
+          onChange={(content) => onFormChange({ content })}
         />
-        <Input
-          id="content-image"
-          type="file"
-          accept="image/*"
-          onChange={handleContentImageUpload}
-          className="text-sm mt-2"
-        />
-        <span className="text-xs text-muted-foreground">Upload and insert image at cursor in content</span>
+        <p className="text-xs text-muted-foreground">
+          Use the toolbar to format text and insert images directly into your content.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -372,8 +318,8 @@ const BlogPostForm = ({
 
       <div className="grid gap-2">
         <Label htmlFor="category">Category</Label>
-        <Select 
-          value={formData.category} 
+        <Select
+          value={formData.category}
           onValueChange={handleSelectChange('category')}
         >
           <SelectTrigger className="text-sm">
@@ -436,7 +382,7 @@ const EmptyState = ({ title, description, action }: {
 export default function AdminBlogPage() {
   const { blogPosts, isLoading, error, refetch } = useBlogPosts()
   const supabase = useSupabase()
-  
+
 
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("All")
@@ -455,12 +401,12 @@ export default function AdminBlogPage() {
         post.excerpt,
         post.author,
         ...parseTags(post.tags)
-      ].some(field => 
+      ].some(field =>
         field.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      
+
       const matchesCategory = categoryFilter === "All" || post.category === categoryFilter
-      
+
       return matchesSearch && matchesCategory
     })
   }, [blogPosts, searchTerm, categoryFilter])
@@ -750,7 +696,7 @@ export default function AdminBlogPage() {
             <EmptyState
               title={blogPosts.length === 0 ? "No blog posts yet" : "No posts match your filters"}
               description={
-                blogPosts.length === 0 
+                blogPosts.length === 0
                   ? "Create your first blog post to get started."
                   : "Try adjusting your search or filter criteria."
               }
@@ -828,8 +774,8 @@ export default function AdminBlogPage() {
                               Edit Post
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem 
-                              className="text-xs text-red-600 focus:text-red-600" 
+                            <DropdownMenuItem
+                              className="text-xs text-red-600 focus:text-red-600"
                               onClick={() => setShowDelete(post)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -856,7 +802,7 @@ export default function AdminBlogPage() {
               Fill out the form below to create a new blog post.
             </DialogDescription>
           </DialogHeader>
-          
+
           {formError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -868,7 +814,7 @@ export default function AdminBlogPage() {
             formData={formData}
             onFormChange={handleFormChange}
           />
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={closeCreate} disabled={formLoading}>
               Cancel
@@ -890,7 +836,7 @@ export default function AdminBlogPage() {
               Update the blog post information below.
             </DialogDescription>
           </DialogHeader>
-          
+
           {formError && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -902,7 +848,7 @@ export default function AdminBlogPage() {
             formData={formData}
             onFormChange={handleFormChange}
           />
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={closeEdit} disabled={formLoading}>
               Cancel
@@ -924,7 +870,7 @@ export default function AdminBlogPage() {
               This action cannot be undone. The blog post will be permanently deleted.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <div className="p-4 bg-muted rounded-lg">
               <p className="font-medium text-sm">{showDelete?.title}</p>
@@ -933,18 +879,18 @@ export default function AdminBlogPage() {
               </p>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowDelete(null)} 
+            <Button
+              variant="outline"
+              onClick={() => setShowDelete(null)}
               disabled={formLoading}
             >
               Cancel
             </Button>
-            <Button 
-              onClick={handleDelete} 
-              disabled={formLoading} 
+            <Button
+              onClick={handleDelete}
+              disabled={formLoading}
               variant="destructive"
             >
               {formLoading && <Loader2 className="animate-spin h-4 w-4 mr-2" />}
