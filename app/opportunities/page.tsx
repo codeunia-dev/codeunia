@@ -22,7 +22,7 @@ const opportunities = [
     title: "Events",
     description: "Explore and participate in the latest tech events, workshops, and conferences.",
     icon: Calendar,
-    href: "/hackathons",
+    href: "/events",
     gradient: "from-blue-500 to-indigo-600",
     tags: ["Tech", "Workshops", "Conferences"],
   },
