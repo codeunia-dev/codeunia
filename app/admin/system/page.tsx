@@ -9,9 +9,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  RefreshCw, 
-  Server, 
+import {
+  RefreshCw,
+  Server,
   HardDrive,
   Cpu,
   MemoryStick,
@@ -116,7 +116,7 @@ export default function AdminSystemPage() {
       const params = new URLSearchParams();
       if (logLevel !== 'all') params.append('level', logLevel);
       if (logService !== 'all') params.append('service', logService);
-      
+
       const response = await makeAuthenticatedRequest(`/api/admin/logs?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch logs');
       const data = await response.json();
@@ -256,7 +256,7 @@ export default function AdminSystemPage() {
                     <Server className="h-4 w-4 text-blue-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatUptime(systemInfo.uptime)}</div>
+                    <div className="text-2xl font-bold">{formatUptime(systemInfo?.uptime ?? 0)}</div>
                     <p className="text-xs text-muted-foreground">
                       Since last restart
                     </p>
@@ -269,9 +269,9 @@ export default function AdminSystemPage() {
                     <Cpu className="h-4 w-4 text-green-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{systemInfo.cpu.usage.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">{systemInfo?.cpu?.usage?.toFixed(1) ?? '0'}%</div>
                     <p className="text-xs text-muted-foreground">
-                      {systemInfo.cpu.cores} cores
+                      {systemInfo?.cpu?.cores ?? 0} cores
                     </p>
                   </CardContent>
                 </Card>
@@ -282,9 +282,9 @@ export default function AdminSystemPage() {
                     <MemoryStick className="h-4 w-4 text-purple-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{systemInfo.memory.percentage.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">{systemInfo?.memory?.percentage?.toFixed(1) ?? '0'}%</div>
                     <p className="text-xs text-muted-foreground">
-                      {formatBytes(systemInfo.memory.used)} / {formatBytes(systemInfo.memory.total)}
+                      {formatBytes(systemInfo?.memory?.used ?? 0)} / {formatBytes(systemInfo?.memory?.total ?? 0)}
                     </p>
                   </CardContent>
                 </Card>
@@ -295,9 +295,9 @@ export default function AdminSystemPage() {
                     <HardDrive className="h-4 w-4 text-orange-500" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{systemInfo.disk.percentage.toFixed(1)}%</div>
+                    <div className="text-2xl font-bold">{systemInfo?.disk?.percentage?.toFixed(1) ?? '0'}%</div>
                     <p className="text-xs text-muted-foreground">
-                      {formatBytes(systemInfo.disk.used)} / {formatBytes(systemInfo.disk.total)}
+                      {formatBytes(systemInfo?.disk?.used ?? 0)} / {formatBytes(systemInfo?.disk?.total ?? 0)}
                     </p>
                   </CardContent>
                 </Card>
@@ -312,19 +312,19 @@ export default function AdminSystemPage() {
                   <CardContent className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Environment:</span>
-                      <Badge variant="outline">{systemInfo.environment}</Badge>
+                      <Badge variant="outline">{systemInfo?.environment ?? 'N/A'}</Badge>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Version:</span>
-                      <span className="text-sm">{systemInfo.version}</span>
+                      <span className="text-sm">{systemInfo?.version ?? 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Node.js:</span>
-                      <span className="text-sm">{systemInfo.nodeVersion}</span>
+                      <span className="text-sm">{systemInfo?.nodeVersion ?? 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Platform:</span>
-                      <span className="text-sm">{systemInfo.platform}</span>
+                      <span className="text-sm">{systemInfo?.platform ?? 'N/A'}</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -336,7 +336,7 @@ export default function AdminSystemPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {systemInfo.network.interfaces.map((iface, index) => (
+                      {systemInfo?.network?.interfaces?.map((iface, index) => (
                         <div key={index} className="flex justify-between items-center p-2 border rounded">
                           <span className="font-mono text-sm">{iface.name}</span>
                           <span className="text-sm">{iface.address}</span>
@@ -373,9 +373,9 @@ export default function AdminSystemPage() {
                       <div>
                         <h4 className="font-medium">{service.name}</h4>
                         <p className="text-sm text-gray-600">
-                          Uptime: {formatUptime(service.uptime)} | 
-                          Memory: {formatBytes(service.memory)} | 
-                          CPU: {service.cpu.toFixed(1)}%
+                          Uptime: {formatUptime(service.uptime)} |
+                          Memory: {formatBytes(service.memory)} |
+                          CPU: {service.cpu?.toFixed(1) ?? '0'}%
                         </p>
                         <p className="text-xs text-gray-500">
                           Last restart: {new Date(service.lastRestart).toLocaleString()}
