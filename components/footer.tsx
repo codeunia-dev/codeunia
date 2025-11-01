@@ -1,15 +1,62 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Github, Twitter, Linkedin, ArrowRight, Instagram } from "lucide-react"
+import { Github, Twitter, Linkedin, ArrowRight, Instagram, Loader2, CheckCircle2 } from "lucide-react"
 import CodeuniaLogo from "./codeunia-logo";
+import { useState, FormEvent } from "react"
 
 export default function Footer() {
+  const [email, setEmail] = useState("")
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+  const [message, setMessage] = useState("")
+
+  const handleNewsletterSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setStatus("error")
+      setMessage("Please enter a valid email address")
+      return
+    }
+
+    setStatus("loading")
+    setMessage("")
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setStatus("success")
+        setMessage("Thanks for subscribing!")
+        setEmail("")
+        setTimeout(() => {
+          setStatus("idle")
+          setMessage("")
+        }, 5000)
+      } else {
+        setStatus("error")
+        setMessage(data.error || "Something went wrong. Please try again.")
+      }
+    } catch {
+      setStatus("error")
+      setMessage("Network error. Please try again.")
+    }
+  }
   return (
     <footer className="border-t border-border/40 bg-gradient-to-b from-background/95 via-background to-background/95">
       <div className="container px-4 pl-8 md:pl-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-       {/* codeunia branding */}
+          {/* codeunia branding */}
           <div className="space-y-6">
             <CodeuniaLogo size="lg" showText={true} instanceId="footer" />
             <p className="text-foreground/80 leading-relaxed">
@@ -52,7 +99,7 @@ export default function Footer() {
             </div>
           </div>
 
-               {/* quick links of codeunia */}
+          {/* quick links of codeunia */}
           <div className="space-y-6">
             <h4 className="text-lg font-bold text-foreground">Quick Links</h4>
             <div className="space-y-3">
@@ -83,7 +130,7 @@ export default function Footer() {
             </div>
           </div>
 
-       {/* community section of codeunia */}
+          {/* community section of codeunia */}
           <div className="space-y-6">
             <h4 className="text-lg font-bold text-foreground">Community</h4>
             <div className="space-y-3">
@@ -128,21 +175,41 @@ export default function Footer() {
             <p className="text-foreground/80">
               Get the latest updates on events, new features, and community highlights.
             </p>
-            <div className="space-y-3">
+            <form onSubmit={handleNewsletterSubmit} className="space-y-3">
               <div className="flex space-x-2">
-                <Input 
-                  placeholder="Enter your email" 
-                  className="flex-1 bg-background/50 border-border/50 focus:border-primary/50" 
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={status === "loading" || status === "success"}
+                  className="flex-1 bg-background/50 border-border/50 focus:border-primary/50"
+                  required
                 />
-                <Button 
-                  size="sm" 
-                  className="bg-primary/90 hover:bg-primary shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all"
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={status === "loading" || status === "success"}
+                  className="bg-primary/90 hover:bg-primary shadow-lg hover:shadow-primary/20 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ArrowRight className="h-4 w-4" />
+                  {status === "loading" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : status === "success" ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
-              <p className="text-xs text-foreground/70">Join 2,000+ developers in our newsletter</p>
-            </div>
+              {message && (
+                <p className={`text-xs ${status === "error" ? "text-red-500" : "text-green-500"}`}>
+                  {message}
+                </p>
+              )}
+              {!message && (
+                <p className="text-xs text-foreground/70">Join 2,000+ developers in our newsletter</p>
+              )}
+            </form>
           </div>
         </div>
 
