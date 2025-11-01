@@ -2,9 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
+  // Initialize Resend only when needed
+  if (!process.env.RESEND_API_KEY) {
+    return NextResponse.json(
+      { error: "Resend API key not configured" },
+      { status: 500 }
+    )
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
   try {
     const { subject, content } = await request.json()
 
@@ -19,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user is admin
     const { data: { user } } = await supabase.auth.getUser()
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -68,10 +75,10 @@ export async function POST(request: NextRequest) {
 
     for (let i = 0; i < subscribers.length; i += batchSize) {
       const batch = subscribers.slice(i, i + batchSize)
-      
+
       const emailPromises = batch.map(async (subscriber) => {
         const unsubscribeUrl = `${siteUrl}/newsletter/unsubscribe?token=${subscriber.unsubscribe_token}`
-        
+
         const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
