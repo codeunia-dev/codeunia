@@ -115,7 +115,7 @@ export default function NewsletterAdminPage() {
           <h2 className="text-xl font-bold text-red-500 mb-2">Error Loading Subscribers</h2>
           <p className="text-foreground/70">{error}</p>
           <p className="text-sm text-foreground/50 mt-4">
-            Make sure you're logged in as an admin and RLS policies are configured correctly.
+            Make sure you&apos;re logged in as an admin and RLS policies are configured correctly.
           </p>
         </div>
       </div>
