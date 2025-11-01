@@ -87,70 +87,20 @@ const dashboardStats = [
   },
 ]
 
-const recentActivities = [
-  {
-    id: 1,
-    type: "user_signup",
-    message: "New user registered: akshay@gmail.com",
-    timestamp: "2 minutes ago",
-    status: "success",
-  },
-  {
-    id: 2,
-    type: "test_created",
-    message: "New test 'JavaScript Fundamentals' created",
-    timestamp: "5 minutes ago",
-    status: "success",
-  },
-  {
-    id: 3,
-    type: "blog_published",
-    message: "Blog post 'React 18 Features' published by Akshay",
-    timestamp: "15 minutes ago",
-    status: "success",
-  },
-  {
-    id: 4,
-    type: "event_created",
-    message: "New hackathon 'Summer Challenge 2025' created",
-    timestamp: "1 hour ago",
-    status: "info",
-  },
-  {
-    id: 5,
-    type: "security_alert",
-    message: "Multiple failed login attempts detected",
-    timestamp: "2 hours ago",
-    status: "warning",
-  }
-]
+type Activity = {
+  id: number
+  type: string
+  message: string
+  timestamp: string
+  status: string
+}
 
-const systemHealth = [
-  {
-    service: "API Server",
-    status: "healthy",
-    uptime: "99.9%",
-    responseTime: "45ms",
-  },
-  {
-    service: "Database",
-    status: "healthy",
-    uptime: "99.8%",
-    responseTime: "12ms",
-  },
-  {
-    service: "CDN",
-    status: "healthy",
-    uptime: "100%",
-    responseTime: "23ms",
-  },
-  {
-    service: "Email Service",
-    status: "warning",
-    uptime: "98.5%",
-    responseTime: "156ms",
-  },
-]
+type SystemHealthItem = {
+  service: string
+  status: string
+  uptime: string
+  responseTime: string
+}
 
 export default function AdminDashboard() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -162,6 +112,8 @@ export default function AdminDashboard() {
   const [pageViewsChange, setPageViewsChange] = useState<string>("")
   const [pageViewsTrend, setPageViewsTrend] = useState<"up" | "down">("up")
   const [topContent, setTopContent] = useState<BlogPost[]>([])
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([])
+  const [systemHealth, setSystemHealth] = useState<SystemHealthItem[]>([])
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null)
   const likesChannelRef = useRef<RealtimeChannel | null>(null)
 
@@ -249,6 +201,27 @@ export default function AdminDashboard() {
       }
     }
     fetchTopContentWithLikes()
+
+    // Fetch recent activities
+    fetch("/api/admin/recent-activities")
+      .then(res => res.json())
+      .then(data => {
+        if (data.activities) {
+          setRecentActivities(data.activities)
+        }
+      })
+      .catch(err => console.error("Failed to fetch activities:", err))
+
+    // Fetch system health
+    fetch("/api/admin/system-health")
+      .then(res => res.json())
+      .then(data => {
+        if (data.health) {
+          setSystemHealth(data.health)
+        }
+      })
+      .catch(err => console.error("Failed to fetch system health:", err))
+
     // Setup realtime subscription
     const supabase = createClient()
     supabaseRef.current = supabase
