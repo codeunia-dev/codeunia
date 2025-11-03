@@ -7,6 +7,7 @@ export interface Profile {
   first_name?: string
   last_name?: string
   bio?: string
+  avatar_url?: string
   
   // Contact information
   phone?: string
@@ -61,6 +62,7 @@ export interface ProfileUpdateData {
   last_name?: string
   username?: string
   bio?: string
+  avatar_url?: string
   phone?: string
   github_url?: string
   linkedin_url?: string

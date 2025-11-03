@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { ProfileUpdateData } from '@/types/profile'
 import { UsernameField } from '@/components/UsernameField'
+import { ProfilePictureUpload } from '@/components/users/ProfilePictureUpload'
 
 // Validation rules
 interface ValidationRule {
@@ -152,7 +153,7 @@ export function ProfileSettings() {
       setFormData({
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
-
+        avatar_url: profile.avatar_url || '',
         bio: profile.bio || '',
         phone: profile.phone || '',
         github_url: profile.github_url || '',
@@ -310,6 +311,22 @@ export function ProfileSettings() {
           <CardDescription>Your personal information and contact details</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Profile Picture Upload */}
+          {profile && (
+            <ProfilePictureUpload
+              currentAvatarUrl={formData.avatar_url}
+              userId={profile.id}
+              firstName={formData.first_name}
+              lastName={formData.last_name}
+              onUploadComplete={(avatarUrl) => {
+                setFormData(prev => ({ ...prev, avatar_url: avatarUrl }))
+                setHasUnsavedChanges(false)
+              }}
+            />
+          )}
+
+          <Separator />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="first_name" className="flex items-center gap-1">

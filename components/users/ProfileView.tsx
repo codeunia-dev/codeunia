@@ -5,7 +5,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ContributionGraph } from '@/components/ui/contribution-graph'
 import { useContributionGraph } from '@/hooks/useContributionGraph'
 import { 
@@ -206,6 +206,7 @@ export function ProfileView() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
             <Avatar className="w-20 h-20 sm:w-24 sm:h-24">
+              {profile.avatar_url && <AvatarImage src={profile.avatar_url} alt={getFullName()} />}
               <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                 {getInitials()}
               </AvatarFallback>
