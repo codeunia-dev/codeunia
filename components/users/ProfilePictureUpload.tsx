@@ -77,6 +77,32 @@ export function ProfilePictureUpload({
     }
   }
 
+  const deleteOldAvatar = async (oldAvatarUrl: string) => {
+    try {
+      const supabase = createClient()
+      
+      // Extract file path from URL
+      // URL format: https://.../storage/v1/object/public/profile-pictures/avatars/filename.jpg
+      const urlParts = oldAvatarUrl.split('/storage/v1/object/public/profile-pictures/')
+      if (urlParts.length < 2) return
+      
+      const filePath = urlParts[1]
+      
+      // Delete the old file
+      const { error } = await supabase.storage
+        .from('profile-pictures')
+        .remove([filePath])
+      
+      if (error) {
+        console.error('Error deleting old avatar:', error)
+        // Don't throw - we still want the upload to succeed even if deletion fails
+      }
+    } catch (err) {
+      console.error('Error in deleteOldAvatar:', err)
+      // Don't throw - non-critical error
+    }
+  }
+
   const handleCropComplete = async (croppedImageBlob: Blob) => {
     try {
       setUploading(true)
@@ -84,6 +110,11 @@ export function ProfilePictureUpload({
       setError(null)
 
       const supabase = createClient()
+
+      // Delete old avatar if it exists
+      if (previewUrl) {
+        await deleteOldAvatar(previewUrl)
+      }
 
       // Create a unique file name
       const fileName = `${userId}-${Date.now()}.jpg`
@@ -142,6 +173,11 @@ export function ProfilePictureUpload({
       setError(null)
 
       const supabase = createClient()
+
+      // Delete the avatar file from storage
+      if (previewUrl) {
+        await deleteOldAvatar(previewUrl)
+      }
 
       // Update profile to remove avatar
       const { error: updateError } = await supabase
