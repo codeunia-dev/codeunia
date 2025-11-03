@@ -113,6 +113,7 @@ export class ProfileService {
     const fields = [
       'first_name',
       'last_name',
+      'avatar_url',
       'bio',
       'phone',
       'github_url',
@@ -132,6 +133,57 @@ export class ProfileService {
     })
 
     return Math.round((filledFields.length / fields.length) * 100)
+  }
+
+  // Upload avatar to storage
+  async uploadAvatar(userId: string, file: File): Promise<string> {
+    const supabase = this.getSupabaseClient()
+
+    // Create unique filename
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${userId}-${Date.now()}.${fileExt}`
+    const filePath = `avatars/${fileName}`
+
+    // Upload file
+    const { error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: true
+      })
+
+    if (uploadError) {
+      throw new Error(`Failed to upload avatar: ${uploadError.message}`)
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('profile-pictures')
+      .getPublicUrl(filePath)
+
+    return publicUrl
+  }
+
+  // Delete avatar from storage
+  async deleteAvatar(avatarUrl: string): Promise<void> {
+    const supabase = this.getSupabaseClient()
+
+    // Extract file path from URL
+    const urlParts = avatarUrl.split('/storage/v1/object/public/profile-pictures/')
+    if (urlParts.length < 2) {
+      throw new Error('Invalid avatar URL')
+    }
+
+    const filePath = urlParts[1]
+
+    const { error } = await supabase.storage
+      .from('profile-pictures')
+      .remove([filePath])
+
+    if (error) {
+      console.error('Error deleting avatar:', error)
+      // Don't throw error, just log it - we still want to clear the URL from profile
+    }
   }
 
 
