@@ -31,6 +31,11 @@ export function ProfilePictureUpload({
   const [showCropper, setShowCropper] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Update preview when currentAvatarUrl changes
+  React.useEffect(() => {
+    setPreviewUrl(currentAvatarUrl || null)
+  }, [currentAvatarUrl])
+
   const getInitials = () => {
     if (firstName && lastName) {
       return `${firstName[0]}${lastName[0]}`
