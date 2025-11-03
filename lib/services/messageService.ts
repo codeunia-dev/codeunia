@@ -6,6 +6,48 @@ export class MessageService {
     return createClient()
   }
 
+  // Encrypt message content via API
+  private async encryptContent(content: string): Promise<string> {
+    try {
+      const response = await fetch('/api/messages/encrypt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      })
+
+      if (!response.ok) {
+        throw new Error('Encryption failed')
+      }
+
+      const { encrypted } = await response.json()
+      return encrypted
+    } catch (error) {
+      console.error('Error encrypting message:', error)
+      throw new Error('Failed to encrypt message')
+    }
+  }
+
+  // Decrypt message content via API
+  private async decryptContent(encrypted: string): Promise<string> {
+    try {
+      const response = await fetch('/api/messages/decrypt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ encrypted })
+      })
+
+      if (!response.ok) {
+        throw new Error('Decryption failed')
+      }
+
+      const { decrypted } = await response.json()
+      return decrypted
+    } catch (error) {
+      console.error('Error decrypting message:', error)
+      return '[Message could not be decrypted]'
+    }
+  }
+
   // Get messages for a conversation
   async getMessages(conversationId: string): Promise<Message[]> {
     const supabase = this.getSupabaseClient()
@@ -31,7 +73,15 @@ export class MessageService {
       throw new Error(`Failed to fetch messages: ${error.message}`)
     }
 
-    return data as Message[]
+    // Decrypt all messages
+    const decryptedMessages = await Promise.all(
+      data.map(async (message) => ({
+        ...message,
+        content: await this.decryptContent(message.content)
+      }))
+    )
+
+    return decryptedMessages as Message[]
   }
 
   // Send a message
@@ -43,10 +93,13 @@ export class MessageService {
       throw new Error('User not authenticated')
     }
 
+    // Encrypt the message content before sending
+    const encryptedContent = await this.encryptContent(data.content)
+
     const messageData = {
       conversation_id: data.conversation_id,
       sender_id: user.id,
-      content: data.content,
+      content: encryptedContent,
       reply_to_id: data.reply_to_id || null,
       attachments: data.attachments || null
     }
@@ -71,7 +124,13 @@ export class MessageService {
       throw new Error(`Failed to send message: ${error.message}`)
     }
 
-    return message as Message
+    // Decrypt the content before returning
+    const decryptedMessage = {
+      ...message,
+      content: await this.decryptContent(message.content)
+    }
+
+    return decryptedMessage as Message
   }
 
   // Mark messages as read
@@ -96,11 +155,14 @@ export class MessageService {
   async deleteMessage(messageId: string): Promise<void> {
     const supabase = this.getSupabaseClient()
 
+    // Encrypt the deletion message
+    const encryptedDeletedMessage = await this.encryptContent('This message was deleted')
+
     const { error } = await supabase
       .from('messages')
       .update({ 
         is_deleted: true,
-        content: 'This message was deleted',
+        content: encryptedDeletedMessage,
         updated_at: new Date().toISOString()
       })
       .eq('id', messageId)
@@ -115,10 +177,13 @@ export class MessageService {
   async editMessage(messageId: string, newContent: string): Promise<void> {
     const supabase = this.getSupabaseClient()
 
+    // Encrypt the new content
+    const encryptedContent = await this.encryptContent(newContent)
+
     const { error } = await supabase
       .from('messages')
       .update({ 
-        content: newContent,
+        content: encryptedContent,
         is_edited: true,
         updated_at: new Date().toISOString()
       })

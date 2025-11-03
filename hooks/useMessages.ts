@@ -70,11 +70,21 @@ export function useMessages(conversationId: string | null) {
             .single()
 
           if (data) {
+            // Decrypt the message content
+            const decryptResponse = await fetch('/api/messages/decrypt', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ encrypted: data.content })
+            })
+            
+            const { decrypted } = await decryptResponse.json()
+            const decryptedMessage = { ...data, content: decrypted }
+
             setMessages(prev => {
               // Avoid duplicates
               const exists = prev.some(msg => msg.id === data.id)
               if (exists) return prev
-              return [...prev, data as Message]
+              return [...prev, decryptedMessage as Message]
             })
             // Mark as read
             await messageService.markAsRead(conversationId)
