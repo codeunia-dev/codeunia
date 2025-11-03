@@ -55,6 +55,10 @@ export interface Profile {
   
   // Admin access
   is_admin?: boolean
+  
+  // Messaging privacy settings
+  allow_messages_from_anyone?: boolean
+  allow_messages_from_connections?: boolean
 }
 
 export interface ProfileUpdateData {
@@ -73,6 +77,8 @@ export interface ProfileUpdateData {
   skills?: string[]
   is_public?: boolean
   email_notifications?: boolean
+  allow_messages_from_anyone?: boolean
+  allow_messages_from_connections?: boolean
 }
 
 // User setup status interface
