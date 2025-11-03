@@ -6,6 +6,29 @@ export class ConversationService {
     return createClient()
   }
 
+  // Decrypt message content via API
+  private async decryptContent(encrypted: string | null): Promise<string | null> {
+    if (!encrypted) return null
+    
+    try {
+      const response = await fetch('/api/messages/decrypt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ encrypted })
+      })
+
+      if (!response.ok) {
+        return encrypted // Return encrypted if decryption fails
+      }
+
+      const { decrypted } = await response.json()
+      return decrypted
+    } catch (error) {
+      console.error('Error decrypting last message:', error)
+      return encrypted // Return encrypted if error occurs
+    }
+  }
+
   // Get all conversations for current user
   async getConversations(): Promise<ConversationWithDetails[]> {
     const supabase = this.getSupabaseClient()
@@ -73,8 +96,12 @@ export class ConversationService {
           .neq('sender_id', user.id)
           .gt('created_at', item.last_read_at || '1970-01-01')
 
+        // Decrypt last message content
+        const decryptedLastMessage = await this.decryptContent(conversation.last_message_content)
+
         return {
           ...conversation,
+          last_message_content: decryptedLastMessage,
           participants: participants || [],
           other_user: otherUser,
           unread_count: unreadMessages?.length || 0
