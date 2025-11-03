@@ -163,7 +163,9 @@ export function ProfileSettings() {
         company: profile.company || '',
         location: profile.location || '',
         is_public: profile.is_public,
-        email_notifications: profile.email_notifications
+        email_notifications: profile.email_notifications,
+        allow_messages_from_anyone: profile.allow_messages_from_anyone || false,
+        allow_messages_from_connections: profile.allow_messages_from_connections !== false
       })
       setSkills(profile.skills || [])
     }
@@ -594,6 +596,38 @@ export function ProfileSettings() {
               id="email_notifications"
               checked={formData.email_notifications || false}
               onCheckedChange={(checked) => handleInputChange('email_notifications', checked)}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="allow_messages_from_anyone">Allow Messages from Anyone</Label>
+              <p className="text-sm text-muted-foreground">
+                Let anyone send you messages (not recommended)
+              </p>
+            </div>
+            <Switch
+              id="allow_messages_from_anyone"
+              checked={formData.allow_messages_from_anyone || false}
+              onCheckedChange={(checked) => handleInputChange('allow_messages_from_anyone', checked)}
+            />
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="allow_messages_from_connections">Allow Messages from Connections</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow mutual connections to send you messages (recommended)
+              </p>
+            </div>
+            <Switch
+              id="allow_messages_from_connections"
+              checked={formData.allow_messages_from_connections !== false}
+              onCheckedChange={(checked) => handleInputChange('allow_messages_from_connections', checked)}
             />
           </div>
         </CardContent>
