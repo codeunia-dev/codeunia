@@ -17,7 +17,26 @@ export function UserStatusIndicator({
 }: UserStatusIndicatorProps) {
   const { presence, loading } = useUserPresence(userId)
 
-  if (loading || !presence) return null
+  // Debug logging
+  React.useEffect(() => {
+    if (presence) {
+      console.log('UserStatusIndicator for', userId, ':', {
+        isOnline: presence.isOnline,
+        lastSeen: presence.lastSeen,
+        loading
+      })
+    }
+  }, [presence, userId, loading])
+
+  if (loading) {
+    console.log('UserStatusIndicator loading for', userId)
+    return null
+  }
+  
+  if (!presence) {
+    console.log('UserStatusIndicator no presence data for', userId)
+    return null
+  }
 
   const sizeClasses = {
     sm: 'w-2 h-2',
