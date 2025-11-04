@@ -111,24 +111,24 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className={cn('font-semibold truncate', conversation.unread_count > 0 && 'text-primary')}>
+                <span className={cn('font-semibold truncate text-sm md:text-base', conversation.unread_count > 0 && 'text-primary')}>
                   {name}
                 </span>
                 {conversation.last_message_at && (
-                  <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                  <span className="text-[10px] md:text-xs text-muted-foreground flex-shrink-0 ml-2">
                     {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
                   </span>
                 )}
               </div>
               <div className="flex items-center justify-between">
                 <p className={cn(
-                  'text-sm truncate',
+                  'text-xs md:text-sm truncate',
                   conversation.unread_count > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'
                 )}>
                   {conversation.last_message_content || 'No messages yet'}
                 </p>
                 {conversation.unread_count > 0 && (
-                  <Badge variant="default" className="ml-2 flex-shrink-0">
+                  <Badge variant="default" className="ml-2 flex-shrink-0 text-xs">
                     {conversation.unread_count}
                   </Badge>
                 )}

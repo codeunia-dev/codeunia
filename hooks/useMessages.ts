@@ -42,6 +42,8 @@ export function useMessages(conversationId: string | null) {
 
     const supabase = createClient()
     
+    console.log('📡 Setting up message subscription for conversation:', conversationId)
+    
     const subscription = supabase
       .channel(`messages:${conversationId}`)
       .on(
@@ -53,6 +55,8 @@ export function useMessages(conversationId: string | null) {
           filter: `conversation_id=eq.${conversationId}`
         },
         async (payload) => {
+          console.log('🔔 New message received via realtime:', payload)
+          
           // Fetch the complete message with sender details
           const { data } = await supabase
             .from('messages')
@@ -70,6 +74,8 @@ export function useMessages(conversationId: string | null) {
             .single()
 
           if (data) {
+            console.log('📨 Fetched complete message data:', data)
+            
             // Decrypt the message content
             const decryptResponse = await fetch('/api/messages/decrypt', {
               method: 'POST',
@@ -79,11 +85,17 @@ export function useMessages(conversationId: string | null) {
             
             const { decrypted } = await decryptResponse.json()
             const decryptedMessage = { ...data, content: decrypted }
+            
+            console.log('🔓 Decrypted message:', decrypted)
 
             setMessages(prev => {
               // Avoid duplicates
               const exists = prev.some(msg => msg.id === data.id)
-              if (exists) return prev
+              if (exists) {
+                console.log('⚠️ Message already exists, skipping')
+                return prev
+              }
+              console.log('✅ Adding new message to state')
               return [...prev, decryptedMessage as Message]
             })
             // Mark as read
@@ -91,9 +103,12 @@ export function useMessages(conversationId: string | null) {
           }
         }
       )
-      .subscribe()
+      .subscribe((status) => {
+        console.log('Message subscription status:', status)
+      })
 
     return () => {
+      console.log('🔌 Unsubscribing from messages')
       subscription.unsubscribe()
     }
   }, [conversationId])
