@@ -5,9 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { ConversationList } from '@/components/messages/ConversationList'
 import { ConversationView } from '@/components/messages/ConversationView'
 import { NewMessageDialog } from '@/components/messages/NewMessageDialog'
+import { UserStatusIndicator } from '@/components/messages/UserStatusIndicator'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useConversations } from '@/hooks/useConversations'
+import { useMyPresence } from '@/hooks/useUserPresence'
 import { Plus, Search, MessageSquare } from 'lucide-react'
 
 export default function MessagesPage() {
@@ -16,6 +18,9 @@ export default function MessagesPage() {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [showNewMessage, setShowNewMessage] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  
+  // Track user's online presence
+  useMyPresence()
 
   // Get conversation from URL params
   useEffect(() => {
@@ -94,9 +99,18 @@ export default function MessagesPage() {
 
           {/* Main Area - Conversation View */}
           <div className="flex-1 bg-background flex flex-col">
-            {selectedConversationId && (
+            {selectedConversationId && selectedConversation && (
               <div className="border-b p-4 bg-muted/50 flex-shrink-0">
-                <h2 className="font-semibold">{conversationName}</h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="font-semibold">{conversationName}</h2>
+                  {!selectedConversation.is_group && selectedConversation.other_user && (
+                    <UserStatusIndicator 
+                      userId={selectedConversation.other_user.id}
+                      showLastSeen={true}
+                      size="sm"
+                    />
+                  )}
+                </div>
               </div>
             )}
             <div className="flex-1 min-h-0">

@@ -4,6 +4,7 @@ import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { UserStatusIndicator } from './UserStatusIndicator'
 import { formatDistanceToNow } from 'date-fns'
 import type { ConversationWithDetails } from '@/types/messaging'
 import { cn } from '@/lib/utils'
@@ -77,12 +78,19 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
               isSelected && 'bg-muted'
             )}
           >
-            <Avatar className="w-12 h-12 flex-shrink-0">
-              {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="w-12 h-12 flex-shrink-0">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              {!conversation.is_group && otherUser && (
+                <div className="absolute bottom-0 right-0">
+                  <UserStatusIndicator userId={otherUser.id} size="sm" />
+                </div>
+              )}
+            </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">

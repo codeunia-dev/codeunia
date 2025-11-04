@@ -3,8 +3,10 @@
 import React, { useEffect, useRef } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { MessageInput } from './MessageInput'
+import { TypingIndicator } from './TypingIndicator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useMessages } from '@/hooks/useMessages'
+import { useTypingIndicator } from '@/hooks/useTypingIndicator'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { MessageSquare } from 'lucide-react'
 
@@ -16,6 +18,7 @@ interface ConversationViewProps {
 export function ConversationView({ conversationId }: ConversationViewProps) {
   const { user } = useAuth()
   const { messages, loading, sending, sendMessage } = useMessages(conversationId)
+  const { typingUsers, sendTypingEvent } = useTypingIndicator(conversationId)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom when new messages arrive
@@ -79,9 +82,18 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
         )}
       </div>
 
+      {/* Typing Indicator */}
+      {typingUsers.length > 0 && (
+        <TypingIndicator usernames={typingUsers.map(u => u.username)} />
+      )}
+
       {/* Message Input */}
       <div className="flex-shrink-0">
-        <MessageInput onSend={sendMessage} disabled={sending} />
+        <MessageInput 
+          onSend={sendMessage} 
+          disabled={sending}
+          onTyping={sendTypingEvent}
+        />
       </div>
     </div>
   )
