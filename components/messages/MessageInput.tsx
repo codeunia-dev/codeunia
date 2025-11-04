@@ -9,12 +9,15 @@ interface MessageInputProps {
   onSend: (content: string) => Promise<void>
   disabled?: boolean
   placeholder?: string
+  onTyping?: (isTyping: boolean) => void
 }
 
-export function MessageInput({ onSend, disabled, placeholder = 'Type a message...' }: MessageInputProps) {
+export function MessageInput({ onSend, disabled, placeholder = 'Type a message...', onTyping }: MessageInputProps) {
   const [content, setContent] = useState('')
   const [sending, setSending] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,6 +28,10 @@ export function MessageInput({ onSend, disabled, placeholder = 'Type a message..
       setSending(true)
       await onSend(content)
       setContent('')
+      
+      // Stop typing indicator
+      setIsTyping(false)
+      onTyping?.(false)
       
       // Reset textarea height
       if (textareaRef.current) {
@@ -51,6 +58,36 @@ export function MessageInput({ onSend, disabled, placeholder = 'Type a message..
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`
     }
   }, [content])
+
+  // Handle typing indicator
+  useEffect(() => {
+    if (content.trim() && !isTyping) {
+      setIsTyping(true)
+      onTyping?.(true)
+    }
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    // Set new timeout to stop typing indicator
+    if (content.trim()) {
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTyping(false)
+        onTyping?.(false)
+      }, 2000)
+    } else if (isTyping) {
+      setIsTyping(false)
+      onTyping?.(false)
+    }
+
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current)
+      }
+    }
+  }, [content, isTyping, onTyping])
 
   return (
     <form onSubmit={handleSubmit} className="border-t bg-background p-3">
