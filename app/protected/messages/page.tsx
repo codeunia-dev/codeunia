@@ -103,12 +103,14 @@ export default function MessagesPage() {
               <div className="border-b p-4 bg-muted/50 flex-shrink-0">
                 <div className="flex items-center gap-3">
                   <h2 className="font-semibold">{conversationName}</h2>
-                  {!selectedConversation.is_group && selectedConversation.other_user && (
+                  {!selectedConversation.is_group && selectedConversation.other_user && selectedConversation.other_user.id ? (
                     <UserStatusIndicator 
                       userId={selectedConversation.other_user.id}
                       showLastSeen={true}
                       size="sm"
                     />
+                  ) : !selectedConversation.is_group && (
+                    <span className="text-xs text-red-500">No user data</span>
                   )}
                 </div>
               </div>

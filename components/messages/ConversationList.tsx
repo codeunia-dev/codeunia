@@ -18,6 +18,20 @@ interface ConversationListProps {
 }
 
 export function ConversationList({ conversations, selectedId, onSelect, loading }: ConversationListProps) {
+  // Debug: Log conversations data (must be before any returns)
+  React.useEffect(() => {
+    if (!loading && conversations.length > 0) {
+      console.log('ConversationList conversations:', conversations.map(c => ({
+        id: c.id,
+        is_group: c.is_group,
+        other_user: c.other_user ? {
+          id: c.other_user.id,
+          username: c.other_user.username
+        } : null
+      })))
+    }
+  }, [conversations, loading])
+
   if (loading) {
     return (
       <div className="space-y-2 p-2">
@@ -85,10 +99,13 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              {!conversation.is_group && otherUser && (
+              {!conversation.is_group && otherUser && otherUser.id && (
                 <div className="absolute bottom-0 right-0">
                   <UserStatusIndicator userId={otherUser.id} size="sm" />
                 </div>
+              )}
+              {!conversation.is_group && !otherUser && (
+                <div className="absolute bottom-0 right-0 w-2 h-2 bg-red-500 rounded-full" title="No user data" />
               )}
             </div>
 
