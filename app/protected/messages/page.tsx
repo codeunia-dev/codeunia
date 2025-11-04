@@ -59,11 +59,12 @@ export default function MessagesPage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <MessageSquare className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Messages</h1>
+            <h1 className="text-xl md:text-2xl font-bold">Messages</h1>
           </div>
           <Button onClick={() => setShowNewMessage(true)} className="gap-2">
             <Plus className="h-4 w-4" />
-            New Message
+            <span className="hidden sm:inline">New Message</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
       </div>
@@ -71,8 +72,11 @@ export default function MessagesPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto h-full flex">
-          {/* Sidebar - Conversation List */}
-          <div className="w-80 border-r flex flex-col bg-background">
+          {/* Sidebar - Conversation List (Hidden on mobile when conversation is selected) */}
+          <div className={`
+            w-full md:w-80 md:border-r flex flex-col bg-background
+            ${selectedConversationId ? 'hidden md:flex' : 'flex'}
+          `}>
             {/* Search */}
             <div className="p-3 border-b">
               <div className="relative">
@@ -97,12 +101,36 @@ export default function MessagesPage() {
             </div>
           </div>
 
-          {/* Main Area - Conversation View */}
-          <div className="flex-1 bg-background flex flex-col">
+          {/* Main Area - Conversation View (Hidden on mobile when no conversation selected) */}
+          <div className={`
+            flex-1 bg-background flex flex-col
+            ${selectedConversationId ? 'flex' : 'hidden md:flex'}
+          `}>
             {selectedConversationId && selectedConversation && (
-              <div className="border-b p-4 bg-muted/50 flex-shrink-0">
-                <div className="flex items-center gap-3">
-                  <h2 className="font-semibold">{conversationName}</h2>
+              <div className="border-b p-3 md:p-4 bg-muted/50 flex-shrink-0">
+                <div className="flex items-center gap-2 md:gap-3">
+                  {/* Back button for mobile */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
+                    onClick={() => setSelectedConversationId(null)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m15 18-6-6 6-6"/>
+                    </svg>
+                  </Button>
+                  <h2 className="font-semibold text-sm md:text-base truncate">{conversationName}</h2>
                   {!selectedConversation.is_group && selectedConversation.other_user && selectedConversation.other_user.id ? (
                     <UserStatusIndicator 
                       userId={selectedConversation.other_user.id}
