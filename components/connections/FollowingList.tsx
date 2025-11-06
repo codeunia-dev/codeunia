@@ -75,12 +75,23 @@ export function FollowingList() {
 
   if (following.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <Users className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No connections yet</h3>
-        <p className="text-muted-foreground">
-          Start following users to build your network
-        </p>
+      <div className="flex flex-col items-center justify-center p-16 text-center space-y-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full" />
+          <div className="relative bg-blue-500/10 p-6 rounded-full border border-blue-500/20">
+            <Users className="h-16 w-16 text-blue-400" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold">No connections yet</h3>
+          <p className="text-muted-foreground max-w-md">
+            Start following users to build your professional network and stay connected
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          <span>Try the Search tab to find people</span>
+        </div>
       </div>
     )
   }

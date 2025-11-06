@@ -78,38 +78,68 @@ export function SearchUsers({ searchQuery }: SearchUsersProps) {
 
   if (searchQuery.trim().length < 2) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <Search className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Search for users</h3>
-        <p className="text-muted-foreground">
-          Type at least 2 characters to search
-        </p>
+      <div className="flex flex-col items-center justify-center p-16 text-center space-y-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+          <div className="relative bg-primary/10 p-6 rounded-full border border-primary/20">
+            <Search className="h-16 w-16 text-primary" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold">Discover New Connections</h3>
+          <p className="text-muted-foreground max-w-md">
+            Search for users by name or username to expand your network
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          <span>Type at least 2 characters to start searching</span>
+        </div>
       </div>
     )
   }
 
   if (users.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <Search className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No users found</h3>
-        <p className="text-muted-foreground">
-          Try a different search term
+      <div className="flex flex-col items-center justify-center p-16 text-center space-y-6">
+        <div className="relative">
+          <div className="bg-muted/50 p-6 rounded-full border border-border">
+            <Search className="h-16 w-16 text-muted-foreground" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold">No users found</h3>
+          <p className="text-muted-foreground max-w-md">
+            We couldn&apos;t find anyone matching &quot;{searchQuery}&quot;
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Try searching with a different name or username
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-3">
-      {users.map((user) => (
-        <UserCard
-          key={user.id}
-          user={user}
-          connectionStatus={connectionStatuses[user.id]}
-          onConnectionChange={handleConnectionChange}
-        />
-      ))}
+    <div className="space-y-4">
+      {/* Result count header */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-sm text-muted-foreground">
+          Found <span className="font-semibold text-foreground">{users.length}</span> {users.length === 1 ? 'user' : 'users'}
+        </p>
+      </div>
+
+      {/* User list */}
+      <div className="space-y-3">
+        {users.map((user) => (
+          <UserCard
+            key={user.id}
+            user={user}
+            connectionStatus={connectionStatuses[user.id]}
+            onConnectionChange={handleConnectionChange}
+          />
+        ))}
+      </div>
     </div>
   )
 }

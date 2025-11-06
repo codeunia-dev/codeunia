@@ -87,12 +87,23 @@ export function FollowersList() {
 
   if (followers.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center">
-        <Users className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No followers yet</h3>
-        <p className="text-muted-foreground">
-          When people follow you, they&apos;ll appear here
-        </p>
+      <div className="flex flex-col items-center justify-center p-16 text-center space-y-6">
+        <div className="relative">
+          <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
+          <div className="relative bg-purple-500/10 p-6 rounded-full border border-purple-500/20">
+            <Users className="h-16 w-16 text-purple-400" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold">No followers yet</h3>
+          <p className="text-muted-foreground max-w-md">
+            When people follow you, they&apos;ll appear here. Keep engaging with the community!
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+          <span>Share your profile to gain followers</span>
+        </div>
       </div>
     )
   }
