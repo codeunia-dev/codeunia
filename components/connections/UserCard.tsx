@@ -92,7 +92,7 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
 
   return (
     <>
-      <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors group">
+      <div className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors group relative">
         {/* Clickable Avatar */}
         <div 
           onClick={handleViewProfile}
@@ -107,103 +107,103 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              {/* Clickable Name */}
+          {/* User Info Section */}
+          <div className="flex-1 min-w-0 mb-3 sm:mb-0">
+            {/* Clickable Name */}
+            <button 
+              onClick={handleViewProfile}
+              className="text-left group/name w-full"
+            >
+              <h3 className="font-semibold truncate hover:text-primary transition-colors inline-flex items-center gap-1 max-w-full">
+                <span className="truncate">{name}</span>
+                <Eye className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity flex-shrink-0" />
+              </h3>
+            </button>
+            <div className="flex items-center gap-2 flex-wrap mt-1">
               <button 
                 onClick={handleViewProfile}
-                className="text-left group/name"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors truncate"
               >
-                <h3 className="font-semibold truncate hover:text-primary transition-colors inline-flex items-center gap-1">
-                  {name}
-                  <Eye className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
-                </h3>
+                @{user.username}
               </button>
-              <div className="flex items-center gap-2 flex-wrap mt-1">
-                <button 
-                  onClick={handleViewProfile}
-                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                >
-                  @{user.username}
-                </button>
-                {localStatus?.isMutual && (
-                  <Badge className="text-xs bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Connected
-                  </Badge>
-                )}
-                {!localStatus?.isMutual && localStatus?.isFollowing && (
-                  <Badge className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30 gap-1">
-                    <UserCheck className="h-3 w-3" />
-                    Following
-                  </Badge>
-                )}
-                {!localStatus?.isMutual && localStatus?.isFollower && (
-                  <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400 gap-1">
-                    <UserPlus className="h-3 w-3" />
-                    Follows you
-                  </Badge>
-                )}
-              </div>
-              {user.bio && (
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{user.bio}</p>
+              {localStatus?.isMutual && (
+                <Badge className="text-xs bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 gap-1 flex-shrink-0">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Connected
+                </Badge>
               )}
-              {/* Mutual Connections */}
-              <MutualConnections userId={user.id} className="mt-2" />
+              {!localStatus?.isMutual && localStatus?.isFollowing && (
+                <Badge className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30 gap-1 flex-shrink-0">
+                  <UserCheck className="h-3 w-3" />
+                  Following
+                </Badge>
+              )}
+              {!localStatus?.isMutual && localStatus?.isFollower && (
+                <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400 gap-1 flex-shrink-0">
+                  <UserPlus className="h-3 w-3" />
+                  Follows you
+                </Badge>
+              )}
             </div>
+            {user.bio && (
+              <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{user.bio}</p>
+            )}
+            {/* Mutual Connections */}
+            <MutualConnections userId={user.id} className="mt-2" />
+          </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {/* View Profile Button */}
+          {/* Action Buttons - Stack on mobile, inline on desktop */}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap mt-3 sm:mt-0 sm:absolute sm:top-4 sm:right-4">
+            {/* View Profile Button */}
+            <Button
+              onClick={handleViewProfile}
+              size="sm"
+              variant="ghost"
+              className="gap-1 active:animate-buttonPress flex-shrink-0"
+              aria-label={`View ${name}'s profile`}
+            >
+              <Eye className="h-3 w-3" aria-hidden="true" />
+              <span className="hidden md:inline">View</span>
+            </Button>
+
+            {showMessageButton && localStatus?.isMutual && (
               <Button
-                onClick={handleViewProfile}
+                onClick={handleMessage}
+                disabled={loading}
                 size="sm"
-                variant="ghost"
-                className="gap-1 active:animate-buttonPress"
-                aria-label={`View ${name}'s profile`}
+                variant="outline"
+                className="gap-1 active:animate-buttonPress flex-shrink-0"
+                aria-label={`Send message to ${name}`}
               >
-                <Eye className="h-3 w-3" aria-hidden="true" />
-                <span className="hidden md:inline">View</span>
+                <MessageCircle className="h-3 w-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Message</span>
               </Button>
-
-              {showMessageButton && localStatus?.isMutual && (
-                <Button
-                  onClick={handleMessage}
-                  disabled={loading}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 active:animate-buttonPress"
-                  aria-label={`Send message to ${name}`}
-                >
-                  <MessageCircle className="h-3 w-3" aria-hidden="true" />
-                  <span className="hidden sm:inline">Message</span>
-                </Button>
-              )}
-              
-              {localStatus?.isFollowing ? (
-                <Button
-                  onClick={handleUnfollow}
-                  disabled={loading}
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 active:animate-buttonPress"
-                  aria-label={`Unfollow ${name}`}
-                >
-                  <UserMinus className="h-3 w-3" aria-hidden="true" />
-                  <span className="hidden sm:inline">Unfollow</span>
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleFollow}
-                  disabled={loading}
-                  size="sm"
-                  className="gap-1 active:animate-buttonPress"
-                  aria-label={`Follow ${name}`}
-                >
-                  <UserPlus className="h-3 w-3" aria-hidden="true" />
-                  <span className="hidden sm:inline">Follow</span>
-                </Button>
-              )}
-            </div>
+            )}
+            
+            {localStatus?.isFollowing ? (
+              <Button
+                onClick={handleUnfollow}
+                disabled={loading}
+                size="sm"
+                variant="outline"
+                className="gap-1 active:animate-buttonPress flex-shrink-0"
+                aria-label={`Unfollow ${name}`}
+              >
+                <UserMinus className="h-3 w-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Unfollow</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={handleFollow}
+                disabled={loading}
+                size="sm"
+                className="gap-1 active:animate-buttonPress flex-shrink-0"
+                aria-label={`Follow ${name}`}
+              >
+                <UserPlus className="h-3 w-3" aria-hidden="true" />
+                <span className="hidden sm:inline">Follow</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
