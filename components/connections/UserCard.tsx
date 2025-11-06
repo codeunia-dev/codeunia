@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { MessageCircle, UserMinus, UserPlus, Eye } from 'lucide-react'
+import { MessageCircle, UserMinus, UserPlus, Eye, CheckCircle2, UserCheck } from 'lucide-react'
 import { connectionService } from '@/lib/services/connectionService'
 import { conversationService } from '@/lib/services/conversationService'
 import { useRouter } from 'next/navigation'
@@ -126,18 +126,26 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
                   @{user.username}
                 </button>
                 {localStatus?.isMutual && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge className="text-xs bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30 gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
                     Connected
                   </Badge>
                 )}
+                {!localStatus?.isMutual && localStatus?.isFollowing && (
+                  <Badge className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30 hover:bg-blue-500/30 gap-1">
+                    <UserCheck className="h-3 w-3" />
+                    Following
+                  </Badge>
+                )}
                 {!localStatus?.isMutual && localStatus?.isFollower && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400 gap-1">
+                    <UserPlus className="h-3 w-3" />
                     Follows you
                   </Badge>
                 )}
               </div>
               {user.bio && (
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{user.bio}</p>
+                <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{user.bio}</p>
               )}
             </div>
 

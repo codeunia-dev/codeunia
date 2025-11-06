@@ -6,7 +6,11 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { Card } from '@/components/ui/card'
 import { Users, UserPlus } from 'lucide-react'
 
-export function ConnectionStats() {
+interface ConnectionStatsProps {
+  onTabChange?: (tab: string) => void
+}
+
+export function ConnectionStats({ onTabChange }: ConnectionStatsProps) {
   const { user } = useAuth()
   const [stats, setStats] = useState({
     following: 0,
@@ -37,33 +41,38 @@ export function ConnectionStats() {
   if (loading) {
     return (
       <div className="grid grid-cols-2 gap-4">
-        <Card className="p-4 animate-pulse">
-          <div className="h-4 bg-muted rounded w-20 mb-2" />
-          <div className="h-8 bg-muted rounded w-12" />
-        </Card>
-        <Card className="p-4 animate-pulse">
-          <div className="h-4 bg-muted rounded w-20 mb-2" />
-          <div className="h-8 bg-muted rounded w-12" />
-        </Card>
+        {[1, 2].map((i) => (
+          <Card key={i} className="p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-muted/50 to-transparent animate-shimmer" />
+            <div className="h-4 bg-muted rounded w-20 mb-2 animate-pulse" />
+            <div className="h-8 bg-muted rounded w-12 animate-pulse" />
+          </Card>
+        ))}
       </div>
     )
   }
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Card className="p-4">
-        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+      <Card 
+        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group"
+        onClick={() => onTabChange?.('following')}
+      >
+        <div className="flex items-center gap-2 text-muted-foreground mb-1 group-hover:text-primary transition-colors">
           <UserPlus className="h-4 w-4" />
-          <span className="text-sm">Following</span>
+          <span className="text-sm font-medium">Following</span>
         </div>
-        <p className="text-2xl font-bold">{stats.following}</p>
+        <p className="text-2xl font-bold group-hover:text-primary transition-colors">{stats.following}</p>
       </Card>
-      <Card className="p-4">
-        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+      <Card 
+        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group"
+        onClick={() => onTabChange?.('followers')}
+      >
+        <div className="flex items-center gap-2 text-muted-foreground mb-1 group-hover:text-primary transition-colors">
           <Users className="h-4 w-4" />
-          <span className="text-sm">Followers</span>
+          <span className="text-sm font-medium">Followers</span>
         </div>
-        <p className="text-2xl font-bold">{stats.followers}</p>
+        <p className="text-2xl font-bold group-hover:text-primary transition-colors">{stats.followers}</p>
       </Card>
     </div>
   )

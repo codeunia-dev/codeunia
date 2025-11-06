@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Search, Users } from 'lucide-react'
+import { Search, Users, UserPlus } from 'lucide-react'
 import { FollowingList } from '@/components/connections/FollowingList'
 import { FollowersList } from '@/components/connections/FollowersList'
 import { SearchUsers } from '@/components/connections/SearchUsers'
@@ -11,6 +11,7 @@ import { ConnectionStats } from '@/components/connections/ConnectionStats'
 
 export default function ConnectionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('following')
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-black">
@@ -21,18 +22,27 @@ export default function ConnectionsPage() {
             <Users className="h-6 w-6 text-primary" />
             <h1 className="text-xl md:text-2xl font-bold">Connections</h1>
           </div>
-          <ConnectionStats />
+          <ConnectionStats onTabChange={setActiveTab} />
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto h-full flex flex-col p-4">
-          <Tabs defaultValue="following" className="flex-1 flex flex-col">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="following">Following</TabsTrigger>
-              <TabsTrigger value="followers">Followers</TabsTrigger>
-              <TabsTrigger value="search">Search</TabsTrigger>
+              <TabsTrigger value="following" className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                <span>Following</span>
+              </TabsTrigger>
+              <TabsTrigger value="followers" className="gap-2">
+                <Users className="h-4 w-4" />
+                <span>Followers</span>
+              </TabsTrigger>
+              <TabsTrigger value="search" className="gap-2">
+                <Search className="h-4 w-4" />
+                <span>Search</span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="following" className="flex-1 overflow-y-auto space-y-3">

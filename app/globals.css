@@ -459,3 +459,17 @@ Accessibility: Enhanced focus indicators for keyboard navigation */
 .skip-link:focus {
   top: 0;
 }
+
+/* Shimmer animation for loading states */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
