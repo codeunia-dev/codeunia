@@ -55,24 +55,42 @@ export function ConnectionStats({ onTabChange }: ConnectionStatsProps) {
   return (
     <div className="grid grid-cols-2 gap-4">
       <Card 
-        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group"
+        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         onClick={() => onTabChange?.('following')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onTabChange?.('following')
+          }
+        }}
+        aria-label={`View following list. You are following ${stats.following} users`}
       >
         <div className="flex items-center gap-2 text-muted-foreground mb-1 group-hover:text-primary transition-colors">
-          <UserPlus className="h-4 w-4" />
+          <UserPlus className="h-4 w-4" aria-hidden="true" />
           <span className="text-sm font-medium">Following</span>
         </div>
-        <p className="text-2xl font-bold group-hover:text-primary transition-colors">{stats.following}</p>
+        <p className="text-2xl font-bold group-hover:text-primary transition-colors animate-countUp">{stats.following}</p>
       </Card>
       <Card 
-        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group"
+        className="p-4 cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-primary/50 group focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         onClick={() => onTabChange?.('followers')}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onTabChange?.('followers')
+          }
+        }}
+        aria-label={`View followers list. You have ${stats.followers} followers`}
       >
         <div className="flex items-center gap-2 text-muted-foreground mb-1 group-hover:text-primary transition-colors">
-          <Users className="h-4 w-4" />
+          <Users className="h-4 w-4" aria-hidden="true" />
           <span className="text-sm font-medium">Followers</span>
         </div>
-        <p className="text-2xl font-bold group-hover:text-primary transition-colors">{stats.followers}</p>
+        <p className="text-2xl font-bold group-hover:text-primary transition-colors animate-countUp">{stats.followers}</p>
       </Card>
     </div>
   )
