@@ -179,6 +179,61 @@ export class ConnectionService {
 
     return { isFollowing, isFollower, isMutual }
   }
+
+  // Get mutual connections between current user and another user
+  async getMutualConnections(userId: string): Promise<{
+    count: number
+    users: Array<{
+      id: string
+      first_name: string | null
+      last_name: string | null
+      username: string
+      avatar_url: string | null
+    }>
+  }> {
+    const supabase = this.getSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return { count: 0, users: [] }
+    }
+
+    // Get users that both current user and target user follow
+    const { data: currentUserFollowing } = await supabase
+      .from('user_connections')
+      .select('following_id')
+      .eq('follower_id', user.id)
+
+    const { data: targetUserFollowing } = await supabase
+      .from('user_connections')
+      .select('following_id')
+      .eq('follower_id', userId)
+
+    if (!currentUserFollowing || !targetUserFollowing) {
+      return { count: 0, users: [] }
+    }
+
+    // Find mutual following
+    const currentFollowingIds = new Set(currentUserFollowing.map(c => c.following_id))
+    const mutualIds = targetUserFollowing
+      .map(c => c.following_id)
+      .filter(id => currentFollowingIds.has(id) && id !== user.id && id !== userId)
+
+    if (mutualIds.length === 0) {
+      return { count: 0, users: [] }
+    }
+
+    // Get profile info for first 3 mutual connections
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, username, avatar_url')
+      .in('id', mutualIds.slice(0, 3))
+
+    return {
+      count: mutualIds.length,
+      users: profiles || []
+    }
+  }
 }
 
 export const connectionService = new ConnectionService()

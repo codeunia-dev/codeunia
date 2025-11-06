@@ -29,6 +29,7 @@ import { connectionService } from '@/lib/services/connectionService'
 import { conversationService } from '@/lib/services/conversationService'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { MutualConnections } from './MutualConnections'
 
 interface UserProfileModalProps {
   userId: string
@@ -213,6 +214,9 @@ export function UserProfileModal({
               <Badge variant="outline">Follows you</Badge>
             )}
           </div>
+
+          {/* Mutual Connections */}
+          <MutualConnections userId={userId} className="justify-center" />
 
           {/* Action Buttons */}
           <div className="flex gap-2 w-full max-w-md">

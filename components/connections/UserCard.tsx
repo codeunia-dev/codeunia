@@ -9,6 +9,7 @@ import { connectionService } from '@/lib/services/connectionService'
 import { conversationService } from '@/lib/services/conversationService'
 import { useRouter } from 'next/navigation'
 import { UserProfileModal } from './UserProfileModal'
+import { MutualConnections } from './MutualConnections'
 
 interface UserCardProps {
   user: {
@@ -147,6 +148,8 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
               {user.bio && (
                 <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">{user.bio}</p>
               )}
+              {/* Mutual Connections */}
+              <MutualConnections userId={user.id} className="mt-2" />
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
