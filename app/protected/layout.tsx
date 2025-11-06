@@ -124,6 +124,16 @@ const sidebarItems: SidebarGroupType[] = [
     title: "Community",
     items: [
       {
+        title: "Connections",
+        url: "/protected/connections",
+        icon: Users,
+      },
+      {
+        title: "Messages",
+        url: "/protected/messages",
+        icon: MessageSquare,
+      },
+      {
         title: "Study Groups",
         url: "/protected/study-groups",
         icon: Users,
@@ -188,11 +198,7 @@ const sidebarItems: SidebarGroupType[] = [
   {
     title: "Support",
     items: [
-      {
-        title: "Messages",
-        url: "/protected/messages",
-        icon: MessageSquare,
-      },
+      
       {
         title: "Help Center",
         url: "/protected/help",
