@@ -42,10 +42,10 @@ export default function ConnectionsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <div className="max-w-7xl mx-auto h-full flex flex-col p-4">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-3 mb-4 h-auto flex-shrink-0">
               <TabsTrigger value="following" className="gap-1 sm:gap-2 flex-col sm:flex-row py-2 sm:py-1.5">
                 <UserPlus className="h-4 w-4" />
                 <span className="text-xs sm:text-sm">Following</span>
@@ -60,16 +60,20 @@ export default function ConnectionsPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="following" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
-              <FollowingList />
+            <TabsContent value="following" className="flex-1 overflow-y-auto min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col animate-fadeIn">
+              <div className="space-y-3">
+                <FollowingList />
+              </div>
             </TabsContent>
 
-            <TabsContent value="followers" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
-              <FollowersList />
+            <TabsContent value="followers" className="flex-1 overflow-y-auto min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col animate-fadeIn">
+              <div className="space-y-3">
+                <FollowersList />
+              </div>
             </TabsContent>
 
-            <TabsContent value="search" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
-              <div className="relative mb-4">
+            <TabsContent value="search" className="flex-1 min-h-0 mt-0 data-[state=active]:flex data-[state=active]:flex-col animate-fadeIn">
+              <div className="relative mb-4 flex-shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Search by name or username..."
@@ -100,7 +104,9 @@ export default function ConnectionsPage() {
                   </button>
                 )}
               </div>
-              <SearchUsers searchQuery={searchQuery} />
+              <div className="flex-1 overflow-y-auto min-h-0">
+                <SearchUsers searchQuery={searchQuery} />
+              </div>
             </TabsContent>
           </Tabs>
         </div>
