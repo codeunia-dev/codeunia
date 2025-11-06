@@ -28,10 +28,12 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
 
   if (!conversationId) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 text-center">
-        <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Select a conversation</h3>
-        <p className="text-muted-foreground">
+      <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-black">
+        <div className="p-6 rounded-full bg-zinc-900 mb-6">
+          <MessageSquare className="h-16 w-16 text-zinc-600" />
+        </div>
+        <h3 className="text-xl font-semibold mb-2 text-white">Select a conversation</h3>
+        <p className="text-zinc-400">
           Choose a conversation from the list to start messaging
         </p>
       </div>
@@ -57,14 +59,16 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-black">
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No messages yet</h3>
-            <p className="text-sm text-muted-foreground">
+            <div className="p-4 rounded-full bg-zinc-900 mb-4">
+              <MessageSquare className="h-12 w-12 text-zinc-600" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2 text-white">No messages yet</h3>
+            <p className="text-sm text-zinc-400">
               Send a message to start the conversation
             </p>
           </div>
@@ -88,7 +92,7 @@ export function ConversationView({ conversationId }: ConversationViewProps) {
       )}
 
       {/* Message Input */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 border-t border-zinc-800">
         <MessageInput 
           onSend={sendMessage} 
           disabled={sending}

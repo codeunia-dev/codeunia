@@ -39,17 +39,17 @@ export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
 
       <div className={cn('flex flex-col', isOwn ? 'items-end' : 'items-start', 'max-w-[70%]')}>
         {!isOwn && (
-          <span className="text-xs font-medium text-muted-foreground mb-1">
+          <span className="text-xs font-medium text-zinc-400 mb-1">
             {getName()}
           </span>
         )}
         
         <div
           className={cn(
-            'rounded-2xl px-4 py-2 break-words',
+            'rounded-2xl px-4 py-2 break-words shadow-lg',
             isOwn
               ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'
-              : 'bg-muted text-foreground',
+              : 'bg-zinc-900 text-white border border-zinc-800',
             message.is_deleted && 'italic opacity-60'
           )}
         >
@@ -59,7 +59,7 @@ export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
           )}
         </div>
 
-        <span className="text-xs text-muted-foreground mt-1">
+        <span className="text-xs text-zinc-500 mt-1">
           {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
         </span>
       </div>

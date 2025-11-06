@@ -51,9 +51,11 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
   if (conversations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <MessageCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">No conversations yet</h3>
-        <p className="text-sm text-muted-foreground">
+        <div className="p-4 rounded-full bg-zinc-900 mb-4">
+          <MessageCircle className="h-12 w-12 text-zinc-600" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2 text-white">No conversations yet</h3>
+        <p className="text-sm text-zinc-400">
           Start a new conversation to get started
         </p>
       </div>
@@ -87,13 +89,13 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
             key={conversation.id}
             onClick={() => onSelect(conversation.id)}
             className={cn(
-              'w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left',
-              'hover:bg-muted',
-              isSelected && 'bg-muted'
+              'w-full flex items-center gap-3 p-3 rounded-lg transition-all text-left',
+              'hover:bg-zinc-900',
+              isSelected && 'bg-zinc-900 border border-zinc-800'
             )}
           >
             <div className="relative">
-              <Avatar className="w-12 h-12 flex-shrink-0">
+              <Avatar className="w-12 h-12 flex-shrink-0 ring-2 ring-zinc-800">
                 {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
                 <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
                   {initials}
@@ -111,11 +113,14 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
-                <span className={cn('font-semibold truncate text-sm md:text-base', conversation.unread_count > 0 && 'text-primary')}>
+                <span className={cn(
+                  'font-semibold truncate text-sm md:text-base',
+                  conversation.unread_count > 0 ? 'text-blue-400' : 'text-white'
+                )}>
                   {name}
                 </span>
                 {conversation.last_message_at && (
-                  <span className="text-[10px] md:text-xs text-muted-foreground flex-shrink-0 ml-2">
+                  <span className="text-[10px] md:text-xs text-zinc-500 flex-shrink-0 ml-2">
                     {formatDistanceToNow(new Date(conversation.last_message_at), { addSuffix: true })}
                   </span>
                 )}
@@ -123,12 +128,12 @@ export function ConversationList({ conversations, selectedId, onSelect, loading 
               <div className="flex items-center justify-between">
                 <p className={cn(
                   'text-xs md:text-sm truncate',
-                  conversation.unread_count > 0 ? 'font-medium text-foreground' : 'text-muted-foreground'
+                  conversation.unread_count > 0 ? 'font-medium text-zinc-300' : 'text-zinc-500'
                 )}>
                   {conversation.last_message_content || 'No messages yet'}
                 </p>
                 {conversation.unread_count > 0 && (
-                  <Badge variant="default" className="ml-2 flex-shrink-0 text-xs">
+                  <Badge className="ml-2 flex-shrink-0 text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
                     {conversation.unread_count}
                   </Badge>
                 )}
