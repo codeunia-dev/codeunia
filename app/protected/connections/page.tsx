@@ -12,9 +12,24 @@ import { ConnectionStats } from '@/components/connections/ConnectionStats'
 export default function ConnectionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('following')
+  const [announcement, setAnnouncement] = useState('')
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    const tabNames: Record<string, string> = {
+      following: 'Following',
+      followers: 'Followers',
+      search: 'Search'
+    }
+    setAnnouncement(`Switched to ${tabNames[tab]} tab`)
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] bg-black">
+      {/* Screen reader announcements */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </div>
       {/* Header */}
       <div className="border-b p-4">
         <div className="max-w-7xl mx-auto">
@@ -22,38 +37,38 @@ export default function ConnectionsPage() {
             <Users className="h-6 w-6 text-primary" />
             <h1 className="text-xl md:text-2xl font-bold">Connections</h1>
           </div>
-          <ConnectionStats onTabChange={setActiveTab} />
+          <ConnectionStats onTabChange={handleTabChange} />
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         <div className="max-w-7xl mx-auto h-full flex flex-col p-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="following" className="gap-2">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 mb-4 h-auto">
+              <TabsTrigger value="following" className="gap-1 sm:gap-2 flex-col sm:flex-row py-2 sm:py-1.5">
                 <UserPlus className="h-4 w-4" />
-                <span>Following</span>
+                <span className="text-xs sm:text-sm">Following</span>
               </TabsTrigger>
-              <TabsTrigger value="followers" className="gap-2">
+              <TabsTrigger value="followers" className="gap-1 sm:gap-2 flex-col sm:flex-row py-2 sm:py-1.5">
                 <Users className="h-4 w-4" />
-                <span>Followers</span>
+                <span className="text-xs sm:text-sm">Followers</span>
               </TabsTrigger>
-              <TabsTrigger value="search" className="gap-2">
+              <TabsTrigger value="search" className="gap-1 sm:gap-2 flex-col sm:flex-row py-2 sm:py-1.5">
                 <Search className="h-4 w-4" />
-                <span>Search</span>
+                <span className="text-xs sm:text-sm">Search</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="following" className="flex-1 overflow-y-auto space-y-3">
+            <TabsContent value="following" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
               <FollowingList />
             </TabsContent>
 
-            <TabsContent value="followers" className="flex-1 overflow-y-auto space-y-3">
+            <TabsContent value="followers" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
               <FollowersList />
             </TabsContent>
 
-            <TabsContent value="search" className="flex-1 overflow-y-auto space-y-3">
+            <TabsContent value="search" className="flex-1 overflow-y-auto space-y-3 animate-fadeIn">
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input

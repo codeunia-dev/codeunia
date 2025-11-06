@@ -155,10 +155,10 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
                 onClick={handleViewProfile}
                 size="sm"
                 variant="ghost"
-                className="gap-1"
-                title="View Profile"
+                className="gap-1 active:animate-buttonPress"
+                aria-label={`View ${name}'s profile`}
               >
-                <Eye className="h-3 w-3" />
+                <Eye className="h-3 w-3" aria-hidden="true" />
                 <span className="hidden md:inline">View</span>
               </Button>
 
@@ -168,9 +168,10 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
                   disabled={loading}
                   size="sm"
                   variant="outline"
-                  className="gap-1"
+                  className="gap-1 active:animate-buttonPress"
+                  aria-label={`Send message to ${name}`}
                 >
-                  <MessageCircle className="h-3 w-3" />
+                  <MessageCircle className="h-3 w-3" aria-hidden="true" />
                   <span className="hidden sm:inline">Message</span>
                 </Button>
               )}
@@ -181,9 +182,10 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
                   disabled={loading}
                   size="sm"
                   variant="outline"
-                  className="gap-1"
+                  className="gap-1 active:animate-buttonPress"
+                  aria-label={`Unfollow ${name}`}
                 >
-                  <UserMinus className="h-3 w-3" />
+                  <UserMinus className="h-3 w-3" aria-hidden="true" />
                   <span className="hidden sm:inline">Unfollow</span>
                 </Button>
               ) : (
@@ -191,9 +193,10 @@ export function UserCard({ user, connectionStatus, onConnectionChange, showMessa
                   onClick={handleFollow}
                   disabled={loading}
                   size="sm"
-                  className="gap-1"
+                  className="gap-1 active:animate-buttonPress"
+                  aria-label={`Follow ${name}`}
                 >
-                  <UserPlus className="h-3 w-3" />
+                  <UserPlus className="h-3 w-3" aria-hidden="true" />
                   <span className="hidden sm:inline">Follow</span>
                 </Button>
               )}
