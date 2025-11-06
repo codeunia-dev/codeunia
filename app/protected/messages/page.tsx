@@ -22,6 +22,14 @@ export default function MessagesPage() {
   // Track user's online presence
   useMyPresence()
 
+  // Prevent body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
   // Get conversation from URL params
   useEffect(() => {
     const conversationId = searchParams.get('conversation')
@@ -53,9 +61,9 @@ export default function MessagesPage() {
     : 'Unknown'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-black">
+    <div className="flex flex-col h-[100dvh] bg-black overflow-hidden absolute inset-0">
       {/* Header */}
-      <div className="border-b border-zinc-800 bg-black p-4">
+      <div className="border-b border-zinc-800 bg-black p-4 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
