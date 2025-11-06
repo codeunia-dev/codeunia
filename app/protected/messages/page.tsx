@@ -22,6 +22,14 @@ export default function MessagesPage() {
   // Track user's online presence
   useMyPresence()
 
+  // Prevent body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
   // Get conversation from URL params
   useEffect(() => {
     const conversationId = searchParams.get('conversation')
@@ -53,15 +61,20 @@ export default function MessagesPage() {
     : 'Unknown'
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[100dvh] bg-black overflow-hidden absolute inset-0">
       {/* Header */}
-      <div className="border-b bg-background p-4">
+      <div className="border-b border-zinc-800 bg-black p-4 flex-shrink-0">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <MessageSquare className="h-6 w-6 text-primary" />
-            <h1 className="text-xl md:text-2xl font-bold">Messages</h1>
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+              <MessageSquare className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-xl md:text-2xl font-bold text-white">Messages</h1>
           </div>
-          <Button onClick={() => setShowNewMessage(true)} className="gap-2">
+          <Button 
+            onClick={() => setShowNewMessage(true)} 
+            className="gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+          >
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Message</span>
             <span className="sm:hidden">New</span>
@@ -74,18 +87,18 @@ export default function MessagesPage() {
         <div className="max-w-7xl mx-auto h-full flex">
           {/* Sidebar - Conversation List (Hidden on mobile when conversation is selected) */}
           <div className={`
-            w-full md:w-80 md:border-r flex flex-col bg-background
+            w-full md:w-80 md:border-r md:border-zinc-800 flex flex-col bg-black
             ${selectedConversationId ? 'hidden md:flex' : 'flex'}
           `}>
             {/* Search */}
-            <div className="p-3 border-b">
+            <div className="p-3 border-b border-zinc-800">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                 <Input
                   placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -103,17 +116,17 @@ export default function MessagesPage() {
 
           {/* Main Area - Conversation View (Hidden on mobile when no conversation selected) */}
           <div className={`
-            flex-1 bg-background flex flex-col
+            flex-1 bg-black flex flex-col
             ${selectedConversationId ? 'flex' : 'hidden md:flex'}
           `}>
             {selectedConversationId && selectedConversation && (
-              <div className="border-b p-3 md:p-4 bg-muted/50 flex-shrink-0">
+              <div className="border-b border-zinc-800 p-3 md:p-4 bg-zinc-900/50 flex-shrink-0">
                 <div className="flex items-center gap-2 md:gap-3">
                   {/* Back button for mobile */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="md:hidden"
+                    className="md:hidden text-white hover:bg-zinc-800"
                     onClick={() => setSelectedConversationId(null)}
                   >
                     <svg
@@ -130,7 +143,7 @@ export default function MessagesPage() {
                       <path d="m15 18-6-6 6-6"/>
                     </svg>
                   </Button>
-                  <h2 className="font-semibold text-sm md:text-base truncate">{conversationName}</h2>
+                  <h2 className="font-semibold text-sm md:text-base truncate text-white">{conversationName}</h2>
                   {!selectedConversation.is_group && selectedConversation.other_user && selectedConversation.other_user.id ? (
                     <UserStatusIndicator 
                       userId={selectedConversation.other_user.id}

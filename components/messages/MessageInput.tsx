@@ -90,7 +90,7 @@ export function MessageInput({ onSend, disabled, placeholder = 'Type a message..
   }, [content, isTyping, onTyping])
 
   return (
-    <form onSubmit={handleSubmit} className="border-t bg-background p-2 md:p-3">
+    <form onSubmit={handleSubmit} className="bg-black p-3 md:p-4">
       <div className="flex gap-2 items-end max-w-full">
         <Textarea
           ref={textareaRef}
@@ -99,14 +99,14 @@ export function MessageInput({ onSend, disabled, placeholder = 'Type a message..
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled || sending}
-          className="min-h-[40px] md:min-h-[44px] max-h-[120px] resize-none flex-1 text-sm md:text-base"
+          className="min-h-[40px] md:min-h-[44px] max-h-[120px] resize-none flex-1 text-sm md:text-base bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
           rows={1}
         />
         <Button
           type="submit"
           size="icon"
           disabled={!content.trim() || sending || disabled}
-          className="flex-shrink-0 h-10 w-10 md:h-11 md:w-11"
+          className="flex-shrink-0 h-10 w-10 md:h-11 md:w-11 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
         >
           {sending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -115,7 +115,7 @@ export function MessageInput({ onSend, disabled, placeholder = 'Type a message..
           )}
         </Button>
       </div>
-      <p className="text-[10px] md:text-xs text-muted-foreground mt-1 md:mt-1.5 hidden sm:block">
+      <p className="text-[10px] md:text-xs text-zinc-500 mt-1.5 hidden sm:block">
         Press Enter to send, Shift+Enter for new line
       </p>
     </form>
