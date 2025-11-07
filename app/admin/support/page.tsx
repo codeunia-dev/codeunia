@@ -157,11 +157,11 @@ export default function AdminSupportPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Support Tickets</h1>
-        <p className="text-muted-foreground">Manage support requests and bug reports</p>
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">Support Tickets</h1>
+        <p className="text-sm md:text-base text-muted-foreground">Manage support requests and bug reports</p>
       </div>
 
       {/* Stats Cards */}
@@ -229,28 +229,30 @@ export default function AdminSupportPage() {
 
       {/* Filters */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base md:text-lg">Filters</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tickets..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+        <CardContent className="space-y-3">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search tickets..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
 
-            {/* Type Filter */}
-            <div className="flex gap-2">
+          {/* Type Filter */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Type</p>
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={filterType === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterType('all')}
+                className="flex-1 sm:flex-none"
               >
                 All
               </Button>
@@ -258,33 +260,40 @@ export default function AdminSupportPage() {
                 variant={filterType === 'contact' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterType('contact')}
+                className="flex-1 sm:flex-none"
               >
-                <Mail className="h-4 w-4 mr-1" />
-                Contact
+                <Mail className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Contact</span>
               </Button>
               <Button
                 variant={filterType === 'bug' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterType('bug')}
+                className="flex-1 sm:flex-none"
               >
-                <Bug className="h-4 w-4 mr-1" />
-                Bugs
+                <Bug className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Bugs</span>
               </Button>
             </div>
+          </div>
 
-            {/* Status Filter */}
-            <div className="flex gap-2">
+          {/* Status Filter */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Status</p>
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={filterStatus === 'all' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterStatus('all')}
+                className="text-xs"
               >
-                All Status
+                All
               </Button>
               <Button
                 variant={filterStatus === 'open' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterStatus('open')}
+                className="text-xs"
               >
                 Open
               </Button>
@@ -292,6 +301,7 @@ export default function AdminSupportPage() {
                 variant={filterStatus === 'in_progress' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterStatus('in_progress')}
+                className="text-xs"
               >
                 In Progress
               </Button>
@@ -299,6 +309,7 @@ export default function AdminSupportPage() {
                 variant={filterStatus === 'resolved' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFilterStatus('resolved')}
+                className="text-xs"
               >
                 Resolved
               </Button>
@@ -309,55 +320,55 @@ export default function AdminSupportPage() {
 
       {/* Tickets List */}
       <Card>
-        <CardHeader>
-          <CardTitle>Tickets ({filteredTickets.length})</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base md:text-lg">Tickets ({filteredTickets.length})</CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             {filterStatus !== 'all' && `Showing ${filterStatus} tickets`}
             {filterType !== 'all' && ` of type ${filterType}`}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {filteredTickets.length === 0 ? (
-            <div className="text-center py-12">
-              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No tickets found</p>
+            <div className="text-center py-8 md:py-12">
+              <MessageSquare className="h-10 w-10 md:h-12 md:w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-sm md:text-base text-muted-foreground">No tickets found</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               {filteredTickets.map((ticket) => (
                 <Link
                   key={ticket.id}
                   href={`/admin/support/${ticket.id}`}
                   className="block"
                 >
-                  <div className="p-4 rounded-lg border hover:border-primary transition-colors cursor-pointer">
-                    <div className="flex items-start justify-between gap-4">
+                  <div className="p-3 md:p-4 rounded-lg border hover:border-primary transition-colors cursor-pointer">
+                    <div className="flex items-start justify-between gap-2 md:gap-4">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="gap-1">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <Badge variant="outline" className="gap-1 text-xs">
                             {getTypeIcon(ticket.type)}
-                            {ticket.type}
+                            <span className="hidden sm:inline">{ticket.type}</span>
                           </Badge>
-                          <Badge className={getStatusColor(ticket.status)}>
+                          <Badge className={`${getStatusColor(ticket.status)} text-xs`}>
                             {ticket.status.replace('_', ' ')}
                           </Badge>
                         </div>
-                        <h3 className="font-semibold mb-1 truncate">{ticket.subject}</h3>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        <h3 className="font-semibold mb-1 truncate text-sm md:text-base">{ticket.subject}</h3>
+                        <p className="text-xs md:text-sm text-muted-foreground line-clamp-2 mb-2">
                           {ticket.message}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            {ticket.user?.email || 'Unknown user'}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1 truncate">
+                            <Users className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{ticket.user?.email || 'Unknown user'}</span>
                           </span>
                           <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                            <Clock className="h-3 w-3 flex-shrink-0" />
                             {new Date(ticket.created_at).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                      <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground flex-shrink-0 mt-1" />
                     </div>
                   </div>
                 </Link>
