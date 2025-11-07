@@ -1,11 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 import { 
   Search, 
   HelpCircle, 
@@ -21,14 +23,28 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Bug,
+  ChevronRight,
+  Lightbulb,
+  X,
+  ChevronsDown,
+  ChevronsUp
 } from 'lucide-react'
 
 const quickActions = [
   { icon: Shield, title: 'Reset Password', description: 'Change your account password', href: '/protected/settings' },
   { icon: Users, title: 'Update Profile', description: 'Edit your profile information', href: '/protected/profile/view' },
   { icon: Mail, title: 'Contact Support', description: 'Get help from our team', action: 'contact' },
-  { icon: AlertCircle, title: 'Report a Bug', description: 'Help us improve the platform', action: 'bug' },
+  { icon: Bug, title: 'Report a Bug', description: 'Help us improve the platform', action: 'bug' },
+]
+
+const popularTopics = [
+  'How do I reset my password?',
+  'How do I enroll in a course?',
+  'How do I send a message?',
+  'Where can I see my test results?',
+  'How do I add connections?',
 ]
 
 const faqCategories = [
@@ -162,37 +178,105 @@ const faqCategories = [
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [filteredFaqs, setFilteredFaqs] = useState(faqCategories)
+  const [resultsCount, setResultsCount] = useState(0)
   const [showContactForm, setShowContactForm] = useState(false)
   const [showBugForm, setShowBugForm] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
   
   // Contact form state
   const [contactSubject, setContactSubject] = useState('')
   const [contactMessage, setContactMessage] = useState('')
   const [contactSubmitting, setContactSubmitting] = useState(false)
+  const [contactErrors, setContactErrors] = useState({ subject: '', message: '' })
   
   // Bug form state
   const [bugTitle, setBugTitle] = useState('')
   const [bugDescription, setBugDescription] = useState('')
   const [bugSubmitting, setBugSubmitting] = useState(false)
+  const [bugErrors, setBugErrors] = useState({ title: '', description: '' })
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    
-    if (!query.trim()) {
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Handle ESC key for dialogs
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showContactForm) setShowContactForm(false)
+        if (showBugForm) setShowBugForm(false)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [showContactForm, showBugForm])
+
+  // Perform search with debounced query
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
       setFilteredFaqs(faqCategories)
+      setResultsCount(0)
       return
     }
 
     const filtered = faqCategories.map(category => ({
       ...category,
       faqs: category.faqs.filter(faq => 
-        faq.question.toLowerCase().includes(query.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(query.toLowerCase())
+        faq.question.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(debouncedQuery.toLowerCase())
       )
     })).filter(category => category.faqs.length > 0)
 
+    const count = filtered.reduce((acc, category) => acc + category.faqs.length, 0)
+    setResultsCount(count)
     setFilteredFaqs(filtered)
+  }, [debouncedQuery])
+
+  const clearSearch = () => {
+    setSearchQuery('')
+    setDebouncedQuery('')
+  }
+
+  const expandAll = useCallback(() => {
+    const allItems: string[] = []
+    filteredFaqs.forEach((category, catIndex) => {
+      category.faqs.forEach((_, faqIndex) => {
+        allItems.push(`item-${catIndex}-${faqIndex}`)
+      })
+    })
+    setExpandedItems(allItems)
+  }, [filteredFaqs])
+
+  const collapseAll = () => {
+    setExpandedItems([])
+  }
+
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) return text
+    
+    const parts = text.split(new RegExp(`(${query})`, 'gi'))
+    return (
+      <span>
+        {parts.map((part, index) => 
+          part.toLowerCase() === query.toLowerCase() 
+            ? <mark key={index} className="bg-blue-500/30 text-blue-300 rounded px-0.5">{part}</mark>
+            : <span key={index}>{part}</span>
+        )}
+      </span>
+    )
   }
 
   const handleQuickAction = (action: string) => {
@@ -204,10 +288,28 @@ export default function HelpPage() {
   }
 
   const handleContactSubmit = async () => {
-    if (!contactSubject.trim() || !contactMessage.trim()) {
-      alert('Please fill in all fields')
-      return
+    // Validate form
+    const errors = { subject: '', message: '' }
+    let hasErrors = false
+
+    if (!contactSubject.trim()) {
+      errors.subject = 'Subject is required'
+      hasErrors = true
+    } else if (contactSubject.length < 5) {
+      errors.subject = 'Subject must be at least 5 characters'
+      hasErrors = true
     }
+
+    if (!contactMessage.trim()) {
+      errors.message = 'Message is required'
+      hasErrors = true
+    } else if (contactMessage.length < 20) {
+      errors.message = 'Message must be at least 20 characters'
+      hasErrors = true
+    }
+
+    setContactErrors(errors)
+    if (hasErrors) return
 
     setContactSubmitting(true)
     
@@ -222,27 +324,52 @@ export default function HelpPage() {
       })
 
       if (response.ok) {
-        alert('Message sent successfully! We\'ll get back to you soon.')
+        toast.success("Message sent successfully!", {
+          description: "We'll get back to you within 24-48 hours.",
+        })
         setContactSubject('')
         setContactMessage('')
+        setContactErrors({ subject: '', message: '' })
         setShowContactForm(false)
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to send message. Please try again.')
+        toast.error("Failed to send message", {
+          description: error.error || 'Please try again later.',
+        })
       }
     } catch (error) {
       console.error('Error sending contact message:', error)
-      alert('Failed to send message. Please try again.')
+      toast.error("Failed to send message", {
+        description: 'Please check your connection and try again.',
+      })
     } finally {
       setContactSubmitting(false)
     }
   }
 
   const handleBugSubmit = async () => {
-    if (!bugTitle.trim() || !bugDescription.trim()) {
-      alert('Please fill in all fields')
-      return
+    // Validate form
+    const errors = { title: '', description: '' }
+    let hasErrors = false
+
+    if (!bugTitle.trim()) {
+      errors.title = 'Bug title is required'
+      hasErrors = true
+    } else if (bugTitle.length < 10) {
+      errors.title = 'Title must be at least 10 characters'
+      hasErrors = true
     }
+
+    if (!bugDescription.trim()) {
+      errors.description = 'Description is required'
+      hasErrors = true
+    } else if (bugDescription.length < 30) {
+      errors.description = 'Description must be at least 30 characters'
+      hasErrors = true
+    }
+
+    setBugErrors(errors)
+    if (hasErrors) return
 
     setBugSubmitting(true)
     
@@ -257,20 +384,63 @@ export default function HelpPage() {
       })
 
       if (response.ok) {
-        alert('Bug report submitted successfully! Thank you for helping us improve.')
+        toast.success("Bug report submitted!", {
+          description: "Thank you for helping us improve the platform.",
+        })
         setBugTitle('')
         setBugDescription('')
+        setBugErrors({ title: '', description: '' })
         setShowBugForm(false)
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to submit bug report. Please try again.')
+        toast.error("Failed to submit bug report", {
+          description: error.error || 'Please try again later.',
+        })
       }
     } catch (error) {
       console.error('Error submitting bug report:', error)
-      alert('Failed to submit bug report. Please try again.')
+      toast.error("Failed to submit bug report", {
+        description: 'Please check your connection and try again.',
+      })
     } finally {
       setBugSubmitting(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full bg-black overflow-hidden">
+        {/* Header Skeleton */}
+        <div className="border-b border-zinc-800 bg-black p-4 flex-shrink-0">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <Skeleton className="h-10 w-10 rounded-lg bg-zinc-800" />
+              <Skeleton className="h-8 w-32 bg-zinc-800" />
+            </div>
+            <Skeleton className="h-4 w-96 bg-zinc-800" />
+          </div>
+        </div>
+        
+        {/* Content Skeleton */}
+        <div className="flex-1 overflow-y-auto bg-black">
+          <div className="max-w-5xl mx-auto p-4 space-y-8">
+            <Skeleton className="h-12 w-full bg-zinc-800" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-24 bg-zinc-800" />
+              ))}
+            </div>
+            
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-48 bg-zinc-800" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -299,9 +469,18 @@ export default function HelpPage() {
             <Input
               placeholder="Search for help..."
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 h-12 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 h-12 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
             />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -313,18 +492,21 @@ export default function HelpPage() {
                   if (action.href) {
                     return (
                       <Link key={index} href={action.href}>
-                        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer h-full">
+                        <Card className="bg-zinc-900 border-zinc-800 hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full group hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10">
                           <CardHeader className="pb-3">
-                            <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
-                                <action.icon className="h-5 w-5 text-blue-400" />
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-start gap-3 flex-1">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20 group-hover:from-blue-500/30 group-hover:to-purple-600/30 transition-colors">
+                                  <action.icon className="h-5 w-5 text-blue-400" />
+                                </div>
+                                <div className="flex-1">
+                                  <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                                  <CardDescription className="text-zinc-400 text-sm">
+                                    {action.description}
+                                  </CardDescription>
+                                </div>
                               </div>
-                              <div>
-                                <CardTitle className="text-white text-base">{action.title}</CardTitle>
-                                <CardDescription className="text-zinc-400 text-sm">
-                                  {action.description}
-                                </CardDescription>
-                              </div>
+                              <ChevronRight className="h-5 w-5 text-zinc-600 group-hover:text-blue-400 transition-colors" />
                             </div>
                           </CardHeader>
                         </Card>
@@ -334,18 +516,21 @@ export default function HelpPage() {
                   
                   return (
                     <div key={index} onClick={() => handleQuickAction(action.action || '')}>
-                      <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer h-full">
+                      <Card className="bg-zinc-900 border-zinc-800 hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full group hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10">
                         <CardHeader className="pb-3">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
-                              <action.icon className="h-5 w-5 text-blue-400" />
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-start gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20 group-hover:from-blue-500/30 group-hover:to-purple-600/30 transition-colors">
+                                <action.icon className="h-5 w-5 text-blue-400" />
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                                <CardDescription className="text-zinc-400 text-sm">
+                                  {action.description}
+                                </CardDescription>
+                              </div>
                             </div>
-                            <div>
-                              <CardTitle className="text-white text-base">{action.title}</CardTitle>
-                              <CardDescription className="text-zinc-400 text-sm">
-                                {action.description}
-                              </CardDescription>
-                            </div>
+                            <ChevronRight className="h-5 w-5 text-zinc-600 group-hover:text-blue-400 transition-colors" />
                           </div>
                         </CardHeader>
                       </Card>
@@ -358,16 +543,68 @@ export default function HelpPage() {
 
           {/* FAQ Categories */}
           <div>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              {searchQuery ? 'Search Results' : 'Frequently Asked Questions'}
-            </h2>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="text-lg font-semibold text-white">
+                {debouncedQuery ? 'Search Results' : 'Frequently Asked Questions'}
+              </h2>
+              <div className="flex items-center gap-2">
+                {debouncedQuery && resultsCount > 0 && (
+                  <span className="text-sm text-zinc-400">
+                    Found {resultsCount} result{resultsCount !== 1 ? 's' : ''} for &quot;{debouncedQuery}&quot;
+                  </span>
+                )}
+                {filteredFaqs.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={expandAll}
+                      className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    >
+                      <ChevronsDown className="h-4 w-4 mr-1" />
+                      Expand All
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={collapseAll}
+                      className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    >
+                      <ChevronsUp className="h-4 w-4 mr-1" />
+                      Collapse All
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
             
             {filteredFaqs.length === 0 ? (
               <Card className="bg-zinc-900 border-zinc-800">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <AlertCircle className="h-12 w-12 text-zinc-600 mb-4" />
-                  <p className="text-white font-medium mb-2">No results found</p>
-                  <p className="text-zinc-400 text-sm">Try different keywords or contact support</p>
+                <CardContent className="flex flex-col items-center justify-center py-12 space-y-6">
+                  <div className="p-4 rounded-full bg-zinc-800">
+                    <AlertCircle className="h-12 w-12 text-zinc-600" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white font-medium mb-2">No results found for &quot;{searchQuery}&quot;</p>
+                    <p className="text-zinc-400 text-sm mb-4">Try different keywords or browse popular topics</p>
+                  </div>
+                  <div className="w-full max-w-md">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lightbulb className="h-4 w-4 text-blue-400" />
+                      <p className="text-sm font-medium text-zinc-300">Popular Topics:</p>
+                    </div>
+                    <div className="space-y-2">
+                      {popularTopics.map((topic, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSearchQuery(topic.split(' ').slice(-2).join(' '))}
+                          className="w-full text-left px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm transition-colors"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -383,7 +620,12 @@ export default function HelpPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <Accordion type="single" collapsible className="w-full">
+                      <Accordion 
+                        type="multiple" 
+                        value={expandedItems}
+                        onValueChange={setExpandedItems}
+                        className="w-full"
+                      >
                         {category.faqs.map((faq, faqIndex) => (
                           <AccordionItem 
                             key={faqIndex} 
@@ -391,10 +633,10 @@ export default function HelpPage() {
                             className="border-zinc-800"
                           >
                             <AccordionTrigger className="text-left text-white hover:text-blue-400 hover:no-underline">
-                              {faq.question}
+                              {highlightText(faq.question, debouncedQuery)}
                             </AccordionTrigger>
                             <AccordionContent className="text-zinc-400">
-                              {faq.answer}
+                              {highlightText(faq.answer, debouncedQuery)}
                             </AccordionContent>
                           </AccordionItem>
                         ))}
@@ -491,21 +733,38 @@ export default function HelpPage() {
                 <Input 
                   placeholder="What do you need help with?"
                   value={contactSubject}
-                  onChange={(e) => setContactSubject(e.target.value)}
+                  onChange={(e) => {
+                    setContactSubject(e.target.value)
+                    if (contactErrors.subject) setContactErrors({ ...contactErrors, subject: '' })
+                  }}
                   disabled={contactSubmitting}
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                  className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 ${contactErrors.subject ? 'border-red-500' : ''}`}
                 />
+                {contactErrors.subject && (
+                  <p className="text-red-400 text-xs mt-1">{contactErrors.subject}</p>
+                )}
               </div>
               <div>
-                <label className="text-sm text-zinc-300 mb-2 block">Message</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-zinc-300">Message</label>
+                  <span className="text-xs text-zinc-500">{contactMessage.length}/500</span>
+                </div>
                 <textarea 
                   placeholder="Describe your issue in detail..."
                   value={contactMessage}
-                  onChange={(e) => setContactMessage(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setContactMessage(e.target.value)
+                      if (contactErrors.message) setContactErrors({ ...contactErrors, message: '' })
+                    }
+                  }}
                   disabled={contactSubmitting}
                   rows={5}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50"
+                  className={`w-full bg-zinc-800 border rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50 ${contactErrors.message ? 'border-red-500' : 'border-zinc-700'}`}
                 />
+                {contactErrors.message && (
+                  <p className="text-red-400 text-xs mt-1">{contactErrors.message}</p>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -548,21 +807,38 @@ export default function HelpPage() {
                 <Input 
                   placeholder="Brief description of the bug"
                   value={bugTitle}
-                  onChange={(e) => setBugTitle(e.target.value)}
+                  onChange={(e) => {
+                    setBugTitle(e.target.value)
+                    if (bugErrors.title) setBugErrors({ ...bugErrors, title: '' })
+                  }}
                   disabled={bugSubmitting}
-                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                  className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 ${bugErrors.title ? 'border-red-500' : ''}`}
                 />
+                {bugErrors.title && (
+                  <p className="text-red-400 text-xs mt-1">{bugErrors.title}</p>
+                )}
               </div>
               <div>
-                <label className="text-sm text-zinc-300 mb-2 block">What happened?</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-zinc-300">What happened?</label>
+                  <span className="text-xs text-zinc-500">{bugDescription.length}/1000</span>
+                </div>
                 <textarea 
                   placeholder="Describe what you were doing when the bug occurred..."
                   value={bugDescription}
-                  onChange={(e) => setBugDescription(e.target.value)}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 1000) {
+                      setBugDescription(e.target.value)
+                      if (bugErrors.description) setBugErrors({ ...bugErrors, description: '' })
+                    }
+                  }}
                   disabled={bugSubmitting}
                   rows={5}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50"
+                  className={`w-full bg-zinc-800 border rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50 ${bugErrors.description ? 'border-red-500' : 'border-zinc-700'}`}
                 />
+                {bugErrors.description && (
+                  <p className="text-red-400 text-xs mt-1">{bugErrors.description}</p>
+                )}
               </div>
               <div className="flex gap-2">
                 <Button 
