@@ -47,10 +47,31 @@ export async function GET(
       .eq('id', ticket.user_id)
       .single()
 
-    // Combine ticket with user data
+    // Get reply history
+    const { data: replies } = await supabase
+      .from('support_ticket_replies')
+      .select('*')
+      .eq('ticket_id', id)
+      .order('created_at', { ascending: true })
+
+    // Get admin profiles for replies
+    const adminIds = [...new Set(replies?.map(r => r.admin_id) || [])]
+    const { data: adminProfiles } = await supabase
+      .from('profiles')
+      .select('id, email, first_name, last_name, avatar_url')
+      .in('id', adminIds)
+
+    // Map admin data to replies
+    const repliesWithAdmins = replies?.map(reply => ({
+      ...reply,
+      admin: adminProfiles?.find(p => p.id === reply.admin_id) || null
+    })) || []
+
+    // Combine ticket with user data and replies
     const ticketWithUser = {
       ...ticket,
-      user: userProfile || null
+      user: userProfile || null,
+      replies: repliesWithAdmins
     }
 
     return NextResponse.json({ ticket: ticketWithUser })

@@ -21,6 +21,22 @@ import {
 import { toast } from 'sonner'
 import Link from 'next/link'
 
+interface TicketReply {
+  id: string
+  ticket_id: string
+  admin_id: string
+  message: string
+  created_at: string
+  updated_at: string
+  admin?: {
+    id: string
+    email: string
+    first_name?: string
+    last_name?: string
+    avatar_url?: string
+  }
+}
+
 interface SupportTicket {
   id: string
   user_id: string
@@ -37,6 +53,7 @@ interface SupportTicket {
     last_name?: string
     avatar_url?: string
   }
+  replies?: TicketReply[]
 }
 
 export default function TicketDetailPage() {
@@ -234,6 +251,55 @@ export default function TicketDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Reply History */}
+          {ticket.replies && ticket.replies.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-purple-500" />
+                  Reply History ({ticket.replies.length})
+                </CardTitle>
+                <CardDescription>
+                  Previous responses sent to the user
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {ticket.replies.map((reply, index) => (
+                  <div 
+                    key={reply.id}
+                    className="border-l-4 border-purple-500/30 bg-purple-500/5 rounded-r-lg p-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                          {reply.admin?.first_name?.[0] || reply.admin?.email[0].toUpperCase() || 'A'}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">
+                            {reply.admin?.first_name && reply.admin?.last_name
+                              ? `${reply.admin.first_name} ${reply.admin.last_name}`
+                              : reply.admin?.email || 'Admin'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(reply.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        Reply #{index + 1}
+                      </Badge>
+                    </div>
+                    <div className="pl-10">
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
+                        {reply.message}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Reply to User */}
           <Card className="border-blue-500/20 bg-blue-500/5">
