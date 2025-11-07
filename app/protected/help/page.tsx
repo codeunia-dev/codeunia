@@ -1,10 +1,13 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from 'sonner'
 import { 
   Search, 
   HelpCircle, 
@@ -20,14 +23,28 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  ExternalLink
+  ExternalLink,
+  Bug,
+  ChevronRight,
+  Lightbulb,
+  X,
+  ChevronsDown,
+  ChevronsUp
 } from 'lucide-react'
 
 const quickActions = [
   { icon: Shield, title: 'Reset Password', description: 'Change your account password', href: '/protected/settings' },
   { icon: Users, title: 'Update Profile', description: 'Edit your profile information', href: '/protected/profile/view' },
   { icon: Mail, title: 'Contact Support', description: 'Get help from our team', action: 'contact' },
-  { icon: AlertCircle, title: 'Report a Bug', description: 'Help us improve the platform', action: 'bug' },
+  { icon: Bug, title: 'Report a Bug', description: 'Help us improve the platform', action: 'bug' },
+]
+
+const popularTopics = [
+  'How do I reset my password?',
+  'How do I enroll in a course?',
+  'How do I send a message?',
+  'Where can I see my test results?',
+  'How do I add connections?',
 ]
 
 const faqCategories = [
@@ -161,25 +178,269 @@ const faqCategories = [
 
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedQuery, setDebouncedQuery] = useState('')
   const [filteredFaqs, setFilteredFaqs] = useState(faqCategories)
+  const [resultsCount, setResultsCount] = useState(0)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [showBugForm, setShowBugForm] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
+  
+  // Contact form state
+  const [contactSubject, setContactSubject] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSubmitting, setContactSubmitting] = useState(false)
+  const [contactErrors, setContactErrors] = useState({ subject: '', message: '' })
+  
+  // Bug form state
+  const [bugTitle, setBugTitle] = useState('')
+  const [bugDescription, setBugDescription] = useState('')
+  const [bugSubmitting, setBugSubmitting] = useState(false)
+  const [bugErrors, setBugErrors] = useState({ title: '', description: '' })
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-    
-    if (!query.trim()) {
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 500)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // Handle ESC key for dialogs
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showContactForm) setShowContactForm(false)
+        if (showBugForm) setShowBugForm(false)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [showContactForm, showBugForm])
+
+  // Perform search with debounced query
+  useEffect(() => {
+    if (!debouncedQuery.trim()) {
       setFilteredFaqs(faqCategories)
+      setResultsCount(0)
       return
     }
 
     const filtered = faqCategories.map(category => ({
       ...category,
       faqs: category.faqs.filter(faq => 
-        faq.question.toLowerCase().includes(query.toLowerCase()) ||
-        faq.answer.toLowerCase().includes(query.toLowerCase())
+        faq.question.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(debouncedQuery.toLowerCase())
       )
     })).filter(category => category.faqs.length > 0)
 
+    const count = filtered.reduce((acc, category) => acc + category.faqs.length, 0)
+    setResultsCount(count)
     setFilteredFaqs(filtered)
+  }, [debouncedQuery])
+
+  const clearSearch = () => {
+    setSearchQuery('')
+    setDebouncedQuery('')
+  }
+
+  const expandAll = useCallback(() => {
+    const allItems: string[] = []
+    filteredFaqs.forEach((category, catIndex) => {
+      category.faqs.forEach((_, faqIndex) => {
+        allItems.push(`item-${catIndex}-${faqIndex}`)
+      })
+    })
+    setExpandedItems(allItems)
+  }, [filteredFaqs])
+
+  const collapseAll = () => {
+    setExpandedItems([])
+  }
+
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) return text
+    
+    const parts = text.split(new RegExp(`(${query})`, 'gi'))
+    return (
+      <span>
+        {parts.map((part, index) => 
+          part.toLowerCase() === query.toLowerCase() 
+            ? <mark key={index} className="bg-blue-500/30 text-blue-300 rounded px-0.5">{part}</mark>
+            : <span key={index}>{part}</span>
+        )}
+      </span>
+    )
+  }
+
+  const handleQuickAction = (action: string) => {
+    if (action === 'contact') {
+      setShowContactForm(true)
+    } else if (action === 'bug') {
+      setShowBugForm(true)
+    }
+  }
+
+  const handleContactSubmit = async () => {
+    // Validate form
+    const errors = { subject: '', message: '' }
+    let hasErrors = false
+
+    if (!contactSubject.trim()) {
+      errors.subject = 'Subject is required'
+      hasErrors = true
+    } else if (contactSubject.length < 5) {
+      errors.subject = 'Subject must be at least 5 characters'
+      hasErrors = true
+    }
+
+    if (!contactMessage.trim()) {
+      errors.message = 'Message is required'
+      hasErrors = true
+    } else if (contactMessage.length < 20) {
+      errors.message = 'Message must be at least 20 characters'
+      hasErrors = true
+    }
+
+    setContactErrors(errors)
+    if (hasErrors) return
+
+    setContactSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: contactSubject,
+          message: contactMessage,
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Message sent successfully!", {
+          description: "We'll get back to you within 24-48 hours.",
+        })
+        setContactSubject('')
+        setContactMessage('')
+        setContactErrors({ subject: '', message: '' })
+        setShowContactForm(false)
+      } else {
+        const error = await response.json()
+        toast.error("Failed to send message", {
+          description: error.error || 'Please try again later.',
+        })
+      }
+    } catch (error) {
+      console.error('Error sending contact message:', error)
+      toast.error("Failed to send message", {
+        description: 'Please check your connection and try again.',
+      })
+    } finally {
+      setContactSubmitting(false)
+    }
+  }
+
+  const handleBugSubmit = async () => {
+    // Validate form
+    const errors = { title: '', description: '' }
+    let hasErrors = false
+
+    if (!bugTitle.trim()) {
+      errors.title = 'Bug title is required'
+      hasErrors = true
+    } else if (bugTitle.length < 10) {
+      errors.title = 'Title must be at least 10 characters'
+      hasErrors = true
+    }
+
+    if (!bugDescription.trim()) {
+      errors.description = 'Description is required'
+      hasErrors = true
+    } else if (bugDescription.length < 30) {
+      errors.description = 'Description must be at least 30 characters'
+      hasErrors = true
+    }
+
+    setBugErrors(errors)
+    if (hasErrors) return
+
+    setBugSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/support/bug-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: bugTitle,
+          description: bugDescription,
+        }),
+      })
+
+      if (response.ok) {
+        toast.success("Bug report submitted!", {
+          description: "Thank you for helping us improve the platform.",
+        })
+        setBugTitle('')
+        setBugDescription('')
+        setBugErrors({ title: '', description: '' })
+        setShowBugForm(false)
+      } else {
+        const error = await response.json()
+        toast.error("Failed to submit bug report", {
+          description: error.error || 'Please try again later.',
+        })
+      }
+    } catch (error) {
+      console.error('Error submitting bug report:', error)
+      toast.error("Failed to submit bug report", {
+        description: 'Please check your connection and try again.',
+      })
+    } finally {
+      setBugSubmitting(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full bg-black overflow-hidden">
+        {/* Header Skeleton */}
+        <div className="border-b border-zinc-800 bg-black p-4 flex-shrink-0">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <Skeleton className="h-10 w-10 rounded-lg bg-zinc-800" />
+              <Skeleton className="h-8 w-32 bg-zinc-800" />
+            </div>
+            <Skeleton className="h-4 w-96 bg-zinc-800" />
+          </div>
+        </div>
+        
+        {/* Content Skeleton */}
+        <div className="flex-1 overflow-y-auto bg-black">
+          <div className="max-w-5xl mx-auto p-4 space-y-8">
+            <Skeleton className="h-12 w-full bg-zinc-800" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-24 bg-zinc-800" />
+              ))}
+            </div>
+            
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-48 bg-zinc-800" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -208,9 +469,18 @@ export default function HelpPage() {
             <Input
               placeholder="Search for help..."
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 h-12 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 h-12 bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-blue-500"
             />
+            {searchQuery && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors"
+                aria-label="Clear search"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -218,39 +488,123 @@ export default function HelpPage() {
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quickActions.map((action, index) => (
-                  <Card key={index} className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
-                          <action.icon className="h-5 w-5 text-blue-400" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-white text-base">{action.title}</CardTitle>
-                          <CardDescription className="text-zinc-400 text-sm">
-                            {action.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                ))}
+                {quickActions.map((action, index) => {
+                  if (action.href) {
+                    return (
+                      <Link key={index} href={action.href}>
+                        <Card className="bg-zinc-900 border-zinc-800 hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full group hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-start gap-3 flex-1">
+                                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20 group-hover:from-blue-500/30 group-hover:to-purple-600/30 transition-colors">
+                                  <action.icon className="h-5 w-5 text-blue-400" />
+                                </div>
+                                <div className="flex-1">
+                                  <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                                  <CardDescription className="text-zinc-400 text-sm">
+                                    {action.description}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              <ChevronRight className="h-5 w-5 text-zinc-600 group-hover:text-blue-400 transition-colors" />
+                            </div>
+                          </CardHeader>
+                        </Card>
+                      </Link>
+                    )
+                  }
+                  
+                  return (
+                    <div key={index} onClick={() => handleQuickAction(action.action || '')}>
+                      <Card className="bg-zinc-900 border-zinc-800 hover:border-blue-500/50 transition-all duration-300 cursor-pointer h-full group hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-start gap-3 flex-1">
+                              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20 group-hover:from-blue-500/30 group-hover:to-purple-600/30 transition-colors">
+                                <action.icon className="h-5 w-5 text-blue-400" />
+                              </div>
+                              <div className="flex-1">
+                                <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                                <CardDescription className="text-zinc-400 text-sm">
+                                  {action.description}
+                                </CardDescription>
+                              </div>
+                            </div>
+                            <ChevronRight className="h-5 w-5 text-zinc-600 group-hover:text-blue-400 transition-colors" />
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
 
           {/* FAQ Categories */}
           <div>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              {searchQuery ? 'Search Results' : 'Frequently Asked Questions'}
-            </h2>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <h2 className="text-lg font-semibold text-white">
+                {debouncedQuery ? 'Search Results' : 'Frequently Asked Questions'}
+              </h2>
+              <div className="flex items-center gap-2">
+                {debouncedQuery && resultsCount > 0 && (
+                  <span className="text-sm text-zinc-400">
+                    Found {resultsCount} result{resultsCount !== 1 ? 's' : ''} for &quot;{debouncedQuery}&quot;
+                  </span>
+                )}
+                {filteredFaqs.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={expandAll}
+                      className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    >
+                      <ChevronsDown className="h-4 w-4 mr-1" />
+                      Expand All
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={collapseAll}
+                      className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                    >
+                      <ChevronsUp className="h-4 w-4 mr-1" />
+                      Collapse All
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
             
             {filteredFaqs.length === 0 ? (
               <Card className="bg-zinc-900 border-zinc-800">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <AlertCircle className="h-12 w-12 text-zinc-600 mb-4" />
-                  <p className="text-white font-medium mb-2">No results found</p>
-                  <p className="text-zinc-400 text-sm">Try different keywords or contact support</p>
+                <CardContent className="flex flex-col items-center justify-center py-12 space-y-6">
+                  <div className="p-4 rounded-full bg-zinc-800">
+                    <AlertCircle className="h-12 w-12 text-zinc-600" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-white font-medium mb-2">No results found for &quot;{searchQuery}&quot;</p>
+                    <p className="text-zinc-400 text-sm mb-4">Try different keywords or browse popular topics</p>
+                  </div>
+                  <div className="w-full max-w-md">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lightbulb className="h-4 w-4 text-blue-400" />
+                      <p className="text-sm font-medium text-zinc-300">Popular Topics:</p>
+                    </div>
+                    <div className="space-y-2">
+                      {popularTopics.map((topic, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSearchQuery(topic.split(' ').slice(-2).join(' '))}
+                          className="w-full text-left px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm transition-colors"
+                        >
+                          {topic}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
@@ -266,7 +620,12 @@ export default function HelpPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <Accordion type="single" collapsible className="w-full">
+                      <Accordion 
+                        type="multiple" 
+                        value={expandedItems}
+                        onValueChange={setExpandedItems}
+                        className="w-full"
+                      >
                         {category.faqs.map((faq, faqIndex) => (
                           <AccordionItem 
                             key={faqIndex} 
@@ -274,10 +633,10 @@ export default function HelpPage() {
                             className="border-zinc-800"
                           >
                             <AccordionTrigger className="text-left text-white hover:text-blue-400 hover:no-underline">
-                              {faq.question}
+                              {highlightText(faq.question, debouncedQuery)}
                             </AccordionTrigger>
                             <AccordionContent className="text-zinc-400">
-                              {faq.answer}
+                              {highlightText(faq.answer, debouncedQuery)}
                             </AccordionContent>
                           </AccordionItem>
                         ))}
@@ -289,8 +648,8 @@ export default function HelpPage() {
             )}
           </div>
 
-          {/* Contact Support Section */}
-          {!searchQuery && (
+          {/* Support Channels Section */}
+          {!debouncedQuery && (
             <Card className="bg-gradient-to-br from-blue-500/10 to-purple-600/10 border-zinc-800">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
@@ -298,30 +657,74 @@ export default function HelpPage() {
                   Still Need Help?
                 </CardTitle>
                 <CardDescription className="text-zinc-300">
-                  Our support team is here to assist you
+                  Choose the best way to reach our support team
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 text-sm">
-                  <Mail className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">Email Support</p>
-                    <p className="text-zinc-400">support@codeunia.com</p>
-                    <p className="text-zinc-500 text-xs mt-1">Response time: 24-48 hours</p>
+                {/* Live Chat */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-colors">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-600/20">
+                      <MessageSquare className="h-5 w-5 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white font-medium">Live Chat</p>
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                          Available Now
+                        </span>
+                      </div>
+                      <p className="text-zinc-400 text-sm">Get instant help from our support team</p>
+                      <p className="text-zinc-500 text-xs mt-1">Average response time: 2-5 minutes</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      // TODO: Integrate with live chat service (Intercom, Crisp, Tawk.to, etc.)
+                      toast.info("Live Chat", {
+                        description: "Live chat integration coming soon! Please use email support for now.",
+                      })
+                    }}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Start Live Chat
+                  </Button>
+                </div>
+
+                {/* Email Support */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                      <Mail className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium mb-1">Email Support</p>
+                      <a 
+                        href="mailto:support@codeunia.com"
+                        className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                      >
+                        support@codeunia.com
+                      </a>
+                      <p className="text-zinc-500 text-xs mt-1">Response time: 24-48 hours</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <Clock className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">Support Hours</p>
-                    <p className="text-zinc-400">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
-                    <p className="text-zinc-400">Saturday: 10:00 AM - 4:00 PM IST</p>
+
+                {/* Support Hours */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                      <Clock className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium mb-1">Support Hours</p>
+                      <p className="text-zinc-400 text-sm">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
+                      <p className="text-zinc-400 text-sm">Saturday: 10:00 AM - 4:00 PM IST</p>
+                      <p className="text-zinc-500 text-xs mt-1">Closed on Sundays and public holidays</p>
+                    </div>
                   </div>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact Support
-                </Button>
               </CardContent>
             </Card>
           )}
@@ -351,6 +754,154 @@ export default function HelpPage() {
           )}
         </div>
       </div>
+
+      {/* Contact Support Dialog */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowContactForm(false)}>
+          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-400" />
+                Contact Support
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Send us a message and we&apos;ll get back to you soon
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">Subject</label>
+                <Input 
+                  placeholder="What do you need help with?"
+                  value={contactSubject}
+                  onChange={(e) => {
+                    setContactSubject(e.target.value)
+                    if (contactErrors.subject) setContactErrors({ ...contactErrors, subject: '' })
+                  }}
+                  disabled={contactSubmitting}
+                  className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 ${contactErrors.subject ? 'border-red-500' : ''}`}
+                />
+                {contactErrors.subject && (
+                  <p className="text-red-400 text-xs mt-1">{contactErrors.subject}</p>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-zinc-300">Message</label>
+                  <span className="text-xs text-zinc-500">{contactMessage.length}/500</span>
+                </div>
+                <textarea 
+                  placeholder="Describe your issue in detail..."
+                  value={contactMessage}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setContactMessage(e.target.value)
+                      if (contactErrors.message) setContactErrors({ ...contactErrors, message: '' })
+                    }
+                  }}
+                  disabled={contactSubmitting}
+                  rows={5}
+                  className={`w-full bg-zinc-800 border rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50 ${contactErrors.message ? 'border-red-500' : 'border-zinc-700'}`}
+                />
+                {contactErrors.message && (
+                  <p className="text-red-400 text-xs mt-1">{contactErrors.message}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowContactForm(false)}
+                  variant="outline" 
+                  disabled={contactSubmitting}
+                  className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleContactSubmit}
+                  disabled={contactSubmitting}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                >
+                  {contactSubmitting ? 'Sending...' : 'Send Message'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Bug Report Dialog */}
+      {showBugForm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowBugForm(false)}>
+          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                Report a Bug
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Help us improve by reporting issues you encounter
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">Bug Title</label>
+                <Input 
+                  placeholder="Brief description of the bug"
+                  value={bugTitle}
+                  onChange={(e) => {
+                    setBugTitle(e.target.value)
+                    if (bugErrors.title) setBugErrors({ ...bugErrors, title: '' })
+                  }}
+                  disabled={bugSubmitting}
+                  className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 ${bugErrors.title ? 'border-red-500' : ''}`}
+                />
+                {bugErrors.title && (
+                  <p className="text-red-400 text-xs mt-1">{bugErrors.title}</p>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-zinc-300">What happened?</label>
+                  <span className="text-xs text-zinc-500">{bugDescription.length}/1000</span>
+                </div>
+                <textarea 
+                  placeholder="Describe what you were doing when the bug occurred..."
+                  value={bugDescription}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 1000) {
+                      setBugDescription(e.target.value)
+                      if (bugErrors.description) setBugErrors({ ...bugErrors, description: '' })
+                    }
+                  }}
+                  disabled={bugSubmitting}
+                  rows={5}
+                  className={`w-full bg-zinc-800 border rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50 ${bugErrors.description ? 'border-red-500' : 'border-zinc-700'}`}
+                />
+                {bugErrors.description && (
+                  <p className="text-red-400 text-xs mt-1">{bugErrors.description}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowBugForm(false)}
+                  variant="outline" 
+                  disabled={bugSubmitting}
+                  className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleBugSubmit}
+                  disabled={bugSubmitting}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                >
+                  {bugSubmitting ? 'Submitting...' : 'Submit Report'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
