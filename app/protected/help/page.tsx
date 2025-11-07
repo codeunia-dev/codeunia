@@ -648,8 +648,8 @@ export default function HelpPage() {
             )}
           </div>
 
-          {/* Contact Support Section */}
-          {!searchQuery && (
+          {/* Support Channels Section */}
+          {!debouncedQuery && (
             <Card className="bg-gradient-to-br from-blue-500/10 to-purple-600/10 border-zinc-800">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
@@ -657,33 +657,74 @@ export default function HelpPage() {
                   Still Need Help?
                 </CardTitle>
                 <CardDescription className="text-zinc-300">
-                  Our support team is here to assist you
+                  Choose the best way to reach our support team
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-3 text-sm">
-                  <Mail className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">Email Support</p>
-                    <p className="text-zinc-400">support@codeunia.com</p>
-                    <p className="text-zinc-500 text-xs mt-1">Response time: 24-48 hours</p>
+                {/* Live Chat */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-colors">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-green-500/20 to-emerald-600/20">
+                      <MessageSquare className="h-5 w-5 text-green-400" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white font-medium">Live Chat</p>
+                        <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
+                          Available Now
+                        </span>
+                      </div>
+                      <p className="text-zinc-400 text-sm">Get instant help from our support team</p>
+                      <p className="text-zinc-500 text-xs mt-1">Average response time: 2-5 minutes</p>
+                    </div>
+                  </div>
+                  <Button 
+                    onClick={() => {
+                      // TODO: Integrate with live chat service (Intercom, Crisp, Tawk.to, etc.)
+                      toast.info("Live Chat", {
+                        description: "Live chat integration coming soon! Please use email support for now.",
+                      })
+                    }}
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white border-0"
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Start Live Chat
+                  </Button>
+                </div>
+
+                {/* Email Support */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                      <Mail className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium mb-1">Email Support</p>
+                      <a 
+                        href="mailto:support@codeunia.com"
+                        className="text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                      >
+                        support@codeunia.com
+                      </a>
+                      <p className="text-zinc-500 text-xs mt-1">Response time: 24-48 hours</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 text-sm">
-                  <Clock className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-medium">Support Hours</p>
-                    <p className="text-zinc-400">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
-                    <p className="text-zinc-400">Saturday: 10:00 AM - 4:00 PM IST</p>
+
+                {/* Support Hours */}
+                <div className="p-4 rounded-lg bg-zinc-900/50 border border-zinc-800">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                      <Clock className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-white font-medium mb-1">Support Hours</p>
+                      <p className="text-zinc-400 text-sm">Monday - Friday: 9:00 AM - 6:00 PM IST</p>
+                      <p className="text-zinc-400 text-sm">Saturday: 10:00 AM - 4:00 PM IST</p>
+                      <p className="text-zinc-500 text-xs mt-1">Closed on Sundays and public holidays</p>
+                    </div>
                   </div>
                 </div>
-                <Button 
-                  onClick={() => setShowContactForm(true)}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact Support
-                </Button>
               </CardContent>
             </Card>
           )}
