@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getStatusUpdateEmail, sendEmail } from '@/lib/email/support-emails'
 
+// GET single ticket
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  
   try {
     const supabase = await createClient()
     
@@ -27,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch ticket
+    // Get ticket
     const { data: ticket, error } = await supabase
       .from('support_tickets')
       .select('*')
@@ -39,13 +40,14 @@ export async function GET(
       return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
     }
 
-    // Fetch user information
+    // Get user profile
     const { data: userProfile } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name, avatar_url')
       .eq('id', ticket.user_id)
       .single()
 
+    // Combine ticket with user data
     const ticketWithUser = {
       ...ticket,
       user: userProfile || null
@@ -53,16 +55,18 @@ export async function GET(
 
     return NextResponse.json({ ticket: ticketWithUser })
   } catch (error) {
-    console.error('Error in ticket detail API:', error)
+    console.error('Error in GET ticket:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
+// PATCH update ticket status
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
+  
   try {
     const supabase = await createClient()
     
@@ -85,27 +89,22 @@ export async function PATCH(
 
     const { status } = await request.json()
 
-    if (!['open', 'in_progress', 'resolved', 'closed'].includes(status)) {
+    if (!status) {
+      return NextResponse.json({ error: 'Status is required' }, { status: 400 })
+    }
+
+    const validStatuses = ['open', 'in_progress', 'resolved', 'closed']
+    if (!validStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
-
-    // Get current ticket to check old status
-    const { data: currentTicket } = await supabase
-      .from('support_tickets')
-      .select('*, user:profiles!user_id(email, first_name, last_name)')
-      .eq('id', id)
-      .single()
-
-    if (!currentTicket) {
-      return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
-    }
-
-    const oldStatus = currentTicket.status
 
     // Update ticket status
     const { data: ticket, error } = await supabase
       .from('support_tickets')
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .select()
       .single()
@@ -115,29 +114,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to update ticket' }, { status: 500 })
     }
 
-    // Send status update email to user (only if status actually changed)
-    if (oldStatus !== status && currentTicket.user) {
-      const userName = currentTicket.user.first_name || currentTicket.user.email?.split('@')[0] || 'User'
-      const userEmail = currentTicket.user.email || ''
-      
-      const statusEmail = getStatusUpdateEmail({
-        userName,
-        ticketId: ticket.id,
-        subject: ticket.subject,
-        oldStatus,
-        newStatus: status
-      })
-      
-      await sendEmail({
-        to: userEmail,
-        subject: statusEmail.subject,
-        html: statusEmail.html
-      })
-    }
-
-    return NextResponse.json({ ticket })
+    return NextResponse.json({ ticket, success: true })
   } catch (error) {
-    console.error('Error in ticket update API:', error)
+    console.error('Error in PATCH ticket:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

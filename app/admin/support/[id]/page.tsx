@@ -15,7 +15,8 @@ import {
   User,
   Calendar,
   MessageSquare,
-  Save
+  Save,
+  Send
 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
@@ -47,6 +48,8 @@ export default function TicketDetailPage() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [notes, setNotes] = useState('')
+  const [reply, setReply] = useState('')
+  const [sendingReply, setSendingReply] = useState(false)
 
   useEffect(() => {
     fetchTicket()
@@ -91,6 +94,59 @@ export default function TicketDetailPage() {
       toast.error('Failed to update status')
     } finally {
       setUpdating(false)
+    }
+  }
+
+  const sendReply = async () => {
+    if (!reply.trim()) {
+      toast.error('Please enter a reply message')
+      return
+    }
+
+    setSendingReply(true)
+    try {
+      const response = await fetch(`/api/admin/support/tickets/${ticketId}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: reply }),
+      })
+
+      if (response.ok) {
+        toast.success('Reply sent successfully!')
+        setReply('')
+        
+        // Update status to "in_progress" if it's "open"
+        if (ticket?.status === 'open') {
+          try {
+            const statusResponse = await fetch(`/api/admin/support/tickets/${ticketId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'in_progress' }),
+            })
+
+            if (statusResponse.ok) {
+              toast.success('Status updated to In Progress')
+            } else {
+              console.error('Failed to update status')
+              toast.error('Reply sent, but failed to update status')
+            }
+          } catch (statusError) {
+            console.error('Error updating status:', statusError)
+            toast.error('Reply sent, but failed to update status')
+          }
+        }
+        
+        // Refresh ticket data
+        await fetchTicket()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to send reply')
+      }
+    } catch (error) {
+      console.error('Error sending reply:', error)
+      toast.error('Failed to send reply')
+    } finally {
+      setSendingReply(false)
     }
   }
 
@@ -179,6 +235,56 @@ export default function TicketDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Reply to User */}
+          <Card className="border-blue-500/20 bg-blue-500/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-blue-500" />
+                Reply to User
+              </CardTitle>
+              <CardDescription>
+                Send a response directly to {ticket.user?.email || 'the user'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Type your response here... This will be sent via email to the user."
+                value={reply}
+                onChange={(e) => setReply(e.target.value)}
+                rows={6}
+                className="resize-none"
+                disabled={sendingReply}
+              />
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {reply.length}/2000 characters
+                </p>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={() => setReply('')}
+                    disabled={!reply.trim() || sendingReply}
+                  >
+                    Clear
+                  </Button>
+                  <Button 
+                    onClick={sendReply}
+                    disabled={!reply.trim() || sendingReply || reply.length > 2000}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {sendingReply ? 'Sending...' : 'Send Reply'}
+                  </Button>
+                </div>
+              </div>
+              {ticket.status === 'open' && (
+                <p className="text-xs text-muted-foreground bg-yellow-500/10 border border-yellow-500/20 rounded p-2">
+                  💡 Tip: Sending a reply will automatically change the status to &quot;In Progress&quot;
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Internal Notes */}
           <Card>
             <CardHeader>
@@ -187,7 +293,7 @@ export default function TicketDetailPage() {
                 Internal Notes
               </CardTitle>
               <CardDescription>
-                Add notes visible only to admins
+                Add notes visible only to admins (not sent to user)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
