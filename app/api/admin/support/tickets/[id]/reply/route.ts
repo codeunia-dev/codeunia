@@ -99,12 +99,28 @@ export async function POST(
 
     console.log('✅ Reply email sent successfully')
 
-    // TODO: Save reply to database (for reply history)
-    // This would go in a support_ticket_replies table
+    // Save reply to database for history
+    const { data: reply, error: replyError } = await supabase
+      .from('support_ticket_replies')
+      .insert({
+        ticket_id: ticket.id,
+        admin_id: user.id,
+        message: message.trim()
+      })
+      .select()
+      .single()
+
+    if (replyError) {
+      console.error('❌ Failed to save reply to database:', replyError)
+      // Don't fail the request since email was sent successfully
+    } else {
+      console.log('✅ Reply saved to database:', reply.id)
+    }
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Reply sent successfully' 
+      message: 'Reply sent successfully',
+      reply
     })
   } catch (error) {
     console.error('Error in reply API:', error)
