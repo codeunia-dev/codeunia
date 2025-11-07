@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -162,6 +163,18 @@ const faqCategories = [
 export default function HelpPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filteredFaqs, setFilteredFaqs] = useState(faqCategories)
+  const [showContactForm, setShowContactForm] = useState(false)
+  const [showBugForm, setShowBugForm] = useState(false)
+  
+  // Contact form state
+  const [contactSubject, setContactSubject] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSubmitting, setContactSubmitting] = useState(false)
+  
+  // Bug form state
+  const [bugTitle, setBugTitle] = useState('')
+  const [bugDescription, setBugDescription] = useState('')
+  const [bugSubmitting, setBugSubmitting] = useState(false)
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
@@ -180,6 +193,84 @@ export default function HelpPage() {
     })).filter(category => category.faqs.length > 0)
 
     setFilteredFaqs(filtered)
+  }
+
+  const handleQuickAction = (action: string) => {
+    if (action === 'contact') {
+      setShowContactForm(true)
+    } else if (action === 'bug') {
+      setShowBugForm(true)
+    }
+  }
+
+  const handleContactSubmit = async () => {
+    if (!contactSubject.trim() || !contactMessage.trim()) {
+      alert('Please fill in all fields')
+      return
+    }
+
+    setContactSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/support/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: contactSubject,
+          message: contactMessage,
+        }),
+      })
+
+      if (response.ok) {
+        alert('Message sent successfully! We\'ll get back to you soon.')
+        setContactSubject('')
+        setContactMessage('')
+        setShowContactForm(false)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to send message. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error sending contact message:', error)
+      alert('Failed to send message. Please try again.')
+    } finally {
+      setContactSubmitting(false)
+    }
+  }
+
+  const handleBugSubmit = async () => {
+    if (!bugTitle.trim() || !bugDescription.trim()) {
+      alert('Please fill in all fields')
+      return
+    }
+
+    setBugSubmitting(true)
+    
+    try {
+      const response = await fetch('/api/support/bug-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: bugTitle,
+          description: bugDescription,
+        }),
+      })
+
+      if (response.ok) {
+        alert('Bug report submitted successfully! Thank you for helping us improve.')
+        setBugTitle('')
+        setBugDescription('')
+        setShowBugForm(false)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to submit bug report. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting bug report:', error)
+      alert('Failed to submit bug report. Please try again.')
+    } finally {
+      setBugSubmitting(false)
+    }
   }
 
   return (
@@ -218,23 +309,49 @@ export default function HelpPage() {
             <div>
               <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {quickActions.map((action, index) => (
-                  <Card key={index} className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
-                          <action.icon className="h-5 w-5 text-blue-400" />
-                        </div>
-                        <div>
-                          <CardTitle className="text-white text-base">{action.title}</CardTitle>
-                          <CardDescription className="text-zinc-400 text-sm">
-                            {action.description}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                ))}
+                {quickActions.map((action, index) => {
+                  if (action.href) {
+                    return (
+                      <Link key={index} href={action.href}>
+                        <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer h-full">
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                                <action.icon className="h-5 w-5 text-blue-400" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                                <CardDescription className="text-zinc-400 text-sm">
+                                  {action.description}
+                                </CardDescription>
+                              </div>
+                            </div>
+                          </CardHeader>
+                        </Card>
+                      </Link>
+                    )
+                  }
+                  
+                  return (
+                    <div key={index} onClick={() => handleQuickAction(action.action || '')}>
+                      <Card className="bg-zinc-900 border-zinc-800 hover:border-zinc-700 transition-colors cursor-pointer h-full">
+                        <CardHeader className="pb-3">
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-600/20">
+                              <action.icon className="h-5 w-5 text-blue-400" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-white text-base">{action.title}</CardTitle>
+                              <CardDescription className="text-zinc-400 text-sm">
+                                {action.description}
+                              </CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -318,7 +435,10 @@ export default function HelpPage() {
                     <p className="text-zinc-400">Saturday: 10:00 AM - 4:00 PM IST</p>
                   </div>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
+                <Button 
+                  onClick={() => setShowContactForm(true)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                >
                   <Mail className="h-4 w-4 mr-2" />
                   Contact Support
                 </Button>
@@ -351,6 +471,120 @@ export default function HelpPage() {
           )}
         </div>
       </div>
+
+      {/* Contact Support Dialog */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowContactForm(false)}>
+          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Mail className="h-5 w-5 text-blue-400" />
+                Contact Support
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Send us a message and we&apos;ll get back to you soon
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">Subject</label>
+                <Input 
+                  placeholder="What do you need help with?"
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  disabled={contactSubmitting}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">Message</label>
+                <textarea 
+                  placeholder="Describe your issue in detail..."
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  disabled={contactSubmitting}
+                  rows={5}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowContactForm(false)}
+                  variant="outline" 
+                  disabled={contactSubmitting}
+                  className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleContactSubmit}
+                  disabled={contactSubmitting}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                >
+                  {contactSubmitting ? 'Sending...' : 'Send Message'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Bug Report Dialog */}
+      {showBugForm && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4" onClick={() => setShowBugForm(false)}>
+          <Card className="bg-zinc-900 border-zinc-800 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                Report a Bug
+              </CardTitle>
+              <CardDescription className="text-zinc-400">
+                Help us improve by reporting issues you encounter
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">Bug Title</label>
+                <Input 
+                  placeholder="Brief description of the bug"
+                  value={bugTitle}
+                  onChange={(e) => setBugTitle(e.target.value)}
+                  disabled={bugSubmitting}
+                  className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-zinc-300 mb-2 block">What happened?</label>
+                <textarea 
+                  placeholder="Describe what you were doing when the bug occurred..."
+                  value={bugDescription}
+                  onChange={(e) => setBugDescription(e.target.value)}
+                  disabled={bugSubmitting}
+                  rows={5}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-md p-3 text-white placeholder:text-zinc-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none disabled:opacity-50"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowBugForm(false)}
+                  variant="outline" 
+                  disabled={bugSubmitting}
+                  className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleBugSubmit}
+                  disabled={bugSubmitting}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0"
+                >
+                  {bugSubmitting ? 'Submitting...' : 'Submit Report'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
