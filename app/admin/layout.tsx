@@ -23,6 +23,7 @@ import {
   ClipboardCheck,
   Award,
   Crown,
+  LifeBuoy,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -165,6 +166,11 @@ const sidebarItems: SidebarGroupType[] = [
   {
     title: "Support",
     items: [
+      {
+        title: "Support Tickets",
+        url: "/admin/support",
+        icon: LifeBuoy,
+      },
       {
         title: "Messages",
         url: "/admin/messages",
