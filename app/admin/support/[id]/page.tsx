@@ -24,11 +24,19 @@ import Link from 'next/link'
 interface TicketReply {
   id: string
   ticket_id: string
-  admin_id: string
+  admin_id?: string
+  user_id?: string
   message: string
   created_at: string
   updated_at: string
   admin?: {
+    id: string
+    email: string
+    first_name?: string
+    last_name?: string
+    avatar_url?: string
+  }
+  user?: {
     id: string
     email: string
     first_name?: string
@@ -265,38 +273,49 @@ export default function TicketDetailPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {ticket.replies.map((reply, index) => (
-                  <div 
-                    key={reply.id}
-                    className="border-l-4 border-purple-500/30 bg-purple-500/5 rounded-r-lg p-4 space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                          {reply.admin?.first_name?.[0] || reply.admin?.email[0].toUpperCase() || 'A'}
+                {ticket.replies.map((reply, index) => {
+                  const isAdminReply = !!reply.admin_id
+                  const author = isAdminReply ? reply.admin : reply.user
+                  const authorName = author?.first_name && author?.last_name
+                    ? `${author.first_name} ${author.last_name}`
+                    : author?.email || (isAdminReply ? 'Admin' : 'User')
+                  const authorInitial = author?.first_name?.[0] || author?.email?.[0]?.toUpperCase() || (isAdminReply ? 'A' : 'U')
+                  const bgGradient = isAdminReply 
+                    ? 'from-purple-500 to-blue-600' 
+                    : 'from-blue-500 to-green-600'
+                  
+                  return (
+                    <div 
+                      key={reply.id}
+                      className={`border-l-4 ${isAdminReply ? 'border-purple-500/30 bg-purple-500/5' : 'border-blue-500/30 bg-blue-500/5'} rounded-r-lg p-4 space-y-2`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`h-8 w-8 rounded-full bg-gradient-to-br ${bgGradient} flex items-center justify-center text-white text-sm font-semibold`}>
+                            {authorInitial}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {authorName}
+                              {!isAdminReply && <span className="text-xs text-muted-foreground ml-2">(User)</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(reply.created_at).toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {reply.admin?.first_name && reply.admin?.last_name
-                              ? `${reply.admin.first_name} ${reply.admin.last_name}`
-                              : reply.admin?.email || 'Admin'}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {new Date(reply.created_at).toLocaleString()}
-                          </p>
-                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          Reply #{index + 1}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="text-xs">
-                        Reply #{index + 1}
-                      </Badge>
+                      <div className="pl-10">
+                        <p className="text-sm text-foreground whitespace-pre-wrap">
+                          {reply.message}
+                        </p>
+                      </div>
                     </div>
-                    <div className="pl-10">
-                      <p className="text-sm text-foreground whitespace-pre-wrap">
-                        {reply.message}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </CardContent>
             </Card>
           )}

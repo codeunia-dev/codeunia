@@ -171,7 +171,60 @@ export const getSupportTeamNotificationEmail = (params: {
   }
 }
 
-// 3. Status update email to user
+// 3. Admin reply email to user
+export const getAdminReplyEmail = (params: {
+  userName: string
+  adminName: string
+  ticketId: string
+  ticketSubject: string
+  replyMessage: string
+}) => {
+  const content = `
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 20px;">
+      New reply from support team
+    </h2>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Hi ${params.userName},
+    </p>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      ${params.adminName} from our support team has replied to your ticket.
+    </p>
+    
+    <div style="background-color: #f9fafb; border-left: 4px solid #8b5cf6; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+        Ticket ID: ${params.ticketId}
+      </p>
+      <p style="margin: 0 0 15px 0; color: #111827; font-size: 16px; font-weight: 600;">
+        ${params.ticketSubject}
+      </p>
+      <div style="background-color: #ffffff; padding: 15px; border-radius: 4px; margin-top: 10px;">
+        <p style="margin: 0 0 5px 0; color: #8b5cf6; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+          ${params.adminName}
+        </p>
+        <p style="margin: 0; color: #374151; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">
+          ${params.replyMessage}
+        </p>
+      </div>
+    </div>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      You can reply to this message by visiting your ticket in the Help Center.
+    </p>
+    
+    <a href="https://codeunia.com/protected/help/ticket/${params.ticketId}" style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; margin-top: 10px;">
+      View and Reply to Ticket
+    </a>
+  `
+  
+  return {
+    subject: `[Ticket #${params.ticketId.substring(0, 8)}] New reply from ${params.adminName}`,
+    html: getEmailTemplate(content)
+  }
+}
+
+// 4. Status update email to user
 export const getStatusUpdateEmail = (params: {
   userName: string
   ticketId: string

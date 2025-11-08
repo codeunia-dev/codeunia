@@ -55,24 +55,28 @@ export async function GET(
       .eq('ticket_id', id)
       .order('created_at', { ascending: true })
 
-    // Get admin profiles for replies
-    const adminIds = [...new Set(replies?.map(r => r.admin_id) || [])]
-    const { data: adminProfiles } = await supabase
+    // Get admin and user profiles for replies
+    const adminIds = [...new Set(replies?.map(r => r.admin_id).filter(id => id) || [])]
+    const userIds = [...new Set(replies?.map(r => r.user_id).filter(id => id) || [])]
+    const allProfileIds = [...adminIds, ...userIds]
+    
+    const { data: profiles } = await supabase
       .from('profiles')
       .select('id, email, first_name, last_name, avatar_url')
-      .in('id', adminIds)
+      .in('id', allProfileIds)
 
-    // Map admin data to replies
-    const repliesWithAdmins = replies?.map(reply => ({
+    // Map admin and user data to replies
+    const repliesWithAuthors = replies?.map(reply => ({
       ...reply,
-      admin: adminProfiles?.find(p => p.id === reply.admin_id) || null
+      admin: reply.admin_id ? profiles?.find(p => p.id === reply.admin_id) || null : null,
+      user: reply.user_id ? profiles?.find(p => p.id === reply.user_id) || null : null
     })) || []
 
     // Combine ticket with user data and replies
     const ticketWithUser = {
       ...ticket,
       user: userProfile || null,
-      replies: repliesWithAdmins
+      replies: repliesWithAuthors
     }
 
     return NextResponse.json({ ticket: ticketWithUser })
