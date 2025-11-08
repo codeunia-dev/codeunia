@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sendEmail, getStatusUpdateEmail } from '@/lib/email/support-emails'
 
 // GET single ticket
 export async function GET(
@@ -108,34 +109,79 @@ export async function PATCH(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { status } = await request.json()
+    const { status: newStatus } = await request.json()
 
-    if (!status) {
+    if (!newStatus) {
       return NextResponse.json({ error: 'Status is required' }, { status: 400 })
     }
 
     const validStatuses = ['open', 'in_progress', 'resolved', 'closed']
-    if (!validStatuses.includes(status)) {
+    if (!validStatuses.includes(newStatus)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    // Get current ticket to check old status
+    const { data: currentTicket, error: currentTicketError } = await supabase
+      .from('support_tickets')
+      .select('status, user_id, subject')
+      .eq('id', id)
+      .single()
+
+    if (currentTicketError) {
+      console.error('Error fetching current ticket:', currentTicketError)
+      return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
+    }
+
+    const oldStatus = currentTicket.status
+
     // Update ticket status
-    const { data: ticket, error } = await supabase
+    const { data: updatedTicket, error: updateError } = await supabase
       .from('support_tickets')
       .update({ 
-        status,
+        status: newStatus,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
       .single()
 
-    if (error) {
-      console.error('Error updating ticket:', error)
+    if (updateError) {
+      console.error('Error updating ticket:', updateError)
       return NextResponse.json({ error: 'Failed to update ticket' }, { status: 500 })
     }
 
-    return NextResponse.json({ ticket, success: true })
+    // Send email notification if status has changed
+    if (newStatus !== oldStatus) {
+      try {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name')
+          .eq('id', currentTicket.user_id)
+          .single()
+
+        if (userProfile?.email) {
+          const userName = userProfile.first_name || 'User'
+          const { subject, html } = getStatusUpdateEmail({
+            userName,
+            ticketId: id,
+            subject: currentTicket.subject,
+            oldStatus,
+            newStatus,
+          })
+          
+          await sendEmail({
+            to: userProfile.email,
+            subject,
+            html,
+          })
+        }
+      } catch (emailError) {
+        console.error('Failed to send status update email:', emailError)
+        // Do not fail the request if email fails, just log it
+      }
+    }
+
+    return NextResponse.json({ ticket: updatedTicket, success: true })
   } catch (error) {
     console.error('Error in PATCH ticket:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
