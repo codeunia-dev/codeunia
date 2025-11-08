@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
+import TicketHistory from '@/components/TicketHistory'
 import { 
   Search, 
   HelpCircle, 
@@ -482,6 +483,9 @@ export default function HelpPage() {
               </button>
             )}
           </div>
+
+          {/* Ticket History */}
+          <TicketHistory />
 
           {/* Quick Actions */}
           {!searchQuery && (
