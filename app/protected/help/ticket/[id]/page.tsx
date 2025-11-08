@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeft, MessageSquare, Clock, Calendar, Bug, Mail } from 'lucide-react'
+import { ArrowLeft, MessageSquare, Bug, Mail, User, PlusCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 
@@ -80,7 +80,15 @@ export default function UserTicketDetailPage() {
     return (
       <div className="p-6 space-y-6">
         <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-96" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-48" />
+            <Skeleton className="h-64" />
+          </div>
+          <div className="space-y-6">
+            <Skeleton className="h-48" />
+          </div>
+        </div>
       </div>
     )
   }
@@ -109,81 +117,122 @@ export default function UserTicketDetailPage() {
           </Link>
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Ticket Details</h1>
-          <p className="text-sm text-muted-foreground">ID: {ticket.id}</p>
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            {ticket.type === 'bug' ? (
+              <Bug className="h-6 w-6 text-red-500" />
+            ) : (
+              <Mail className="h-6 w-6 text-blue-500" />
+            )}
+            {ticket.subject}
+          </h1>
         </div>
         <Badge className={getStatusColor(ticket.status)}>
           {ticket.status.replace('_', ' ')}
         </Badge>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            {ticket.type === 'bug' ? (
-              <Bug className="h-5 w-5 text-red-500" />
-            ) : (
-              <Mail className="h-5 w-5 text-blue-500" />
-            )}
-            <CardTitle>{ticket.subject}</CardTitle>
-          </div>
-          <CardDescription>
-            {ticket.type === 'bug' ? 'Bug Report' : 'Support Request'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="prose prose-sm max-w-none">
-            <p className="whitespace-pre-wrap">{ticket.message}</p>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-zinc-400 mt-4">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              <span>Created: {new Date(ticket.created_at).toLocaleString()}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              <span>Last updated: {new Date(ticket.updated_at).toLocaleString()}</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Original Message */}
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <User className="h-5 w-5 text-blue-400" />
+                Your Initial Request
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-zinc-300">{ticket.message}</p>
+            </CardContent>
+          </Card>
 
-      {ticket.replies && ticket.replies.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-purple-500" />
-              Reply History
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {ticket.replies.map((reply) => (
-              <div key={reply.id} className="border-l-4 border-purple-500/30 bg-purple-500/5 rounded-r-lg p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                    {reply.admin?.first_name?.[0] || 'A'}
+          {/* Reply History */}
+          {ticket.replies && ticket.replies.length > 0 && (
+            <Card className="bg-zinc-900 border-zinc-800">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-purple-400" />
+                  Activity
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {ticket.replies.map((reply) => (
+                  <div key={reply.id} className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white text-lg font-semibold flex-shrink-0">
+                      {reply.admin?.first_name?.[0] || 'S'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <p className="text-white font-medium">
+                          {reply.admin?.first_name && reply.admin?.last_name
+                            ? `${reply.admin.first_name} ${reply.admin.last_name}`
+                            : 'Support Team'}
+                        </p>
+                        <p className="text-xs text-zinc-400">
+                          {new Date(reply.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div className="mt-2 p-4 rounded-lg bg-zinc-800">
+                        <p className="text-zinc-300 whitespace-pre-wrap">{reply.message}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      {reply.admin?.first_name && reply.admin?.last_name
-                        ? `${reply.admin.first_name} ${reply.admin.last_name}`
-                        : 'Support Team'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(reply.created_at).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="pl-10">
-                  <p className="text-sm text-foreground whitespace-pre-wrap">
-                    {reply.message}
-                  </p>
-                </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div className="space-y-6">
+          {/* Ticket Details */}
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-base text-white">Ticket Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Ticket ID</span>
+                <span className="text-white font-mono text-xs">{ticket.id}</span>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Status</span>
+                <Badge className={getStatusColor(ticket.status)}>{ticket.status.replace('_', ' ')}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Created</span>
+                <span className="text-white">{new Date(ticket.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-zinc-400">Last Updated</span>
+                <span className="text-white">{new Date(ticket.updated_at).toLocaleDateString()}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <Card className="bg-zinc-900 border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-base text-white">Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button 
+                variant="outline" 
+                className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                onClick={() => toast.info('This feature is coming soon!')}
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Close Ticket
+              </Button>
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/protected/help">
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  Create a New Ticket
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
