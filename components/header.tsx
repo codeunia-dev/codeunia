@@ -66,7 +66,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 shadow-sm">
-      <div className="container flex h-14 sm:h-16 items-center justify-between px-3 sm:px-4">
+      <div className="container flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4">
         {/* logo section - left */}
         <div className="flex items-center flex-shrink-0">
           <Link href="/" className="hover:scale-105 transition-transform duration-200">
@@ -99,22 +99,22 @@ export default function Header() {
         </nav>
 
         {/* desktop auth & theme - right */}
-        <div className="hidden md:flex items-center space-x-4 flex-shrink-0">
+        <div className="hidden md:flex items-center space-x-3 flex-shrink-0">
           {/* <ThemeToggle /> */}
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading...</div>
           ) : user ? (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <PremiumButton user={user} />
               <UserDisplay userId={user.id} showCodeuniaId={false} />
               <UserIcon />
             </div>
           ) : (
             <>
-              <Button variant="ghost" asChild className="hover:scale-105 transition-transform">
+              <Button variant="ghost" asChild className="hover:scale-105 transition-transform px-3 py-1.5 h-auto text-sm">
                 <Link href={`/auth/signin?returnUrl=${encodeURIComponent(pathname)}`}>Sign In</Link>
               </Button>
-              <Button asChild className="glow-effect hover:scale-105 transition-all duration-300">
+              <Button asChild className="glow-effect hover:scale-105 transition-all duration-300 px-3 py-1.5 h-auto text-sm">
                 <Link href={`/auth/signup?returnUrl=${encodeURIComponent(pathname)}`}>Sign Up</Link>
               </Button>
             </>
@@ -126,7 +126,7 @@ export default function Header() {
           {/* <ThemeToggle /> */}
           {!loading && user && (
             <div className="flex items-center space-x-1">
-              <PremiumButton user={user} />
+              <PremiumButton user={user} compact />
               <UserIcon />
             </div>
           )}
@@ -134,7 +134,7 @@ export default function Header() {
             variant="ghost"
             size="icon"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`hover:scale-105 transition-all duration-200 ml-1 ${
+            className={`hover:scale-105 transition-all duration-200 ml-1 w-8 h-8 ${
               isMenuOpen ? 'bg-muted/50' : ''
             }`}
           >
