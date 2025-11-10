@@ -701,8 +701,12 @@ export default function PremiumPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 bg-muted/30">
-          <div className="container mx-auto px-6">
+        <section className="py-20 relative overflow-hidden bg-gradient-to-br from-background via-muted/20 to-background">
+          <div className="absolute inset-0">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
+          </div>
+          <div className="container mx-auto px-6 relative z-10">
             <h2 className="text-4xl font-bold text-center mb-12">
               Frequently Asked <span className="text-primary">Questions</span>
             </h2>
