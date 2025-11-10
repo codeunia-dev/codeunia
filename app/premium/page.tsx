@@ -462,40 +462,34 @@ export default function PremiumPage() {
                           : 'hover:scale-[1.02]'
                       } ${selectedPlan === plan.id ? 'ring-2 ring-primary shadow-lg' : ''} rounded-2xl overflow-hidden`}
                     >
-                    {/* Background decoration for popular plan */}
-                    {plan.popular && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-orange-400/5 to-red-400/5 dark:from-yellow-400/10 dark:via-orange-400/10 dark:to-red-400/10 rounded-2xl"></div>
-                    )}
+{/* Background decoration for popular plan */}
+{plan.popular && (
+  <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-orange-400/5 to-red-400/5 dark:from-yellow-400/10 dark:via-orange-400/10 dark:to-red-400/10 rounded-2xl"></div>
+)}
 
-                    {plan.popular && (
-                      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
-                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-4 py-1.5 text-xs font-bold shadow-2xl border-2 border-white dark:border-slate-800 rounded-full whitespace-nowrap">
-                          <Star className="w-3 h-3 mr-2 inline" />
-                          MOST POPULAR
-                        </Badge>
-                      </div>
-                    )}
+{/* Most Popular Badge */}
+{plan.popular && (
+  <div className="absolute top-4 left-4 z-30">
+    <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-3 py-1 text-[10px] sm:text-xs font-bold shadow-2xl border-2 border-white dark:border-slate-800 rounded-full whitespace-nowrap inline-flex items-center">
+      <Star className="w-3 h-3 mr-1" />
+      MOST POPULAR
+    </Badge>
+  </div>
+)}
 
-                    {plan.savings && !plan.popular && (
-                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-20">
-                        <Badge className="bg-green-500 text-white px-3 py-1 text-xs font-bold shadow-lg rounded-full border-2 border-white dark:border-green-700">
-                          💰 {plan.savings}
-                        </Badge>
-                      </div>
-                    )}
+{/* Savings Badge */}
+{plan.savings && (
+  <div className="absolute top-4 right-4 z-30">
+    <Badge className="bg-green-500 text-white px-3 py-1 text-[10px] sm:text-xs font-bold shadow-lg rounded-full border-2 border-white dark:border-green-700 whitespace-nowrap">
+      💰 {plan.savings}
+    </Badge>
+  </div>
+)}
 
-                    {plan.savings && plan.popular && (
-                      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 z-20">
-                        <Badge className="bg-green-500 text-white px-3 py-1 text-xs font-bold shadow-lg rounded-full border-2 border-white dark:border-green-700">
-                          💰 {plan.savings}
-                        </Badge>
-                      </div>
-                    )}
-
-                    <CardHeader className={`text-center pb-3 sm:pb-4 px-4 sm:px-6 relative z-10 ${plan.popular ? 'pt-12 sm:pt-14' : plan.savings ? 'pt-10 sm:pt-12' : 'pt-6 sm:pt-8'}`}>
-                      <CardTitle className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-slate-800 dark:text-slate-100">
-                        {plan.name}
-                      </CardTitle>
+<CardHeader className={`text-center pb-3 sm:pb-4 px-4 sm:px-6 relative z-10 ${plan.savings || plan.popular ? 'pt-16 sm:pt-20' : 'pt-6 sm:pt-8'}`}>
+  <CardTitle className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-slate-800 dark:text-slate-100">
+    {plan.name}
+  </CardTitle>
                       
                       <div className="mb-3 sm:mb-4">
                         <div className="flex items-baseline justify-center gap-1 mb-2">
@@ -596,7 +590,7 @@ export default function PremiumPage() {
             </div>
             
             {/* Enhanced Trust indicators */}
-            <div className="mt-16 bg-slate-50 dark:bg-slate-900/50 py-12 rounded-2xl">
+          <div className="mt-20 bg-slate-50 dark:bg-slate-900/50 py-16 rounded-2xl">
               <p className="text-muted-foreground mb-8 text-center text-lg font-semibold">
                 Trusted by 2,000+ developers across India
               </p>
