@@ -9,7 +9,7 @@ import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Crown, Star, Sparkles, Zap, Shield, ArrowRight, CheckCircle } from 'lucide-react';
+import { Check, Crown, Star, Sparkles, Zap, Shield, ArrowRight, CheckCircle, HelpCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api-fetch';
 
 interface PremiumPlan {
@@ -381,31 +381,32 @@ export default function PremiumPage() {
         </section>
 
         {/* Elite Membership Promotion Banner */}
-        <section className="py-8 sm:py-10 md:py-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 relative overflow-hidden">
-          <div className="absolute inset-0 bg-black/20"></div>
+       <section className="py-8 sm:py-10 md:py-12 mx-4 sm:mx-6 md:mx-8 lg:mx-12 my-8 sm:my-10 md:my-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 relative overflow-hidden rounded-3xl shadow-2xl group cursor-pointer transition-all duration-500 hover:scale-[1.02]">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 animate-gradient-x rounded-3xl" style={{ backgroundSize: '200% 200%' }}></div>
+          <div className="absolute inset-0 bg-black/20 rounded-3xl"></div>
           <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center justify-center mb-3 sm:mb-4 gap-2 sm:gap-3">
-                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white animate-pulse flex-shrink-0" />
-                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white">
+                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-yellow-400 animate-pulse flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
                   Elite Membership - Not For Everyone
                 </h2>
-                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white animate-pulse flex-shrink-0" />
+                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-yellow-400 animate-pulse flex-shrink-0" />
               </div>
               <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-6 px-4">
                 Join the exclusive circle of leaders, builders, and future innovators
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-6 text-white px-4">
-                <div className="flex items-center">
-                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
                   <span className="font-semibold text-sm sm:text-base">Elite Member Status</span>
                 </div>
-                <div className="flex items-center">
-                  <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
                   <span className="font-semibold text-sm sm:text-base">Invitation-Only Access</span>
                 </div>
-                <div className="flex items-center">
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
                   <span className="font-semibold text-sm sm:text-base">Prestige & Excellence</span>
                 </div>
               </div>
@@ -431,7 +432,10 @@ export default function PremiumPage() {
           <div className="container mx-auto px-4 sm:px-6 relative z-10">
             <div className="text-center mb-10 sm:mb-12 md:mb-16">
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 px-4">
-                Choose Your <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Plan</span>
+                Choose Your{' '}
+                <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(251,191,36,0.5)]">
+                  Plan
+                </span>
               </h2>
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
                 Exclusive membership for leaders, builders, and future innovators
@@ -444,7 +448,7 @@ export default function PremiumPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 max-w-7xl mx-auto pt-4 sm:pt-6 md:pt-8 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 max-w-7xl mx-auto pt-8 sm:pt-10 md:pt-12 pb-4">
               {premiumPlans.map((plan) => {
                 const isProcessing = processingPlans.has(plan.id);
                 const isFree = plan.id === 'free';
@@ -452,14 +456,10 @@ export default function PremiumPage() {
                 return (
                   <div key={plan.id} className="flex">
                     <Card 
-                      className={`w-full relative transition-all duration-300 group flex flex-col ${
-                        isFree 
-                          ? 'bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-lg' 
-                          : 'bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-xl'
-                      } ${
+                      className={`w-full relative transition-all duration-300 group flex flex-col hover:-translate-y-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-2xl ${
                         plan.popular 
-                          ? 'ring-2 ring-yellow-400 shadow-2xl transform scale-[1.02] bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50 dark:from-yellow-900/20 dark:via-orange-900/20 dark:to-red-900/20 border-yellow-200 dark:border-yellow-700/50' 
-                          : 'hover:scale-[1.02] hover:shadow-xl'
+                          ? 'ring-2 ring-yellow-400 shadow-2xl transform scale-[1.02] border-yellow-200 dark:border-yellow-700/50' 
+                          : 'hover:scale-[1.02]'
                       } ${selectedPlan === plan.id ? 'ring-2 ring-primary shadow-lg' : ''} rounded-2xl overflow-hidden`}
                     >
                     {/* Background decoration for popular plan */}
@@ -468,22 +468,27 @@ export default function PremiumPage() {
                     )}
 
                     {plan.popular && (
-                      <div className="absolute top-2 sm:top-3 left-1/2 transform -translate-x-1/2 z-20">
-                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold shadow-xl border-0 rounded-full animate-pulse whitespace-nowrap">
-                          <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
+                      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
+                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-4 py-1.5 text-xs font-bold shadow-2xl border-2 border-white dark:border-slate-800 rounded-full whitespace-nowrap">
+                          <Star className="w-3 h-3 mr-2 inline" />
                           MOST POPULAR
                         </Badge>
                       </div>
                     )}
 
-                    {plan.savings && (
+                    {plan.savings && !plan.popular && (
                       <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-20">
-                        <div className="relative">
-                          <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-md opacity-60 animate-pulse"></div>
-                          <Badge className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold shadow-lg rounded-full border border-white/50 dark:border-slate-700/50">
-                            {plan.savings}
-                          </Badge>
-                        </div>
+                        <Badge className="bg-green-500 text-white px-3 py-1 text-xs font-bold shadow-lg rounded-full border-2 border-white dark:border-green-700">
+                          💰 {plan.savings}
+                        </Badge>
+                      </div>
+                    )}
+
+                    {plan.savings && plan.popular && (
+                      <div className="absolute top-12 left-1/2 transform -translate-x-1/2 z-20">
+                        <Badge className="bg-green-500 text-white px-3 py-1 text-xs font-bold shadow-lg rounded-full border-2 border-white dark:border-green-700">
+                          💰 {plan.savings}
+                        </Badge>
                       </div>
                     )}
 
@@ -557,25 +562,28 @@ export default function PremiumPage() {
                           </Button>
                         ) : (
                           <Button 
-                            className={`w-full font-semibold py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl shadow-lg border-0 transition-all duration-300 ${
+                            className={`w-full font-semibold py-3 text-sm rounded-xl shadow-lg border-0 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl active:scale-95 focus:ring-4 focus:ring-primary/50 relative overflow-hidden group/btn ${
                               plan.popular 
-                                ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-white hover:shadow-xl' 
-                                : 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-600 hover:from-indigo-600 hover:via-purple-700 hover:to-blue-700 text-white hover:shadow-xl'
-                            } disabled:opacity-50`}
+                                ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-white' 
+                                : 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-600 hover:from-indigo-600 hover:via-purple-700 hover:to-blue-700 text-white'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
                             onClick={() => handlePayment(plan.id)}
                             disabled={isProcessing || processingPlans.size > 0}
                           >
+                            {/* Shimmer effect */}
+                            <div className="absolute inset-0 -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                            
                             {isProcessing ? (
-                              <>
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1.5 sm:mr-2 flex-shrink-0"></div>
+                              <span className="relative z-10 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 flex-shrink-0"></div>
                                 <span className="whitespace-nowrap">Processing...</span>
-                              </>
+                              </span>
                             ) : (
-                              <>
-                                <Sparkles className="w-3 h-3 mr-1.5 sm:mr-2 flex-shrink-0" />
+                              <span className="relative z-10 flex items-center justify-center">
+                                <Sparkles className="w-4 h-4 mr-2 flex-shrink-0" />
                                 <span className="whitespace-nowrap">Get {plan.name.split(' - ')[0]}</span>
-                                <ArrowRight className="w-3 h-3 ml-1.5 sm:ml-2 flex-shrink-0" />
-                              </>
+                                <ArrowRight className="w-4 h-4 ml-2 flex-shrink-0" />
+                              </span>
                             )}
                           </Button>
                         )}
@@ -587,23 +595,196 @@ export default function PremiumPage() {
               })}
             </div>
             
-            {/* Trust indicators */}
-            <div className="mt-12 sm:mt-14 md:mt-16 text-center px-4">
-              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">Trusted by thousands of developers</p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-8 opacity-60">
-                <div className="flex items-center space-x-2">
-                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-muted-foreground text-xs sm:text-sm">Secure Payments</span>
+            {/* Enhanced Trust indicators */}
+            <div className="mt-16 bg-slate-50 dark:bg-slate-900/50 py-12 rounded-2xl">
+              <p className="text-muted-foreground mb-8 text-center text-lg font-semibold">
+                Trusted by 2,000+ developers across India
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-4xl mx-auto px-8">
+                <div className="flex flex-col items-center text-center space-y-3 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <Shield className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="font-bold text-lg">Secure Payments</span>
+                  <span className="text-sm text-muted-foreground">256-bit SSL encryption via Razorpay</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
-                  <span className="text-muted-foreground text-xs sm:text-sm">Instant Activation</span>
+                
+                <div className="flex flex-col items-center text-center space-y-3 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span className="font-bold text-lg">Instant Activation</span>
+                  <span className="text-sm text-muted-foreground">Premium features unlock immediately</span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
-                  <span className="text-muted-foreground text-xs sm:text-sm">Cancel Anytime</span>
+                
+                <div className="flex flex-col items-center text-center space-y-3 p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                    <Star className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  </div>
+                  <span className="font-bold text-lg">7-Day Guarantee</span>
+                  <span className="text-sm text-muted-foreground">Not satisfied? Get a full refund</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold mb-4">
+                What Our <span className="text-primary">Premium Members</span> Say
+              </h2>
+              <p className="text-muted-foreground text-lg">
+                Join 500+ developers who upgraded their careers
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-600 flex items-center justify-center text-white font-bold text-lg">
+                    RS
+                  </div>
+                  <div>
+                    <div className="font-bold">Rahul Sharma</div>
+                    <div className="text-sm text-muted-foreground">Full-Stack Developer</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                
+                <p className="text-muted-foreground italic">&ldquo;Premium membership helped me land my dream job! The 4x points and exclusive resources were game-changers.&rdquo;</p>
+              </Card>
+
+              <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-600 flex items-center justify-center text-white font-bold text-lg">
+                    PP
+                  </div>
+                  <div>
+                    <div className="font-bold">Priya Patel</div>
+                    <div className="text-sm text-muted-foreground">CS Student</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                
+                <p className="text-muted-foreground italic">&ldquo;Best investment I made for my coding journey. Priority support is incredible!&rdquo;</p>
+              </Card>
+
+              <Card className="p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-600 flex items-center justify-center text-white font-bold text-lg">
+                    AM
+                  </div>
+                  <div>
+                    <div className="font-bold">Arjun Mehta</div>
+                    <div className="text-sm text-muted-foreground">Startup Founder</div>
+                  </div>
+                </div>
+                
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                
+                <p className="text-muted-foreground italic">&ldquo;The personal mentorship alone is worth 10x the price. Highly recommended!&rdquo;</p>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-20 bg-muted/30">
+          <div className="container mx-auto px-6">
+            <h2 className="text-4xl font-bold text-center mb-12">
+              Frequently Asked <span className="text-primary">Questions</span>
+            </h2>
+            
+            <div className="max-w-3xl mx-auto space-y-4">
+              <details className="group bg-white dark:bg-slate-900 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <summary className="flex items-center justify-between cursor-pointer p-6 font-semibold text-lg">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    What happens when my premium expires?
+                  </span>
+                  <span className="text-primary group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="px-6 pb-6 text-muted-foreground">
+                  You&apos;ll continue to have access to all content you&apos;ve saved, but won&apos;t accumulate new points at the premium multiplier rate.
+                </div>
+              </details>
+
+              <details className="group bg-white dark:bg-slate-900 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <summary className="flex items-center justify-between cursor-pointer p-6 font-semibold text-lg">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    Can I upgrade from monthly to yearly?
+                  </span>
+                  <span className="text-primary group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="px-6 pb-6 text-muted-foreground">
+                  Yes! Contact support and we&apos;ll help you upgrade with credit for remaining time.
+                </div>
+              </details>
+
+              <details className="group bg-white dark:bg-slate-900 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <summary className="flex items-center justify-between cursor-pointer p-6 font-semibold text-lg">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    Do you offer refunds?
+                  </span>
+                  <span className="text-primary group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="px-6 pb-6 text-muted-foreground">
+                  Yes, we offer a 7-day money-back guarantee. No questions asked.
+                </div>
+              </details>
+
+              <details className="group bg-white dark:bg-slate-900 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <summary className="flex items-center justify-between cursor-pointer p-6 font-semibold text-lg">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    What payment methods do you accept?
+                  </span>
+                  <span className="text-primary group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="px-6 pb-6 text-muted-foreground">
+                  We accept all major credit/debit cards, UPI, net banking, and wallets via Razorpay.
+                </div>
+              </details>
+
+              <details className="group bg-white dark:bg-slate-900 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <summary className="flex items-center justify-between cursor-pointer p-6 font-semibold text-lg">
+                  <span className="flex items-center gap-3">
+                    <HelpCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                    Is my payment information secure?
+                  </span>
+                  <span className="text-primary group-open:rotate-180 transition-transform">▼</span>
+                </summary>
+                <div className="px-6 pb-6 text-muted-foreground">
+                  Absolutely. We use Razorpay&apos;s PCI-DSS compliant payment gateway. We never store your card details.
+                </div>
+              </details>
+            </div>
+            
+            <div className="text-center mt-12">
+              <p className="text-muted-foreground mb-4">Still have questions?</p>
+              <Button variant="outline" size="lg">
+                Contact Support
+              </Button>
             </div>
           </div>
         </section>

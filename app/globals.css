@@ -173,6 +173,22 @@
   }
   /* animates a moving gradient background */
 
+  @keyframes gradient-x {
+    0%, 100% { 
+      background-position: 0% 50%; 
+    }
+    50% { 
+      background-position: 100% 50%; 
+    }
+  }
+  /* animates gradient horizontally */
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 3s ease infinite;
+  }
+  /* Applies horizontal gradient animation */
+
   @keyframes fadeIn {
     from {
       opacity: 0;
