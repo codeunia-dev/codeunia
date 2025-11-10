@@ -6,8 +6,10 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 // import { ThemeToggle } from "@/components/theme-toggle"
 import { UserIcon } from "@/components/user-icon"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Shield, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import CodeuniaLogo from "./codeunia-logo";
 import dynamic from "next/dynamic";
 
@@ -25,7 +27,16 @@ const UserDisplay = dynamic(() => import("./UserDisplay"), {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
   const { user, loading } = useAuth()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    setIsMenuOpen(false)
+    router.push("/")
+    router.refresh()
+  }
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -126,10 +137,7 @@ export default function Header() {
           <div className="flex md:hidden items-center space-x-1">
             {/* <ThemeToggle /> */}
             {!loading && user && (
-              <div className="flex items-center space-x-1">
-                <PremiumButton user={user} compact />
-                <UserIcon />
-              </div>
+              <PremiumButton user={user} compact />
             )}
             <Button
               variant="ghost"
@@ -195,13 +203,25 @@ export default function Header() {
 
                 {/* User Actions */}
                 {!loading && user && (
-                  <div className="pt-3 mt-3 border-t border-border">
-                    <div className="flex items-center space-x-2 py-2 px-3">
-                      <UserIcon />
-                      <div className="flex-1 min-w-0">
-                        <UserDisplay userId={user.id} showCodeuniaId={false} />
-                      </div>
-                    </div>
+                  <div className="pt-3 mt-3 border-t border-border space-y-1">
+                    {/* Dashboard Link */}
+                    <Link
+                      href="/protected"
+                      className="flex items-center space-x-2 text-sm font-medium transition-colors py-2.5 px-3 rounded-md text-foreground hover:text-primary hover:bg-muted/50"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                    
+                    {/* Logout Button */}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 text-sm font-medium transition-colors py-2.5 px-3 rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 w-full text-left"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
+                    </button>
                   </div>
                 )}
 
