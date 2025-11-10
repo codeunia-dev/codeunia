@@ -323,7 +323,7 @@ export default function PremiumPage() {
       
       <main className="pt-16">
         {/* Hero Section */}
-        <section className="py-20 md:py-32 relative overflow-hidden">
+        <section className="py-12 sm:py-16 md:py-24 lg:py-32 relative overflow-hidden">
           <div
             className="absolute inset-0 [background-size:20px_20px] [background-image:linear-gradient(to_right,rgba(99,102,241,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.8)_1px,transparent_1px)] dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.8)_1px,transparent_1px)]"
           />
@@ -334,14 +334,14 @@ export default function PremiumPage() {
             <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
           </div>
           
-          <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
             <div className="max-w-5xl mx-auto">
-              <div className="flex items-center justify-center mb-8">
-                <div className="relative mr-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center mb-6 sm:mb-8 gap-3 sm:gap-0">
+                <div className="relative sm:mr-4">
                   <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full blur-lg opacity-75 animate-pulse"></div>
-                  <Crown className="w-16 h-16 text-yellow-400 relative z-10" />
+                  <Crown className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-yellow-400 relative z-10" />
                 </div>
-                <h1 className="text-6xl md:text-7xl font-extrabold">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold">
                   <span className="bg-gradient-to-r from-yellow-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                     Premium
                   </span>{' '}
@@ -350,30 +350,30 @@ export default function PremiumPage() {
                   </span>
                 </h1>
               </div>
-              <p className="text-2xl md:text-3xl text-muted-foreground mb-12 leading-relaxed font-light">
+              <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-8 sm:mb-12 leading-relaxed font-light px-4">
                 Unlock exclusive features, priority support, and enhanced opportunities
               </p>
               
               {isPremium && premiumExpiry && (
-                <div className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-semibold mb-8 shadow-2xl border border-green-300/20">
-                  <CheckCircle className="w-6 h-6 mr-3" />
-                  <span className="text-lg">Premium Active until {formatExpiryDate(premiumExpiry)}</span>
+                <div className="inline-flex items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-400 to-emerald-500 text-white rounded-full font-semibold mb-6 sm:mb-8 shadow-2xl border border-green-300/20 text-sm sm:text-base md:text-lg">
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3 flex-shrink-0" />
+                  <span className="break-words">Premium Active until {formatExpiryDate(premiumExpiry)}</span>
                 </div>
               )}
               
               {/* Stats Section */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 mt-12 sm:mt-16 max-w-4xl mx-auto px-4">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-yellow-400 mb-2">3x</div>
-                  <div className="text-muted-foreground">Points Multiplier</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-yellow-400 mb-1 sm:mb-2">3x</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm md:text-base">Points Multiplier</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-purple-400 mb-2">24/7</div>
-                  <div className="text-muted-foreground">Priority Support</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-400 mb-1 sm:mb-2">24/7</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm md:text-base">Priority Support</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-pink-400 mb-2">100+</div>
-                  <div className="text-muted-foreground">Exclusive Resources</div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-pink-400 mb-1 sm:mb-2">100+</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm md:text-base">Exclusive Resources</div>
                 </div>
               </div>
             </div>
@@ -381,44 +381,44 @@ export default function PremiumPage() {
         </section>
 
         {/* Elite Membership Promotion Banner */}
-        <section className="py-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 relative overflow-hidden">
+        <section className="py-8 sm:py-10 md:py-12 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-700 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
-          <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="container mx-auto px-4 sm:px-6 text-center relative z-10">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-center mb-4">
-                <Crown className="w-8 h-8 text-white mr-3 animate-pulse" />
-                <h2 className="text-3xl md:text-4xl font-bold text-white">
+              <div className="flex items-center justify-center mb-3 sm:mb-4 gap-2 sm:gap-3">
+                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white animate-pulse flex-shrink-0" />
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white">
                   Elite Membership - Not For Everyone
                 </h2>
-                <Crown className="w-8 h-8 text-white ml-3 animate-pulse" />
+                <Crown className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white animate-pulse flex-shrink-0" />
               </div>
-              <p className="text-xl text-white/90 mb-6">
+              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-6 px-4">
                 Join the exclusive circle of leaders, builders, and future innovators
               </p>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6 text-white">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 md:gap-6 text-white px-4">
                 <div className="flex items-center">
-                  <Shield className="w-6 h-6 mr-2" />
-                  <span className="font-semibold">Elite Member Status</span>
+                  <Shield className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                  <span className="font-semibold text-sm sm:text-base">Elite Member Status</span>
                 </div>
                 <div className="flex items-center">
-                  <Star className="w-6 h-6 mr-2" />
-                  <span className="font-semibold">Invitation-Only Access</span>
+                  <Star className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                  <span className="font-semibold text-sm sm:text-base">Invitation-Only Access</span>
                 </div>
                 <div className="flex items-center">
-                  <Sparkles className="w-6 h-6 mr-2" />
-                  <span className="font-semibold">Prestige & Excellence</span>
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
+                  <span className="font-semibold text-sm sm:text-base">Prestige & Excellence</span>
                 </div>
               </div>
-              <div className="mt-6 inline-flex items-center px-6 py-3 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 text-white font-semibold">
-                <ArrowRight className="w-5 h-5 mr-2" />
-                Premium Members Shape the Future
+              <div className="mt-4 sm:mt-6 inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-white/20 backdrop-blur-sm rounded-full border border-white/30 text-white font-semibold text-sm sm:text-base">
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                <span className="whitespace-nowrap">Premium Members Shape the Future</span>
               </div>
             </div>
           </div>
         </section>
 
         {/* Pricing Section */}
-        <section className="py-20 relative overflow-hidden bg-muted/30">
+        <section className="py-12 sm:py-16 md:py-20 relative overflow-hidden bg-muted/30">
           <div
             className="absolute inset-0 [background-size:20px_20px] [background-image:linear-gradient(to_right,rgba(99,102,241,0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.3)_1px,transparent_1px)] dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.3)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.3)_1px,transparent_1px)]"
           />
@@ -428,23 +428,23 @@ export default function PremiumPage() {
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "2s" }}></div>
           </div>
           
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-6xl font-bold mb-6">
+          <div className="container mx-auto px-4 sm:px-6 relative z-10">
+            <div className="text-center mb-10 sm:mb-12 md:mb-16">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 px-4">
                 Choose Your <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">Plan</span>
               </h2>
-              <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
                 Exclusive membership for leaders, builders, and future innovators
               </p>
               
               {/* Elite Member Count */}
-              <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 dark:from-purple-500/30 dark:to-indigo-500/30 rounded-full border border-purple-200 dark:border-purple-700/50 backdrop-blur-sm mb-8">
-                <Crown className="w-5 h-5 text-purple-600 dark:text-purple-400 mr-2" />
-                <span className="text-purple-700 dark:text-purple-300 font-semibold text-sm">Exclusive Elite Membership - By Invitation Only</span>
+              <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 dark:from-purple-500/30 dark:to-indigo-500/30 rounded-full border border-purple-200 dark:border-purple-700/50 backdrop-blur-sm mb-6 sm:mb-8 mx-4">
+                <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 dark:text-purple-400 mr-2 flex-shrink-0" />
+                <span className="text-purple-700 dark:text-purple-300 font-semibold text-xs sm:text-sm">Exclusive Elite Membership - By Invitation Only</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto pt-8 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 max-w-7xl mx-auto pt-4 sm:pt-6 md:pt-8 pb-4">
               {premiumPlans.map((plan) => {
                 const isProcessing = processingPlans.has(plan.id);
                 const isFree = plan.id === 'free';
@@ -468,60 +468,60 @@ export default function PremiumPage() {
                     )}
 
                     {plan.popular && (
-                      <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20">
-                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-3 py-1 text-xs font-bold shadow-xl border-0 rounded-full animate-pulse whitespace-nowrap">
-                          <Star className="w-3 h-3 mr-1.5" />
+                      <div className="absolute top-2 sm:top-3 left-1/2 transform -translate-x-1/2 z-20">
+                        <Badge className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold shadow-xl border-0 rounded-full animate-pulse whitespace-nowrap">
+                          <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 sm:mr-1.5" />
                           MOST POPULAR
                         </Badge>
                       </div>
                     )}
 
                     {plan.savings && (
-                      <div className="absolute top-3 right-3 z-20">
+                      <div className="absolute top-2 sm:top-3 right-2 sm:right-3 z-20">
                         <div className="relative">
                           <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full blur-md opacity-60 animate-pulse"></div>
-                          <Badge className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-2 py-1 text-xs font-bold shadow-lg rounded-full border border-white/50 dark:border-slate-700/50">
+                          <Badge className="relative bg-gradient-to-r from-green-500 to-emerald-600 text-white px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-bold shadow-lg rounded-full border border-white/50 dark:border-slate-700/50">
                             {plan.savings}
                           </Badge>
                         </div>
                       </div>
                     )}
 
-                    <CardHeader className={`text-center pb-4 px-6 relative z-10 ${plan.popular ? 'pt-14' : plan.savings ? 'pt-12' : 'pt-8'}`}>
-                      <CardTitle className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-100">
+                    <CardHeader className={`text-center pb-3 sm:pb-4 px-4 sm:px-6 relative z-10 ${plan.popular ? 'pt-12 sm:pt-14' : plan.savings ? 'pt-10 sm:pt-12' : 'pt-6 sm:pt-8'}`}>
+                      <CardTitle className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-slate-800 dark:text-slate-100">
                         {plan.name}
                       </CardTitle>
                       
-                      <div className="mb-4">
+                      <div className="mb-3 sm:mb-4">
                         <div className="flex items-baseline justify-center gap-1 mb-2">
                           {isFree ? (
-                            <span className="text-3xl font-bold text-slate-700 dark:text-slate-200">Free</span>
+                            <span className="text-2xl sm:text-3xl font-bold text-slate-700 dark:text-slate-200">Free</span>
                           ) : (
                             <>
-                              <span className="text-3xl font-bold text-slate-800 dark:text-slate-100">
+                              <span className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-100">
                                 ₹{plan.price}
                               </span>
                               {plan.originalPrice && (
-                                <span className="text-sm text-slate-500 line-through ml-2">
+                                <span className="text-xs sm:text-sm text-slate-500 line-through ml-2">
                                   ₹{plan.originalPrice}
                                 </span>
                               )}
                             </>
                           )}
                         </div>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">{plan.duration}</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-medium">{plan.duration}</p>
                       </div>
 
-                      <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 dark:from-indigo-500/30 dark:to-purple-500/30 rounded-full border border-indigo-200 dark:border-indigo-700/50 backdrop-blur-sm">
-                        <Zap className="w-3 h-3 text-indigo-600 dark:text-indigo-400 mr-1" />
-                        <span className="text-indigo-700 dark:text-indigo-300 font-semibold text-xs">{plan.pointsMultiplier}x Points</span>
+                      <div className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 dark:from-indigo-500/30 dark:to-purple-500/30 rounded-full border border-indigo-200 dark:border-indigo-700/50 backdrop-blur-sm">
+                        <Zap className="w-3 h-3 text-indigo-600 dark:text-indigo-400 mr-1 flex-shrink-0" />
+                        <span className="text-indigo-700 dark:text-indigo-300 font-semibold text-xs whitespace-nowrap">{plan.pointsMultiplier}x Points</span>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="px-4 pb-6 relative z-10 flex flex-col flex-grow">
-                      <div className="space-y-2 mb-4 flex-grow">
+                    <CardContent className="px-3 sm:px-4 pb-4 sm:pb-6 relative z-10 flex flex-col flex-grow">
+                      <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4 flex-grow">
                         {plan.features.slice(0, 6).map((feature, index) => (
-                          <div key={index} className="flex items-start gap-2 group/feature">
+                          <div key={index} className="flex items-start gap-1.5 sm:gap-2 group/feature">
                             <div className="flex-shrink-0 w-3 h-3 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mt-0.5 shadow-sm">
                               <Check className="w-2 h-2 text-white font-bold" />
                             </div>
@@ -531,7 +531,7 @@ export default function PremiumPage() {
                           </div>
                         ))}
                         {plan.features.length > 6 && (
-                          <div className="flex items-center justify-center mt-3 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-full">
+                          <div className="flex items-center justify-center mt-2 sm:mt-3 px-2 sm:px-3 py-1 sm:py-1.5 bg-slate-100 dark:bg-slate-700 rounded-full">
                             <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                               +{plan.features.length - 6} more features
                             </span>
@@ -542,22 +542,22 @@ export default function PremiumPage() {
                       <div className="mt-auto">
                         {isFree ? (
                           <Button 
-                            className="w-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold py-2.5 text-sm rounded-xl border-0 cursor-default" 
+                            className="w-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 font-semibold py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl border-0 cursor-default" 
                             disabled
                           >
                             Current Plan
                           </Button>
                         ) : isPremium ? (
                           <Button 
-                            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-2.5 text-sm rounded-xl shadow-lg border-0" 
+                            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl shadow-lg border-0" 
                             disabled
                           >
-                            <CheckCircle className="w-3 h-3 mr-2" />
+                            <CheckCircle className="w-3 h-3 mr-1.5 sm:mr-2 flex-shrink-0" />
                             Already Premium
                           </Button>
                         ) : (
                           <Button 
-                            className={`w-full font-semibold py-2.5 text-sm rounded-xl shadow-lg border-0 transition-all duration-300 ${
+                            className={`w-full font-semibold py-2 sm:py-2.5 text-xs sm:text-sm rounded-xl shadow-lg border-0 transition-all duration-300 ${
                               plan.popular 
                                 ? 'bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-white hover:shadow-xl' 
                                 : 'bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-600 hover:from-indigo-600 hover:via-purple-700 hover:to-blue-700 text-white hover:shadow-xl'
@@ -567,14 +567,14 @@ export default function PremiumPage() {
                           >
                             {isProcessing ? (
                               <>
-                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-2"></div>
-                                Processing...
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1.5 sm:mr-2 flex-shrink-0"></div>
+                                <span className="whitespace-nowrap">Processing...</span>
                               </>
                             ) : (
                               <>
-                                <Sparkles className="w-3 h-3 mr-2" />
-                                Get {plan.name}
-                                <ArrowRight className="w-3 h-3 ml-2" />
+                                <Sparkles className="w-3 h-3 mr-1.5 sm:mr-2 flex-shrink-0" />
+                                <span className="whitespace-nowrap">Get {plan.name.split(' - ')[0]}</span>
+                                <ArrowRight className="w-3 h-3 ml-1.5 sm:ml-2 flex-shrink-0" />
                               </>
                             )}
                           </Button>
@@ -588,20 +588,20 @@ export default function PremiumPage() {
             </div>
             
             {/* Trust indicators */}
-            <div className="mt-16 text-center">
-              <p className="text-muted-foreground mb-6">Trusted by thousands of developers</p>
-              <div className="flex items-center justify-center space-x-8 opacity-60">
+            <div className="mt-12 sm:mt-14 md:mt-16 text-center px-4">
+              <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">Trusted by thousands of developers</p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-8 opacity-60">
                 <div className="flex items-center space-x-2">
-                  <Shield className="w-5 h-5 text-green-500" />
-                  <span className="text-muted-foreground text-sm">Secure Payments</span>
+                  <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs sm:text-sm">Secure Payments</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-blue-500" />
-                  <span className="text-muted-foreground text-sm">Instant Activation</span>
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs sm:text-sm">Instant Activation</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Star className="w-5 h-5 text-yellow-500" />
-                  <span className="text-muted-foreground text-sm">Cancel Anytime</span>
+                  <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs sm:text-sm">Cancel Anytime</span>
                 </div>
               </div>
             </div>
