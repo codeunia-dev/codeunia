@@ -114,10 +114,6 @@ export default function OpportunitiesPage() {
                 <Card className={cn(
                   "group relative overflow-hidden border-0 shadow-xl card-hover bg-gradient-to-br from-background to-muted/20 flex flex-col h-full",
                   `hover:shadow-2xl`)}>
-                  <div className={cn(
-                    "absolute inset-0 opacity-0 group-hover:opacity-100 rounded-2xl",
-                    `bg-gradient-to-br ${item.gradient}`
-                  )}></div>
                   <CardHeader className="relative z-10 pb-2 flex flex-col items-center">
                     <div className={cn(
                       "w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg",
@@ -125,10 +121,10 @@ export default function OpportunitiesPage() {
                     )}>
                       <item.icon className="h-7 w-7 text-white drop-shadow-lg" />
                     </div>
-                    <CardTitle className="text-2xl font-bold text-center group-hover:text-white">
+                    <CardTitle className="text-2xl font-bold text-center">
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="text-base text-muted-foreground text-center group-hover:text-white/90">
+                    <CardDescription className="text-base text-muted-foreground text-center">
                       {item.description}
                     </CardDescription>
                   </CardHeader>
