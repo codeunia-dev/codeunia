@@ -65,7 +65,7 @@ export default function OpportunitiesPage() {
     <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10 min-h-screen">
       <Header />
       {/* Hero Section */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
+      <section className="py-32 sm:py-16 md:py-24 lg:py-32 relative overflow-hidden">
         <div
           className={cn(
             "absolute inset-0",
@@ -77,18 +77,18 @@ export default function OpportunitiesPage() {
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5"></div>
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-48 h-48 sm:w-72 sm:h-72 bg-primary/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
         </div>
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="container px-4 sm:px-6 mx-auto relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
             <div>
-              <div className="flex flex-col items-center justify-center gap-4">
-                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+              <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs sm:text-sm font-semibold leading-6 text-white inline-block cursor-default">
                   <span className="absolute inset-0 overflow-hidden rounded-full">
                     <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 group-hover:opacity-100" />
                   </span>
-                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-3 sm:px-4 ring-1 ring-white/10">
                     <span>Opportunities Hub</span>
                     <Sparkles className="w-3 h-3" />
                   </div>
@@ -96,19 +96,19 @@ export default function OpportunitiesPage() {
                 </button>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight px-2">
               Unlock All Tech <span className="gradient-text">Opportunities</span> in One Place
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-2">
               Navigate to events, hackathons, projects, tests, jobs, and internships curated for the tech community.
             </p>
           </div>
         </div>
       </section>
       {/* Opportunities Grid */}
-      <section className="py-16 bg-gradient-to-b from-muted/30 to-background relative">
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="py-10 sm:py-12 md:py-16 bg-gradient-to-b from-muted/30 to-background relative">
+        <div className="container px-4 sm:px-6 mx-auto relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {opportunities.map((item) => (
               <div key={item.title}>
                 <Card className={cn(
@@ -116,20 +116,20 @@ export default function OpportunitiesPage() {
                   `hover:shadow-2xl`)}>
                   <CardHeader className="relative z-10 pb-2 flex flex-col items-center">
                     <div className={cn(
-                      "w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg",
+                      "w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-lg",
                       `bg-gradient-to-br ${item.gradient}`
                     )}>
-                      <item.icon className="h-7 w-7 text-white drop-shadow-lg" />
+                      <item.icon className="h-6 w-6 sm:h-7 sm:w-7 text-white drop-shadow-lg" />
                     </div>
-                    <CardTitle className="text-2xl font-bold text-center">
+                    <CardTitle className="text-xl sm:text-2xl font-bold text-center">
                       {item.title}
                     </CardTitle>
-                    <CardDescription className="text-base text-muted-foreground text-center">
+                    <CardDescription className="text-sm sm:text-base text-muted-foreground text-center">
                       {item.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="relative z-10 flex flex-col flex-1 justify-between">
-                    <div className="flex flex-wrap gap-2 justify-center mb-6 mt-2">
+                    <div className="flex flex-wrap gap-2 justify-center mb-4 sm:mb-6 mt-2">
                       {item.tags.map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10">
                           {tag}
@@ -139,10 +139,10 @@ export default function OpportunitiesPage() {
                     <Button
                       asChild
                       size="lg"
-                      className="w-full font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg focus:ring-2 focus:ring-primary/40"
+                      className="w-full font-semibold px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg focus:ring-2 focus:ring-primary/40"
                     >
                       <Link href={item.href} className="flex items-center justify-center whitespace-nowrap">
-                        Explore <ArrowRight className="ml-2 h-5 w-5" />
+                        Explore <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                       </Link>
                     </Button>
                   </CardContent>
