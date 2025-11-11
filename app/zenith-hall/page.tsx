@@ -72,7 +72,7 @@ export default function ProjectsPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="py-20 md:py-32 relative overflow-hidden">
+      <section className="py-32 sm:py-16 md:py-24 lg:py-32 relative overflow-hidden">
         <div
           className={cn(
             "absolute inset-0",
@@ -84,18 +84,18 @@ export default function ProjectsPage() {
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5"></div>
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-48 h-48 sm:w-72 sm:h-72 bg-primary/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-64 h-64 sm:w-96 sm:h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
         </div>
-        <div className="container px-4 mx-auto relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="container px-4 sm:px-6 mx-auto relative z-10">
+          <div className="max-w-4xl mx-auto text-center space-y-6 sm:space-y-8">
             <div>
-              <div className="flex flex-col items-center justify-center gap-4">
-                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+              <div className="flex flex-col items-center justify-center gap-3 sm:gap-4">
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs sm:text-sm font-semibold leading-6 text-white inline-block cursor-default">
                   <span className="absolute inset-0 overflow-hidden rounded-full">
                     <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 group-hover:opacity-100" />
                   </span>
-                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-3 sm:px-4 ring-1 ring-white/10">
                     <span>Hall of Excellence</span>
                     <Sparkles className="w-3 h-3" />
                   </div>
@@ -103,41 +103,41 @@ export default function ProjectsPage() {
                 </button>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight px-2">
               <span className="gradient-text">Zenith</span> Hall
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
-              A tribute to Codeunia&apos;s finest minds who have risen above challenges with exceptional skill and innovation. Here, we showcase our best members whose remarkable projects and achievements reflect technical excellence, creative problem-solving, and the spirit of collaboration that defines our community.
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed px-2">
+              Showcasing exceptional projects from our most talented members. Discover remarkable achievements that reflect technical excellence, creative problem-solving, and collaborative innovation.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="relative py-20 bg-gradient-to-b from-muted/20 to-background">
-        <div className="container relative z-10 mx-auto px-4">
+      <section className="relative py-10 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-b from-muted/20 to-background">
+        <div className="container relative z-10 mx-auto px-4 sm:px-6">
           {/* Search and Filter Controls */}
-          <div className="mb-12 flex justify-center items-center gap-4 max-w-4xl mx-auto">
+          <div className="mb-8 sm:mb-10 md:mb-12 flex flex-col sm:flex-row justify-center items-stretch sm:items-center gap-3 sm:gap-4 max-w-4xl mx-auto">
             <div className="relative flex-grow">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground z-10 pointer-events-none" />
               <Input
                 type="text"
-                placeholder="Search our hall of excellence by project, technology, or member..."
-                className="w-full pl-12 pr-4 py-3 text-lg bg-background/70 backdrop-blur-sm rounded-full focus:ring-2 focus:ring-primary/50"
+                placeholder="Search by project, technology, or member..."
+                className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 text-sm sm:text-base md:text-lg bg-background/70 backdrop-blur-sm rounded-full focus:ring-2 focus:ring-primary/50"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2 rounded-full text-lg py-3 bg-background/70 backdrop-blur-sm">
+                <Button variant="outline" className="flex items-center justify-center gap-2 rounded-full text-sm sm:text-base md:text-lg py-2.5 sm:py-3 px-4 sm:px-6 bg-background/70 backdrop-blur-sm whitespace-nowrap">
                   <span>Technologies</span>
                   {selectedTags.length > 0 && (
-                    <Badge variant="secondary" className="rounded-full">{selectedTags.length}</Badge>
+                    <Badge variant="secondary" className="rounded-full text-xs">{selectedTags.length}</Badge>
                   )}
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-64">
+              <DropdownMenuContent className="w-56 sm:w-64">
                 <DropdownMenuLabel>Filter by Expertise Areas</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {allTags.map((tag) => (
@@ -153,7 +153,7 @@ export default function ProjectsPage() {
             </DropdownMenu>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
             {filteredProjects.map((project, index) => (
               <div key={project.project_name} className="group" style={{ animationDelay: `${index * 100}ms` }}>
                 <Card className="relative h-full overflow-hidden border-0 bg-background/60 backdrop-blur-sm shadow-lg transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
@@ -166,28 +166,28 @@ export default function ProjectsPage() {
 
                   <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 
-                  <CardHeader className="relative z-10 space-y-4 pb-4">
+                  <CardHeader className="relative z-10 space-y-3 sm:space-y-4 pb-3 sm:pb-4">
                     <div
                       className={cn(
-                        "mx-auto flex h-16 w-16 items-center justify-center rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-110",
+                        "mx-auto flex h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 items-center justify-center rounded-xl sm:rounded-2xl shadow-lg transition-transform duration-300 group-hover:scale-110",
                         `bg-gradient-to-br ${project.gradient}`,
                       )}
                     >
-                      <Code2 className="h-8 w-8 text-white drop-shadow-sm" />
+                      <Code2 className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white drop-shadow-sm" />
                     </div>
 
                     <div className="space-y-2 text-center">
-                      <CardTitle className="text-xl font-bold transition-colors duration-300 group-hover:text-primary">
+                      <CardTitle className="text-lg sm:text-xl font-bold transition-colors duration-300 group-hover:text-primary">
                         {project.project_name}
                       </CardTitle>
-                      <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+                      <CardDescription className="text-xs sm:text-sm leading-relaxed text-muted-foreground">
                         {project.description}
                       </CardDescription>
                     </div>
                   </CardHeader>
 
-                  <CardContent className="relative z-10 flex flex-1 flex-col justify-between space-y-6">
-                    <div className="flex flex-wrap justify-center gap-2">
+                  <CardContent className="relative z-10 flex flex-1 flex-col justify-between space-y-4 sm:space-y-6">
+                    <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2">
                       {project.tags.map((tag) => (
                         <Badge
                           key={tag}
@@ -199,26 +199,26 @@ export default function ProjectsPage() {
                       ))}
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <Briefcase className="h-4 w-4" />
-                        <span className="font-medium">Created by {project.intern_name}</span>
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="font-medium text-center">Created by {project.intern_name}</span>
                       </div>
 
-                      <div className="flex justify-center gap-3">
+                      <div className="flex justify-center gap-2 sm:gap-3">
                         <Button
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary bg-transparent"
+                          className="rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary bg-transparent text-xs sm:text-sm px-3 sm:px-4"
                         >
                           <Link
                             href={project.github_repository_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-1.5 sm:gap-2"
                           >
-                            <Github className="h-4 w-4" />
+                            <Github className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             <span>Code</span>
                             <ExternalLink className="h-3 w-3" />
                           </Link>
@@ -228,15 +228,15 @@ export default function ProjectsPage() {
                           asChild
                           size="sm"
                           variant="outline"
-                          className="rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary bg-transparent"
+                          className="rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:border-primary bg-transparent text-xs sm:text-sm px-3 sm:px-4"
                         >
                           <Link
                             href={project.intern_linkedin}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-1.5 sm:gap-2"
                           >
-                            <Linkedin className="h-4 w-4" />
+                            <Linkedin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             <span>Profile</span>
                             <ExternalLink className="h-3 w-3" />
                           </Link>
