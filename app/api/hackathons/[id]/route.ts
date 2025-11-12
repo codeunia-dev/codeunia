@@ -4,13 +4,17 @@ import { hackathonsService } from '@/lib/services/hackathons'
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs';
 
+interface RouteContext {
+  params: Promise<{
+    id: string
+  }>
+}
 
-// GET: Fetch a single hackathon by slug
-export async function GET(request: NextRequest) {
+// GET: Fetch a single hackathon by ID
+export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
-    const { pathname } = request.nextUrl
-    const slug = pathname.split('/').pop() || ''
-    const hackathon = await hackathonsService.getHackathonBySlug(slug)
+    const { id } = await params
+    const hackathon = await hackathonsService.getHackathonBySlug(id)
     
     if (!hackathon) {
       return NextResponse.json(
@@ -21,7 +25,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(hackathon)
   } catch (error) {
-    console.error('Error in GET /api/hackathons/[slug]:', error)
+    console.error('Error in GET /api/hackathons/[id]:', error)
     return NextResponse.json(
       { error: 'Failed to fetch hackathon' },
       { status: 500 }
@@ -30,17 +34,16 @@ export async function GET(request: NextRequest) {
 }
 
 // PUT: Update a hackathon
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
-    const { pathname } = request.nextUrl
-    const slug = pathname.split('/').pop() || ''
+    const { id } = await params
     const hackathonData = await request.json()
     
-    const hackathon = await hackathonsService.updateHackathon(slug, hackathonData)
+    const hackathon = await hackathonsService.updateHackathon(id, hackathonData)
     
     return NextResponse.json(hackathon)
   } catch (error) {
-    console.error('Error in PUT /api/hackathons/[slug]:', error)
+    console.error('Error in PUT /api/hackathons/[id]:', error)
     return NextResponse.json(
       { error: 'Failed to update hackathon' },
       { status: 500 }
@@ -49,18 +52,17 @@ export async function PUT(request: NextRequest) {
 }
 
 // DELETE: Delete a hackathon
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
-    const { pathname } = request.nextUrl
-    const slug = pathname.split('/').pop() || ''
-    await hackathonsService.deleteHackathon(slug)
+    const { id } = await params
+    await hackathonsService.deleteHackathon(id)
     
     return NextResponse.json({ message: 'Hackathon deleted successfully' })
   } catch (error) {
-    console.error('Error in DELETE /api/hackathons/[slug]:', error)
+    console.error('Error in DELETE /api/hackathons/[id]:', error)
     return NextResponse.json(
       { error: 'Failed to delete hackathon' },
       { status: 500 }
     )
   }
-} 
+}

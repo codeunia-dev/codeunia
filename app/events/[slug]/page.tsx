@@ -16,7 +16,8 @@ import {
   ArrowLeft,
   ExternalLink,
   Share2,
-  Star
+  Star,
+  Building2
 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
@@ -24,6 +25,9 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { toast } from "sonner"
 import { useRegistrationStatus } from "@/hooks/useMasterRegistrations"
+import { CompanyBadge } from "@/components/companies/CompanyBadge"
+import type { Company } from "@/types/company"
+import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking"
 
 interface Event {
   id: number
@@ -66,6 +70,14 @@ interface Event {
   socials: Record<string, unknown>
   sponsors: Record<string, unknown>[]
   marking_scheme?: Record<string, unknown>
+  // Company-related fields
+  company_id?: string
+  company?: Company
+  created_by?: string
+  approval_status?: string
+  is_codeunia_event?: boolean
+  views?: number
+  clicks?: number
 }
 
 export default function EventPage() {
@@ -83,6 +95,12 @@ export default function EventPage() {
     loading: statusLoading, 
     refetch: refetchStatus 
   } = useRegistrationStatus('event', event?.id?.toString() || '')
+
+  // Track analytics
+  const { trackClick } = useAnalyticsTracking({
+    eventSlug: slug,
+    trackView: true,
+  })
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -122,6 +140,9 @@ export default function EventPage() {
 
   const handleRegister = async () => {
     if (!event) return
+
+    // Track click on registration button
+    trackClick()
 
     setRegistering(true)
     try {
@@ -317,9 +338,20 @@ export default function EventPage() {
                       <CardTitle className="text-4xl font-bold mb-3 bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text">
                         {event.title}
                       </CardTitle>
-                      <CardDescription className="text-xl font-medium text-muted-foreground">
-                        by {event.organizer}
-                      </CardDescription>
+                      {event.company ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Hosted by</span>
+                          <CompanyBadge 
+                            company={event.company} 
+                            size="lg" 
+                            showVerification={true}
+                          />
+                        </div>
+                      ) : (
+                        <CardDescription className="text-xl font-medium text-muted-foreground">
+                          by {event.organizer}
+                        </CardDescription>
+                      )}
                     </div>
                     <Button
                       variant="outline"
@@ -385,6 +417,77 @@ export default function EventPage() {
                 </CardContent>
               </Card>
             </motion.div>
+
+            {/* Hosted By Section */}
+            {event.company && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              >
+                <Card className="border-0 shadow-lg bg-gradient-to-br from-card via-card to-muted/10">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl">
+                      <div className="p-2 rounded-full bg-primary/10">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                      Hosted By
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-start gap-4">
+                      <CompanyBadge 
+                        company={event.company} 
+                        size="lg" 
+                        showVerification={true}
+                        showName={false}
+                      />
+                      <div className="flex-1">
+                        <Link 
+                          href={`/companies/${event.company.slug}`}
+                          className="text-lg font-semibold hover:text-primary transition-colors"
+                        >
+                          {event.company.name}
+                        </Link>
+                        {event.company.description && (
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                            {event.company.description}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                          {event.company.industry && (
+                            <span className="flex items-center gap-1">
+                              <Badge variant="outline" className="text-xs">
+                                {event.company.industry}
+                              </Badge>
+                            </span>
+                          )}
+                          {event.company.website && (
+                            <a 
+                              href={event.company.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 hover:text-primary transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              Website
+                            </a>
+                          )}
+                        </div>
+                        <div className="mt-3">
+                          <Link href={`/companies/${event.company.slug}`}>
+                            <Button variant="outline" size="sm" className="text-xs">
+                              View Company Profile
+                              <ArrowLeft className="h-3 w-3 ml-1 rotate-180" />
+                            </Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
             {/* About Section */}
             <motion.div

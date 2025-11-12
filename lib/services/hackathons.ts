@@ -33,7 +33,10 @@ class HackathonsService {
     
     let query = supabase
       .from('hackathons')
-      .select('*', { count: 'exact' })
+      .select(`
+        *,
+        company:companies(*)
+      `, { count: 'exact' })
 
     // Apply filters
     if (filters.search) {
@@ -50,6 +53,20 @@ class HackathonsService {
 
     if (filters.featured !== undefined) {
       query = query.eq('featured', filters.featured)
+    }
+
+    if (filters.company_id) {
+      query = query.eq('company_id', filters.company_id)
+    }
+
+    // Filter by company industry
+    if (filters.company_industry) {
+      query = query.eq('company.industry', filters.company_industry)
+    }
+
+    // Filter by company size
+    if (filters.company_size) {
+      query = query.eq('company.company_size', filters.company_size)
     }
 
     if (filters.dateFilter === 'upcoming') {
@@ -97,7 +114,10 @@ class HackathonsService {
     
     const { data: hackathon, error } = await supabase
       .from('hackathons')
-      .select('*')
+      .select(`
+        *,
+        company:companies(*)
+      `)
       .eq('slug', slug)
       .single()
 
@@ -125,7 +145,10 @@ class HackathonsService {
       
       const { data: hackathons, error } = await supabase
         .from('hackathons')
-        .select('*')
+        .select(`
+          *,
+          company:companies(*)
+        `)
         .eq('featured', true)
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date', { ascending: true })

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Clock, ArrowRight, Calendar, Users, MapPin, DollarSign, Link as LinkIcon, Sparkles } from "lucide-react"
+import { Search, Clock, ArrowRight, Calendar, Users, MapPin, DollarSign, Link as LinkIcon, Sparkles, Building2 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Event } from "@/lib/services/events"
@@ -17,6 +17,8 @@ import "keen-slider/keen-slider.min.css"
 import { useKeenSlider } from "keen-slider/react"
 import { cn } from "@/lib/utils";
 import { useEvents, useFeaturedEvents } from "@/hooks/useEvents"
+import { CompanyBadge } from "@/components/companies/CompanyBadge"
+import type { Company } from "@/types/company"
 
 // Event categories for dropdown
 const eventCategories = [
@@ -36,16 +38,47 @@ export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [dateFilter] = useState("All")
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
+  const [selectedCompany, setSelectedCompany] = useState<string>("All")
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("All")
+  const [selectedCompanySize, setSelectedCompanySize] = useState<string>("All")
   const [copiedEventId, setCopiedEventId] = useState<string | null>(null)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [industries, setIndustries] = useState<string[]>([])
+  const [companySizes] = useState<string[]>(['startup', 'small', 'medium', 'large', 'enterprise'])
 
   // Use custom hooks for data fetching
   const { data: eventsData, loading: eventsLoading, error: eventsError } = useEvents({
     search: searchTerm,
     category: selectedCategory,
-    dateFilter: dateFilter === "Upcoming" ? "upcoming" : dateFilter === "All" ? "all" : "all"
+    dateFilter: dateFilter === "Upcoming" ? "upcoming" : dateFilter === "All" ? "all" : "all",
+    company_id: selectedCompany !== "All" ? selectedCompany : undefined,
+    company_industry: selectedIndustry !== "All" ? selectedIndustry : undefined,
+    company_size: selectedCompanySize !== "All" ? selectedCompanySize : undefined
   })
 
   const { loading: featuredLoading } = useFeaturedEvents(5)
+
+  // Fetch companies for filter
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch('/api/companies?limit=100')
+        if (response.ok) {
+          const data = await response.json()
+          setCompanies(data.companies || [])
+          
+          // Extract unique industries from companies
+          const uniqueIndustries = Array.from(
+            new Set(data.companies.map((c: Company) => c.industry).filter(Boolean))
+          ).sort()
+          setIndustries(uniqueIndustries as string[])
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error)
+      }
+    }
+    fetchCompanies()
+  }, [])
 
   // Extract events from the response
   const events = eventsData?.events || []
@@ -61,8 +94,11 @@ export default function EventsPage() {
 
     const matchesDate = isDateMatch(event)
     const matchesDropdownCategory = selectedCategory === "All" || event.category === selectedCategory
+    const matchesCompany = selectedCompany === "All" || event.company_id === selectedCompany
+    const matchesIndustry = selectedIndustry === "All" || event.company?.industry === selectedIndustry
+    const matchesCompanySize = selectedCompanySize === "All" || event.company?.company_size === selectedCompanySize
 
-    return matchesSearch && matchesDate && matchesDropdownCategory
+    return matchesSearch && matchesDate && matchesDropdownCategory && matchesCompany && matchesIndustry && matchesCompanySize
   })
 
   const filteredFeaturedEvents = filteredEvents.filter((event) => event.featured)
@@ -299,19 +335,79 @@ export default function EventsPage() {
             </div>
           </div>
 
-          {/* Category Dropdown */}
-          <div className="mt-4 w-full max-w-xs">
-            <label htmlFor="category-select" className="block text-sm font-medium text-muted-foreground mb-1">Event Category</label>
-            <select
-              id="category-select"
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
-            >
-              {eventCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+          {/* Filters Row */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-4 flex-wrap">
+            {/* Category Dropdown */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="category-select" className="block text-sm font-medium text-muted-foreground mb-1">Event Category</label>
+              <select
+                id="category-select"
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                {eventCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Company Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="company-select" className="block text-sm font-medium text-muted-foreground mb-1">
+                <Building2 className="h-3 w-3 inline mr-1" />
+                Company
+              </label>
+              <select
+                id="company-select"
+                value={selectedCompany}
+                onChange={e => setSelectedCompany(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Companies</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Industry Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="industry-select" className="block text-sm font-medium text-muted-foreground mb-1">Industry</label>
+              <select
+                id="industry-select"
+                value={selectedIndustry}
+                onChange={e => setSelectedIndustry(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Industries</option>
+                {industries.map(industry => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Company Size Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="size-select" className="block text-sm font-medium text-muted-foreground mb-1">Company Size</label>
+              <select
+                id="size-select"
+                value={selectedCompanySize}
+                onChange={e => setSelectedCompanySize(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Sizes</option>
+                {companySizes.map(size => (
+                  <option key={size} value={size}>
+                    {size.charAt(0).toUpperCase() + size.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </section>
@@ -380,17 +476,11 @@ export default function EventsPage() {
                   </div>
                   {/* Card Content */}
                   <div className="flex-1 flex flex-col p-4">
-                    {/* Title and Organizer */}
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                        {event.organizer
-                          .split(" ")
-                          .map((n: string) => n[0])
-                          .join("")}
-                      </div>
+                    {/* Title and Company */}
+                    <div className="flex items-start gap-3 mb-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="font-semibold text-base truncate hover:text-primary transition-colors cursor-pointer flex-1">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="font-semibold text-base hover:text-primary transition-colors cursor-pointer flex-1 line-clamp-2">
                             {event.title}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
@@ -406,7 +496,18 @@ export default function EventsPage() {
                             )}
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">{event.organizer}</div>
+                        {/* Company Badge */}
+                        {event.company ? (
+                          <div className="mb-2">
+                            <CompanyBadge 
+                              company={event.company} 
+                              size="sm" 
+                              showVerification={true}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground truncate mb-2">by {event.organizer}</div>
+                        )}
                       </div>
                     </div>
                     {/* Description/Excerpt */}
@@ -526,6 +627,10 @@ export default function EventsPage() {
               <Button
                 onClick={() => {
                   setSearchTerm("")
+                  setSelectedCategory("All")
+                  setSelectedCompany("All")
+                  setSelectedIndustry("All")
+                  setSelectedCompanySize("All")
                 }}
                 className="glow-effect hover:scale-105 transition-all duration-300 bg-gradient-to-r from-primary to-purple-600"
               >

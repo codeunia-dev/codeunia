@@ -4,6 +4,12 @@
       "maxDuration": 30
     }
   },
+  "crons": [
+    {
+      "path": "/api/analytics/aggregate",
+      "schedule": "0 1 * * *"
+    }
+  ],
   "env": {
     "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
     "PUPPETEER_CACHE_DIR": "/tmp/.cache/puppeteer"
