@@ -41,14 +41,13 @@ export default function AcceptInvitationPage() {
         setCompanyName(companyData.company?.name || companySlug)
 
         // Check if user has a pending invitation
-        const membersResponse = await fetch(`/api/companies/${companySlug}/members`)
-        if (!membersResponse.ok) {
-          throw new Error('Failed to check invitation status')
+        const invitationResponse = await fetch(`/api/companies/${companySlug}/members/check-invitation`)
+        if (!invitationResponse.ok) {
+          const errorData = await invitationResponse.json()
+          throw new Error(errorData.error || 'Failed to check invitation status')
         }
-        const membersData = await membersResponse.json()
-        const members = membersData.members || []
-        
-        const userMembership = members.find((m: { user_id: string; status: string }) => m.user_id === user.id)
+        const invitationData = await invitationResponse.json()
+        const userMembership = invitationData.membership
         
         if (!userMembership) {
           setError('No invitation found for your account')

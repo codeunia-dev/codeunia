@@ -1,6 +1,6 @@
 "use client" 
 
-import { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -16,7 +16,7 @@ import Image from "next/image";
 import "keen-slider/keen-slider.min.css"
 import { useKeenSlider } from "keen-slider/react"
 import { cn } from "@/lib/utils";
-import { useEvents, useFeaturedEvents } from "@/hooks/useEvents"
+import { useEvents } from "@/hooks/useEvents"
 import { CompanyBadge } from "@/components/companies/CompanyBadge"
 import type { Company } from "@/types/company"
 
@@ -46,17 +46,22 @@ export default function EventsPage() {
   const [industries, setIndustries] = useState<string[]>([])
   const [companySizes] = useState<string[]>(['startup', 'small', 'medium', 'large', 'enterprise'])
 
-  // Use custom hooks for data fetching
-  const { data: eventsData, loading: eventsLoading, error: eventsError } = useEvents({
+  // Memoize params to prevent infinite re-renders
+  const eventsParams = React.useMemo(() => ({
     search: searchTerm,
     category: selectedCategory,
     dateFilter: dateFilter === "Upcoming" ? "upcoming" : dateFilter === "All" ? "all" : "all",
     company_id: selectedCompany !== "All" ? selectedCompany : undefined,
     company_industry: selectedIndustry !== "All" ? selectedIndustry : undefined,
     company_size: selectedCompanySize !== "All" ? selectedCompanySize : undefined
-  })
+  }), [searchTerm, selectedCategory, dateFilter, selectedCompany, selectedIndustry, selectedCompanySize])
+  
+  // Use custom hooks for data fetching
+  const { data: eventsData, loading: eventsLoading, error: eventsError } = useEvents(eventsParams)
 
-  const { loading: featuredLoading } = useFeaturedEvents(5)
+  // Temporarily disable featured events to fix loading issue
+  // const { loading: featuredLoading } = useFeaturedEvents(5)
+  const featuredLoading = false
 
   // Fetch companies for filter
   useEffect(() => {
@@ -83,6 +88,15 @@ export default function EventsPage() {
   // Extract events from the response
   const events = eventsData?.events || []
   const isLoading = eventsLoading || featuredLoading
+  
+  // Debug logging
+  console.log('Events Page Debug:', {
+    eventsLoading,
+    featuredLoading,
+    isLoading,
+    eventsCount: events.length,
+    eventsData
+  })
 
   // Unique values for filters
 
@@ -213,7 +227,10 @@ export default function EventsPage() {
     setTimeout(() => setCopiedEventId(null), 1500)
   }
 
+  console.log('About to check isLoading:', isLoading)
+  
   if (isLoading) {
+    console.log('Rendering loading spinner')
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
         <div className="relative">
@@ -223,6 +240,8 @@ export default function EventsPage() {
       </div>
     )
   }
+  
+  console.log('Rendering main content with', events.length, 'events')
 
   return (
     <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10">
