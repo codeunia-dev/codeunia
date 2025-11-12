@@ -24,7 +24,8 @@ import {
 export default function EditEventPage() {
   const router = useRouter()
   const params = useParams()
-  const slug = params.slug as string
+  const companySlug = params.slug as string
+  const eventSlug = params.eventSlug as string
   const { currentCompany, loading: companyLoading } = useCompanyContext()
   const [event, setEvent] = useState<Event | null>(null)
   const [loading, setLoading] = useState(true)
@@ -33,28 +34,29 @@ export default function EditEventPage() {
   const fetchEvent = useCallback(async () => {
     try {
       setLoading(true)
-      const response = await fetch(`/api/events/${slug}`)
+      const response = await fetch(`/api/events/${eventSlug}`)
       
       if (!response.ok) {
         throw new Error('Failed to fetch event')
       }
 
       const data = await response.json()
-      setEvent(data.event)
+      // API returns event directly, not wrapped in { event: ... }
+      setEvent(data)
     } catch (error) {
       console.error('Error fetching event:', error)
       toast.error('Failed to load event')
-      router.push('/dashboard/company/events')
+      router.push(`/dashboard/company/${companySlug}/events`)
     } finally {
       setLoading(false)
     }
-  }, [slug, router])
+  }, [eventSlug, companySlug, router])
 
   useEffect(() => {
-    if (slug) {
+    if (eventSlug) {
       fetchEvent()
     }
-  }, [slug, fetchEvent])
+  }, [eventSlug, fetchEvent])
 
   const handleSuccess = (updatedEvent: Event) => {
     setEvent(updatedEvent)
@@ -64,7 +66,7 @@ export default function EditEventPage() {
   const handleDelete = async () => {
     try {
       setDeleting(true)
-      const response = await fetch(`/api/events/${slug}`, {
+      const response = await fetch(`/api/events/${eventSlug}`, {
         method: 'DELETE',
       })
 
@@ -73,7 +75,7 @@ export default function EditEventPage() {
       }
 
       toast.success('Event deleted successfully!')
-      router.push('/dashboard/company/events')
+      router.push(`/dashboard/company/${companySlug}/events`)
     } catch (error) {
       console.error('Error deleting event:', error)
       toast.error('Failed to delete event')
@@ -98,7 +100,7 @@ export default function EditEventPage() {
           <p className="text-muted-foreground mb-4">
             The event you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
           </p>
-          <Link href="/dashboard/company/events">
+          <Link href={`/dashboard/company/${companySlug}/events`}>
             <Button>Back to Events</Button>
           </Link>
         </div>
@@ -111,7 +113,7 @@ export default function EditEventPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/company/events">
+          <Link href={`/dashboard/company/${companySlug}/events`}>
             <Button variant="outline" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Events

@@ -104,6 +104,10 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         (e: any) => e.approval_status === 'pending'
       ) || []
 
+      const approvedEvents = eventsData.events?.filter(
+        (e: any) => e.approval_status === 'approved'
+      ) || []
+
       const upcomingEventsData = eventsData.events
         ?.filter((e: any) => {
           const eventDate = new Date(e.date)
@@ -114,7 +118,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
       setStats({
-        totalEvents: company.total_events || 0,
+        totalEvents: approvedEvents.length,
         totalHackathons: company.total_hackathons || 0,
         totalRegistrations: analyticsData.summary?.total_registrations || 0,
         totalViews: analyticsData.summary?.total_views || 0,
