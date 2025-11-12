@@ -353,15 +353,24 @@ class EventsService {
     }
 
     // Prepare event data with company context
+    // Payment constraint: if price is "Free", payment must be "Not Required"
+    // if price is not "Free", payment must be "Required"
+    const paymentValue = eventData.price === 'Free' ? 'Not Required' : (eventData.payment || 'Required')
+    
+    // Remove status field - events start as draft/pending based on approval_status
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { status, ...eventDataWithoutStatus } = eventData
+    
     const eventPayload = {
-      ...eventData,
+      ...eventDataWithoutStatus,
       company_id: companyId,
       created_by: userId,
       approval_status: 'pending' as const,
-      views: 0,
-      clicks: 0,
       is_codeunia_event: false,
+      payment: paymentValue,
     }
+
+    console.log('Event payload:', JSON.stringify(eventPayload, null, 2))
 
     const { data: event, error } = await supabase
       .from('events')
@@ -421,6 +430,7 @@ class EventsService {
       views,
       clicks,
       company,
+      status: _status,
       ...updateData
     } = eventData
     /* eslint-enable @typescript-eslint/no-unused-vars */

@@ -36,14 +36,25 @@ export default function ForgotPasswordPage() {
       })
 
       if (error) {
-        throw error
+        console.error("Supabase error:", error)
+        
+        // Show specific error messages
+        if (error.message.includes("Email") || error.message.includes("SMTP")) {
+          toast.error("Email service not configured. Please contact support.")
+        } else if (error.message.includes("rate limit")) {
+          toast.error("Too many requests. Please try again later.")
+        } else {
+          toast.error(error.message || "Failed to send reset link. Please try again.")
+        }
+        return
       }
 
       toast.success("Password reset link sent! Check your email.")
       setFormData({ email: "" })
     } catch (error) {
       console.error("Error sending reset link:", error)
-      toast.error("Failed to send reset link. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to send reset link. Please try again."
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
