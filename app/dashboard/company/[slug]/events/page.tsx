@@ -264,7 +264,7 @@ export default function CompanyEventsPage() {
                     <TableCell>{event.registered || 0}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/company/events/${event.slug}/edit`}>
+                        <Link href={`/dashboard/company/${currentCompany.slug}/events/${event.slug}/edit`}>
                           <Button variant="outline" size="sm">
                             <Edit className="h-4 w-4" />
                           </Button>
