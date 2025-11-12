@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, Clock, ArrowRight, Calendar, Star, Users, MapPin, DollarSign, Filter, Link as LinkIcon, Sparkles } from "lucide-react"
+import { Search, Clock, ArrowRight, Calendar, Star, Users, MapPin, DollarSign, Filter, Link as LinkIcon, Sparkles, Building2 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Hackathon } from "@/lib/services/hackathons"
@@ -19,6 +19,8 @@ import "keen-slider/keen-slider.min.css"
 import { useKeenSlider } from "keen-slider/react"
 import { cn } from "@/lib/utils";
 import { useHackathons, useFeaturedHackathons } from "@/hooks/useHackathons"
+import { CompanyBadge } from "@/components/companies/CompanyBadge"
+import type { Company } from "@/types/company"
 
 // Hackathon categories for dropdown
 const hackathonCategories = [
@@ -46,13 +48,22 @@ export default function HackathonsPage() {
   const [selectedUserTypes, setSelectedUserTypes] = useState<string[]>([])
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("All")
+  const [selectedCompany, setSelectedCompany] = useState<string>("All")
+  const [selectedIndustry, setSelectedIndustry] = useState<string>("All")
+  const [selectedCompanySize, setSelectedCompanySize] = useState<string>("All")
   const [copiedHackathonId, setCopiedHackathonId] = useState<string | null>(null)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [industries, setIndustries] = useState<string[]>([])
+  const [companySizes] = useState<string[]>(['startup', 'small', 'medium', 'large', 'enterprise'])
 
   // Use custom hooks for data fetching
   const { data: hackathonsData, loading: hackathonsLoading } = useHackathons({
     search: searchTerm,
     category: selectedCategory,
-    dateFilter: dateFilter === "Upcoming" ? "upcoming" : "all"
+    dateFilter: dateFilter === "Upcoming" ? "upcoming" : "all",
+    company_id: selectedCompany !== "All" ? selectedCompany : undefined,
+    company_industry: selectedIndustry !== "All" ? selectedIndustry : undefined,
+    company_size: selectedCompanySize !== "All" ? selectedCompanySize : undefined
   })
 
   const { loading: featuredLoading } = useFeaturedHackathons(5)
@@ -60,6 +71,28 @@ export default function HackathonsPage() {
   // Extract hackathons from the response
   const hackathons = hackathonsData?.hackathons || []
   const isLoading = hackathonsLoading || featuredLoading
+
+  // Fetch companies for filter
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        const response = await fetch('/api/companies?limit=100')
+        if (response.ok) {
+          const data = await response.json()
+          setCompanies(data.companies || [])
+          
+          // Extract unique industries from companies
+          const uniqueIndustries = Array.from(
+            new Set(data.companies.map((c: Company) => c.industry).filter(Boolean))
+          ).sort()
+          setIndustries(uniqueIndustries as string[])
+        }
+      } catch (error) {
+        console.error('Failed to fetch companies:', error)
+      }
+    }
+    fetchCompanies()
+  }, [])
 
   // Unique values for filters
   const allStatuses = ["Live", "Expired", "Closed", "Recent"]
@@ -93,8 +126,11 @@ export default function HackathonsPage() {
     const matchesCategory = selectedCategories.length === 0 || hackathon.categories.some((cat: string) => selectedCategories.includes(cat))
     const matchesDate = isDateMatch(hackathon)
     const matchesDropdownCategory = selectedCategory === "All" || hackathon.category === selectedCategory
+    const matchesCompany = selectedCompany === "All" || hackathon.company_id === selectedCompany
+    const matchesIndustry = selectedIndustry === "All" || hackathon.company?.industry === selectedIndustry
+    const matchesCompanySize = selectedCompanySize === "All" || hackathon.company?.company_size === selectedCompanySize
 
-    return matchesSearch && matchesStatus && matchesLocation && matchesEventType && matchesTeamSize && matchesPayment && matchesUserType && matchesCategory && matchesDate && matchesDropdownCategory
+    return matchesSearch && matchesStatus && matchesLocation && matchesEventType && matchesTeamSize && matchesPayment && matchesUserType && matchesCategory && matchesDate && matchesDropdownCategory && matchesCompany && matchesIndustry && matchesCompanySize
   })
 
   const filteredFeaturedHackathons = filteredHackathons.filter((hackathon) => hackathon.featured)
@@ -340,19 +376,79 @@ export default function HackathonsPage() {
             </Button>
           </div>
 
-          {/* Category Dropdown */}
-          <div className="mt-4 w-full max-w-xs">
-            <label htmlFor="category-select" className="block text-sm font-medium text-muted-foreground mb-1">Hackathon Category</label>
-            <select
-              id="category-select"
-              value={selectedCategory}
-              onChange={e => setSelectedCategory(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
-            >
-              {hackathonCategories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+          {/* Category and Company Filters */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-4 flex-wrap">
+            {/* Category Dropdown */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="category-select" className="block text-sm font-medium text-muted-foreground mb-1">Hackathon Category</label>
+              <select
+                id="category-select"
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                {hackathonCategories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Company Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="company-select" className="block text-sm font-medium text-muted-foreground mb-1">
+                <Building2 className="h-3 w-3 inline mr-1" />
+                Company
+              </label>
+              <select
+                id="company-select"
+                value={selectedCompany}
+                onChange={e => setSelectedCompany(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Companies</option>
+                {companies.map(company => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Industry Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="industry-select" className="block text-sm font-medium text-muted-foreground mb-1">Industry</label>
+              <select
+                id="industry-select"
+                value={selectedIndustry}
+                onChange={e => setSelectedIndustry(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Industries</option>
+                {industries.map(industry => (
+                  <option key={industry} value={industry}>
+                    {industry}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Company Size Filter */}
+            <div className="w-full sm:w-64">
+              <label htmlFor="size-select" className="block text-sm font-medium text-muted-foreground mb-1">Company Size</label>
+              <select
+                id="size-select"
+                value={selectedCompanySize}
+                onChange={e => setSelectedCompanySize(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-primary/20 bg-background/80 shadow focus:border-primary focus:ring-2 focus:ring-primary/20 text-base"
+              >
+                <option value="All">All Sizes</option>
+                {companySizes.map(size => (
+                  <option key={size} value={size}>
+                    {size.charAt(0).toUpperCase() + size.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Active Filter Chips */}
@@ -401,7 +497,7 @@ export default function HackathonsPage() {
             ))}
             {(selectedStatuses.length || selectedLocations.length || selectedEventTypes.length || selectedTeamSizes.length || selectedPayments.length || selectedUserTypes.length || selectedCategories.length) > 0 && (
               <Button size="sm" variant="ghost" onClick={() => {
-                setSelectedStatuses([]); setSelectedLocations([]); setSelectedEventTypes([]); setSelectedTeamSizes([]); setSelectedPayments([]); setSelectedUserTypes([]); setSelectedCategories([]);
+                setSelectedStatuses([]); setSelectedLocations([]); setSelectedEventTypes([]); setSelectedTeamSizes([]); setSelectedPayments([]); setSelectedUserTypes([]); setSelectedCategories([]); setSelectedCategory("All"); setSelectedCompany("All"); setSelectedIndustry("All"); setSelectedCompanySize("All");
               }}>Clear All</Button>
             )}
           </div>
@@ -609,6 +705,16 @@ export default function HackathonsPage() {
                           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                           priority={index < 2}
                         />
+                      ) : hackathon.company?.logo_url ? (
+                        <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-muted to-muted/50 p-8">
+                          <Image
+                            src={hackathon.company.logo_url}
+                            alt={hackathon.company.name || 'Company logo'}
+                            width={120}
+                            height={120}
+                            className="object-contain"
+                          />
+                        </div>
                       ) : (
                         <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-muted to-muted/50">
                           <Calendar className="h-16 w-16 text-muted-foreground opacity-40" />
@@ -634,6 +740,16 @@ export default function HackathonsPage() {
                           )}
                         </div>
                       </div>
+                      {/* Company Badge */}
+                      {hackathon.company && (
+                        <div className="mt-2">
+                          <CompanyBadge 
+                            company={hackathon.company} 
+                            size="sm" 
+                            showVerification={true}
+                          />
+                        </div>
+                      )}
                       {/* Overlay Badges moved below title */}
                       <div className="flex flex-wrap gap-2 mt-2">
                         <Badge className={`${getCategoryColor(hackathon.category)} shadow-lg`} variant="secondary">
@@ -762,6 +878,16 @@ export default function HackathonsPage() {
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                         priority={index < 6}
                       />
+                    ) : hackathon.company?.logo_url ? (
+                      <div className="flex items-center justify-center w-full h-full p-4">
+                        <Image
+                          src={hackathon.company.logo_url}
+                          alt={hackathon.company.name || 'Company logo'}
+                          width={80}
+                          height={80}
+                          className="object-contain"
+                        />
+                      </div>
                     ) : (
                       <div className="flex items-center justify-center w-full h-full">
                         <Calendar className="h-12 w-12 text-muted-foreground opacity-40" />
@@ -782,14 +908,8 @@ export default function HackathonsPage() {
                   </div>
                   {/* Card Content */}
                   <div className="flex-1 flex flex-col p-4">
-                    {/* Title and Organizer */}
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                        {hackathon.organizer
-                          .split(" ")
-                          .map((n: string) => n[0])
-                          .join("")}
-                      </div>
+                    {/* Title and Company */}
+                    <div className="flex items-start gap-3 mb-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="font-semibold text-base truncate hover:text-primary transition-colors cursor-pointer flex-1">
@@ -808,7 +928,18 @@ export default function HackathonsPage() {
                             )}
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">{hackathon.organizer}</div>
+                        {/* Company Badge */}
+                        {hackathon.company ? (
+                          <div className="mb-2">
+                            <CompanyBadge 
+                              company={hackathon.company} 
+                              size="sm" 
+                              showVerification={true}
+                            />
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground truncate mb-2">{hackathon.organizer}</div>
+                        )}
                       </div>
                     </div>
                     {/* Description/Excerpt */}

@@ -5,13 +5,15 @@ import { useParams } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Clock, Calendar, Users, DollarSign, Star, Sparkles} from "lucide-react"
+import { ArrowLeft, Clock, Calendar, Users, DollarSign, Star, Sparkles, Building2 } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import React from "react";
 import { useHackathon } from "@/hooks/useHackathons"
+import { CompanyBadge } from "@/components/companies/CompanyBadge"
+import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking"
 
 // import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -114,6 +116,12 @@ export default function HackathonDetailPage() {
 
   // Use custom hook for fetching hackathon
   const { hackathon, loading: isLoading, error: fetchError } = useHackathon(slug)
+
+  // Track analytics
+  useAnalyticsTracking({
+    hackathonId: slug,
+    trackView: true,
+  })
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -657,9 +665,26 @@ export default function HackathonDetailPage() {
                 {/* Hackathon Header */}
                 <div className="space-y-4">
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">{hackathon?.title}</h1>
-                  {hackathon?.organizer && (
+                  
+                  {/* Hosted by Section */}
+                  {hackathon?.company ? (
+                    <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border border-primary/10">
+                      <Building2 className="h-5 w-5 text-primary flex-shrink-0" />
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm text-muted-foreground">Hosted by</span>
+                        <Link href={`/companies/${hackathon.company.slug}`} className="hover:opacity-80 transition-opacity">
+                          <CompanyBadge 
+                            company={hackathon.company} 
+                            size="md" 
+                            showVerification={true}
+                          />
+                        </Link>
+                      </div>
+                    </div>
+                  ) : hackathon?.organizer && (
                     <div className="text-base md:text-lg text-muted-foreground font-bold mt-1">by {hackathon.organizer}</div>
                   )}
+                  
                   <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">{hackathon?.excerpt}</p>
                   <div className="flex items-center gap-3 flex-wrap mt-2">
                     <Badge className={`${getCategoryColor(hackathon?.category || '')} shadow-lg`} variant="secondary">{hackathon?.category}</Badge>

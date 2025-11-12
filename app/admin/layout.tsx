@@ -24,6 +24,7 @@ import {
   Award,
   Crown,
   LifeBuoy,
+  Building2,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -55,6 +56,16 @@ const sidebarItems: SidebarGroupType[] = [
         title: "Users",
         url: "/admin/users",
         icon: Users,
+      },
+      {
+        title: "Companies",
+        url: "/admin/companies",
+        icon: Building2,
+      },
+      {
+        title: "Moderation",
+        url: "/admin/moderation",
+        icon: Shield,
       },
       {
         title: "Blog Posts",

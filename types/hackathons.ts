@@ -1,3 +1,5 @@
+import type { Company } from './company'
+
 export interface Hackathon {
   id?: number
   slug: string
@@ -48,6 +50,17 @@ export interface Hackathon {
   sponsors?: { logo: string; name: string; type: string }[]
   created_at?: string
   updated_at?: string
+  // Company-related fields
+  company_id?: string
+  company?: Company
+  created_by?: string
+  approval_status: 'pending' | 'approved' | 'rejected' | 'changes_requested'
+  approved_by?: string
+  approved_at?: string
+  rejection_reason?: string
+  is_codeunia_event: boolean
+  views: number
+  clicks: number
 }
 
 export interface HackathonsFilters {
@@ -56,6 +69,10 @@ export interface HackathonsFilters {
   status?: string
   featured?: boolean
   dateFilter?: 'upcoming' | 'all' | 'past'
+  company_id?: string
+  company_industry?: string
+  company_size?: string
+  approval_status?: 'pending' | 'approved' | 'rejected' | 'changes_requested'
   limit?: number
   offset?: number
 }

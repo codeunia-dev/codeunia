@@ -4,6 +4,9 @@ export interface HackathonsParams {
   search?: string
   category?: string
   dateFilter?: string
+  company_id?: string
+  company_industry?: string
+  company_size?: string
   limit?: number
   offset?: number
 }
@@ -30,6 +33,9 @@ export function useHackathons(params: HackathonsParams = {}) {
         if (params.search) queryParams.append('search', params.search)
         if (params.category && params.category !== 'All') queryParams.append('category', params.category)
         if (params.dateFilter) queryParams.append('dateFilter', params.dateFilter)
+        if (params.company_id) queryParams.append('company_id', params.company_id)
+        if (params.company_industry) queryParams.append('company_industry', params.company_industry)
+        if (params.company_size) queryParams.append('company_size', params.company_size)
         if (params.limit) queryParams.append('limit', params.limit.toString())
         if (params.offset) queryParams.append('offset', params.offset.toString())
 
@@ -49,7 +55,7 @@ export function useHackathons(params: HackathonsParams = {}) {
     }
 
     fetchHackathons()
-  }, [params.search, params.category, params.dateFilter, params.limit, params.offset])
+  }, [params.search, params.category, params.dateFilter, params.company_id, params.company_industry, params.company_size, params.limit, params.offset])
 
   return { data, loading, error }
 }

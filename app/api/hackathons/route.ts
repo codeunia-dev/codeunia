@@ -58,6 +58,9 @@ export async function GET(request: NextRequest) {
       featured: searchParams.get('featured') === 'true' ? true : 
                 searchParams.get('featured') === 'false' ? false : undefined,
       dateFilter: searchParams.get('dateFilter') as HackathonsFilters['dateFilter'] || undefined,
+      company_id: searchParams.get('company_id') || undefined,
+      company_industry: searchParams.get('company_industry') || undefined,
+      company_size: searchParams.get('company_size') || undefined,
       limit: searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined,
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined,
     };
