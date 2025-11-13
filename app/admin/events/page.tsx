@@ -360,7 +360,7 @@ export default function AdminEvents() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {event.status}
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                       </Badge>
                     </TableCell>
                     <TableCell>
