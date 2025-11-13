@@ -97,10 +97,12 @@ export default function EventPage() {
   } = useRegistrationStatus('event', event?.id?.toString() || '')
 
   // Track analytics
+  console.log('[EventPage] About to call useAnalyticsTracking with slug:', slug)
   const { trackClick } = useAnalyticsTracking({
     eventSlug: slug,
     trackView: true,
   })
+  console.log('[EventPage] useAnalyticsTracking returned:', { trackClick })
 
   useEffect(() => {
     const fetchEvent = async () => {
