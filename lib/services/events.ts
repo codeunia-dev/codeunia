@@ -357,7 +357,8 @@ class EventsService {
     // if price is not "Free", payment must be "Required"
     const paymentValue = eventData.price === 'Free' ? 'Not Required' : (eventData.payment || 'Required')
     
-    // Remove status field - events start as draft/pending based on approval_status
+    // Remove status field - events start as draft by default
+    // They can be submitted for approval later via submitForApproval
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { status, ...eventDataWithoutStatus } = eventData
     
@@ -365,7 +366,7 @@ class EventsService {
       ...eventDataWithoutStatus,
       company_id: companyId,
       created_by: userId,
-      approval_status: 'pending' as const,
+      approval_status: 'draft' as const,
       is_codeunia_event: false,
       payment: paymentValue,
     }

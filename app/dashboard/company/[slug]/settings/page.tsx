@@ -30,9 +30,11 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { SUBSCRIPTION_LIMITS } from '@/types/company'
+import { useSubscription } from '@/hooks/useSubscription'
 
 export default function CompanySettingsPage() {
   const { currentCompany, userRole, loading: contextLoading, refreshCompany } = useCompanyContext()
+  const { usage } = useSubscription(currentCompany?.slug)
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
   const [uploadingLogo, setUploadingLogo] = useState(false)
@@ -793,22 +795,32 @@ export default function CompanySettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-400">Events Created</span>
-                  <span className="text-sm font-medium text-white">
-                    {currentCompany.total_events}
+                  <span className="text-sm text-zinc-400">Events Created (This Month)</span>
+                  <span className={`text-sm font-medium ${
+                    usage && subscriptionLimits.events_per_month !== null && 
+                    usage.events_this_month > subscriptionLimits.events_per_month
+                      ? 'text-red-400'
+                      : 'text-white'
+                  }`}>
+                    {usage?.events_this_month ?? 0}
                     {subscriptionLimits.events_per_month !== null &&
                       ` / ${subscriptionLimits.events_per_month}`}
                   </span>
                 </div>
                 <div className="w-full bg-zinc-800 rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-primary to-purple-600 h-2 rounded-full"
+                    className={`h-2 rounded-full ${
+                      usage && subscriptionLimits.events_per_month !== null &&
+                      usage.events_this_month > subscriptionLimits.events_per_month
+                        ? 'bg-gradient-to-r from-red-500 to-red-600'
+                        : 'bg-gradient-to-r from-primary to-purple-600'
+                    }`}
                     style={{
                       width:
                         subscriptionLimits.events_per_month === null
                           ? '0%'
                           : `${Math.min(
-                              (currentCompany.total_events /
+                              ((usage?.events_this_month ?? 0) /
                                 subscriptionLimits.events_per_month) *
                                 100,
                               100
@@ -816,6 +828,12 @@ export default function CompanySettingsPage() {
                     }}
                   />
                 </div>
+                {usage && subscriptionLimits.events_per_month !== null && 
+                 usage.events_this_month > subscriptionLimits.events_per_month && (
+                  <p className="text-xs text-red-400 mt-1">
+                    ⚠️ You have exceeded your monthly limit. Please upgrade your plan.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

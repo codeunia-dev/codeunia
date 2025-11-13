@@ -13,6 +13,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { NotificationItem } from './NotificationItem'
 import { Separator } from '@/components/ui/separator'
 import { useState } from 'react'
+import Link from 'next/link'
 
 export function NotificationCenter() {
   const {
@@ -137,13 +138,11 @@ export function NotificationCenter() {
                 variant="ghost"
                 size="sm"
                 className="w-full text-xs"
-                onClick={() => {
-                  setOpen(false)
-                  // Navigate to notifications page if you have one
-                  // router.push('/notifications')
-                }}
+                asChild
               >
-                View all notifications
+                <Link href="/protected/notifications" onClick={() => setOpen(false)}>
+                  View all notifications
+                </Link>
               </Button>
             </div>
           </>

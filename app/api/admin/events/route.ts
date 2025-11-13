@@ -43,9 +43,12 @@ export async function GET(request: NextRequest) {
 
     const serviceSupabase = createServiceClient(supabaseUrl, supabaseServiceKey)
 
+    // Only show events that need moderation (pending, approved, rejected)
+    // Exclude drafts as they haven't been submitted for review yet
     const { data: events, error } = await serviceSupabase
       .from('events')
       .select('*')
+      .in('approval_status', ['pending', 'approved', 'rejected'])
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
