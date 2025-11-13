@@ -8,29 +8,53 @@ export class AnalyticsService {
   static async trackEventView(eventSlug: string): Promise<void> {
     const supabase = await createClient()
 
+    // First, try to get the event (only approved events should be viewable publicly)
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('id, company_id, views')
+      .select('id, company_id, views, approval_status')
       .eq('slug', eventSlug)
+      .eq('approval_status', 'approved') // Only track views for approved events
       .single()
 
-    if (eventError || !event) {
+    if (eventError) {
+      console.error('Error fetching event for view tracking:', eventError)
       throw new Error('Event not found')
     }
 
-    // Increment view count
-    await supabase
-      .from('events')
-      .update({ views: (event.views || 0) + 1 })
-      .eq('id', event.id)
+    if (!event) {
+      throw new Error('Event not found')
+    }
+
+    // Increment view count using RPC function if available, otherwise direct update
+    const { error: rpcError } = await supabase.rpc('increment_event_views', {
+      event_id: event.id,
+    })
+
+    if (rpcError) {
+      // Fallback to direct update if RPC doesn't exist
+      const { error: updateError } = await supabase
+        .from('events')
+        .update({ views: (event.views || 0) + 1 })
+        .eq('id', event.id)
+
+      if (updateError) {
+        console.error('Error updating event views:', updateError)
+        // Don't throw - we don't want to fail the request if view tracking fails
+      }
+    }
 
     // Update company analytics if event has a company
     if (event.company_id) {
-      await this.incrementCompanyAnalytics(
-        event.company_id,
-        'total_views',
-        1
-      )
+      try {
+        await this.incrementCompanyAnalytics(
+          event.company_id,
+          'total_views',
+          1
+        )
+      } catch (error) {
+        console.error('Error updating company analytics:', error)
+        // Don't throw - we don't want to fail the request
+      }
     }
   }
 

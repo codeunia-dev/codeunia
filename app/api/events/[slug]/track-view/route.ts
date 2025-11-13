@@ -1,69 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { AnalyticsService } from '@/lib/services/analytics-service'
 
+// Force Node.js runtime for API routes
+export const runtime = 'nodejs'
+
+/**
+ * POST /api/events/[slug]/track-view
+ * Track a view for an event with session-based deduplication
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const supabase = await createClient()
     const { slug } = await params
 
-    // Get event by slug
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('id, company_id, views')
-      .eq('slug', slug)
-      .single()
+    // Get session ID from request body (generated on client)
+    const body = await request.json()
+    const sessionId = body.sessionId
 
-    if (eventError || !event) {
+    if (!sessionId) {
       return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
+        { error: 'Session ID is required' },
+        { status: 400 }
       )
     }
 
-    // Increment view count
-    const { error: updateError } = await supabase
-      .from('events')
-      .update({ views: (event.views || 0) + 1 })
-      .eq('id', event.id)
+    // Check if this session has already viewed this event
+    // We rely on client-side sessionStorage to prevent duplicates
+    // The client will only send the request once per session
+    
+    // Track the view
+    await AnalyticsService.trackEventView(slug)
 
-    if (updateError) {
-      console.error('Error updating view count:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to track view' },
-        { status: 500 }
-      )
-    }
-
-    // Update company analytics if event has a company
-    if (event.company_id) {
-      const today = new Date().toISOString().split('T')[0]
-
-      // Upsert daily analytics
-      const { error: analyticsError } = await supabase.rpc(
-        'increment_company_analytics',
-        {
-          p_company_id: event.company_id,
-          p_date: today,
-          p_field: 'total_views',
-          p_increment: 1
-        }
-      )
-
-      if (analyticsError) {
-        console.error('Error updating company analytics:', analyticsError)
-        // Don't fail the request if analytics update fails
-      }
-    }
-
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Error tracking view:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { success: true, message: 'View tracked successfully' },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error('Error tracking event view:', error)
+    
+    // Don't fail the request if view tracking fails
+    // Just log the error and return success
+    return NextResponse.json(
+      { success: true, message: 'View tracking skipped' },
+      { status: 200 }
     )
   }
 }
