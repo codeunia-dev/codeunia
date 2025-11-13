@@ -326,7 +326,6 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
                   <UpcomingEventItem
                     key={event.id}
                     event={event}
-                    companySlug={company.slug}
                   />
                 ))}
               </div>
@@ -449,19 +448,15 @@ function ActivityItem({ activity }: ActivityItemProps) {
 // Upcoming Event Item Component
 interface UpcomingEventItemProps {
   event: UpcomingEvent
-  companySlug: string
 }
 
-function UpcomingEventItem({ event, companySlug }: UpcomingEventItemProps) {
+function UpcomingEventItem({ event }: UpcomingEventItemProps) {
   const registrationPercentage = event.capacity
     ? (event.registrations / event.capacity) * 100
     : 0
 
   return (
-    <Link
-      href={`/dashboard/company/${companySlug}/events/${event.slug}`}
-      className="block p-3 rounded-lg hover:bg-zinc-800/50 transition-colors border border-zinc-800"
-    >
+    <div className="block p-3 rounded-lg border border-zinc-800">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-white truncate">{event.title}</p>
@@ -484,7 +479,7 @@ function UpcomingEventItem({ event, companySlug }: UpcomingEventItemProps) {
           </div>
         </div>
       )}
-    </Link>
+    </div>
   )
 }
 
