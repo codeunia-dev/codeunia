@@ -10,6 +10,8 @@ import {
   Menu,
   Building2,
   Check,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -63,7 +65,9 @@ export function CompanySidebar({
   header,
 }: CompanySidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const closeSidebar = () => setMobileOpen(false)
+  const toggleCollapsed = () => setCollapsed(!collapsed)
   const pathname = usePathname()
   const { navigateTo } = useSafeNavigation()
   const { currentCompany, userCompanies, switchCompany } = useCompanyContext()
@@ -223,8 +227,25 @@ export function CompanySidebar({
         </Sheet>
 
         {/* desktop sidebar */}
-        <aside className="hidden md:block fixed left-0 top-0 h-screen w-64 bg-black border-r border-zinc-800 z-40 shadow-xl shadow-black/30 overflow-y-auto">
-          <SidebarHeader>
+        <aside className={`hidden md:flex flex-col fixed left-0 top-0 h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 border-r border-zinc-800 z-40 shadow-xl shadow-black/30 transition-all duration-300 ${collapsed ? 'w-20' : 'w-64'}`}>
+          {/* Toggle Button */}
+          <div className="flex items-center justify-end p-2 border-b border-zinc-800/50">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleCollapsed}
+              className="h-8 w-8 hover:bg-purple-700/20 text-zinc-400 hover:text-white transition-colors"
+              title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {collapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+
+          <SidebarHeader className="px-3 py-3">
             <SidebarMenu>
               <SidebarMenuItem>
                 {/* Company Switcher */}
@@ -233,9 +254,10 @@ export function CompanySidebar({
                     <DropdownMenuTrigger asChild>
                       <SidebarMenuButton
                         size="lg"
-                        className="hover:bg-purple-700/20 transition-colors rounded-xl p-2"
+                        className="hover:bg-purple-700/20 transition-colors rounded-xl p-2 w-full"
+                        title={collapsed ? currentCompany?.name : undefined}
                       >
-                        <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
+                        <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md flex-shrink-0">
                           {currentCompany?.logo_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -247,15 +269,19 @@ export function CompanySidebar({
                             <Building2 className="size-5" />
                           )}
                         </div>
-                        <div className="grid flex-1 text-left text-sm leading-tight ml-3">
-                          <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">
-                            {currentCompany?.name || 'Company'}
-                          </span>
-                          <span className="truncate text-xs text-zinc-400">
-                            Switch company
-                          </span>
-                        </div>
-                        <ChevronDown className="ml-auto size-4 text-zinc-400" />
+                        {!collapsed && (
+                          <>
+                            <div className="grid flex-1 text-left text-sm leading-tight ml-3 min-w-0">
+                              <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">
+                                {currentCompany?.name || 'Company'}
+                              </span>
+                              <span className="truncate text-xs text-zinc-400">
+                                Switch company
+                              </span>
+                            </div>
+                            <ChevronDown className="ml-auto size-4 text-zinc-400 flex-shrink-0" />
+                          </>
+                        )}
                       </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -303,10 +329,11 @@ export function CompanySidebar({
                   <SidebarMenuButton
                     size="lg"
                     asChild
-                    className="hover:bg-purple-700/20 transition-colors rounded-xl p-2"
+                    className="hover:bg-purple-700/20 transition-colors rounded-xl p-2 w-full"
+                    title={collapsed ? currentCompany?.name : undefined}
                   >
-                    <Link href={`/dashboard/company/${currentCompany?.slug}`}>
-                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md">
+                    <Link href={`/dashboard/company/${currentCompany?.slug}`} className="flex items-center">
+                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white shadow-md flex-shrink-0">
                         {currentCompany?.logo_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -318,14 +345,16 @@ export function CompanySidebar({
                           <Building2 className="size-5" />
                         )}
                       </div>
-                      <div className="grid flex-1 text-left text-sm leading-tight ml-3">
-                        <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">
-                          {currentCompany?.name || 'Company'}
-                        </span>
-                        <span className="truncate text-xs text-zinc-400">
-                          Company Portal
-                        </span>
-                      </div>
+                      {!collapsed && (
+                        <div className="grid flex-1 text-left text-sm leading-tight ml-3 min-w-0">
+                          <span className="truncate font-bold text-lg tracking-tight text-white drop-shadow">
+                            {currentCompany?.name || 'Company'}
+                          </span>
+                          <span className="truncate text-xs text-zinc-400">
+                            Company Portal
+                          </span>
+                        </div>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 )}
@@ -336,26 +365,31 @@ export function CompanySidebar({
           <SidebarContent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent py-2">
             {sidebarItems.map((group) => (
               <SidebarGroup key={group.title}>
-                <SidebarGroupLabel className="uppercase text-xs font-semibold text-purple-400 tracking-wider px-6 py-2 mt-2 mb-1">
-                  {group.title}
-                </SidebarGroupLabel>
+                {!collapsed && (
+                  <SidebarGroupLabel className="uppercase text-xs font-semibold text-purple-400 tracking-wider px-4 py-2 mt-2 mb-1">
+                    {group.title}
+                  </SidebarGroupLabel>
+                )}
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {group.items.map((item) => (
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                           asChild
-                          className={`group flex items-center gap-3 px-6 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${
+                          className={`group flex items-center gap-3 mx-2 px-3 py-2 rounded-lg transition-all hover:bg-purple-700/10 active:bg-purple-800/20 focus:bg-purple-800/20 text-zinc-200 hover:text-white font-medium ${
                             pathname === item.url
                               ? 'bg-purple-800/30 text-white'
                               : ''
-                          }`}
+                          } ${collapsed ? 'justify-center' : ''}`}
+                          title={collapsed ? item.title : undefined}
                         >
                           <Link href={item.url} className="flex items-center w-full">
-                            <span className="mr-3 text-purple-400 group-hover:text-purple-300">
+                            <span className={`text-purple-400 group-hover:text-purple-300 ${collapsed ? '' : 'mr-3'}`}>
                               {React.createElement(item.icon, { className: 'size-5' })}
                             </span>
-                            <span className="truncate text-base">{item.title}</span>
+                            {!collapsed && (
+                              <span className="truncate text-base">{item.title}</span>
+                            )}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -366,7 +400,7 @@ export function CompanySidebar({
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="mt-auto border-t border-zinc-800 bg-gradient-to-t from-[#181f36] to-transparent px-4 py-4">
+          <SidebarFooter className="mt-auto border-t border-zinc-800 bg-gradient-to-t from-zinc-950 to-transparent px-3 py-3">
             <SidebarMenu>
               <SidebarMenuItem>
                 <DropdownMenu>
@@ -374,19 +408,24 @@ export function CompanySidebar({
                     <SidebarMenuButton
                       size="lg"
                       className="w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                      title={collapsed ? name : undefined}
                     >
-                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md">
+                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md flex-shrink-0">
                         {avatar}
                       </div>
-                      <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                        <span className="truncate font-semibold text-white">
-                          {name}
-                        </span>
-                        <span className="truncate text-xs text-purple-300">
-                          {currentCompany?.name}
-                        </span>
-                      </div>
-                      <ChevronDown className="ml-auto size-4 text-zinc-400" />
+                      {!collapsed && (
+                        <>
+                          <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+                            <span className="truncate font-semibold text-white">
+                              {name}
+                            </span>
+                            <span className="truncate text-xs text-purple-300">
+                              {currentCompany?.name}
+                            </span>
+                          </div>
+                          <ChevronDown className="ml-auto size-4 text-zinc-400 flex-shrink-0" />
+                        </>
+                      )}
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -446,7 +485,7 @@ export function CompanySidebar({
         </aside>
 
         {/* main content */}
-        <div className="md:ml-64 flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36]">
+        <div className={`flex-1 flex flex-col min-h-screen bg-gradient-to-br from-[#181f36] via-[#10172a] to-[#181f36] transition-all duration-300 ${collapsed ? 'md:ml-20' : 'md:ml-64'}`}>
           <SidebarInset className="bg-black">
             {header}
             <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
