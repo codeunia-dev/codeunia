@@ -232,7 +232,7 @@ export default function CompaniesPage() {
                   <SelectContent>
                     {industries.map((industry) => (
                       <SelectItem key={industry} value={industry}>
-                        {industry}
+                        {industry === 'All' ? 'All' : industry.charAt(0).toUpperCase() + industry.slice(1)}
                       </SelectItem>
                     ))}
                   </SelectContent>

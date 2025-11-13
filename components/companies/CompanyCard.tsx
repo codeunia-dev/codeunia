@@ -41,7 +41,7 @@ export function CompanyCard({
                 </CardTitle>
                 {company.industry && (
                   <CardDescription className="text-xs mt-1">
-                    {company.industry}
+                    {company.industry.charAt(0).toUpperCase() + company.industry.slice(1)}
                   </CardDescription>
                 )}
               </div>
@@ -63,7 +63,7 @@ export function CompanyCard({
             {company.company_size && (
               <Badge variant="secondary" className="text-xs">
                 <Users className="h-3 w-3 mr-1" />
-                {company.company_size}
+                {company.company_size.charAt(0).toUpperCase() + company.company_size.slice(1)}
               </Badge>
             )}
             {company.address?.city && (

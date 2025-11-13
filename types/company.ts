@@ -11,8 +11,21 @@ export interface Company {
   company_size?: 'startup' | 'small' | 'medium' | 'large' | 'enterprise'
   email: string
   phone?: string
+  // Nested address object (for backward compatibility)
   address?: CompanyAddress
+  // Flattened address fields (actual database columns)
+  address_street?: string
+  address_city?: string
+  address_state?: string
+  address_country?: string
+  address_zip?: string
+  // Nested socials object (for backward compatibility)
   socials?: CompanySocials
+  // Flattened social fields (actual database columns)
+  linkedin_url?: string
+  twitter_url?: string
+  facebook_url?: string
+  instagram_url?: string
   verification_status: 'pending' | 'verified' | 'rejected'
   verification_documents?: string[]
   verified_at?: string
