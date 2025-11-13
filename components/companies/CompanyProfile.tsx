@@ -66,19 +66,19 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                 {company.industry && (
                   <Badge variant="secondary">
                     <Building2 className="h-3 w-3 mr-1" />
-                    {company.industry}
+                    {company.industry.charAt(0).toUpperCase() + company.industry.slice(1)}
                   </Badge>
                 )}
                 {company.company_size && (
                   <Badge variant="outline">
                     <Users className="h-3 w-3 mr-1" />
-                    {company.company_size}
+                    {company.company_size.charAt(0).toUpperCase() + company.company_size.slice(1)}
                   </Badge>
                 )}
                 {company.subscription_tier !== 'free' && (
                   <Badge variant="default">
                     <Award className="h-3 w-3 mr-1" />
-                    {company.subscription_tier}
+                    {company.subscription_tier.charAt(0).toUpperCase() + company.subscription_tier.slice(1)}
                   </Badge>
                 )}
               </div>

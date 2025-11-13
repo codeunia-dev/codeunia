@@ -49,17 +49,17 @@ export default function CompanySettingsPage() {
     email: currentCompany?.email || '',
     phone: currentCompany?.phone || '',
     address: {
-      street: currentCompany?.address?.street || '',
-      city: currentCompany?.address?.city || '',
-      state: currentCompany?.address?.state || '',
-      country: currentCompany?.address?.country || '',
-      zip: currentCompany?.address?.zip || '',
+      street: currentCompany?.address_street || '',
+      city: currentCompany?.address_city || '',
+      state: currentCompany?.address_state || '',
+      country: currentCompany?.address_country || '',
+      zip: currentCompany?.address_zip || '',
     },
     socials: {
-      linkedin: currentCompany?.socials?.linkedin || '',
-      twitter: currentCompany?.socials?.twitter || '',
-      facebook: currentCompany?.socials?.facebook || '',
-      instagram: currentCompany?.socials?.instagram || '',
+      linkedin: currentCompany?.linkedin_url || '',
+      twitter: currentCompany?.twitter_url || '',
+      facebook: currentCompany?.facebook_url || '',
+      instagram: currentCompany?.instagram_url || '',
     },
   })
 
@@ -85,17 +85,17 @@ export default function CompanySettingsPage() {
         email: currentCompany.email || '',
         phone: currentCompany.phone || '',
         address: {
-          street: currentCompany.address?.street || '',
-          city: currentCompany.address?.city || '',
-          state: currentCompany.address?.state || '',
-          country: currentCompany.address?.country || '',
-          zip: currentCompany.address?.zip || '',
+          street: currentCompany.address_street || '',
+          city: currentCompany.address_city || '',
+          state: currentCompany.address_state || '',
+          country: currentCompany.address_country || '',
+          zip: currentCompany.address_zip || '',
         },
         socials: {
-          linkedin: currentCompany.socials?.linkedin || '',
-          twitter: currentCompany.socials?.twitter || '',
-          facebook: currentCompany.socials?.facebook || '',
-          instagram: currentCompany.socials?.instagram || '',
+          linkedin: currentCompany.linkedin_url || '',
+          twitter: currentCompany.twitter_url || '',
+          facebook: currentCompany.facebook_url || '',
+          instagram: currentCompany.instagram_url || '',
         },
       })
     }
@@ -197,12 +197,35 @@ export default function CompanySettingsPage() {
 
     setLoading(true)
     try {
+      // Flatten address and socials objects to match database schema
+      const updateData = {
+        name: formData.name,
+        legal_name: formData.legal_name,
+        description: formData.description,
+        website: formData.website,
+        industry: formData.industry,
+        company_size: formData.company_size,
+        email: formData.email,
+        phone: formData.phone,
+        // Flatten address fields
+        address_street: formData.address.street,
+        address_city: formData.address.city,
+        address_state: formData.address.state,
+        address_country: formData.address.country,
+        address_zip: formData.address.zip,
+        // Flatten social fields
+        linkedin_url: formData.socials.linkedin,
+        twitter_url: formData.socials.twitter,
+        facebook_url: formData.socials.facebook,
+        instagram_url: formData.socials.instagram,
+      }
+
       const response = await fetch(`/api/companies/${currentCompany.slug}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(updateData),
       })
 
       if (!response.ok) {
