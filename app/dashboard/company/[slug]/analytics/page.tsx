@@ -222,7 +222,7 @@ export default function AnalyticsPage() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-700" align="start">
-                <div className="p-3 space-y-3">
+                <div className="flex items-start gap-4 p-4">
                   <div>
                     <p className="text-sm font-medium text-white mb-2">From</p>
                     <Calendar
