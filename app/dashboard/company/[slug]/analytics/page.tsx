@@ -11,7 +11,7 @@ import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts'
 import { useCompanyContext } from '@/contexts/CompanyContext'
 import { CompanyAnalytics } from '@/types/company'
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns'
-import { CalendarIcon, Download, AlertCircle, TrendingUp } from 'lucide-react'
+import { CalendarIcon, AlertCircle, TrendingUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 type DateRange = {
@@ -34,7 +34,6 @@ export default function AnalyticsPage() {
     to: new Date(),
   })
   const [selectedPreset, setSelectedPreset] = useState<PresetRange>('last30days')
-  const [isExporting, setIsExporting] = useState(false)
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -97,8 +96,6 @@ export default function AnalyticsPage() {
 
   const handleExport = async () => {
     try {
-      setIsExporting(true)
-
       const startDate = format(dateRange.from, 'yyyy-MM-dd')
       const endDate = format(dateRange.to, 'yyyy-MM-dd')
 
@@ -130,8 +127,6 @@ export default function AnalyticsPage() {
       URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Error exporting analytics:', err)
-    } finally {
-      setIsExporting(false)
     }
   }
 
@@ -285,21 +280,6 @@ export default function AnalyticsPage() {
           dateRange={{ start: dateRange.from, end: dateRange.to }}
           onExport={handleExport}
         />
-      )}
-
-      {/* Export Button (Alternative placement) */}
-      {!loading && !error && analytics.length > 0 && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            disabled={isExporting}
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            {isExporting ? 'Exporting...' : 'Export to CSV'}
-          </Button>
-        </div>
       )}
 
       {/* Empty State */}
