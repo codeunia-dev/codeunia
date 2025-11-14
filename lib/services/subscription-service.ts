@@ -54,12 +54,14 @@ class SubscriptionService {
 
     const limits = SUBSCRIPTION_LIMITS[company.subscription_tier]
 
-    // Get events created this month
+    // Get events created this month (including deleted ones to prevent loophole)
+    // This counts ALL events created in the billing period, regardless of deletion status
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
 
-    const { count: eventsCount, error: eventsError } = await supabase
+    // First, try to count from events table (active events)
+    const { count: activeEventsCount, error: eventsError } = await supabase
       .from('events')
       .select('*', { count: 'exact', head: true })
       .eq('company_id', companyId)
@@ -73,6 +75,18 @@ class SubscriptionService {
         500
       )
     }
+
+    // Also count deleted events from audit log if it exists
+    // This prevents the loophole where users delete events to bypass limits
+    const { count: deletedEventsCount } = await supabase
+      .from('event_audit_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+      .eq('action', 'created')
+      .gte('created_at', startOfMonth.toISOString())
+
+    // Use the audit log count if available (more accurate), otherwise use active count
+    const eventsCount = deletedEventsCount !== null ? deletedEventsCount : (activeEventsCount || 0)
 
     // Get active team members
     const { count: membersCount, error: membersError } = await supabase
