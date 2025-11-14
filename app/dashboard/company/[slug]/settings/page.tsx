@@ -129,9 +129,8 @@ export default function CompanySettingsPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('type', 'logo')
 
-      const response = await fetch(`/api/companies/${currentCompany.slug}/assets`, {
+      const response = await fetch(`/api/companies/${currentCompany.slug}/assets?type=logo`, {
         method: 'POST',
         body: formData,
       })
@@ -165,9 +164,8 @@ export default function CompanySettingsPage() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('type', 'banner')
 
-      const response = await fetch(`/api/companies/${currentCompany.slug}/assets`, {
+      const response = await fetch(`/api/companies/${currentCompany.slug}/assets?type=banner`, {
         method: 'POST',
         body: formData,
       })
@@ -189,6 +187,72 @@ export default function CompanySettingsPage() {
         variant: 'destructive',
       })
     } finally {
+      setUploadingBanner(false)
+    }
+  }
+
+  const handleLogoRemove = async () => {
+    if (!currentCompany) return
+
+    setUploadingLogo(true)
+    try {
+      const response = await fetch(`/api/companies/${currentCompany.slug}/assets?type=logo`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to remove logo')
+      }
+
+      // Wait a bit for the database to update
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Force refresh the company data
+      await refreshCompany()
+      
+      // Force a page reload to clear any cached images
+      window.location.reload()
+    } catch (error) {
+      console.error('Error removing logo:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to remove logo',
+        variant: 'destructive',
+      })
+      setUploadingLogo(false)
+    }
+  }
+
+  const handleBannerRemove = async () => {
+    if (!currentCompany) return
+
+    setUploadingBanner(true)
+    try {
+      const response = await fetch(`/api/companies/${currentCompany.slug}/assets?type=banner`, {
+        method: 'DELETE',
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to remove banner')
+      }
+
+      // Wait a bit for the database to update
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Force refresh the company data
+      await refreshCompany()
+      
+      // Force a page reload to clear any cached images
+      window.location.reload()
+    } catch (error) {
+      console.error('Error removing banner:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to remove banner',
+        variant: 'destructive',
+      })
       setUploadingBanner(false)
     }
   }
@@ -611,12 +675,23 @@ export default function CompanySettingsPage() {
               <div className="flex items-center gap-6">
                 <div className="flex-shrink-0">
                   {currentCompany.logo_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={currentCompany.logo_url}
-                      alt={currentCompany.name}
-                      className="w-32 h-32 object-cover rounded-lg border-2 border-zinc-700"
-                    />
+                    <div className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={currentCompany.logo_url}
+                        alt={currentCompany.name}
+                        className="w-32 h-32 object-cover rounded-lg border-2 border-zinc-700"
+                      />
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                        onClick={handleLogoRemove}
+                        disabled={uploadingLogo}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   ) : (
                     <div className="w-32 h-32 bg-zinc-800 rounded-lg border-2 border-zinc-700 flex items-center justify-center">
                       <Building2 className="h-12 w-12 text-zinc-600" />
@@ -634,7 +709,7 @@ export default function CompanySettingsPage() {
                   {uploadingLogo && (
                     <p className="text-sm text-muted-foreground mt-2">
                       <Loader2 className="inline h-4 w-4 animate-spin mr-2" />
-                      Uploading logo...
+                      {currentCompany.logo_url ? 'Removing' : 'Uploading'} logo...
                     </p>
                   )}
                 </div>
@@ -659,6 +734,16 @@ export default function CompanySettingsPage() {
                       alt={`${currentCompany.name} banner`}
                       className="w-full h-48 object-cover rounded-lg border-2 border-zinc-700"
                     />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={handleBannerRemove}
+                      disabled={uploadingBanner}
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
                   </div>
                 ) : (
                   <div className="w-full h-48 bg-zinc-800 rounded-lg border-2 border-zinc-700 flex items-center justify-center">
@@ -676,7 +761,7 @@ export default function CompanySettingsPage() {
                   {uploadingBanner && (
                     <p className="text-sm text-muted-foreground mt-2">
                       <Loader2 className="inline h-4 w-4 animate-spin mr-2" />
-                      Uploading banner...
+                      {currentCompany.banner_url ? 'Removing' : 'Uploading'} banner...
                     </p>
                   )}
                 </div>

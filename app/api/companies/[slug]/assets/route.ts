@@ -241,11 +241,18 @@ export async function DELETE(
     // Delete asset from storage
     await deleteCompanyAsset(assetPath)
 
-    // Update company to remove asset URL
-    const updateData =
-      assetType === 'logo' ? { logo_url: undefined } : { banner_url: undefined }
+    // Update company to remove asset URL - use direct Supabase update to set null
+    const columnName = assetType === 'logo' ? 'logo_url' : 'banner_url'
+    const { data: updatedCompany, error: updateError } = await supabase
+      .from('companies')
+      .update({ [columnName]: null })
+      .eq('id', company.id)
+      .select()
+      .single()
 
-    const updatedCompany = await companyService.updateCompany(company.id, updateData)
+    if (updateError) {
+      throw new Error(`Failed to update company: ${updateError.message}`)
+    }
 
     // Invalidate cache
     await UnifiedCache.purgeByTags(['content', 'api'])
