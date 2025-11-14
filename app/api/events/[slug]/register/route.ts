@@ -111,6 +111,15 @@ export async function POST(
       })
       .eq('id', event.id);
 
+    // Track registration in analytics
+    try {
+      const { AnalyticsService } = await import('@/lib/services/analytics-service');
+      await AnalyticsService.trackEventRegistration(event.id);
+    } catch (error) {
+      console.error('Error tracking registration in analytics:', error);
+      // Don't fail the registration if analytics tracking fails
+    }
+
     return NextResponse.json({
       success: true,
       data: registration,

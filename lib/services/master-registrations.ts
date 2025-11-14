@@ -64,7 +64,7 @@ class MasterRegistrationsService {
 
   // Register for any activity type with optimized query
   async register(request: RegistrationRequest, userId: string): Promise<MasterRegistration> {
-    // Use a single transaction to insert registration and get user profile data
+    // Insert registration without profile join to avoid schema cache issues
     const { data, error } = await this.supabase
       .from('master_registrations')
       .insert({
@@ -86,17 +86,7 @@ class MasterRegistrationsService {
         experience_level: request.experience_level,
         metadata: request.metadata || {}
       })
-      .select(`
-        *,
-        profiles!inner(
-          first_name,
-          last_name,
-          email,
-          phone,
-          company,
-          current_position
-        )
-      `)
+      .select('*')
       .single();
 
     if (error) {
@@ -110,17 +100,7 @@ class MasterRegistrationsService {
   async getUserRegistrations(filters: RegistrationFilters): Promise<MasterRegistration[]> {
     let query = this.supabase
       .from('master_registrations')
-      .select(`
-        *,
-        profiles!inner(
-          first_name,
-          last_name,
-          email,
-          phone,
-          company,
-          current_position
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (filters.user_id) {

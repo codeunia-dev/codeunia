@@ -91,6 +91,32 @@ export class AnalyticsService {
   }
 
   /**
+   * Track a registration for an event
+   */
+  static async trackEventRegistration(eventId: number): Promise<void> {
+    const supabase = await createClient()
+
+    const { data: event, error: eventError } = await supabase
+      .from('events')
+      .select('id, company_id')
+      .eq('id', eventId)
+      .single()
+
+    if (eventError || !event) {
+      throw new Error('Event not found')
+    }
+
+    // Update company analytics if event has a company
+    if (event.company_id) {
+      await this.incrementCompanyAnalytics(
+        event.company_id,
+        'total_registrations',
+        1
+      )
+    }
+  }
+
+  /**
    * Track a view for a hackathon
    */
   static async trackHackathonView(hackathonId: string): Promise<void> {
@@ -165,12 +191,64 @@ export class AnalyticsService {
     const supabase = await createClient()
     const today = new Date().toISOString().split('T')[0]
 
-    await supabase.rpc('increment_company_analytics', {
+    // Try RPC first, fallback to manual upsert if it fails
+    const { error: rpcError } = await supabase.rpc('increment_company_analytics', {
       p_company_id: companyId,
       p_date: today,
       p_field: field,
       p_increment: increment,
     })
+
+    if (rpcError) {
+      // Fallback: Get existing record or create new one
+      const { data: existing, error: fetchError } = await supabase
+        .from('company_analytics')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('date', today)
+        .single()
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching company analytics:', fetchError)
+        return
+      }
+
+      if (existing) {
+        // Update existing record
+        const currentValue = (existing[field] as number) || 0
+        const { error: updateError } = await supabase
+          .from('company_analytics')
+          .update({ [field]: currentValue + increment })
+          .eq('company_id', companyId)
+          .eq('date', today)
+
+        if (updateError) {
+          console.error('Error updating company analytics:', updateError)
+        }
+      } else {
+        // Create new record
+        const { error: insertError } = await supabase
+          .from('company_analytics')
+          .insert({
+            company_id: companyId,
+            date: today,
+            events_created: 0,
+            events_published: 0,
+            hackathons_created: 0,
+            hackathons_published: 0,
+            total_views: 0,
+            total_clicks: 0,
+            total_registrations: 0,
+            total_participants: 0,
+            revenue_generated: 0,
+            [field]: increment,
+          })
+
+        if (insertError) {
+          console.error('Error inserting company analytics:', insertError)
+        }
+      }
+    }
   }
 
   /**
