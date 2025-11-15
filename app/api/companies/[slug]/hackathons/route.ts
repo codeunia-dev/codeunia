@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { UnifiedCache } from '@/lib/unified-cache-system'
 
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs'
@@ -20,18 +19,14 @@ export async function GET(
 
     // Parse query parameters
     const search = searchParams.get('search') || undefined
+    const status = searchParams.get('status') || undefined
     const limit = parseInt(searchParams.get('limit') || '12')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Try to get from cache first
-    const cacheKey = `company:${slug}:hackathons:${JSON.stringify({ search, limit, offset })}`
-    const cached = await UnifiedCache.get(cacheKey)
-
-    if (cached) {
-      return UnifiedCache.createResponse(cached, 'API_STANDARD')
-    }
-
     const supabase = await createClient()
+
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser()
 
     // First, get the company by slug
     const { data: company, error: companyError } = await supabase
@@ -55,13 +50,40 @@ export async function GET(
       )
     }
 
+    // Check if user is a member of the company
+    let isCompanyMember = false
+    if (user) {
+      const { data: membership } = await supabase
+        .from('company_members')
+        .select('role')
+        .eq('company_id', company.id)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .single()
+      
+      if (membership) {
+        isCompanyMember = true
+      }
+    }
+
     // Build the query for hackathons
     let query = supabase
       .from('hackathons')
       .select('*', { count: 'exact' })
       .eq('company_id', company.id)
-      .eq('approval_status', 'approved')
-      .order('start_date', { ascending: false })
+
+    // If user is not a company member, only show approved hackathons
+    if (!isCompanyMember) {
+      query = query.eq('approval_status', 'approved')
+    } else if (status === 'all') {
+      // Company members can see all hackathons
+      // No additional filter needed
+    } else {
+      // Default: show all for company members
+      // No additional filter needed
+    }
+
+    query = query.order('date', { ascending: false })
 
     // Apply search filter if provided
     if (search) {
@@ -94,10 +116,7 @@ export async function GET(
       hasMore: (count || 0) > offset + limit,
     }
 
-    // Cache the result
-    await UnifiedCache.set(cacheKey, result, 'API_STANDARD')
-
-    return UnifiedCache.createResponse(result, 'API_STANDARD')
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error in GET /api/companies/[slug]/hackathons:', error)
 

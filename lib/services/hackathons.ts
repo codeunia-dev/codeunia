@@ -38,6 +38,13 @@ class HackathonsService {
         company:companies(*)
       `, { count: 'exact' })
 
+    // Only show approved hackathons by default (unless approval_status filter is explicitly provided)
+    if (filters.approval_status) {
+      query = query.eq('approval_status', filters.approval_status)
+    } else {
+      query = query.eq('approval_status', 'approved')
+    }
+
     // Apply filters
     if (filters.search) {
       query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`)
@@ -150,6 +157,7 @@ class HackathonsService {
           company:companies(*)
         `)
         .eq('featured', true)
+        .eq('approval_status', 'approved')
         .gte('date', new Date().toISOString().split('T')[0])
         .order('date', { ascending: true })
         .limit(limit)
