@@ -11,8 +11,8 @@ export const runtime = 'nodejs'
 
 // Validation schema for role update
 const updateRoleSchema = z.object({
-  role: z.enum(['owner', 'admin', 'editor', 'member'], {
-    errorMap: () => ({ message: 'Role must be owner, admin, editor, or member' }),
+  role: z.enum(['owner', 'admin', 'editor', 'viewer'], {
+    errorMap: () => ({ message: 'Role must be owner, admin, editor, or viewer' }),
   }),
 })
 

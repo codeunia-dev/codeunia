@@ -13,8 +13,8 @@ export const runtime = 'nodejs'
 // Validation schema for invite request
 const inviteSchema = z.object({
   email: z.string().email('Invalid email address'),
-  role: z.enum(['admin', 'editor', 'member'], {
-    errorMap: () => ({ message: 'Role must be admin, editor, or member' }),
+  role: z.enum(['admin', 'editor', 'viewer'], {
+    errorMap: () => ({ message: 'Role must be admin, editor, or viewer' }),
   }),
 })
 

@@ -42,10 +42,20 @@ export default async function SubscriptionPage({ params }: PageProps) {
     .select('role, status')
     .eq('company_id', company.id)
     .eq('user_id', user.id)
-    .eq('status', 'active')
     .single()
 
+  // Redirect if no membership found
   if (!membership) {
+    redirect('/dashboard/company')
+  }
+
+  // Redirect pending invitations to accept page
+  if (membership.status === 'pending') {
+    redirect(`/dashboard/company/${slug}/accept-invitation`)
+  }
+
+  // Only active members can access subscription
+  if (membership.status !== 'active') {
     redirect('/dashboard/company')
   }
 

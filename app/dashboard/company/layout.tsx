@@ -124,7 +124,7 @@ function CompanyDashboardContent({
 }) {
   const params = useParams()
   const companySlug = params?.slug as string
-  const { currentCompany, loading, error } = useCompanyContext()
+  const { currentCompany, userCompanies, loading, error } = useCompanyContext()
 
   // Show loading while company context is loading
   if (loading) {
@@ -137,6 +137,17 @@ function CompanyDashboardContent({
 
   // If no company access (error or no currentCompany), don't render sidebar
   if (error || !currentCompany) {
+    return <div className="bg-black min-h-screen w-full">{children}</div>
+  }
+
+  // Check if user has pending invitation (not yet accepted)
+  const membership = userCompanies.find(
+    (uc) => uc.company.slug === companySlug
+  )
+  const isPendingInvitation = membership?.status === 'pending'
+
+  // If user has pending invitation, don't show sidebar (only show invitation page)
+  if (isPendingInvitation) {
     return <div className="bg-black min-h-screen w-full">{children}</div>
   }
 

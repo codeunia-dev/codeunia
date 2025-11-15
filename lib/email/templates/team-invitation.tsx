@@ -140,7 +140,7 @@ export const getTeamInvitationEmail = (params: TeamInvitationParams) => {
   `
 
   return {
-    subject: `You've been invited to join ${params.companyName} on CodeUnia`,
+    subject: `You've been invited to join ${params.companyName} on Codeunia`,
     html: getEmailTemplate(content),
   }
 }

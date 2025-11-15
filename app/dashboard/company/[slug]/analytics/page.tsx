@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Skeleton } from '@/components/ui/skeleton'
 import { AnalyticsCharts } from '@/components/dashboard/AnalyticsCharts'
 import { useCompanyContext } from '@/contexts/CompanyContext'
+import { usePendingInvitationRedirect } from '@/lib/hooks/usePendingInvitationRedirect'
 import { CompanyAnalytics } from '@/types/company'
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { CalendarIcon, AlertCircle, TrendingUp } from 'lucide-react'
@@ -25,6 +26,7 @@ export default function AnalyticsPage() {
   const params = useParams()
   const companySlug = params?.slug as string
   const { currentCompany, loading: companyLoading } = useCompanyContext()
+  const isPendingInvitation = usePendingInvitationRedirect()
 
   const [analytics, setAnalytics] = useState<CompanyAnalytics[]>([])
   const [loading, setLoading] = useState(true)
@@ -66,6 +68,14 @@ export default function AnalyticsPage() {
       fetchAnalytics()
     }
   }, [currentCompany, fetchAnalytics])
+
+  if (companyLoading || isPendingInvitation) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   const handlePresetChange = (preset: PresetRange) => {
     setSelectedPreset(preset)

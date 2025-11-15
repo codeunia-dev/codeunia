@@ -44,15 +44,15 @@ class CompanyMemberService {
   async inviteMember(
     companyId: string,
     email: string,
-    role: 'admin' | 'editor' | 'member',
+    role: 'admin' | 'editor' | 'viewer',
     invitedBy: string
   ): Promise<CompanyMember> {
     const supabase = await createClient()
 
     // Validate role
-    if (!['admin', 'editor', 'member'].includes(role)) {
+    if (!['admin', 'editor', 'viewer'].includes(role)) {
       throw new CompanyError(
-        'Invalid role. Must be admin, editor, or member',
+        'Invalid role. Must be admin, editor, or viewer',
         CompanyErrorCodes.UNAUTHORIZED,
         400
       )
@@ -233,14 +233,14 @@ class CompanyMemberService {
    */
   async updateMemberRole(
     memberId: string,
-    role: 'owner' | 'admin' | 'editor' | 'member'
+    role: 'owner' | 'admin' | 'editor' | 'viewer'
   ): Promise<CompanyMember> {
     const supabase = await createClient()
 
     // Validate role
-    if (!['owner', 'admin', 'editor', 'member'].includes(role)) {
+    if (!['owner', 'admin', 'editor', 'viewer'].includes(role)) {
       throw new CompanyError(
-        'Invalid role. Must be owner, admin, editor, or member',
+        'Invalid role. Must be owner, admin, editor, or viewer',
         CompanyErrorCodes.UNAUTHORIZED,
         400
       )
@@ -585,7 +585,7 @@ class CompanyMemberService {
         view_analytics: true,
         edit_company: false,
       },
-      member: {
+      viewer: {
         manage_events: false,
         manage_team: false,
         view_analytics: true,
@@ -593,7 +593,7 @@ class CompanyMemberService {
       },
     }
 
-    const permissions = rolePermissions[member.role] || rolePermissions.member
+    const permissions = rolePermissions[member.role] || rolePermissions.viewer
     return permissions[permission] || false
   }
 
@@ -643,7 +643,7 @@ class CompanyMemberService {
 
     await sendEmail({
       to: email,
-      subject: `You've been invited to join ${companyName} on CodeUnia`,
+      subject: `You've been invited to join ${companyName} on Codeunia`,
       html: emailContent,
     })
   }
@@ -691,7 +691,7 @@ class CompanyMemberService {
               </p>
               
               <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-                You've been invited to join <strong>${params.companyName}</strong> on CodeUnia as a <strong>${params.role}</strong>.
+                You've been invited to join <strong>${params.companyName}</strong> on Codeunia as a <strong>${params.role}</strong>.
               </p>
               
               <div style="background-color: #f9fafb; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px;">

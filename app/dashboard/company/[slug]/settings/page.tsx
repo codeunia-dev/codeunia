@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useCompanyContext } from '@/contexts/CompanyContext'
+import { usePendingInvitationRedirect } from '@/lib/hooks/usePendingInvitationRedirect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +35,7 @@ import { useSubscription } from '@/hooks/useSubscription'
 
 export default function CompanySettingsPage() {
   const { currentCompany, userRole, loading: contextLoading, refreshCompany } = useCompanyContext()
+  const isPendingInvitation = usePendingInvitationRedirect()
   const { usage } = useSubscription(currentCompany?.slug)
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
@@ -102,6 +104,14 @@ export default function CompanySettingsPage() {
       })
     }
   }, [currentCompany])
+
+  if (contextLoading || isPendingInvitation) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))

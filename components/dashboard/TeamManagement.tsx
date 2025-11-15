@@ -83,8 +83,8 @@ export function TeamManagement({
   const [removeDialogOpen, setRemoveDialogOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<CompanyMember | null>(null)
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'member'>('member')
-  const [newRole, setNewRole] = useState<'owner' | 'admin' | 'editor' | 'member'>('member')
+  const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('viewer')
+  const [newRole, setNewRole] = useState<'owner' | 'admin' | 'editor' | 'viewer'>('viewer')
   const [submitting, setSubmitting] = useState(false)
   const { toast } = useToast()
 
@@ -160,7 +160,7 @@ export function TeamManagement({
 
       setInviteDialogOpen(false)
       setInviteEmail('')
-      setInviteRole('member')
+      setInviteRole('viewer')
       fetchMembers()
     } catch (error) {
       console.error('Error inviting member:', error)
@@ -257,7 +257,7 @@ export function TeamManagement({
   // Open role dialog
   const openRoleDialog = (member: CompanyMember) => {
     setSelectedMember(member)
-    setNewRole(member.role as 'owner' | 'admin' | 'editor' | 'member')
+    setNewRole(member.role as 'owner' | 'admin' | 'editor' | 'viewer')
     setRoleDialogOpen(true)
   }
 
@@ -291,11 +291,11 @@ export function TeamManagement({
             Active
           </Badge>
         )
-      case 'invited':
+      case 'pending':
         return (
           <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
             <Clock className="w-3 h-3 mr-1" />
-            Invited
+            Pending
           </Badge>
         )
       case 'suspended':
@@ -494,13 +494,13 @@ export function TeamManagement({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="member">Member - View only</SelectItem>
+                  <SelectItem value="viewer">Viewer - View only</SelectItem>
                   <SelectItem value="editor">Editor - Create drafts</SelectItem>
                   <SelectItem value="admin">Admin - Full event management</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                {inviteRole === 'member' && 'Can view company events and analytics'}
+                {inviteRole === 'viewer' && 'Can view company events and analytics'}
                 {inviteRole === 'editor' && 'Can create draft events'}
                 {inviteRole === 'admin' && 'Can create, edit, and manage events'}
               </p>
@@ -543,7 +543,7 @@ export function TeamManagement({
                   <SelectItem value="owner">Owner - Full control</SelectItem>
                   <SelectItem value="admin">Admin - Full event management</SelectItem>
                   <SelectItem value="editor">Editor - Create drafts</SelectItem>
-                  <SelectItem value="member">Member - View only</SelectItem>
+                  <SelectItem value="viewer">Viewer - View only</SelectItem>
                 </SelectContent>
               </Select>
             </div>
