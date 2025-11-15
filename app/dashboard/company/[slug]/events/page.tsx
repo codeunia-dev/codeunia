@@ -25,12 +25,14 @@ import {
 } from '@/components/ui/alert-dialog'
 
 export default function CompanyEventsPage() {
-  const { currentCompany, loading: companyLoading } = useCompanyContext()
+  const { currentCompany, userRole, loading: companyLoading } = useCompanyContext()
   const isPendingInvitation = usePendingInvitationRedirect()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [deletingEventSlug, setDeletingEventSlug] = useState<string | null>(null)
+
+  const canManageEvents = userRole && ['owner', 'admin', 'editor'].includes(userRole)
 
   const fetchEvents = useCallback(async () => {
     if (!currentCompany) return
@@ -170,15 +172,17 @@ export default function CompanyEventsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Events</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your company&apos;s events and hackathons
+            {canManageEvents ? "Manage your company's events and hackathons" : "View your company's events"}
           </p>
         </div>
-        <Link href="/dashboard/company/events/create">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Event
-          </Button>
-        </Link>
+        {canManageEvents && (
+          <Link href={`/dashboard/company/${currentCompany?.slug}/events/create`}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -239,7 +243,7 @@ export default function CompanyEventsPage() {
         <CardHeader>
           <CardTitle>All Events ({filteredEvents.length})</CardTitle>
           <CardDescription>
-            View and manage all your events
+            {canManageEvents ? 'View and manage all your events' : 'View all company events'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -254,10 +258,10 @@ export default function CompanyEventsPage() {
                 No events found
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
-                {searchTerm ? 'Try adjusting your search' : 'Get started by creating your first event'}
+                {searchTerm ? 'Try adjusting your search' : canManageEvents ? 'Get started by creating your first event' : 'No events available yet'}
               </p>
-              {!searchTerm && (
-                <Link href="/dashboard/company/events/create">
+              {!searchTerm && canManageEvents && (
+                <Link href={`/dashboard/company/${currentCompany?.slug}/events/create`}>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Event
@@ -276,7 +280,7 @@ export default function CompanyEventsPage() {
                   <TableHead>Approval</TableHead>
                   <TableHead>Views</TableHead>
                   <TableHead>Registered</TableHead>
-                  <TableHead>Actions</TableHead>
+                  {canManageEvents && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -308,59 +312,71 @@ export default function CompanyEventsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{event.registered || 0}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/company/${currentCompany.slug}/events/${event.slug}/edit`}>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        {event.approval_status === 'approved' && (
+                    {canManageEvents ? (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/dashboard/company/${currentCompany.slug}/events/${event.slug}/edit`}>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          {event.approval_status === 'approved' && (
+                            <Link href={`/events/${event.slug}`} target="_blank">
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                disabled={deletingEventSlug === event.slug}
+                              >
+                                {deletingEventSlug === event.slug ? (
+                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                )}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
+                                  {event.registered && event.registered > 0 && (
+                                    <span className="block mt-2 text-red-600 font-medium">
+                                      Warning: This event has {event.registered} registered participant{event.registered > 1 ? 's' : ''}.
+                                    </span>
+                                  )}
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteEvent(event.slug)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    ) : (
+                      event.approval_status === 'approved' && (
+                        <TableCell>
                           <Link href={`/events/${event.slug}`} target="_blank">
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                        )}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              disabled={deletingEventSlug === event.slug}
-                            >
-                              {deletingEventSlug === event.slug ? (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-                              ) : (
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
-                                {event.registered && event.registered > 0 && (
-                                  <span className="block mt-2 text-red-600 font-medium">
-                                    Warning: This event has {event.registered} registered participant{event.registered > 1 ? 's' : ''}.
-                                  </span>
-                                )}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteEvent(event.slug)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
+                        </TableCell>
+                      )
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

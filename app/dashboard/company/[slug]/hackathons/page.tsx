@@ -29,11 +29,13 @@ interface Hackathon {
 }
 
 export default function CompanyHackathonsPage() {
-  const { currentCompany, loading: companyLoading } = useCompanyContext()
+  const { currentCompany, userRole, loading: companyLoading } = useCompanyContext()
   const isPendingInvitation = usePendingInvitationRedirect()
   const [hackathons, setHackathons] = useState<Hackathon[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  const canManageEvents = userRole && ['owner', 'admin', 'editor'].includes(userRole)
 
   const fetchHackathons = useCallback(async () => {
     if (!currentCompany) return
@@ -149,15 +151,17 @@ export default function CompanyHackathonsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Hackathons</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your company&apos;s hackathons and coding challenges
+            {canManageEvents ? "Manage your company's hackathons and coding challenges" : "View your company's hackathons"}
           </p>
         </div>
-        <Link href={`/dashboard/company/${currentCompany.slug}/hackathons/create`}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Hackathon
-          </Button>
-        </Link>
+        {canManageEvents && (
+          <Link href={`/dashboard/company/${currentCompany.slug}/hackathons/create`}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Hackathon
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -218,7 +222,7 @@ export default function CompanyHackathonsPage() {
         <CardHeader>
           <CardTitle>All Hackathons ({filteredHackathons.length})</CardTitle>
           <CardDescription>
-            View and manage all your hackathons
+            {canManageEvents ? 'View and manage all your hackathons' : 'View all company hackathons'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -247,7 +251,7 @@ export default function CompanyHackathonsPage() {
                   <TableHead>Approval</TableHead>
                   <TableHead>Views</TableHead>
                   <TableHead>Participants</TableHead>
-                  <TableHead>Actions</TableHead>
+                  {canManageEvents && <TableHead>Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -279,22 +283,34 @@ export default function CompanyHackathonsPage() {
                       </div>
                     </TableCell>
                     <TableCell>{hackathon.registered || 0}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Link href={`/dashboard/company/${currentCompany.slug}/hackathons/${hackathon.slug}/edit`}>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        {hackathon.approval_status === 'approved' && (
+                    {canManageEvents ? (
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Link href={`/dashboard/company/${currentCompany.slug}/hackathons/${hackathon.slug}/edit`}>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          {hackathon.approval_status === 'approved' && (
+                            <Link href={`/hackathons/${hackathon.slug}`} target="_blank">
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      </TableCell>
+                    ) : (
+                      hackathon.approval_status === 'approved' && (
+                        <TableCell>
                           <Link href={`/hackathons/${hackathon.slug}`} target="_blank">
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                        )}
-                      </div>
-                    </TableCell>
+                        </TableCell>
+                      )
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

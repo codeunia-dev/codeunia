@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Company } from '@/types/company'
 import { format, formatDistanceToNow } from 'date-fns'
+import { useCompanyContext } from '@/contexts/CompanyContext'
 
 interface CompanyDashboardStats {
   totalEvents: number
@@ -63,11 +64,16 @@ interface CompanyDashboardProps {
 }
 
 export function CompanyDashboard({ company }: CompanyDashboardProps) {
+  const { userRole } = useCompanyContext()
   const [stats, setStats] = useState<CompanyDashboardStats | null>(null)
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Check permissions based on role
+  const canManageEvents = userRole && ['owner', 'admin', 'editor'].includes(userRole)
+  const canManageTeam = userRole && ['owner', 'admin'].includes(userRole)
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -342,18 +348,22 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
-            <QuickActionButton
-              href={`/dashboard/company/${company.slug}/events/create`}
-              icon={Plus}
-              title="Create Event"
-              description="Host a new event"
-            />
-            <QuickActionButton
-              href={`/dashboard/company/${company.slug}/team`}
-              icon={Users}
-              title="Invite Team Member"
-              description="Add someone to your team"
-            />
+            {canManageEvents && (
+              <QuickActionButton
+                href={`/dashboard/company/${company.slug}/events/create`}
+                icon={Plus}
+                title="Create Event"
+                description="Host a new event"
+              />
+            )}
+            {canManageTeam && (
+              <QuickActionButton
+                href={`/dashboard/company/${company.slug}/team`}
+                icon={Users}
+                title="Invite Team Member"
+                description="Add someone to your team"
+              />
+            )}
             <QuickActionButton
               href={`/dashboard/company/${company.slug}/analytics`}
               icon={BarChart3}
