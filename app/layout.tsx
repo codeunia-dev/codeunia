@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+'use client'
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
 import AIProvider from "@/components/ai/AIProvider";
-import { getPageMetadata, getPageStructuredData } from "@/lib/seo/metadata";
+import { getPageStructuredData } from "@/lib/seo/metadata";
+import { usePathname } from "next/navigation";
 
 // Only load dev tools in development
 const ReactDevTools = () => null;
@@ -16,26 +16,13 @@ import "./globals.css";
 //   ? `https://${process.env.VERCEL_URL}`
 //   : "http://localhost:3000";
 
-export const metadata: Metadata = getPageMetadata('home', {
-  title: "Codeunia – Empowering Coders Globally",
-  description: "Join the global coding community. Participate in hackathons, compete on leaderboards, and advance your coding skills with Codeunia.",
-  keywords: ['coding', 'hackathons', 'programming', 'developer', 'competition', 'leaderboard', 'coding community'],
-  url: '/',
-  type: 'website'
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  display: "swap",
-  subsets: ["latin"],
-});
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const structuredData = getPageStructuredData('home');
+  const pathname = usePathname();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -84,7 +71,7 @@ export default function RootLayout({
         {/* Viewport for mobile optimization */}
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       </head>
-      <body className={`${geistSans.className} antialiased`} suppressHydrationWarning>
+      <body className={`antialiased`} suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeProvider
             attribute="class"
@@ -95,7 +82,7 @@ export default function RootLayout({
             <GlobalErrorHandler />
             {children}
             <Toaster richColors position="top-center" />
-            <AIProvider />
+            {!pathname.startsWith('/dashboard/company') && <AIProvider />}
 
             <ReactDevTools />
             <AuthDebug />
