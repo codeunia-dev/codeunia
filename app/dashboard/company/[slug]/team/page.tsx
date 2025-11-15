@@ -4,6 +4,7 @@ import React from 'react'
 import { useParams } from 'next/navigation'
 import { TeamManagement } from '@/components/dashboard/TeamManagement'
 import { useCompanyContext } from '@/contexts/CompanyContext'
+import { usePendingInvitationRedirect } from '@/lib/hooks/usePendingInvitationRedirect'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -12,8 +13,9 @@ export default function TeamPage() {
   const params = useParams()
   const companySlug = params?.slug as string
   const { currentCompany, userRole, loading, error } = useCompanyContext()
+  const isPendingInvitation = usePendingInvitationRedirect()
 
-  if (loading) {
+  if (loading || isPendingInvitation) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-7xl">
         <div className="space-y-6">

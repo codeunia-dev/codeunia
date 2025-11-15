@@ -91,7 +91,7 @@ const faqData: FAQItem[] = [
   {
     category: 'Team Management',
     question: 'Can team members see each other\'s activity?',
-    answer: 'Owners and Admins can see all team activity. Editors and Members see limited activity relevant to their role.',
+    answer: 'Owners and Admins can see all team activity. Editors and Viewers see limited activity relevant to their role.',
   },
   {
     category: 'Team Management',

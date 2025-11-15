@@ -63,9 +63,9 @@ export interface CompanyMember {
   id: string
   company_id: string
   user_id: string
-  role: 'owner' | 'admin' | 'editor' | 'member'
+  role: 'owner' | 'admin' | 'editor' | 'viewer'
   permissions?: Record<string, boolean>
-  status: 'active' | 'invited' | 'suspended'
+  status: 'active' | 'pending' | 'suspended'
   invited_by?: string
   invited_at?: string
   joined_at: string

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useCompanyContext } from '@/contexts/CompanyContext'
+import { usePendingInvitationRedirect } from '@/lib/hooks/usePendingInvitationRedirect'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +26,7 @@ import {
 
 export default function CompanyEventsPage() {
   const { currentCompany, loading: companyLoading } = useCompanyContext()
+  const isPendingInvitation = usePendingInvitationRedirect()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -57,6 +59,14 @@ export default function CompanyEventsPage() {
       fetchEvents()
     }
   }, [currentCompany, fetchEvents])
+
+  if (companyLoading || isPendingInvitation) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   const filteredEvents = events.filter(event =>
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||

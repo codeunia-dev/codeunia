@@ -199,7 +199,7 @@ export default function AcceptInvitationPage() {
             <>
               <div className="bg-zinc-800/50 border border-zinc-700 rounded-lg p-4">
                 <p className="text-sm text-zinc-300 mb-2">
-                  You&apos;ve been invited to join <strong className="text-white">{companyName}</strong> on CodeUnia.
+                  You&apos;ve been invited to join <strong className="text-white">{companyName}</strong> on Codeunia.
                 </p>
                 <p className="text-sm text-zinc-400">
                   By accepting this invitation, you&apos;ll be able to collaborate with the team and manage events.
