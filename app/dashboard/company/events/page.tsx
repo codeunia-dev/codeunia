@@ -7,16 +7,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Calendar, Search, Plus, Edit, Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Calendar, Search, Plus, Edit, Eye, Clock, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { Event } from '@/types/events'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export default function CompanyEventsPage() {
   const { currentCompany, loading: companyLoading } = useCompanyContext()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deletingEventSlug, setDeletingEventSlug] = useState<string | null>(null)
 
   const fetchEvents = useCallback(async () => {
     if (!currentCompany) return
@@ -50,6 +62,30 @@ export default function CompanyEventsPage() {
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  const handleDeleteEvent = async (eventSlug: string) => {
+    try {
+      setDeletingEventSlug(eventSlug)
+      
+      const response = await fetch(`/api/events/${eventSlug}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete event')
+      }
+
+      toast.success('Event deleted successfully')
+      
+      // Refresh the events list
+      await fetchEvents()
+    } catch (error) {
+      console.error('Error deleting event:', error)
+      toast.error('Failed to delete event')
+    } finally {
+      setDeletingEventSlug(null)
+    }
+  }
 
   const stats = {
     total: events.length,
@@ -276,6 +312,43 @@ export default function CompanyEventsPage() {
                             </Button>
                           </Link>
                         )}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled={deletingEventSlug === event.slug}
+                            >
+                              {deletingEventSlug === event.slug ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+                              ) : (
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
+                                {event.registered && event.registered > 0 && (
+                                  <span className="block mt-2 text-red-600 font-medium">
+                                    Warning: This event has {event.registered} registered participant{event.registered > 1 ? 's' : ''}.
+                                  </span>
+                                )}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteEvent(event.slug)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </TableCell>
                   </TableRow>

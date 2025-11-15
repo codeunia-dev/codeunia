@@ -1,24 +1,46 @@
 # 🌐 Codeunia
 
-*Codeunia* is a dynamic platform designed to empower developers by keeping them informed and inspired. Stay updated with the latest hackathons, AI breakthroughs, tech blogs, and developer tools — all in one place.
+*Codeunia* is a professional developer platform designed to power the modern tech ecosystem. We bring organizations, developers, and innovators together through a unified marketplace for hackathons, events, insights, and tools — all in one place.
 
-## 🚀 Features
+## 🚀 Platform Highlights
 
-- 🔍 Discover Upcoming Hackathons   
-- 🧠 Latest News in Artificial Intelligence & Machine Learning  
-- ✍ Developer-Focused Blog Posts   
-- 📅 Event Calendar and Reminders  
-- 🧰 Curated Tools and Resources for Developers *(Coming Soon)*  
-- 📬 Newsletter Subscription *(Coming Soon)*  
-- 📊 Community Polls and Discussions *(Coming Soon)*  
+* 🏢 **Multi-Company Event Marketplace**
+  Verified organizations can host, manage, and scale their own hackathons and tech events.
+
+* 🔍 **Discover Global Hackathons**
+  Stay updated with curated events from top companies and institutions.
+
+* 🧠 **Tech & AI Insights**
+  Access the latest breakthroughs in AI, ML, startups, and software engineering.
+
+* ✍ **Developer Articles & Blogs**
+  In-depth writeups from experts, engineers, and industry contributors.
+
+* 📅 **Smart Event Calendar & Reminders**
+  Never miss an opportunity — get personalized updates and alerts.
+
+* 🎯 **Organization Dashboards**
+  Complete event lifecycle management: creation, moderation, registrations, analytics, and monetization.
+
+* 📊 **Advanced Analytics for Hosts**
+  Real-time insights into views, clicks, conversions, and performance trends.
+
+* 🧰 **Developer Tools & Resources** *(Coming Soon)*
+  Curated utilities and productivity enhancers for engineering teams.
+
+* 📬 **Tech Newsletter** *(Coming Soon)*
+  Weekly insights for developers and organizations.
 
 ---
 
-### ⚠️ Disclaimer
+## ⚠️ Intellectual Property Notice
 
-> We do have an official GitHub organization: [github.com/codeunia](https://github.com/codeunia).  
-> However, due to being a student-led initiative and operating with limited resources (like funds for paid GitHub features), we are currently using [github.com/codeunia-dev](https://github.com/codeunia-dev) to manage our repositories and development.
+Codeunia operates multiple GitHub organizations for structured development and deployment:
 
-> **All code, assets, and content under both profiles are the intellectual property of Codeunia. Unauthorized use, reproduction, or redistribution is strictly prohibited without written permission.**
+* **github.com/codeunia** — Official organization
+* **github.com/codeunia-dev** — Development & engineering projects
+
+**All source code, assets, and content under these organizations are the intellectual property of Codeunia.
+Unauthorized use, reproduction, or redistribution is strictly prohibited without prior written approval.**
 
 ---

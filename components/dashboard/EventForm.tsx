@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Event } from '@/types/events'
 import { Company } from '@/types/company'
-import { Save, Send, AlertCircle } from 'lucide-react'
+import { Save, Send, AlertCircle, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface EventFormProps {
@@ -22,6 +23,7 @@ interface EventFormProps {
 
 export function EventForm({ company, event, mode, onSuccess }: EventFormProps) {
   const [loading, setLoading] = useState(false)
+  const [companyInfoOpen, setCompanyInfoOpen] = useState(false)
   const [formData, setFormData] = useState({
     title: event?.title || '',
     slug: event?.slug || '',
@@ -149,37 +151,48 @@ export function EventForm({ company, event, mode, onSuccess }: EventFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* Company Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Company Information</CardTitle>
-          <CardDescription>
-            This event will be associated with {company.name}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3">
-            {company.logo_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={company.logo_url}
-                alt={company.name}
-                className="h-12 w-12 rounded-lg object-cover"
-              />
-            )}
-            <div>
-              <p className="font-medium">{company.name}</p>
-              <Badge variant="outline" className="text-green-600 border-green-600">
-                Verified
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Company Info - Collapsible */}
+      <Collapsible open={companyInfoOpen} onOpenChange={setCompanyInfoOpen}>
+        <Card className="dark:bg-black dark:border-gray-800">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="text-left">
+                  <CardTitle>Company Information</CardTitle>
+                  <CardDescription>
+                    This event will be associated with {company.name}
+                  </CardDescription>
+                </div>
+                <ChevronDown className={`h-5 w-5 transition-transform ${companyInfoOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
+              <div className="flex items-center gap-3">
+                {company.logo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={company.logo_url}
+                    alt={company.name}
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                )}
+                <div>
+                  <p className="font-medium">{company.name}</p>
+                  <Badge variant="outline" className="text-green-600 border-green-600">
+                    Verified
+                  </Badge>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Event rejection reason */}
       {event?.approval_status === 'rejected' && event.rejection_reason && (
-        <Card className="border-red-500/20 bg-red-500/5">
+        <Card className="border-red-500/20 bg-red-500/5 dark:bg-black dark:border-red-500/30">
           <CardHeader>
             <CardTitle className="text-red-600 flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
@@ -193,7 +206,7 @@ export function EventForm({ company, event, mode, onSuccess }: EventFormProps) {
       )}
 
       {/* Basic Information */}
-      <Card>
+      <Card className="dark:bg-black dark:border-gray-800">
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
           <CardDescription>
@@ -251,7 +264,7 @@ export function EventForm({ company, event, mode, onSuccess }: EventFormProps) {
       </Card>
 
       {/* Event Details */}
-      <Card>
+      <Card className="dark:bg-black dark:border-gray-800">
         <CardHeader>
           <CardTitle>Event Details</CardTitle>
           <CardDescription>
@@ -348,7 +361,7 @@ export function EventForm({ company, event, mode, onSuccess }: EventFormProps) {
       </Card>
 
       {/* Registration & Pricing */}
-      <Card>
+      <Card className="dark:bg-black dark:border-gray-800">
         <CardHeader>
           <CardTitle>Registration & Pricing</CardTitle>
           <CardDescription>
