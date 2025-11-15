@@ -5,8 +5,8 @@ import { companyService } from '@/lib/services/company-service'
 import { SubscriptionManagement } from '@/components/subscription/SubscriptionManagement'
 
 export const metadata: Metadata = {
-  title: 'Subscription Management | CodeUnia',
-  description: 'Manage your company subscription and billing',
+  title: 'Subscription | CodeUnia',
+  description: 'View your company subscription and billing information',
 }
 
 interface PageProps {
@@ -59,17 +59,19 @@ export default async function SubscriptionPage({ params }: PageProps) {
     redirect('/dashboard/company')
   }
 
-  // Only owners and admins can manage subscription
-  if (!['owner', 'admin'].includes(membership.role)) {
-    redirect(`/dashboard/company/${slug}`)
-  }
+  // Check if user can manage subscription
+  const canManageSubscription = ['owner', 'admin'].includes(membership.role)
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Subscription Management</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          {canManageSubscription ? 'Subscription Management' : 'Subscription Information'}
+        </h1>
         <p className="text-muted-foreground">
-          Manage your subscription plan and view usage details
+          {canManageSubscription 
+            ? 'Manage your subscription plan and view usage details'
+            : 'View your company subscription plan and usage details'}
         </p>
       </div>
 
