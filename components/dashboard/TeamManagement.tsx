@@ -319,7 +319,9 @@ export function TeamManagement({
             <div>
               <CardTitle className="text-white">Team Members</CardTitle>
               <CardDescription>
-                Manage your team members and their roles
+                {canManageTeam 
+                  ? 'Manage your team members and their roles' 
+                  : 'View your team members and their roles'}
               </CardDescription>
             </div>
             {canManageTeam && (

@@ -51,19 +51,23 @@ export default function TeamPage() {
     )
   }
 
+  const canManageTeam = userRole && ['owner', 'admin'].includes(userRole)
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-7xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Team Management</h1>
         <p className="text-muted-foreground">
-          Manage your team members, roles, and permissions
+          {canManageTeam 
+            ? 'Manage your team members, roles, and permissions' 
+            : 'View your team members and their roles'}
         </p>
       </div>
 
       <TeamManagement
         company={currentCompany}
         companySlug={companySlug}
-        currentUserRole={userRole || 'member'}
+        currentUserRole={userRole || 'viewer'}
       />
     </div>
   )

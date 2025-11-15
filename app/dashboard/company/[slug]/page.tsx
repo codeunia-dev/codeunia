@@ -76,14 +76,16 @@ export default function CompanySlugDashboardPage() {
             Here&apos;s what&apos;s happening with {currentCompany.name}
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild>
-            <Link href={`/dashboard/company/${currentCompany.slug}/events/create`}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Event
-            </Link>
-          </Button>
-        </div>
+        {userRole && ['owner', 'admin', 'editor'].includes(userRole) && (
+          <div className="flex gap-2">
+            <Button asChild>
+              <Link href={`/dashboard/company/${currentCompany.slug}/events/create`}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Event
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Subscription Expiry Warning */}
@@ -162,13 +164,15 @@ export default function CompanySlugDashboardPage() {
               </p>
             </div>
           </div>
-          <div className="pt-4">
-            <Button asChild variant="outline">
-              <Link href={`/dashboard/company/${currentCompany.slug}/settings`}>
-                Edit Company Profile
-              </Link>
-            </Button>
-          </div>
+          {userRole && ['owner', 'admin'].includes(userRole) && (
+            <div className="pt-4">
+              <Button asChild variant="outline">
+                <Link href={`/dashboard/company/${currentCompany.slug}/settings`}>
+                  Edit Company Profile
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
