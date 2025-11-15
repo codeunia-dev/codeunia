@@ -109,61 +109,67 @@ export default function EditEventPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href={`/dashboard/company/${companySlug}/events`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Events
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>
-            <p className="text-muted-foreground mt-1">
-              Update your event details
-            </p>
-          </div>
+    <div className="min-h-screen dark:bg-black dark:text-white">
+      <div className="space-y-6">
+        {/* Back Button */}
+        <Link href={`/dashboard/company/${companySlug}/events`}>
+          <Button variant="ghost" size="sm" className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Events
+          </Button>
+        </Link>
+
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>
+          <p className="text-muted-foreground mt-1">
+            Update your event details
+          </p>
         </div>
 
-        {/* Delete Button */}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="outline" className="text-red-600 border-red-600 hover:bg-red-50">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Event
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the event
-                &quot;{event.title}&quot; and all associated data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={deleting}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {deleting ? 'Deleting...' : 'Delete Event'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+        {/* Event Form */}
+        <EventForm
+          company={currentCompany}
+          event={event}
+          mode="edit"
+          onSuccess={handleSuccess}
+        />
 
-      {/* Event Form */}
-      <EventForm
-        company={currentCompany}
-        event={event}
-        mode="edit"
-        onSuccess={handleSuccess}
-      />
+        {/* Delete Button at Bottom */}
+        <div className="flex items-center justify-between pt-6 border-t dark:border-gray-800">
+          <div className="text-sm text-muted-foreground">
+            <p className="font-medium">Danger Zone</p>
+            <p>Once you delete an event, there is no going back.</p>
+          </div>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Event
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the event
+                  &quot;{event.title}&quot; and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {deleting ? 'Deleting...' : 'Delete Event'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
     </div>
   )
 }
