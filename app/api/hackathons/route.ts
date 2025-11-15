@@ -44,6 +44,7 @@ interface HackathonData {
   socials?: Record<string, string>;
   sponsors?: unknown[];
   marking_scheme?: unknown;
+  company_id?: string;
 }
 
 // GET: Fetch hackathons with optional filters
@@ -102,30 +103,48 @@ export async function POST(request: NextRequest) {
   try {
     const hackathonData: HackathonData = await request.json();
 
-    // Check for admin authentication header or session
+    // Check for authentication
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Authentication required' },
+        { status: 401 }
+      );
+    }
+
     let isAuthorized = false;
 
-    // Check if user is authenticated and is admin
-    if (user) {
-      // Check admin status from profiles table
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('id', user.id)
+    // Check if user is admin
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+    
+    if (profile?.is_admin) {
+      isAuthorized = true;
+    }
+
+    // If not admin, check if user is a member of the company
+    if (!isAuthorized && hackathonData.company_id) {
+      const { data: membership } = await supabase
+        .from('company_members')
+        .select('role')
+        .eq('company_id', hackathonData.company_id)
+        .eq('user_id', user.id)
+        .eq('status', 'active')
         .single();
       
-      if (profile?.is_admin) {
+      if (membership) {
         isAuthorized = true;
       }
     }
 
-    // If not authorized through session, check if it's a direct admin request
     if (!isAuthorized) {
       return NextResponse.json(
-        { error: 'Unauthorized: Admin access required' },
+        { error: 'Unauthorized: You must be a company member or admin to create hackathons' },
         { status: 401 }
       );
     }

@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ModerationQueue } from "@/components/moderation/ModerationQueue"
-import { AlertCircle, CheckCircle, Clock, Filter } from "lucide-react"
+import { HackathonModerationQueue } from "@/components/moderation/HackathonModerationQueue"
+import { AlertCircle, CheckCircle, Clock, Filter, Calendar, Trophy } from "lucide-react"
 
 export default function ModerationPage() {
-  const [stats, setStats] = useState({
+  const [activeTab, setActiveTab] = useState("events")
+  const [eventStats, setEventStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  })
+  const [hackathonStats, setHackathonStats] = useState({
     pending: 0,
     approved: 0,
     rejected: 0,
@@ -14,17 +22,31 @@ export default function ModerationPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch moderation stats
+    // Fetch moderation stats for both events and hackathons
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/moderation/events?limit=1000')
-        if (response.ok) {
-          const data = await response.json()
+        // Fetch event stats
+        const eventsResponse = await fetch('/api/admin/moderation/events?limit=1000')
+        if (eventsResponse.ok) {
+          const data = await eventsResponse.json()
           if (data.success) {
-            setStats({
+            setEventStats({
               pending: data.data.total,
-              approved: 0, // Would need separate endpoint for this
-              rejected: 0, // Would need separate endpoint for this
+              approved: 0,
+              rejected: 0,
+            })
+          }
+        }
+
+        // Fetch hackathon stats
+        const hackathonsResponse = await fetch('/api/admin/moderation/hackathons?limit=1000')
+        if (hackathonsResponse.ok) {
+          const data = await hackathonsResponse.json()
+          if (data.success) {
+            setHackathonStats({
+              pending: data.data.total,
+              approved: 0,
+              rejected: 0,
             })
           }
         }
@@ -38,6 +60,8 @@ export default function ModerationPage() {
     fetchStats()
   }, [])
 
+  const stats = activeTab === "events" ? eventStats : hackathonStats
+
   return (
     <div className="bg-black min-h-screen px-4 py-8 md:px-8 lg:px-16 space-y-8">
       {/* Header */}
@@ -45,10 +69,10 @@ export default function ModerationPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white drop-shadow-sm flex items-center gap-3">
             <span className="inline-block w-2 h-6 sm:h-8 bg-gradient-to-b from-purple-400 to-blue-400 rounded-full mr-2" />
-            Event Moderation Queue
+            Content Moderation
           </h1>
           <p className="text-zinc-400 mt-1 font-medium text-sm sm:text-base">
-            Review and approve events submitted by companies
+            Review and approve events and hackathons submitted by companies
           </p>
         </div>
       </div>
@@ -113,25 +137,61 @@ export default function ModerationPage() {
         </Card>
       </div>
 
-      {/* Moderation Queue */}
-      <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-zinc-100/80 to-zinc-200/60 dark:from-zinc-900/60 dark:to-zinc-800/40">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                <Filter className="h-5 w-5 text-purple-400" />
-                Pending Events
-              </CardTitle>
-              <CardDescription className="text-zinc-500 dark:text-zinc-300 font-medium text-sm">
-                Review events and take action
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ModerationQueue />
-        </CardContent>
-      </Card>
+      {/* Moderation Queue with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="events" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Events
+          </TabsTrigger>
+          <TabsTrigger value="hackathons" className="flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            Hackathons
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="events">
+          <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-zinc-100/80 to-zinc-200/60 dark:from-zinc-900/60 dark:to-zinc-800/40">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Filter className="h-5 w-5 text-purple-400" />
+                    Pending Events
+                  </CardTitle>
+                  <CardDescription className="text-zinc-500 dark:text-zinc-300 font-medium text-sm">
+                    Review events and take action
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <ModerationQueue />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="hackathons">
+          <Card className="border-0 shadow-2xl rounded-2xl bg-gradient-to-br from-zinc-100/80 to-zinc-200/60 dark:from-zinc-900/60 dark:to-zinc-800/40">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    <Filter className="h-5 w-5 text-purple-400" />
+                    Pending Hackathons
+                  </CardTitle>
+                  <CardDescription className="text-zinc-500 dark:text-zinc-300 font-medium text-sm">
+                    Review hackathons and take action
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <HackathonModerationQueue />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
