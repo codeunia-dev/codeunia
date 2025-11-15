@@ -70,7 +70,7 @@ export function CompanySidebar({
   const toggleCollapsed = () => setCollapsed(!collapsed)
   const pathname = usePathname()
   const { navigateTo } = useSafeNavigation()
-  const { currentCompany, userCompanies, switchCompany } = useCompanyContext()
+  const { currentCompany, userCompanies, userRole, switchCompany } = useCompanyContext()
 
   return (
     <SidebarProvider>
@@ -164,7 +164,7 @@ export function CompanySidebar({
                           {name}
                         </span>
                         <span className="truncate text-xs text-purple-300">
-                          {currentCompany?.name}
+                          {userRole ? `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} • ${currentCompany?.name}` : currentCompany?.name}
                         </span>
                       </div>
                       <ChevronDown className="size-4 text-zinc-400" />
@@ -420,7 +420,7 @@ export function CompanySidebar({
                               {name}
                             </span>
                             <span className="truncate text-xs text-purple-300">
-                              {currentCompany?.name}
+                              {userRole ? `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} • ${currentCompany?.name}` : currentCompany?.name}
                             </span>
                           </div>
                           <ChevronDown className="ml-auto size-4 text-zinc-400 flex-shrink-0" />

@@ -164,13 +164,15 @@ export default function CompanySlugDashboardPage() {
               </p>
             </div>
           </div>
-          <div className="pt-4">
-            <Button asChild variant="outline">
-              <Link href={`/dashboard/company/${currentCompany.slug}/settings`}>
-                Edit Company Profile
-              </Link>
-            </Button>
-          </div>
+          {userRole && ['owner', 'admin'].includes(userRole) && (
+            <div className="pt-4">
+              <Button asChild variant="outline">
+                <Link href={`/dashboard/company/${currentCompany.slug}/settings`}>
+                  Edit Company Profile
+                </Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
