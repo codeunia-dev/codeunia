@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CompanySidebar } from '@/components/dashboard/CompanySidebar'
 import { CompanyHeader } from '@/components/dashboard/CompanyHeader'
-import { CompanyProvider } from '@/contexts/CompanyContext'
+import { CompanyProvider, useCompanyContext } from '@/contexts/CompanyContext'
 import {
   LayoutDashboard,
   Calendar,
@@ -110,6 +110,7 @@ export default function CompanyDashboardLayout({
   )
 }
 
+// Component that uses CompanyContext to conditionally render sidebar
 function CompanyDashboardContent({
   avatar,
   name,
@@ -123,6 +124,21 @@ function CompanyDashboardContent({
 }) {
   const params = useParams()
   const companySlug = params?.slug as string
+  const { currentCompany, loading, error } = useCompanyContext()
+
+  // Show loading while company context is loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  // If no company access (error or no currentCompany), don't render sidebar
+  if (error || !currentCompany) {
+    return <div className="bg-black min-h-screen w-full">{children}</div>
+  }
 
   // Generate sidebar items with dynamic company slug
   const sidebarItems: SidebarGroupType[] = [
