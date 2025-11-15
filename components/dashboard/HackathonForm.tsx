@@ -24,6 +24,24 @@ interface HackathonFormProps {
 export function HackathonForm({ company, hackathon, mode, onSuccess }: HackathonFormProps) {
   const [loading, setLoading] = useState(false)
   const [companyInfoOpen, setCompanyInfoOpen] = useState(false)
+  
+  // Parse existing data for dynamic fields
+  const parseSchedule = (schedule: unknown): { date: string; label: string }[] => {
+    if (Array.isArray(schedule)) return schedule
+    if (schedule && typeof schedule === 'object') {
+      return Object.entries(schedule).map(([date, label]) => ({ date, label: String(label) }))
+    }
+    return []
+  }
+
+  const parseFAQ = (faq: unknown): { question: string; answer: string }[] => {
+    if (Array.isArray(faq)) return faq
+    if (faq && typeof faq === 'object') {
+      return Object.entries(faq).map(([question, answer]) => ({ question, answer: String(answer) }))
+    }
+    return []
+  }
+
   const [formData, setFormData] = useState({
     title: hackathon?.title || '',
     slug: hackathon?.slug || '',
@@ -44,9 +62,35 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
     prize_details: hackathon?.prize_details || '',
     team_size_min: (hackathon?.team_size as { min?: number; max?: number } | undefined)?.min || 1,
     team_size_max: (hackathon?.team_size as { min?: number; max?: number } | undefined)?.max || 5,
+    // High priority fields
+    image: hackathon?.image || '',
+    tags: hackathon?.tags?.join(', ') || '',
+    event_type: hackathon?.event_type?.[0] || 'Offline',
+    user_types: hackathon?.user_types || [],
+    organizer_email: (hackathon?.organizer_contact as { email?: string })?.email || '',
+    organizer_phone: (hackathon?.organizer_contact as { phone?: string })?.phone || '',
   })
 
-  const handleChange = (field: string, value: string | number | boolean) => {
+  // Medium priority fields - dynamic arrays
+  const [rules, setRules] = useState<string[]>(
+    Array.isArray(hackathon?.rules) ? hackathon.rules : []
+  )
+  const [schedule, setSchedule] = useState<{ date: string; label: string }[]>(
+    parseSchedule(hackathon?.schedule)
+  )
+  const [faq, setFAQ] = useState<{ question: string; answer: string }[]>(
+    parseFAQ(hackathon?.faq)
+  )
+  const [socials, setSocials] = useState({
+    linkedin: (hackathon?.socials as Record<string, string> | undefined)?.linkedin || '',
+    twitter: (hackathon?.socials as Record<string, string> | undefined)?.twitter || '',
+    discord: (hackathon?.socials as Record<string, string> | undefined)?.discord || '',
+    website: (hackathon?.socials as Record<string, string> | undefined)?.website || '',
+    whatsapp: (hackathon?.socials as Record<string, string> | undefined)?.whatsapp || '',
+    instagram: (hackathon?.socials as Record<string, string> | undefined)?.instagram || '',
+  })
+
+  const handleChange = (field: string, value: string | number | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -74,29 +118,35 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')
 
-      // Remove team_size_min and team_size_max from formData before spreading
-      const { team_size_min, team_size_max, ...restFormData } = formData
+      // Remove team_size_min, team_size_max, and other UI-only fields from formData before spreading
+      const { team_size_min, team_size_max, tags, organizer_email, organizer_phone, user_types, event_type, ...restFormData } = formData
 
       const hackathonData = {
         ...restFormData,
         slug,
         categories: [formData.category],
-        tags: [],
+        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
         locations: [formData.location],
         registered: hackathon?.registered || 0,
-        event_type: ['Offline'],
-        user_types: ['Professionals', 'College Students'],
+        event_type: [event_type],
+        user_types: user_types.length > 0 ? user_types : ['Professionals', 'College Students'],
         featured: false,
         status: 'draft',
-        rules: [],
-        schedule: [],
-        faq: [],
-        socials: {},
+        rules: rules.filter(Boolean),
+        schedule: schedule.filter(s => s.date && s.label),
+        faq: faq.filter(f => f.question && f.answer),
+        socials: Object.fromEntries(
+          Object.entries(socials).filter(([, value]) => value)
+        ),
         sponsors: [],
         company_id: company.id,
         team_size: {
           min: team_size_min,
           max: team_size_max,
+        },
+        organizer_contact: {
+          email: organizer_email || undefined,
+          phone: organizer_phone || undefined,
         },
         views: hackathon?.views || 0,
         clicks: hackathon?.clicks || 0,
@@ -265,6 +315,32 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
                 rows={6}
               />
             </div>
+
+            <div className="col-span-2">
+              <Label htmlFor="image">Banner Image URL</Label>
+              <Input
+                id="image"
+                value={formData.image}
+                onChange={(e) => handleChange('image', e.target.value)}
+                placeholder="https://example.com/banner.jpg"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Recommended size: 1200x600px
+              </p>
+            </div>
+
+            <div className="col-span-2">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                value={formData.tags}
+                onChange={(e) => handleChange('tags', e.target.value)}
+                placeholder="AI, ML, Web3, Blockchain (comma-separated)"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Separate tags with commas for better discoverability
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -342,13 +418,20 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="organizer">Organizer</Label>
-              <Input
-                id="organizer"
-                value={formData.organizer}
-                onChange={(e) => handleChange('organizer', e.target.value)}
-                placeholder="Organizer name"
-              />
+              <Label htmlFor="event_type">Event Type *</Label>
+              <Select
+                value={formData.event_type}
+                onValueChange={(value) => handleChange('event_type', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select event type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Offline">Offline</SelectItem>
+                  <SelectItem value="Online">Online</SelectItem>
+                  <SelectItem value="Hybrid">Hybrid</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="capacity">Capacity *</Label>
@@ -360,6 +443,72 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
                 placeholder="Maximum participants"
               />
             </div>
+          </div>
+
+          <div className="col-span-2">
+            <Label>Target Audience *</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {['Students', 'Professionals', 'College Students', 'School Students', 'Working Professionals', 'Freelancers'].map((type) => (
+                <Badge
+                  key={type}
+                  variant={formData.user_types.includes(type) ? 'default' : 'outline'}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newTypes = formData.user_types.includes(type)
+                      ? formData.user_types.filter(t => t !== type)
+                      : [...formData.user_types, type]
+                    handleChange('user_types', newTypes)
+                  }}
+                >
+                  {type}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Click to select/deselect target audience types
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="dark:bg-black dark:border-gray-800">
+        <CardHeader>
+          <CardTitle>Organizer Contact</CardTitle>
+          <CardDescription>
+            Contact information for participants to reach out
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="organizer">Organizer Name</Label>
+              <Input
+                id="organizer"
+                value={formData.organizer}
+                onChange={(e) => handleChange('organizer', e.target.value)}
+                placeholder="Organizer name"
+              />
+            </div>
+            <div>
+              <Label htmlFor="organizer_email">Contact Email</Label>
+              <Input
+                id="organizer_email"
+                type="email"
+                value={formData.organizer_email}
+                onChange={(e) => handleChange('organizer_email', e.target.value)}
+                placeholder="contact@example.com"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="organizer_phone">Contact Phone</Label>
+            <Input
+              id="organizer_phone"
+              type="tel"
+              value={formData.organizer_phone}
+              onChange={(e) => handleChange('organizer_phone', e.target.value)}
+              placeholder="+91 98765 43210"
+            />
           </div>
         </CardContent>
       </Card>
@@ -463,6 +612,215 @@ export function HackathonForm({ company, hackathon, mode, onSuccess }: Hackathon
               </Select>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Social Media Links */}
+      <Card className="dark:bg-black dark:border-gray-800">
+        <CardHeader>
+          <CardTitle>Social Media & Links</CardTitle>
+          <CardDescription>
+            Add social media links for participants to connect
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="linkedin">LinkedIn</Label>
+              <Input
+                id="linkedin"
+                value={socials.linkedin}
+                onChange={(e) => setSocials(prev => ({ ...prev, linkedin: e.target.value }))}
+                placeholder="https://linkedin.com/company/..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="twitter">Twitter/X</Label>
+              <Input
+                id="twitter"
+                value={socials.twitter}
+                onChange={(e) => setSocials(prev => ({ ...prev, twitter: e.target.value }))}
+                placeholder="https://twitter.com/..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="discord">Discord</Label>
+              <Input
+                id="discord"
+                value={socials.discord}
+                onChange={(e) => setSocials(prev => ({ ...prev, discord: e.target.value }))}
+                placeholder="https://discord.gg/..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                value={socials.website}
+                onChange={(e) => setSocials(prev => ({ ...prev, website: e.target.value }))}
+                placeholder="https://example.com"
+              />
+            </div>
+            <div>
+              <Label htmlFor="whatsapp">WhatsApp</Label>
+              <Input
+                id="whatsapp"
+                value={socials.whatsapp}
+                onChange={(e) => setSocials(prev => ({ ...prev, whatsapp: e.target.value }))}
+                placeholder="https://wa.me/..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="instagram">Instagram</Label>
+              <Input
+                id="instagram"
+                value={socials.instagram}
+                onChange={(e) => setSocials(prev => ({ ...prev, instagram: e.target.value }))}
+                placeholder="https://instagram.com/..."
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Rules */}
+      <Card className="dark:bg-black dark:border-gray-800">
+        <CardHeader>
+          <CardTitle>Rules & Guidelines</CardTitle>
+          <CardDescription>
+            Add rules for participants to follow
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {rules.map((rule, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                value={rule}
+                onChange={(e) => {
+                  const newRules = [...rules]
+                  newRules[index] = e.target.value
+                  setRules(newRules)
+                }}
+                placeholder={`Rule ${index + 1}`}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setRules(rules.filter((_, i) => i !== index))}
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setRules([...rules, ''])}
+          >
+            Add Rule
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Schedule */}
+      <Card className="dark:bg-black dark:border-gray-800">
+        <CardHeader>
+          <CardTitle>Schedule</CardTitle>
+          <CardDescription>
+            Add schedule items for the hackathon
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {schedule.map((item, index) => (
+            <div key={index} className="grid grid-cols-3 gap-2">
+              <Input
+                value={item.date}
+                onChange={(e) => {
+                  const newSchedule = [...schedule]
+                  newSchedule[index].date = e.target.value
+                  setSchedule(newSchedule)
+                }}
+                placeholder="Day 1 - Morning"
+              />
+              <Input
+                value={item.label}
+                onChange={(e) => {
+                  const newSchedule = [...schedule]
+                  newSchedule[index].label = e.target.value
+                  setSchedule(newSchedule)
+                }}
+                placeholder="Activity description"
+                className="col-span-2"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSchedule(schedule.filter((_, i) => i !== index))}
+                className="col-span-3"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSchedule([...schedule, { date: '', label: '' }])}
+          >
+            Add Schedule Item
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* FAQ */}
+      <Card className="dark:bg-black dark:border-gray-800">
+        <CardHeader>
+          <CardTitle>FAQ</CardTitle>
+          <CardDescription>
+            Add frequently asked questions
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {faq.map((item, index) => (
+            <div key={index} className="space-y-2 p-4 border rounded-lg">
+              <Input
+                value={item.question}
+                onChange={(e) => {
+                  const newFAQ = [...faq]
+                  newFAQ[index].question = e.target.value
+                  setFAQ(newFAQ)
+                }}
+                placeholder="Question"
+              />
+              <Textarea
+                value={item.answer}
+                onChange={(e) => {
+                  const newFAQ = [...faq]
+                  newFAQ[index].answer = e.target.value
+                  setFAQ(newFAQ)
+                }}
+                placeholder="Answer"
+                rows={2}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setFAQ(faq.filter((_, i) => i !== index))}
+              >
+                Remove FAQ
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setFAQ([...faq, { question: '', answer: '' }])}
+          >
+            Add FAQ
+          </Button>
         </CardContent>
       </Card>
 

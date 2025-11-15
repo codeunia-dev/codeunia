@@ -235,20 +235,21 @@ export default function HackathonDetailPage() {
       rulesArray = Object.values(hackathon.rules).map(String);
     }
 
-    // Default rules if no data is provided
+    // Don't show rules if no data is provided
     if (rulesArray.length === 0) {
-      rulesArray = [
-        "All team members must be registered participants",
-        "Original work only - no plagiarism or pre-built solutions",
-        "Teams must work independently without external help",
-        "All code must be written during the hackathon period",
-        "Presentations must be completed within the allocated time",
-        "Judges' decisions are final and binding",
-        "Respect all participants and maintain professional conduct",
-        "Follow the specified submission format and deadlines",
-        "No use of proprietary or licensed software without permission",
-        "Teams must be present for the entire duration of the event"
-      ];
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl text-center">
+            <svg className="h-12 w-12 text-muted-foreground mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-xl font-semibold mb-2">Rules Coming Soon</h2>
+            <p className="text-muted-foreground">
+              The rules and guidelines for this hackathon will be announced soon. Stay tuned!
+            </p>
+          </div>
+        </div>
+      );
     }
     
     return (
@@ -319,17 +320,19 @@ export default function HackathonDetailPage() {
       scheduleArray = Object.entries(hackathon.schedule).map(([date, label]) => ({ date, label: String(label) }));
     }
 
-    // Default schedule if no data is provided
+    // Don't show schedule if no data is provided
     if (scheduleArray.length === 0) {
-      scheduleArray = [
-        { date: "Day 1 - Opening", label: "Registration & Team Formation" },
-        { date: "Day 1 - Morning", label: "Opening Ceremony & Problem Statement Release" },
-        { date: "Day 1 - Afternoon", label: "Coding & Development Phase" },
-        { date: "Day 1 - Evening", label: "Mentorship Sessions & Networking" },
-        { date: "Day 2 - Morning", label: "Continued Development & Prototyping" },
-        { date: "Day 2 - Afternoon", label: "Final Submissions & Presentations" },
-        { date: "Day 2 - Evening", label: "Judging & Award Ceremony" }
-      ];
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl text-center">
+            <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Schedule Coming Soon</h2>
+            <p className="text-muted-foreground">
+              The detailed schedule for this hackathon will be announced soon. Stay tuned!
+            </p>
+          </div>
+        </div>
+      );
     }
 
     return (
@@ -383,8 +386,23 @@ export default function HackathonDetailPage() {
       )
     }
     
-    const prizeAmount = hackathon?.prize || hackathon?.price || "₹50,000+";
-    const prizeDetails = hackathon?.prize_details || "Exciting rewards, sponsor goodies, and recognition.";
+    const prizeAmount = hackathon?.prize || hackathon?.price || "";
+    const prizeDetails = hackathon?.prize_details || "";
+    
+    // If no prize information is provided at all
+    if (!prizeAmount && !prizeDetails) {
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl text-center">
+            <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Prize Details Coming Soon</h2>
+            <p className="text-muted-foreground">
+              Prize information will be announced soon. Stay tuned for exciting rewards!
+            </p>
+          </div>
+        </div>
+      );
+    }
     
     return (
     <div className="space-y-6">
@@ -396,72 +414,16 @@ export default function HackathonDetailPage() {
         
         {/* Main Prize */}
         <div className="text-center mb-8 p-6 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
-          <div className="text-4xl font-bold text-primary mb-2">{prizeAmount}</div>
-          <p className="text-muted-foreground text-lg">{prizeDetails}</p>
-        </div>
-
-        {/* Prize Categories */}
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
-            <div className="text-2xl mb-2">🥇</div>
-            <h3 className="font-semibold mb-1">1st Place</h3>
-            <p className="text-sm text-muted-foreground">Grand Prize Winner</p>
-          </div>
-          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
-            <div className="text-2xl mb-2">🥈</div>
-            <h3 className="font-semibold mb-1">2nd Place</h3>
-            <p className="text-sm text-muted-foreground">Runner Up</p>
-          </div>
-          <div className="text-center p-4 bg-background/50 rounded-lg border border-primary/10">
-            <div className="text-2xl mb-2">🥉</div>
-            <h3 className="font-semibold mb-1">3rd Place</h3>
-            <p className="text-sm text-muted-foreground">Second Runner Up</p>
-          </div>
-        </div>
-
-        {/* Additional Rewards */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Additional Rewards</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
-              <div className="text-2xl">🏆</div>
-              <div>
-                <div className="font-medium">Trophy & Certificates</div>
-                <div className="text-sm text-muted-foreground">Official recognition</div>
-              </div>
+          {prizeAmount && (
+            <div className="text-4xl font-bold text-primary mb-2">{prizeAmount}</div>
+          )}
+          {prizeDetails ? (
+            <div className="text-muted-foreground text-left mt-4 whitespace-pre-line">
+              {prizeDetails}
             </div>
-            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
-              <div className="text-2xl">💼</div>
-              <div>
-                <div className="font-medium">Internship Opportunities</div>
-                <div className="text-sm text-muted-foreground">With partner companies</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
-              <div className="text-2xl">🎁</div>
-              <div>
-                <div className="font-medium">Sponsor Goodies</div>
-                <div className="text-sm text-muted-foreground">Swag bags & merchandise</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-background/30 rounded-lg">
-              <div className="text-2xl">🌟</div>
-              <div>
-                <div className="font-medium">Networking</div>
-                <div className="text-sm text-muted-foreground">Connect with industry experts</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10">
-          <h3 className="font-semibold mb-2 text-primary">💡 Pro Tips:</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Focus on innovation and problem-solving</li>
-            <li>• Present your solution clearly and confidently</li>
-            <li>• Network with other participants and mentors</li>
-            <li>• Have fun and learn from the experience!</li>
-          </ul>
+          ) : prizeAmount && (
+            <p className="text-muted-foreground mt-2">Detailed prize breakdown coming soon!</p>
+          )}
         </div>
       </div>
     </div>
@@ -492,50 +454,19 @@ export default function HackathonDetailPage() {
       faqArray = Object.entries(hackathon.faq).map(([question, answer]) => ({ question, answer: String(answer) }));
     }
 
-    // Default FAQ if no data is provided
+    // Don't show FAQ if no data is provided
     if (faqArray.length === 0) {
-      faqArray = [
-        {
-          question: "Who can participate in this hackathon?",
-          answer: "This hackathon is open to all students, professionals, and coding enthusiasts. Whether you're a beginner or an expert, everyone is welcome to participate and showcase their skills."
-        },
-        {
-          question: "What is the team size requirement?",
-          answer: "Teams can consist of 1-5 members. You can participate individually or form a team with friends or colleagues. Team formation will be facilitated during the opening ceremony."
-        },
-        {
-          question: "What technologies can I use?",
-          answer: "You can use any programming language, framework, or technology stack of your choice. The focus is on innovation and problem-solving rather than specific technologies."
-        },
-        {
-          question: "Do I need to bring my own equipment?",
-          answer: "Yes, please bring your own laptop and any necessary peripherals. We'll provide power outlets and internet connectivity. Some hardware components may be available on request."
-        },
-        {
-          question: "How will the judging process work?",
-          answer: "Projects will be evaluated based on innovation, technical implementation, user experience, and presentation. A panel of industry experts will judge the final submissions."
-        },
-        {
-          question: "What if I have dietary restrictions?",
-          answer: "We'll provide meals and snacks throughout the event. Please inform us about any dietary restrictions during registration, and we'll accommodate your needs."
-        },
-        {
-          question: "Can I work on a pre-existing project?",
-          answer: "No, all work must be original and created during the hackathon period. You can plan and research beforehand, but coding and development must start after the problem statement is released."
-        },
-        {
-          question: "What happens if I need help during the hackathon?",
-          answer: "Mentors will be available throughout the event to provide guidance and answer questions. You can also reach out to the organizing team for any technical or logistical support."
-        },
-        {
-          question: "How do I submit my project?",
-          answer: "Detailed submission guidelines will be provided during the opening ceremony. Generally, you'll need to submit your code repository, a demo video, and present your solution to the judges."
-        },
-        {
-          question: "What are the prizes and rewards?",
-          answer: "Winners will receive cash prizes, trophies, certificates, and potential internship opportunities with partner companies. All participants will receive certificates and networking opportunities."
-        }
-      ];
+      return (
+        <div className="space-y-6">
+          <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl text-center">
+            <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">FAQ Coming Soon</h2>
+            <p className="text-muted-foreground">
+              Frequently asked questions will be added soon. For now, feel free to contact the organizers with any questions!
+            </p>
+          </div>
+        </div>
+      );
     }
     
     return (
@@ -829,8 +760,28 @@ export default function HackathonDetailPage() {
                   <div className="text-sm text-muted-foreground mb-2">Have questions about this hackathon? Contact the organizers or check the FAQ section.</div>
                   
                   {/* Social Icons Row */}
-                  {hackathon?.socials && (
-                    <div className="flex justify-center gap-4 mb-4">
+                  {hackathon?.socials && Object.keys(hackathon.socials).length > 0 && (
+                    <div className="flex flex-wrap justify-center gap-3 mb-4">
+                      {hackathon.socials.linkedin && (
+                        <a href={hackathon.socials.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-3 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors shadow">
+                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M8 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="8" cy="8" r="1" fill="currentColor"/><path d="M12 16v-3a2 2 0 0 1 4 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                        </a>
+                      )}
+                      {hackathon.socials.twitter && (
+                        <a href={hackathon.socials.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter/X" className="rounded-full bg-slate-100 dark:bg-slate-900/30 p-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shadow">
+                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                      )}
+                      {hackathon.socials.discord && (
+                        <a href={hackathon.socials.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="rounded-full bg-indigo-100 dark:bg-indigo-900/30 p-3 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors shadow">
+                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                        </a>
+                      )}
+                      {hackathon.socials.website && (
+                        <a href={hackathon.socials.website} target="_blank" rel="noopener noreferrer" aria-label="Website" className="rounded-full bg-gray-100 dark:bg-gray-900/30 p-3 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors shadow">
+                          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        </a>
+                      )}
                       {hackathon.socials.whatsapp && (
                         <a href={hackathon.socials.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="rounded-full bg-green-100 dark:bg-green-900/30 p-3 hover:bg-green-200 dark:hover:bg-green-800 transition-colors shadow">
                           <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 1.85.504 3.59 1.38 5.08L2 22l5.09-1.36A9.953 9.953 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2Zm0 18a7.95 7.95 0 0 1-4.09-1.13l-.29-.17-3.02.8.81-2.95-.19-.3A7.96 7.96 0 1 1 20 12c0 4.411-3.589 8-8 8Zm4.29-5.38c-.22-.11-1.3-.64-1.5-.71-.2-.07-.35-.11-.5.11-.15.22-.57.71-.7.86-.13.15-.26.16-.48.05-.22-.11-.93-.34-1.77-1.09-.66-.59-1.1-1.31-1.23-1.53-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.07-.11-.5-1.21-.68-1.66-.18-.44-.36-.38-.5-.39-.13-.01-.28-.01-.43-.01-.15 0-.39.06-.6.28-.21.22-.8.78-.8 1.9 0 1.12.82 2.2.93 2.35.11.15 1.62 2.48 3.93 3.38.55.19.98.3 1.31.38.55.14 1.05.12 1.44.07.44-.07 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.42-.25Z"/></svg>
@@ -839,11 +790,6 @@ export default function HackathonDetailPage() {
                       {hackathon.socials.instagram && (
                         <a href={hackathon.socials.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="rounded-full bg-pink-100 dark:bg-pink-900/30 p-3 hover:bg-pink-200 dark:hover:bg-pink-800 transition-colors shadow">
                           <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
-                        </a>
-                      )}
-                      {hackathon.socials.linkedin && (
-                        <a href={hackathon.socials.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-3 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M8 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="8" cy="8" r="1" fill="currentColor"/><path d="M12 16v-3a2 2 0 0 1 4 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                         </a>
                       )}
                     </div>
