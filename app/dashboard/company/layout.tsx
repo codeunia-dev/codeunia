@@ -13,7 +13,6 @@ import {
   Users,
   BarChart3,
   Settings,
-  FileText,
   Trophy,
   CreditCard,
 } from 'lucide-react'
@@ -190,11 +189,6 @@ function CompanyDashboardContent({
           title: 'Analytics',
           url: `/dashboard/company/${companySlug}/analytics`,
           icon: BarChart3,
-        },
-        {
-          title: 'Reports',
-          url: `/dashboard/company/${companySlug}/reports`,
-          icon: FileText,
         },
       ],
     },
