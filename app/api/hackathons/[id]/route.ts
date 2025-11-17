@@ -113,26 +113,34 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params
     
+    console.log('🗑️ DELETE request for hackathon:', id)
+    
     // Check authentication
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
+      console.error('❌ Authentication error:', authError)
       return NextResponse.json(
         { error: 'Unauthorized: Authentication required' },
         { status: 401 }
       )
     }
 
+    console.log('✅ User authenticated:', user.id)
+
     // Get the existing hackathon to check company_id
     const existingHackathon = await hackathonsService.getHackathonBySlug(id)
     
     if (!existingHackathon) {
+      console.error('❌ Hackathon not found:', id)
       return NextResponse.json(
         { error: 'Hackathon not found' },
         { status: 404 }
       )
     }
+
+    console.log('✅ Hackathon found:', existingHackathon.id, existingHackathon.title)
 
     let isAuthorized = false
 
@@ -145,6 +153,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
     
     if (profile?.is_admin) {
       isAuthorized = true
+      console.log('✅ User is admin')
     }
 
     // If not admin, check if user is a member of the company
@@ -159,23 +168,30 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       
       if (membership) {
         isAuthorized = true
+        console.log('✅ User is company member with role:', membership.role)
       }
     }
 
     if (!isAuthorized) {
+      console.error('❌ User not authorized to delete hackathon')
       return NextResponse.json(
         { error: 'Unauthorized: You must be a company member or admin to delete this hackathon' },
-        { status: 401 }
+        { status: 403 }
       )
     }
     
+    console.log('🗑️ Attempting to delete hackathon...')
     await hackathonsService.deleteHackathon(id)
+    console.log('✅ Hackathon deleted successfully')
     
-    return NextResponse.json({ message: 'Hackathon deleted successfully' })
+    return NextResponse.json({ 
+      success: true,
+      message: 'Hackathon deleted successfully' 
+    })
   } catch (error) {
-    console.error('Error in DELETE /api/hackathons/[id]:', error)
+    console.error('❌ Error in DELETE /api/hackathons/[id]:', error)
     return NextResponse.json(
-      { error: 'Failed to delete hackathon' },
+      { error: error instanceof Error ? error.message : 'Failed to delete hackathon' },
       { status: 500 }
     )
   }

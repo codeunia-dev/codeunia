@@ -310,15 +310,25 @@ class HackathonsService {
   async deleteHackathon(slug: string) {
     const supabase = await createClient()
     
-    const { error } = await supabase
+    console.log('🗑️ Deleting hackathon with slug:', slug)
+    
+    const { data, error } = await supabase
       .from('hackathons')
       .delete()
       .eq('slug', slug)
+      .select()
 
     if (error) {
-      console.error('Error deleting hackathon:', error)
-      throw new Error('Failed to delete hackathon')
+      console.error('❌ Error deleting hackathon from database:', error)
+      throw new Error(`Failed to delete hackathon: ${error.message}`)
     }
+
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No hackathon was deleted. Slug might not exist or RLS policy blocked deletion.')
+      throw new Error('Hackathon not found or you do not have permission to delete it')
+    }
+
+    console.log('✅ Hackathon deleted from database:', data)
 
     // Clear cache after deleting hackathon
     cache.clear()
