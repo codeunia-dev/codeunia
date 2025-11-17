@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useCompanyContext } from '@/contexts/CompanyContext'
 
 export type SidebarGroupType = {
@@ -47,7 +48,8 @@ export type SidebarGroupType = {
 }
 
 interface CompanySidebarProps {
-  avatar: React.ReactNode
+  avatarUrl?: string
+  avatarInitial: string
   name: string
   email: string
   sidebarItems: SidebarGroupType[]
@@ -56,13 +58,23 @@ interface CompanySidebarProps {
 }
 
 export function CompanySidebar({
-  avatar,
+  avatarUrl,
+  avatarInitial,
   name,
   email,
   sidebarItems,
   children,
   header,
 }: CompanySidebarProps) {
+  // Avatar component to reuse across mobile and desktop
+  const AvatarContent = ({ size = 'default' }: { size?: 'default' | 'small' }) => (
+    <Avatar className={size === 'small' ? 'h-8 w-8' : 'h-10 w-10'}>
+      <AvatarImage src={avatarUrl} alt={name} />
+      <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white font-semibold">
+        {avatarInitial}
+      </AvatarFallback>
+    </Avatar>
+  )
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const closeSidebar = () => setMobileOpen(false)
@@ -155,9 +167,7 @@ export function CompanySidebar({
                       variant="ghost"
                       className="w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors"
                     >
-                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md">
-                        {avatar}
-                      </div>
+                      <AvatarContent />
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold text-white">
                           {name}
@@ -177,9 +187,7 @@ export function CompanySidebar({
                   >
                     <DropdownMenuLabel className="p-0 font-normal">
                       <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white font-semibold">
-                          {avatar}
-                        </div>
+                        <AvatarContent size="small" />
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-semibold">{name}</span>
                           <span className="truncate text-xs text-zinc-400">
@@ -397,9 +405,7 @@ export function CompanySidebar({
                       className="w-full flex items-center gap-3 rounded-xl p-2 hover:bg-purple-700/20 transition-colors data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                       title={collapsed ? name : undefined}
                     >
-                      <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-purple-600 text-white font-semibold shadow-md flex-shrink-0">
-                        {avatar}
-                      </div>
+                      <AvatarContent />
                       {!collapsed && (
                         <>
                           <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
@@ -423,9 +429,7 @@ export function CompanySidebar({
                   >
                     <DropdownMenuLabel className="p-0 font-normal">
                       <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-purple-600 text-white font-semibold">
-                          {avatar}
-                        </div>
+                        <AvatarContent size="small" />
                         <div className="grid flex-1 text-left text-sm leading-tight">
                           <span className="truncate font-semibold">{name}</span>
                           <span className="truncate text-xs text-zinc-400">
