@@ -3,7 +3,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSafeNavigation } from '@/lib/security/safe-navigation'
 import {
-  Bell,
   LogOut,
   User,
   ChevronDown,
@@ -194,21 +193,9 @@ export function CompanySidebar({
                       asChild
                       className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer"
                     >
-                      <Link href="/protected/profile" className="flex items-center w-full">
+                      <Link href={`/dashboard/company/${currentCompany?.slug}/profile`} className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>My Profile</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      asChild
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer"
-                    >
-                      <Link
-                        href="/protected/notifications"
-                        className="flex items-center w-full"
-                      >
-                        <Bell className="size-4 text-purple-400" />
-                        <span>Notifications</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -452,21 +439,9 @@ export function CompanySidebar({
                       asChild
                       className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer"
                     >
-                      <Link href="/protected/profile" className="flex items-center w-full">
+                      <Link href={`/dashboard/company/${currentCompany?.slug}/profile`} className="flex items-center w-full">
                         <User className="size-4 text-purple-400" />
                         <span>My Profile</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      asChild
-                      className="flex items-center gap-2 px-3 py-2 hover:bg-purple-700/10 rounded-md cursor-pointer"
-                    >
-                      <Link
-                        href="/protected/notifications"
-                        className="flex items-center w-full"
-                      >
-                        <Bell className="size-4 text-purple-400" />
-                        <span>Notifications</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
