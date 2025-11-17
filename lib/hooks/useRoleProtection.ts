@@ -20,11 +20,15 @@ export function useRoleProtection(requiredRole: 'student' | 'company_member') {
           return
         }
 
-        // Check if user is a company member (FIXED: changed from 'company_users' to 'company_members')
+        // Check if user is a company member and get their company slug
         const { data: companyMembership } = await supabase
           .from('company_members')
-          .select('id')
+          .select(`
+            id,
+            company:companies(slug)
+          `)
           .eq('user_id', user.id)
+          .eq('status', 'active')
           .maybeSingle()
 
         const isCompanyMember = !!companyMembership
@@ -39,7 +43,15 @@ export function useRoleProtection(requiredRole: 'student' | 'company_member') {
         } else if (requiredRole === 'student') {
           if (isCompanyMember) {
             // User is a company member trying to access student routes
-            router.push('/dashboard/company')
+            // Redirect to their company dashboard with the correct slug
+            const company = companyMembership.company as unknown as { slug: string } | null
+            const companySlug = company?.slug
+            if (companySlug) {
+              router.push(`/dashboard/company/${companySlug}`)
+            } else {
+              // Fallback if slug is not available
+              router.push('/dashboard/company')
+            }
             return
           }
         }

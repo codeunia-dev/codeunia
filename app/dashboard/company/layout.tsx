@@ -185,13 +185,16 @@ function CompanyDashboardContent({
   }
 
   // Generate sidebar items with dynamic company slug
+  // Use currentCompany.slug as fallback when companySlug from params is undefined
+  const effectiveSlug = companySlug || currentCompany.slug
+  
   const sidebarItems: SidebarGroupType[] = [
     {
       title: 'Dashboard',
       items: [
         {
           title: 'Overview',
-          url: `/dashboard/company/${companySlug}`,
+          url: `/dashboard/company/${effectiveSlug}`,
           icon: LayoutDashboard,
         },
       ],
@@ -201,17 +204,17 @@ function CompanyDashboardContent({
       items: [
         {
           title: 'Events',
-          url: `/dashboard/company/${companySlug}/events`,
+          url: `/dashboard/company/${effectiveSlug}/events`,
           icon: Calendar,
         },
         {
           title: 'Hackathons',
-          url: `/dashboard/company/${companySlug}/hackathons`,
+          url: `/dashboard/company/${effectiveSlug}/hackathons`,
           icon: Trophy,
         },
         {
           title: 'Team',
-          url: `/dashboard/company/${companySlug}/team`,
+          url: `/dashboard/company/${effectiveSlug}/team`,
           icon: Users,
         },
       ],
@@ -221,7 +224,7 @@ function CompanyDashboardContent({
       items: [
         {
           title: 'Analytics',
-          url: `/dashboard/company/${companySlug}/analytics`,
+          url: `/dashboard/company/${effectiveSlug}/analytics`,
           icon: BarChart3,
         },
       ],
@@ -231,12 +234,12 @@ function CompanyDashboardContent({
       items: [
         {
           title: 'Company Settings',
-          url: `/dashboard/company/${companySlug}/settings`,
+          url: `/dashboard/company/${effectiveSlug}/settings`,
           icon: Settings,
         },
         {
           title: 'Subscription',
-          url: `/dashboard/company/${companySlug}/subscription`,
+          url: `/dashboard/company/${effectiveSlug}/subscription`,
           icon: CreditCard,
         },
       ],
