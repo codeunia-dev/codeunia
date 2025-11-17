@@ -5,7 +5,7 @@ import { companyMemberService } from '@/lib/services/company-member-service'
 import { CompanyError } from '@/types/company'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 import { z } from 'zod'
-import { getRoleChangeEmail, sendCompanyEmail } from '@/lib/email/company-emails'
+import { getRoleChangeEmail, getMemberRemovedEmail, sendCompanyEmail } from '@/lib/email/company-emails'
 
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs'
@@ -263,8 +263,49 @@ export async function DELETE(
       )
     }
 
+    // Get member's profile information for email before removing
+    const { data: memberProfile } = await supabase
+      .from('profiles')
+      .select('email, first_name, last_name')
+      .eq('id', userId)
+      .single()
+
+    // Get requesting user's name for email
+    const { data: requestingUserProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single()
+
+    const removedByName = requestingUserProfile?.first_name 
+      ? `${requestingUserProfile.first_name} ${requestingUserProfile.last_name || ''}`.trim()
+      : 'a team administrator'
+
     // Remove member
     await companyMemberService.removeMember(targetMember.id)
+
+    // Send removal notification email
+    if (memberProfile?.email) {
+      const memberName = memberProfile.first_name || memberProfile.email.split('@')[0]
+      
+      const emailContent = getMemberRemovedEmail({
+        memberName,
+        companyName: company.name,
+        removedBy: removedByName,
+        role: targetMember.role,
+      })
+
+      // Send email asynchronously (don't wait for it)
+      console.log(`📧 Sending member removal email to ${memberProfile.email}`)
+      sendCompanyEmail({
+        to: memberProfile.email,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      }).catch(error => {
+        console.error('❌ Failed to send member removal email:', error)
+        // Don't fail the request if email fails
+      })
+    }
 
     // Invalidate cache
     await UnifiedCache.purgeByTags(['content', 'api'])

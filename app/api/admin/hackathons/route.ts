@@ -117,7 +117,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Hackathon data is required' }, { status: 400 })
     }
 
-    const hackathon = await hackathonsService.updateHackathon(slug, data)
+    const hackathon = await hackathonsService.updateHackathon(slug, data, user.id)
 
     return NextResponse.json(hackathon)
   } catch (error) {

@@ -29,7 +29,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
       <Card className="overflow-hidden">
         {/* Banner */}
         <div 
-          className="h-48 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"
+          className="h-56 sm:h-64 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"
           style={company.banner_url ? {
             backgroundImage: `url(${company.banner_url})`,
             backgroundSize: 'cover',
@@ -37,7 +37,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
           } : undefined}
         />
         
-        <CardHeader className="relative -mt-16 pb-4">
+        <CardHeader className="relative -mt-20 pb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
             {/* Logo */}
             <Avatar className="h-32 w-32 border-4 border-background shadow-xl">

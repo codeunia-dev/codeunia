@@ -197,19 +197,109 @@ class HackathonsService {
     return hackathon
   }
 
-  async updateHackathon(slug: string, hackathonData: Partial<Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>>): Promise<Hackathon> {
+  async updateHackathon(
+    slug: string, 
+    hackathonData: Partial<Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>>,
+    userId?: string
+  ): Promise<Hackathon> {
     const supabase = await createClient()
     
+    // Get existing hackathon first
+    const existingHackathon = await this.getHackathonBySlug(slug)
+    if (!existingHackathon) {
+      throw new Error('Hackathon not found')
+    }
+
+    // Check if this is an approved hackathon being edited
+    const needsReapproval = existingHackathon.approval_status === 'approved'
+    
+    // Prepare update payload
+    const updatePayload: Record<string, unknown> = {
+      ...hackathonData,
+      updated_at: new Date().toISOString(),
+    }
+
+    // If hackathon was approved, reset to pending for re-approval
+    if (needsReapproval) {
+      updatePayload.approval_status = 'pending'
+      updatePayload.approved_by = null
+      updatePayload.approved_at = null
+      console.log(`🔄 Hackathon ${existingHackathon.id} was approved, resetting to pending for re-approval`)
+    }
+
     const { data: hackathon, error } = await supabase
       .from('hackathons')
-      .update(hackathonData)
+      .update(updatePayload)
       .eq('slug', slug)
-      .select()
+      .select(`
+        *,
+        company:companies(*)
+      `)
       .single()
 
     if (error) {
       console.error('Error updating hackathon:', error)
       throw new Error('Failed to update hackathon')
+    }
+
+    // If hackathon needed re-approval, create notifications and log
+    if (needsReapproval && userId) {
+      const hackathonId = existingHackathon.id
+      if (!hackathonId) {
+        console.error('Hackathon ID is missing, cannot create notifications')
+        cache.clear()
+        return hackathon
+      }
+      // Import services dynamically to avoid circular dependencies
+      const { NotificationService } = await import('./notification-service')
+      const { moderationService } = await import('./moderation-service')
+      
+      // Log the edit action
+      await moderationService.logModerationAction('edited', undefined, hackathonId, userId, 'Hackathon edited after approval - requires re-approval')
+      
+      // Notify admins about the updated hackathon
+      const { data: adminUsers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin')
+      
+      if (adminUsers && adminUsers.length > 0) {
+        const notifications = adminUsers.map(admin => ({
+          user_id: admin.id,
+          company_id: existingHackathon.company_id,
+          type: 'hackathon_updated' as const,
+          title: 'Hackathon Updated - Requires Re-approval',
+          message: `"${existingHackathon.title}" has been edited and requires re-approval`,
+          action_url: `/admin/moderation/hackathons/${hackathonId}`,
+          action_label: 'Review Hackathon',
+          hackathon_id: hackathonId.toString(),
+          metadata: {
+            hackathon_title: existingHackathon.title,
+            hackathon_slug: existingHackathon.slug
+          }
+        }))
+        
+        await supabase.from('notifications').insert(notifications)
+        console.log(`📧 Notified ${adminUsers.length} admin(s) about updated hackathon`)
+      }
+      
+      // Notify company members about the status change
+      if (existingHackathon.company_id) {
+        await NotificationService.notifyCompanyMembers(existingHackathon.company_id, {
+          type: 'hackathon_status_changed',
+          title: 'Hackathon Requires Re-approval',
+          message: `Your hackathon "${existingHackathon.title}" has been edited and requires re-approval`,
+          company_id: existingHackathon.company_id,
+          action_url: `/dashboard/company/hackathons/${existingHackathon.slug}`,
+          action_label: 'View Hackathon',
+          hackathon_id: hackathonId.toString(),
+          metadata: {
+            hackathon_title: existingHackathon.title,
+            old_status: 'approved',
+            new_status: 'pending'
+          }
+        })
+      }
     }
 
     // Clear cache after updating hackathon

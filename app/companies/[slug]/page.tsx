@@ -88,7 +88,7 @@ export default function CompanyProfilePage() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-background to-muted/10">
       <Header />
 
-      <main className="flex-1 py-12">
+      <main className="flex-1 pt-24 pb-12">
         <div className="container px-4 mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
