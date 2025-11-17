@@ -41,7 +41,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useToast } from '@/components/ui/use-toast'
+import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   UserPlus,
@@ -86,7 +86,6 @@ export function TeamManagement({
   const [inviteRole, setInviteRole] = useState<'admin' | 'editor' | 'viewer'>('viewer')
   const [newRole, setNewRole] = useState<'owner' | 'admin' | 'editor' | 'viewer'>('viewer')
   const [submitting, setSubmitting] = useState(false)
-  const { toast } = useToast()
 
   // Check if current user can manage team
   const canManageTeam = ['owner', 'admin'].includes(currentUserRole)
@@ -110,15 +109,11 @@ export function TeamManagement({
       setMembers(data.members || [])
     } catch (error) {
       console.error('Error fetching members:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to load team members',
-        variant: 'destructive',
-      })
+      toast.error('Failed to load team members')
     } finally {
       setLoading(false)
     }
-  }, [companySlug, toast])
+  }, [companySlug])
 
   useEffect(() => {
     fetchMembers()
@@ -127,11 +122,7 @@ export function TeamManagement({
   // Handle invite member
   const handleInvite = async () => {
     if (!inviteEmail) {
-      toast({
-        title: 'Error',
-        description: 'Please enter an email address',
-        variant: 'destructive',
-      })
+      toast.error('Please enter an email address')
       return
     }
 
@@ -150,13 +141,20 @@ export function TeamManagement({
 
       if (!response.ok) {
         console.error('Invite error response:', data)
-        throw new Error(data.error || 'Failed to invite member')
+        
+        // Check if it's a team limit error
+        if (data.upgrade_required) {
+          toast.error('Team Member Limit Reached', {
+            description: `${data.error} (${data.current_usage}/${data.limit}). Please upgrade your plan to add more members.`,
+            duration: 6000,
+          })
+        } else {
+          toast.error(data.error || 'Failed to invite member')
+        }
+        return
       }
 
-      toast({
-        title: 'Success',
-        description: 'Team member invited successfully',
-      })
+      toast.success('Team member invited successfully')
 
       setInviteDialogOpen(false)
       setInviteEmail('')
@@ -164,11 +162,7 @@ export function TeamManagement({
       fetchMembers()
     } catch (error) {
       console.error('Error inviting member:', error)
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to invite member',
-        variant: 'destructive',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to invite member')
     } finally {
       setSubmitting(false)
     }
@@ -195,21 +189,14 @@ export function TeamManagement({
         throw new Error(data.error || 'Failed to update role')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Member role updated successfully',
-      })
+      toast.success('Member role updated successfully')
 
       setRoleDialogOpen(false)
       setSelectedMember(null)
       fetchMembers()
     } catch (error) {
       console.error('Error updating role:', error)
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to update role',
-        variant: 'destructive',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to update role')
     } finally {
       setSubmitting(false)
     }
@@ -234,21 +221,14 @@ export function TeamManagement({
         throw new Error(data.error || 'Failed to remove member')
       }
 
-      toast({
-        title: 'Success',
-        description: 'Member removed successfully',
-      })
+      toast.success('Member removed successfully')
 
       setRemoveDialogOpen(false)
       setSelectedMember(null)
       fetchMembers()
     } catch (error) {
       console.error('Error removing member:', error)
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to remove member',
-        variant: 'destructive',
-      })
+      toast.error(error instanceof Error ? error.message : 'Failed to remove member')
     } finally {
       setSubmitting(false)
     }
@@ -473,7 +453,7 @@ export function TeamManagement({
           <DialogHeader>
             <DialogTitle>Invite Team Member</DialogTitle>
             <DialogDescription>
-              Send an invitation to join your team. They must have a CodeUnia account.
+              Send an invitation to join your team. They must have a Codeunia account.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">

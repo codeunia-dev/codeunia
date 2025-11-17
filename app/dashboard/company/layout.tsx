@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRoleProtection } from '@/lib/hooks/useRoleProtection'
+import { createClient } from '@/lib/supabase/client'
 
 export type SidebarGroupType = {
   title: string
@@ -95,37 +96,68 @@ export default function CompanyDashboardLayout({
     )
   }
 
-  const avatar =
-    user?.user_metadata?.first_name?.[0]?.toUpperCase() ||
-    user?.email?.[0]?.toUpperCase() ||
-    'C'
-  const name = user?.user_metadata?.first_name || user?.email || 'User'
-  const email = user?.email || 'user@codeunia.com'
-
   return (
     <CompanyProvider initialCompanySlug={companySlug}>
-      <CompanyDashboardContent avatar={avatar} name={name} email={email}>
+      <CompanyDashboardContent user={user}>
         {children}
       </CompanyDashboardContent>
     </CompanyProvider>
   )
 }
 
+interface UserProfile {
+  id: string
+  email: string
+  first_name?: string
+  last_name?: string
+  avatar_url?: string
+}
+
 // Component that uses CompanyContext to conditionally render sidebar
 function CompanyDashboardContent({
-  avatar,
-  name,
-  email,
+  user,
   children,
 }: {
-  avatar: string
-  name: string
-  email: string
+  user: { id: string; email?: string; user_metadata?: { first_name?: string } } | null
   children: React.ReactNode
 }) {
   const params = useParams()
   const companySlug = params?.slug as string
   const { currentCompany, userCompanies, loading, error } = useCompanyContext()
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+
+  // Fetch user profile data
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!user?.id) return
+      
+      try {
+        const supabase = createClient()
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('id, email, first_name, last_name, avatar_url')
+          .eq('id', user.id)
+          .single()
+        
+        if (!error && data) {
+          setUserProfile(data)
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+      }
+    }
+    
+    fetchProfile()
+  }, [user?.id])
+
+  const avatarUrl = userProfile?.avatar_url
+  const avatarInitial =
+    userProfile?.first_name?.[0]?.toUpperCase() ||
+    user?.user_metadata?.first_name?.[0]?.toUpperCase() ||
+    user?.email?.[0]?.toUpperCase() ||
+    'C'
+  const name = userProfile?.first_name || user?.user_metadata?.first_name || user?.email || 'User'
+  const email = user?.email || 'user@codeunia.com'
 
   // Show loading while company context is loading
   if (loading) {
@@ -213,7 +245,8 @@ function CompanyDashboardContent({
 
   return (
     <CompanySidebar
-      avatar={avatar}
+      avatarUrl={avatarUrl}
+      avatarInitial={avatarInitial}
       name={name}
       email={email}
       sidebarItems={sidebarItems}
