@@ -40,20 +40,58 @@ export async function POST(
         notes
       )
 
-      // Send notification email to company
-      if (approvedEvent.company && approvedEvent.company.email) {
-        const emailContent = getEventApprovedEmail({
-          eventTitle: approvedEvent.title,
-          companyName: approvedEvent.company.name,
-          eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/events/${approvedEvent.slug}`,
-          publishDate: new Date().toLocaleDateString(),
-          notes: notes || '',
-        })
+      // Get creator's email from profiles table
+      let creatorEmail: string | null = null
+      let creatorName: string | null = null
+      
+      if (approvedEvent.created_by) {
+        const { createClient } = await import('@/lib/supabase/server')
+        const supabase = await createClient()
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', approvedEvent.created_by)
+          .single()
+        
+        if (creatorProfile) {
+          creatorEmail = creatorProfile.email
+          creatorName = creatorProfile.first_name 
+            ? `${creatorProfile.first_name} ${creatorProfile.last_name || ''}`.trim()
+            : null
+        }
+      }
 
+      // Prepare email content
+      const emailContent = getEventApprovedEmail({
+        eventTitle: approvedEvent.title,
+        companyName: approvedEvent.company?.name || 'Your Company',
+        eventUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/events/${approvedEvent.slug}`,
+        publishDate: new Date().toLocaleDateString(),
+        notes: notes || '',
+        creatorName: creatorName || undefined,
+      })
+
+      // Send notification email to event creator (primary)
+      if (creatorEmail) {
+        console.log(`📧 Sending event approval email to creator: ${creatorEmail}`)
+        await sendEmail({
+          to: creatorEmail,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        }).catch(error => {
+          console.error('❌ Failed to send approval email to creator:', error)
+        })
+      }
+
+      // Also send to company email if different from creator
+      if (approvedEvent.company?.email && approvedEvent.company.email !== creatorEmail) {
+        console.log(`📧 Sending event approval email to company: ${approvedEvent.company.email}`)
         await sendEmail({
           to: approvedEvent.company.email,
           subject: emailContent.subject,
           html: emailContent.html,
+        }).catch(error => {
+          console.error('❌ Failed to send approval email to company:', error)
         })
       }
 
@@ -90,11 +128,18 @@ function getEventApprovedEmail(params: {
   eventUrl: string
   publishDate: string
   notes: string
+  creatorName?: string
 }) {
+  const greeting = params.creatorName ? `Hi ${params.creatorName},` : 'Hello,'
+  
   const content = `
     <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 20px;">
       🎉 Your Event is Live!
     </h2>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      ${greeting}
+    </p>
     
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
       Great news! Your event has been approved and is now live on CodeUnia.

@@ -14,7 +14,7 @@ const getEmailTemplate = (content: string) => `
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CodeUnia</title>
+  <title>Codeunia</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
@@ -23,7 +23,7 @@ const getEmailTemplate = (content: string) => `
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
           <tr>
             <td style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">CodeUnia</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">Codeunia</h1>
             </td>
           </tr>
           <tr>
@@ -37,7 +37,7 @@ const getEmailTemplate = (content: string) => `
                 Need help? Contact us at <a href="mailto:support@codeunia.com" style="color: #3b82f6; text-decoration: none;">support@codeunia.com</a>
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} CodeUnia. All rights reserved.
+                © ${new Date().getFullYear()} Codeunia. All rights reserved.
               </p>
             </td>
           </tr>

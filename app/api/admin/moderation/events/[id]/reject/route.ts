@@ -50,20 +50,58 @@ export async function POST(
         reason
       )
 
-      // Send notification email to company
-      if (rejectedEvent.company && rejectedEvent.company.email) {
-        const emailContent = getEventRejectedEmail({
-          eventTitle: rejectedEvent.title,
-          companyName: rejectedEvent.company.name,
-          rejectionReason: reason,
-          editUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/dashboard/company/events/${rejectedEvent.slug}/edit`,
-          guidelines: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/guidelines`,
-        })
+      // Get creator's email from profiles table
+      let creatorEmail: string | null = null
+      let creatorName: string | null = null
+      
+      if (rejectedEvent.created_by) {
+        const { createClient } = await import('@/lib/supabase/server')
+        const supabase = await createClient()
+        const { data: creatorProfile } = await supabase
+          .from('profiles')
+          .select('email, first_name, last_name')
+          .eq('id', rejectedEvent.created_by)
+          .single()
+        
+        if (creatorProfile) {
+          creatorEmail = creatorProfile.email
+          creatorName = creatorProfile.first_name 
+            ? `${creatorProfile.first_name} ${creatorProfile.last_name || ''}`.trim()
+            : null
+        }
+      }
 
+      // Prepare email content
+      const emailContent = getEventRejectedEmail({
+        eventTitle: rejectedEvent.title,
+        companyName: rejectedEvent.company?.name || 'Your Company',
+        rejectionReason: reason,
+        editUrl: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/dashboard/company/${rejectedEvent.company?.slug}/events`,
+        guidelines: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/guidelines`,
+        creatorName: creatorName || undefined,
+      })
+
+      // Send notification email to event creator (primary)
+      if (creatorEmail) {
+        console.log(`📧 Sending event rejection email to creator: ${creatorEmail}`)
+        await sendEmail({
+          to: creatorEmail,
+          subject: emailContent.subject,
+          html: emailContent.html,
+        }).catch(error => {
+          console.error('❌ Failed to send rejection email to creator:', error)
+        })
+      }
+
+      // Also send to company email if different from creator
+      if (rejectedEvent.company?.email && rejectedEvent.company.email !== creatorEmail) {
+        console.log(`📧 Sending event rejection email to company: ${rejectedEvent.company.email}`)
         await sendEmail({
           to: rejectedEvent.company.email,
           subject: emailContent.subject,
           html: emailContent.html,
+        }).catch(error => {
+          console.error('❌ Failed to send rejection email to company:', error)
         })
       }
 
@@ -100,14 +138,21 @@ function getEventRejectedEmail(params: {
   rejectionReason: string
   editUrl: string
   guidelines: string
+  creatorName?: string
 }) {
+  const greeting = params.creatorName ? `Hi ${params.creatorName},` : 'Hello,'
+  
   const content = `
     <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 20px;">
       Event Review Update
     </h2>
     
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-      Thank you for submitting your event to CodeUnia. After review, we're unable to approve your event at this time.
+      ${greeting}
+    </p>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Thank you for submitting your event to Codeunia. After review, we're unable to approve your event at this time.
     </p>
     
     <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 4px;">
@@ -158,7 +203,7 @@ function getEventRejectedEmail(params: {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Review Update - CodeUnia</title>
+  <title>Event Review Update - Codeunia</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 20px;">
@@ -167,7 +212,7 @@ function getEventRejectedEmail(params: {
         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
           <tr>
             <td style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 30px; text-align: center;">
-              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">CodeUnia</h1>
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: bold;">Codeunia</h1>
             </td>
           </tr>
           <tr>
@@ -181,7 +226,7 @@ function getEventRejectedEmail(params: {
                 Need help? Visit our <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://codeunia.com'}/protected/help" style="color: #3b82f6; text-decoration: none;">Help Center</a>
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} CodeUnia. All rights reserved.
+                © ${new Date().getFullYear()} Codeunia. All rights reserved.
               </p>
             </td>
           </tr>
