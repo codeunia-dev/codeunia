@@ -401,14 +401,13 @@ class EventsService {
    * Update an event
    * @param id Event ID
    * @param eventData Partial event data to update
-   * @param _userId ID of the user updating the event (reserved for future use)
+   * @param userId ID of the user updating the event
    * @returns Updated event
    */
   async updateEvent(
     id: number,
     eventData: Partial<Event>,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _userId: string
+    userId: string
   ): Promise<Event> {
     const supabase = await createClient()
 
@@ -436,10 +435,22 @@ class EventsService {
     } = eventData
     /* eslint-enable @typescript-eslint/no-unused-vars */
 
+    // Check if this is an approved event being edited
+    // If so, reset to pending status for re-approval
+    const needsReapproval = existingEvent.approval_status === 'approved'
+    
     // Update the updated_at timestamp
-    const updatePayload = {
+    const updatePayload: Record<string, unknown> = {
       ...updateData,
       updated_at: new Date().toISOString(),
+    }
+
+    // If event was approved, reset to pending for re-approval
+    if (needsReapproval) {
+      updatePayload.approval_status = 'pending'
+      updatePayload.approved_by = null
+      updatePayload.approved_at = null
+      console.log(`🔄 Event ${id} was approved, resetting to pending for re-approval`)
     }
 
     const { data: event, error } = await supabase
@@ -461,6 +472,62 @@ class EventsService {
     if (error) {
       console.error('Error updating event:', error)
       throw new EventError('Failed to update event', EventErrorCodes.NOT_FOUND, 500)
+    }
+
+    // If event needed re-approval, create notifications and log
+    if (needsReapproval) {
+      // Import notification service dynamically to avoid circular dependencies
+      const { NotificationService } = await import('./notification-service')
+      const { moderationService } = await import('./moderation-service')
+      
+      // Log the edit action
+      await moderationService.logModerationAction('edited', id, undefined, userId, 'Event edited after approval - requires re-approval')
+      
+      // Notify admins about the updated event
+      // Get all admin users
+      const { data: adminUsers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('role', 'admin')
+      
+      if (adminUsers && adminUsers.length > 0) {
+        // Create notifications for all admins
+        const notifications = adminUsers.map(admin => ({
+          user_id: admin.id,
+          company_id: existingEvent.company_id,
+          type: 'event_updated' as const,
+          title: 'Event Updated - Requires Re-approval',
+          message: `"${existingEvent.title}" has been edited and requires re-approval`,
+          action_url: `/admin/moderation/events/${id}`,
+          action_label: 'Review Event',
+          event_id: id.toString(),
+          metadata: {
+            event_title: existingEvent.title,
+            event_slug: existingEvent.slug
+          }
+        }))
+        
+        await supabase.from('notifications').insert(notifications)
+        console.log(`📧 Notified ${adminUsers.length} admin(s) about updated event`)
+      }
+      
+      // Notify company members about the status change
+      if (existingEvent.company_id) {
+        await NotificationService.notifyCompanyMembers(existingEvent.company_id, {
+          type: 'event_status_changed',
+          title: 'Event Requires Re-approval',
+          message: `Your event "${existingEvent.title}" has been edited and requires re-approval`,
+          company_id: existingEvent.company_id,
+          action_url: `/dashboard/company/events/${existingEvent.slug}`,
+          action_label: 'View Event',
+          event_id: id.toString(),
+          metadata: {
+            event_title: existingEvent.title,
+            old_status: 'approved',
+            new_status: 'pending'
+          }
+        })
+      }
     }
 
     clearCache()

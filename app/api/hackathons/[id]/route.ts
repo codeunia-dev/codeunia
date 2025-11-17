@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       )
     }
     
-    const hackathon = await hackathonsService.updateHackathon(id, hackathonData)
+    const hackathon = await hackathonsService.updateHackathon(id, hackathonData, user.id)
     
     return NextResponse.json({ hackathon })
   } catch (error) {
