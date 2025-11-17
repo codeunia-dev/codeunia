@@ -5,6 +5,7 @@ import { companyMemberService } from '@/lib/services/company-member-service'
 import { CompanyError } from '@/types/company'
 import { UnifiedCache } from '@/lib/unified-cache-system'
 import { z } from 'zod'
+import { getRoleChangeEmail, sendCompanyEmail } from '@/lib/email/company-emails'
 
 // Force Node.js runtime for API routes
 export const runtime = 'nodejs'
@@ -98,11 +99,58 @@ export async function PUT(
       )
     }
 
+    // Store old role for email notification
+    const oldRole = targetMember.role
+
     // Update member role
     const updatedMember = await companyMemberService.updateMemberRole(
       targetMember.id,
       role
     )
+
+    // Get member's profile information for email
+    const { data: memberProfile } = await supabase
+      .from('profiles')
+      .select('email, first_name, last_name')
+      .eq('id', userId)
+      .single()
+
+    // Get requesting user's name for email
+    const { data: requestingUserProfile } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('id', user.id)
+      .single()
+
+    const changedByName = requestingUserProfile?.first_name 
+      ? `${requestingUserProfile.first_name} ${requestingUserProfile.last_name || ''}`.trim()
+      : 'a team administrator'
+
+    // Send role change notification email
+    if (memberProfile?.email && oldRole !== role) {
+      const memberName = memberProfile.first_name || memberProfile.email.split('@')[0]
+      const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://codeunia.com'}/dashboard/company/${company.slug}`
+      
+      const emailContent = getRoleChangeEmail({
+        memberName,
+        companyName: company.name,
+        oldRole,
+        newRole: role,
+        changedBy: changedByName,
+        dashboardUrl,
+      })
+
+      // Send email asynchronously (don't wait for it)
+      console.log(`📧 Sending role change email to ${memberProfile.email}: ${oldRole} → ${role}`)
+      sendCompanyEmail({
+        to: memberProfile.email,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      }).catch(error => {
+        console.error('❌ Failed to send role change email:', error)
+        // Don't fail the request if email fails
+      })
+    }
 
     // Invalidate cache
     await UnifiedCache.purgeByTags(['content', 'api'])
