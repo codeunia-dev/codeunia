@@ -162,7 +162,7 @@ export default function CompanyEventsPage() {
 
       {/* Company Header */}
       {company && (
-        <section className="py-12 bg-gradient-to-b from-muted/30 to-background border-b border-primary/10">
+        <section className="pt-24 pb-12 bg-gradient-to-b from-muted/30 to-background border-b border-primary/10">
           <div className="container px-4 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
