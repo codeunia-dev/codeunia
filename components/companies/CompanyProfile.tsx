@@ -120,21 +120,21 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-primary">
-                  {company.total_events}
+                  {company.total_events || 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Events Hosted</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-primary">
-                  {company.total_hackathons}
+                  {company.total_hackathons || 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Hackathons</p>
               </div>
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-primary">
-                  {company.total_participants}
+                  {company.total_registrations || 0}
                 </p>
-                <p className="text-xs text-muted-foreground">Participants</p>
+                <p className="text-xs text-muted-foreground">Registrations</p>
               </div>
             </div>
           </CardContent>

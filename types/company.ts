@@ -42,6 +42,7 @@ export interface Company {
   total_events: number
   total_hackathons: number
   total_participants: number
+  total_registrations: number
 }
 
 export interface CompanyAddress {
