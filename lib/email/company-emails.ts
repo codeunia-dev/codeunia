@@ -41,7 +41,7 @@ const getEmailTemplate = (content: string) => `
                 Need help? Contact us at <a href="mailto:support@codeunia.com" style="color: #3b82f6; text-decoration: none;">support@codeunia.com</a>
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                © ${new Date().getFullYear()} CodeUnia. All rights reserved.
+                © ${new Date().getFullYear()} Codeunia. All rights reserved.
               </p>
             </td>
           </tr>
@@ -64,7 +64,7 @@ export const getCompanyVerificationApprovedEmail = (params: {
     </h2>
     
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-      Congratulations! Your company <strong>${params.companyName}</strong> has been successfully verified on CodeUnia.
+      Congratulations! Your company <strong>${params.companyName}</strong> has been successfully verified on Codeunia.
     </p>
     
     <div style="background-color: #d1fae5; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 4px;">
@@ -96,7 +96,7 @@ export const getCompanyVerificationApprovedEmail = (params: {
   `
   
   return {
-    subject: `🎉 ${params.companyName} has been verified on CodeUnia!`,
+    subject: `🎉 ${params.companyName} has been verified on Codeunia!`,
     html: getEmailTemplate(content)
   }
 }
@@ -113,7 +113,7 @@ export const getCompanyVerificationRejectedEmail = (params: {
     </h2>
     
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-      Thank you for your interest in hosting events on CodeUnia. After reviewing your company registration for <strong>${params.companyName}</strong>, we need additional information before we can proceed with verification.
+      Thank you for your interest in hosting events on Codeunia. After reviewing your company registration for <strong>${params.companyName}</strong>, we need additional information before we can proceed with verification.
     </p>
     
     <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 4px;">
@@ -165,7 +165,7 @@ export const getNewCompanyRegistrationNotification = (params: {
     </h2>
     
     <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
-      A new company has registered on CodeUnia and is awaiting verification.
+      A new company has registered on Codeunia and is awaiting verification.
     </p>
     
     <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px;">
@@ -224,6 +224,63 @@ export const getNewCompanyRegistrationNotification = (params: {
   
   return {
     subject: `[New Registration] ${params.companyName} - Pending Verification`,
+    html: getEmailTemplate(content)
+  }
+}
+
+// Team member removed notification email
+export const getMemberRemovedEmail = (params: {
+  memberName: string
+  companyName: string
+  removedBy: string
+  role: string
+}) => {
+  const content = `
+    <h2 style="margin: 0 0 20px 0; color: #111827; font-size: 20px;">
+      You've Been Removed from ${params.companyName}
+    </h2>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Hi ${params.memberName},
+    </p>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      We're writing to inform you that your access to <strong>${params.companyName}</strong> on Codeunia has been removed by ${params.removedBy}.
+    </p>
+    
+    <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0; color: #991b1b; font-size: 14px; line-height: 1.6;">
+        <strong>Access Removed:</strong> You no longer have access to ${params.companyName}'s company dashboard, events, and team resources.
+      </p>
+    </div>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      <strong>What this means:</strong>
+    </p>
+    
+    <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.8;">
+      <li>You can no longer access ${params.companyName}'s dashboard</li>
+      <li>You won't receive notifications about company events</li>
+      <li>Your previous role was: ${params.role.charAt(0).toUpperCase() + params.role.slice(1)}</li>
+    </ul>
+    
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 16px; line-height: 1.5;">
+      Your personal Codeunia account remains active, and you can still:
+    </p>
+    
+    <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151; font-size: 14px; line-height: 1.8;">
+      <li>Browse and register for public events</li>
+      <li>Access your profile and connections</li>
+      <li>Join other companies if invited</li>
+    </ul>
+    
+    <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.5;">
+      If you believe this was done in error or have questions, please contact the company administrator directly.
+    </p>
+  `
+  
+  return {
+    subject: `Access removed from ${params.companyName}`,
     html: getEmailTemplate(content)
   }
 }
@@ -340,7 +397,7 @@ export async function sendCompanyEmail(params: EmailParams) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     
     const { data, error } = await resend.emails.send({
-      from: process.env.COMPANY_FROM_EMAIL || 'CodeUnia <noreply@codeunia.com>',
+      from: process.env.COMPANY_FROM_EMAIL || 'Codeunia <noreply@codeunia.com>',
       to: params.to,
       subject: params.subject,
       html: params.html,
