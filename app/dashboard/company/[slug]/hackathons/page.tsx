@@ -8,9 +8,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Trophy, Search, Plus, Edit, Eye, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { Trophy, Search, Plus, Edit, Eye, Clock, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 interface Hackathon {
   id: string
@@ -34,6 +44,9 @@ export default function CompanyHackathonsPage() {
   const [hackathons, setHackathons] = useState<Hackathon[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [hackathonToDelete, setHackathonToDelete] = useState<Hackathon | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const canManageEvents = userRole && ['owner', 'admin', 'editor'].includes(userRole)
 
@@ -64,6 +77,40 @@ export default function CompanyHackathonsPage() {
       fetchHackathons()
     }
   }, [currentCompany, fetchHackathons])
+
+  const handleDeleteClick = (hackathon: Hackathon) => {
+    setHackathonToDelete(hackathon)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!hackathonToDelete || !currentCompany) return
+
+    try {
+      setIsDeleting(true)
+      // Use slug instead of id for the API endpoint
+      const response = await fetch(`/api/hackathons/${hackathonToDelete.slug}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete hackathon')
+      }
+
+      toast.success('Hackathon deleted successfully')
+      setDeleteDialogOpen(false)
+      setHackathonToDelete(null)
+      
+      // Refresh the list
+      fetchHackathons()
+    } catch (error) {
+      console.error('Error deleting hackathon:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete hackathon')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   if (companyLoading || isPendingInvitation) {
     return (
@@ -287,17 +334,26 @@ export default function CompanyHackathonsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Link href={`/dashboard/company/${currentCompany.slug}/hackathons/${hackathon.slug}/edit`}>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" title="Edit hackathon">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </Link>
                           {hackathon.approval_status === 'approved' && (
                             <Link href={`/hackathons/${hackathon.slug}`} target="_blank">
-                              <Button variant="outline" size="sm">
+                              <Button variant="outline" size="sm" title="View public page">
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </Link>
                           )}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(hackathon)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            title="Delete hackathon"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </TableCell>
                     ) : (
@@ -318,6 +374,29 @@ export default function CompanyHackathonsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the hackathon &quot;{hackathonToDelete?.title}&quot;. 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
