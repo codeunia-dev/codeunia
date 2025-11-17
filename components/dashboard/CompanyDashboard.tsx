@@ -19,6 +19,7 @@ import {
   ArrowDownRight,
   Activity,
   FileText,
+  Trophy,
 } from 'lucide-react'
 import { Company } from '@/types/company'
 import { format, formatDistanceToNow } from 'date-fns'
@@ -229,7 +230,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Total Events"
           value={stats.totalEvents}
@@ -237,6 +238,13 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
           iconColor="text-purple-400"
           description="Events hosted"
           change={stats.recentChange?.events}
+        />
+        <StatsCard
+          title="Total Hackathons"
+          value={stats.totalHackathons}
+          icon={Trophy}
+          iconColor="text-orange-400"
+          description="Hackathons hosted"
         />
         <StatsCard
           title="Total Views"
@@ -347,14 +355,22 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
           <CardDescription>Common tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {canManageEvents && (
-              <QuickActionButton
-                href={`/dashboard/company/${company.slug}/events/create`}
-                icon={Plus}
-                title="Create Event"
-                description="Host a new event"
-              />
+              <>
+                <QuickActionButton
+                  href={`/dashboard/company/${company.slug}/events/create`}
+                  icon={Calendar}
+                  title="Create Event"
+                  description="Host a new event"
+                />
+                <QuickActionButton
+                  href={`/dashboard/company/${company.slug}/hackathons/create`}
+                  icon={Trophy}
+                  title="Create Hackathon"
+                  description="Launch a coding challenge"
+                />
+              </>
             )}
             {canManageTeam && (
               <QuickActionButton

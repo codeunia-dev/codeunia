@@ -29,7 +29,7 @@ interface Hackathon {
   excerpt: string
   category: string
   status: string
-  approval_status: string
+  approval_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested'
   date: string
   time: string
   duration: string
@@ -167,8 +167,25 @@ export default function CompanyHackathonsPage() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (hackathon: Hackathon) => {
+    // If not approved, show approval status instead of event status
+    if (hackathon.approval_status !== 'approved') {
+      switch (hackathon.approval_status) {
+        case 'pending':
+          return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">Pending Review</Badge>
+        case 'draft':
+          return <Badge variant="outline">Draft</Badge>
+        case 'rejected':
+          return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>
+        case 'changes_requested':
+          return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">Changes Requested</Badge>
+        default:
+          return <Badge variant="outline">{hackathon.approval_status}</Badge>
+      }
+    }
+    
+    // If approved, show event status
+    switch (hackathon.status) {
       case 'live':
       case 'published':
         return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Live</Badge>
@@ -179,7 +196,7 @@ export default function CompanyHackathonsPage() {
       case 'completed':
         return <Badge variant="outline" className="text-gray-500">Completed</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{hackathon.status}</Badge>
     }
   }
 
@@ -321,7 +338,7 @@ export default function CompanyHackathonsPage() {
                     <TableCell>
                       <Badge variant="outline">{hackathon.category || 'General'}</Badge>
                     </TableCell>
-                    <TableCell>{getStatusBadge(hackathon.status)}</TableCell>
+                    <TableCell>{getStatusBadge(hackathon)}</TableCell>
                     <TableCell>{getApprovalBadge(hackathon.approval_status)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
