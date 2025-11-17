@@ -24,6 +24,7 @@ import {
   Star,
 } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
+import { useRoleProtection } from "@/lib/hooks/useRoleProtection"
 
 export type SidebarGroupType = {
   title: string;
@@ -210,8 +211,9 @@ const sidebarItems: SidebarGroupType[] = [
 
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const { isChecking, isAuthorized } = useRoleProtection('student')
 
-  if (loading) {
+  if (loading || isChecking) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -219,7 +221,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     )
   }
 
-  if (!user) {
+  if (!user || !isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="text-center max-w-md">

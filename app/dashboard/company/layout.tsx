@@ -17,6 +17,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { useRoleProtection } from '@/lib/hooks/useRoleProtection'
 
 export type SidebarGroupType = {
   title: string
@@ -33,6 +34,7 @@ export default function CompanyDashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading, error } = useAuth()
+  const { isChecking, isAuthorized } = useRoleProtection('company_member')
   const params = useParams()
   const companySlug = params?.slug as string | undefined
 
@@ -51,7 +53,7 @@ export default function CompanyDashboardLayout({
     )
   }
 
-  if (loading) {
+  if (loading || isChecking) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -75,7 +77,7 @@ export default function CompanyDashboardLayout({
     )
   }
 
-  if (!user) {
+  if (!user || !isAuthorized) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4 bg-black">
         <div className="text-center max-w-md">
