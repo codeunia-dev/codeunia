@@ -82,6 +82,7 @@ export async function POST(
     const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : ''
 
     // Register user in master_registrations table
+    // Note: hackathon.id is an integer, convert to string for activity_id
     const { error: registrationError } = await supabase
       .from('master_registrations')
       .insert({
@@ -92,6 +93,11 @@ export async function POST(
         full_name: fullName || undefined,
         email: profile?.email || user.email,
         phone: profile?.phone || undefined,
+        metadata: {
+          hackathon_id: hackathon.id,
+          hackathon_slug: hackathon.slug,
+          hackathon_title: hackathon.title
+        }
       })
 
     if (registrationError) {

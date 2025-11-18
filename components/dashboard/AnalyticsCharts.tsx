@@ -30,22 +30,114 @@ interface AnalyticsChartsProps {
 
 export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsChartsProps) {
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line')
+  const [actualStats, setActualStats] = React.useState<{
+    views: number
+    clicks: number
+    registrations: number
+    eventsPublished: number
+    eventsCreated: number
+    hackathonsPublished: number
+    hackathonsCreated: number
+  } | null>(null)
 
-  // Transform analytics data for charts
-  const chartData = analytics.map((record) => ({
-    date: format(new Date(record.date), 'MMM dd'),
-    fullDate: record.date,
-    views: record.total_views,
-    clicks: record.total_clicks,
-    registrations: record.total_registrations,
-    eventsCreated: record.events_created,
-    eventsPublished: record.events_published,
-    hackathonsCreated: record.hackathons_created,
-    hackathonsPublished: record.hackathons_published,
-  }))
+  // Fetch actual stats from events and hackathons tables
+  React.useEffect(() => {
+    const fetchActualStats = async () => {
+      try {
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        // Fetch events
+        const eventsRes = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        const eventsData = await eventsRes.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const allEvents = eventsData.events || []
+        const approvedEvents = allEvents.filter((e: any) => e.approval_status === 'approved')
+        const eventViews = approvedEvents.reduce((sum: number, e: any) => sum + (e.views || 0), 0)
+        const eventClicks = approvedEvents.reduce((sum: number, e: any) => sum + (e.clicks || 0), 0)
+        const eventRegs = approvedEvents.reduce((sum: number, e: any) => sum + (e.registered || 0), 0)
+        
+        // Fetch hackathons
+        const hackathonsRes = await fetch(`/api/companies/${companySlug}/hackathons?status=all&limit=100`)
+        const hackathonsData = await hackathonsRes.json()
+        const allHackathons = hackathonsData.hackathons || []
+        const approvedHackathons = allHackathons.filter((h: any) => h.approval_status === 'approved')
+        const hackathonViews = approvedHackathons.reduce((sum: number, h: any) => sum + (h.views || 0), 0)
+        const hackathonClicks = approvedHackathons.reduce((sum: number, h: any) => sum + (h.clicks || 0), 0)
+        const hackathonRegs = approvedHackathons.reduce((sum: number, h: any) => sum + (h.registered || 0), 0)
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setActualStats({
+          views: eventViews + hackathonViews,
+          clicks: eventClicks + hackathonClicks,
+          registrations: eventRegs + hackathonRegs,
+          eventsPublished: approvedEvents.length,
+          eventsCreated: allEvents.length,
+          hackathonsPublished: approvedHackathons.length,
+          hackathonsCreated: allHackathons.length,
+        })
+      } catch (error) {
+        console.error('Error fetching actual stats:', error)
+      }
+    }
+    
+    fetchActualStats()
+  }, [])
 
-  // Calculate totals
-  const totals = analytics.reduce(
+  // Calculate scaling factor to adjust historical data to match current reality
+  const analyticsHistoricalTotal = analytics.reduce((sum, record) => sum + record.total_views, 0)
+  const actualCurrentTotal = actualStats?.views ?? analyticsHistoricalTotal
+  
+  const analyticsHistoricalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
+  const actualCurrentClicks = actualStats?.clicks ?? analyticsHistoricalClicks
+
+  // Transform analytics data for charts with proportional distribution
+  // First pass: calculate proportions and floor values
+  const chartDataWithRemainder = analytics.map((record) => {
+    const viewsProportion = analyticsHistoricalTotal > 0 ? (record.total_views / analyticsHistoricalTotal) * actualCurrentTotal : 0
+    const clicksProportion = analyticsHistoricalClicks > 0 ? (record.total_clicks / analyticsHistoricalClicks) * actualCurrentClicks : 0
+    
+    return {
+      date: format(new Date(record.date), 'MMM dd'),
+      fullDate: record.date,
+      views: Math.floor(viewsProportion),
+      viewsRemainder: viewsProportion - Math.floor(viewsProportion),
+      clicks: Math.floor(clicksProportion),
+      clicksRemainder: clicksProportion - Math.floor(clicksProportion),
+      registrations: record.total_registrations,
+      eventsCreated: record.events_created,
+      eventsPublished: record.events_published,
+      hackathonsCreated: record.hackathons_created,
+      hackathonsPublished: record.hackathons_published,
+    }
+  })
+
+  // Second pass: distribute remaining views to days with highest remainders
+  const totalFlooredViews = chartDataWithRemainder.reduce((sum, d) => sum + d.views, 0)
+  const viewsToDistribute = actualCurrentTotal - totalFlooredViews
+  
+  const totalFlooredClicks = chartDataWithRemainder.reduce((sum, d) => sum + d.clicks, 0)
+  const clicksToDistribute = actualCurrentClicks - totalFlooredClicks
+
+  // Sort by remainder and add 1 to top N days
+  const sortedByViewsRemainder = [...chartDataWithRemainder].sort((a, b) => b.viewsRemainder - a.viewsRemainder)
+  for (let i = 0; i < viewsToDistribute && i < sortedByViewsRemainder.length; i++) {
+    const index = chartDataWithRemainder.indexOf(sortedByViewsRemainder[i])
+    chartDataWithRemainder[index].views += 1
+  }
+
+  const sortedByClicksRemainder = [...chartDataWithRemainder].sort((a, b) => b.clicksRemainder - a.clicksRemainder)
+  for (let i = 0; i < clicksToDistribute && i < sortedByClicksRemainder.length; i++) {
+    const index = chartDataWithRemainder.indexOf(sortedByClicksRemainder[i])
+    chartDataWithRemainder[index].clicks += 1
+  }
+
+  // Final chart data without remainder fields
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const chartData = chartDataWithRemainder.map(({ viewsRemainder, clicksRemainder, ...rest }) => rest)
+
+  // Calculate totals from analytics (for published counts)
+  const analyticsTotals = analytics.reduce(
     (acc, record) => ({
       views: acc.views + record.total_views,
       clicks: acc.clicks + record.total_clicks,
@@ -57,6 +149,17 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
     }),
     { views: 0, clicks: 0, registrations: 0, eventsCreated: 0, eventsPublished: 0, hackathonsCreated: 0, hackathonsPublished: 0 }
   )
+
+  // Use actual stats if available, otherwise fall back to analytics
+  const totals = {
+    views: actualStats?.views ?? analyticsTotals.views,
+    clicks: actualStats?.clicks ?? analyticsTotals.clicks,
+    registrations: actualStats?.registrations ?? analyticsTotals.registrations,
+    eventsCreated: actualStats?.eventsCreated ?? analyticsTotals.eventsCreated,
+    eventsPublished: actualStats?.eventsPublished ?? analyticsTotals.eventsPublished,
+    hackathonsCreated: actualStats?.hackathonsCreated ?? analyticsTotals.hackathonsCreated,
+    hackathonsPublished: actualStats?.hackathonsPublished ?? analyticsTotals.hackathonsPublished,
+  }
 
   // Calculate averages
   const avgViews = analytics.length > 0 ? Math.round(totals.views / analytics.length) : 0
@@ -515,11 +618,57 @@ interface EventPerformanceComparisonProps {
 }
 
 function EventPerformanceComparison({ analytics }: EventPerformanceComparisonProps) {
-  // Calculate performance metrics
-  const totalEvents = analytics.reduce((sum, record) => sum + record.events_published, 0)
-  const totalViews = analytics.reduce((sum, record) => sum + record.total_views, 0)
-  const totalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
-  const totalRegistrations = analytics.reduce((sum, record) => sum + record.total_registrations, 0)
+  const [eventStats, setEventStats] = React.useState<{
+    totalEvents: number
+    totalViews: number
+    totalClicks: number
+    totalRegistrations: number
+  } | null>(null)
+
+  React.useEffect(() => {
+    // Fetch actual event data from the API
+    const fetchEventStats = async () => {
+      try {
+        // Get company slug from URL
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        const response = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        if (!response.ok) return
+        
+        const data = await response.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const approvedEvents = data.events?.filter((e: any) => e.approval_status === 'approved') || []
+        
+        // Calculate actual totals from events table
+        const totalViews = approvedEvents.reduce((sum: number, e: any) => sum + (e.views || 0), 0)
+        const totalClicks = approvedEvents.reduce((sum: number, e: any) => sum + (e.clicks || 0), 0)
+        
+        // Get registrations count
+        const regResponse = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        const regData = await regResponse.json()
+        const totalRegistrations = regData.events?.reduce((sum: number, e: any) => sum + (e.registered || 0), 0) || 0
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setEventStats({
+          totalEvents: approvedEvents.length,
+          totalViews,
+          totalClicks,
+          totalRegistrations
+        })
+      } catch (error) {
+        console.error('Error fetching event stats:', error)
+      }
+    }
+    
+    fetchEventStats()
+  }, [])
+
+  // Use fetched stats if available, otherwise fall back to analytics data
+  const totalEvents = eventStats?.totalEvents ?? analytics.reduce((sum, record) => sum + record.events_published, 0)
+  const totalViews = eventStats?.totalViews ?? 0
+  const totalClicks = eventStats?.totalClicks ?? 0
+  const totalRegistrations = eventStats?.totalRegistrations ?? 0
 
   // Calculate averages per event
   const avgViewsPerEvent = totalEvents > 0 ? Math.round(totalViews / totalEvents) : 0
@@ -621,11 +770,53 @@ interface HackathonPerformanceComparisonProps {
 }
 
 function HackathonPerformanceComparison({ analytics }: HackathonPerformanceComparisonProps) {
-  // Calculate performance metrics
-  const totalHackathons = analytics.reduce((sum, record) => sum + record.hackathons_published, 0)
-  const totalViews = analytics.reduce((sum, record) => sum + record.total_views, 0)
-  const totalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
-  const totalRegistrations = analytics.reduce((sum, record) => sum + record.total_registrations, 0)
+  const [hackathonStats, setHackathonStats] = React.useState<{
+    totalHackathons: number
+    totalViews: number
+    totalClicks: number
+    totalRegistrations: number
+  } | null>(null)
+
+  React.useEffect(() => {
+    // Fetch actual hackathon data from the API
+    const fetchHackathonStats = async () => {
+      try {
+        // Get company slug from URL
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        const response = await fetch(`/api/companies/${companySlug}/hackathons?status=all&limit=100`)
+        if (!response.ok) return
+        
+        const data = await response.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const approvedHackathons = data.hackathons?.filter((h: any) => h.approval_status === 'approved') || []
+        
+        // Calculate actual totals from hackathons table
+        const totalViews = approvedHackathons.reduce((sum: number, h: any) => sum + (h.views || 0), 0)
+        const totalClicks = approvedHackathons.reduce((sum: number, h: any) => sum + (h.clicks || 0), 0)
+        const totalRegistrations = approvedHackathons.reduce((sum: number, h: any) => sum + (h.registered || 0), 0)
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setHackathonStats({
+          totalHackathons: approvedHackathons.length,
+          totalViews,
+          totalClicks,
+          totalRegistrations
+        })
+      } catch (error) {
+        console.error('Error fetching hackathon stats:', error)
+      }
+    }
+    
+    fetchHackathonStats()
+  }, [])
+
+  // Use fetched stats if available, otherwise fall back to analytics data
+  const totalHackathons = hackathonStats?.totalHackathons ?? analytics.reduce((sum, record) => sum + record.hackathons_published, 0)
+  const totalViews = hackathonStats?.totalViews ?? 0
+  const totalClicks = hackathonStats?.totalClicks ?? 0
+  const totalRegistrations = hackathonStats?.totalRegistrations ?? 0
 
   // Calculate averages per hackathon
   const avgViewsPerHackathon = totalHackathons > 0 ? Math.round(totalViews / totalHackathons) : 0
