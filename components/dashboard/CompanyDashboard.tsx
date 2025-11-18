@@ -30,17 +30,14 @@ interface CompanyDashboardStats {
   totalHackathons: number
   totalRegistrations: number
   totalViews: number
-  totalClicks: number
   pendingApprovals: number
   eventMetrics: {
     views: number
     registrations: number
-    clicks: number
   }
   hackathonMetrics: {
     views: number
     registrations: number
-    clicks: number
   }
   recentChange?: {
     events: number
@@ -189,15 +186,10 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       const totalRegistrations = eventRegistrations + hackathonRegistrations
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
-      // Calculate actual views and clicks from events and hackathons
+      // Calculate actual views from events and hackathons
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const eventViews = eventsData.events?.reduce(
         (sum: number, e: any) => sum + (e.views || 0),
-        0
-      ) || 0
-
-      const eventClicks = eventsData.events?.reduce(
-        (sum: number, e: any) => sum + (e.clicks || 0),
         0
       ) || 0
 
@@ -205,33 +197,24 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         (sum: number, h: any) => sum + (h.views || 0),
         0
       ) || 0
-
-      const hackathonClicks = hackathonsData.hackathons?.reduce(
-        (sum: number, h: any) => sum + (h.clicks || 0),
-        0
-      ) || 0
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
-      // Use actual views and clicks from events/hackathons tables, not analytics
+      // Use actual views from events/hackathons tables, not analytics
       const totalViews = eventViews + hackathonViews
-      const totalClicks = eventClicks + hackathonClicks
 
       setStats({
         totalEvents: approvedEvents.length,
         totalHackathons: approvedHackathons.length,
         totalRegistrations: totalRegistrations,
         totalViews: totalViews,
-        totalClicks: totalClicks,
         pendingApprovals: pendingEvents.length,
         eventMetrics: {
           views: eventViews,
           registrations: eventRegistrations,
-          clicks: eventClicks,
         },
         hackathonMetrics: {
           views: hackathonViews,
           registrations: hackathonRegistrations,
-          clicks: hackathonClicks,
         },
         recentChange: {
           events: 0, // Could calculate from analytics
@@ -442,15 +425,6 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
                   {stats.eventMetrics.registrations.toLocaleString()}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-purple-400" />
-                  <span className="text-sm text-zinc-300">Clicks</span>
-                </div>
-                <span className="text-lg font-semibold text-white">
-                  {stats.eventMetrics.clicks.toLocaleString()}
-                </span>
-              </div>
               {stats.eventMetrics.views > 0 && (
                 <div className="pt-2 border-t border-purple-700/30">
                   <div className="flex items-center justify-between text-xs">
@@ -492,15 +466,6 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
                 </div>
                 <span className="text-lg font-semibold text-white">
                   {stats.hackathonMetrics.registrations.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4 text-orange-400" />
-                  <span className="text-sm text-zinc-300">Clicks</span>
-                </div>
-                <span className="text-lg font-semibold text-white">
-                  {stats.hackathonMetrics.clicks.toLocaleString()}
                 </span>
               </div>
               {stats.hackathonMetrics.views > 0 && (

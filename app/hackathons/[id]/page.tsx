@@ -122,7 +122,7 @@ export default function HackathonDetailPage() {
   const { hackathon, loading: isLoading, error: fetchError } = useHackathon(slug)
 
   // Track analytics
-  const { trackClick } = useAnalyticsTracking({
+  useAnalyticsTracking({
     hackathonId: slug,
     trackView: true,
   })
@@ -185,9 +185,6 @@ export default function HackathonDetailPage() {
 
   const handleRegister = async () => {
     if (!hackathon) return
-
-    // Track click on registration button
-    trackClick()
 
     setRegistering(true)
     try {
