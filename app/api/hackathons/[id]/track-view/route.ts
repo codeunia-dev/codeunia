@@ -9,11 +9,11 @@ export async function POST(
     const supabase = await createClient()
     const { id } = await params
 
-    // Get hackathon by id
+    // Get hackathon by slug (id param is actually the slug)
     const { data: hackathon, error: hackathonError } = await supabase
       .from('hackathons')
       .select('id, company_id, views')
-      .eq('id', id)
+      .eq('slug', id)
       .single()
 
     if (hackathonError || !hackathon) {
