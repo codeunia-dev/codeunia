@@ -14,6 +14,7 @@ import React from "react";
 import { useHackathon } from "@/hooks/useHackathons"
 import { CompanyBadge } from "@/components/companies/CompanyBadge"
 import { useAnalyticsTracking } from "@/hooks/useAnalyticsTracking"
+import { toast } from "sonner"
 
 // import Header from "@/components/header";
 import Footer from "@/components/footer";
@@ -110,6 +111,9 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
 
 export default function HackathonDetailPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [registering, setRegistering] = useState(false)
+  const [checkingRegistration, setCheckingRegistration] = useState(true)
   const params = useParams()
   
   const slug = params?.id as string
@@ -118,7 +122,7 @@ export default function HackathonDetailPage() {
   const { hackathon, loading: isLoading, error: fetchError } = useHackathon(slug)
 
   // Track analytics
-  useAnalyticsTracking({
+  const { trackClick } = useAnalyticsTracking({
     hackathonId: slug,
     trackView: true,
   })
@@ -131,6 +135,100 @@ export default function HackathonDetailPage() {
     }
     checkAuth()
   }, [])
+
+  // Check registration status
+  useEffect(() => {
+    const checkRegistrationStatus = async () => {
+      if (!isAuthenticated || !hackathon?.id) {
+        setCheckingRegistration(false)
+        return
+      }
+
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (!user) {
+          setCheckingRegistration(false)
+          return
+        }
+
+        const { data } = await supabase
+          .from('master_registrations')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('activity_type', 'hackathon')
+          .eq('activity_id', hackathon.id.toString())
+          .single()
+
+        setIsRegistered(!!data)
+      } catch (error) {
+        console.error('Error checking registration:', error)
+      } finally {
+        setCheckingRegistration(false)
+      }
+    }
+
+    checkRegistrationStatus()
+  }, [isAuthenticated, hackathon?.id])
+
+  const handleRegister = async () => {
+    if (!hackathon) return
+
+    // Track click on registration button
+    trackClick()
+
+    setRegistering(true)
+    try {
+      const response = await fetch(`/api/hackathons/${slug}/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to register')
+      }
+
+      toast.success('Successfully registered for the hackathon!')
+      setIsRegistered(true)
+      
+      // Refresh hackathon data to update registered count
+      window.location.reload()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to register')
+    } finally {
+      setRegistering(false)
+    }
+  }
+
+  const handleUnregister = async () => {
+    if (!hackathon) return
+
+    setRegistering(true)
+    try {
+      const response = await fetch(`/api/hackathons/${slug}/register`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to unregister')
+      }
+
+      toast.success('Successfully unregistered from the hackathon')
+      setIsRegistered(false)
+      
+      // Refresh hackathon data to update registered count
+      window.location.reload()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to unregister')
+    } finally {
+      setRegistering(false)
+    }
+  }
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -624,7 +722,7 @@ export default function HackathonDetailPage() {
                   </div>
                 </div>
                 {/* Registration Card (mobile only) */}
-                {hackathon?.registration_required && hackathon?.status === 'live' && (
+                {(hackathon?.status === 'live' || hackathon?.status === 'published') && (
                   <div className="block lg:hidden mb-4">
                     <div className="bg-white dark:bg-background border border-primary/10 rounded-xl shadow-md p-6">
                       <div className="text-lg font-semibold mb-2">Registration</div>
@@ -632,13 +730,32 @@ export default function HackathonDetailPage() {
                         <Users className="h-4 w-4" />
                         <span>{hackathon?.registered ?? 0} participants registered</span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground mb-4">
-                        <Calendar className="h-4 w-4" />
-                        <span>Registration deadline</span>
-                        <span className="font-medium text-foreground">{hackathon?.registration_deadline ? new Date(hackathon.registration_deadline).toLocaleDateString() : '-'}</span>
-                      </div>
+                      {hackathon?.registration_deadline && (
+                        <div className="flex items-center gap-2 text-muted-foreground mb-4">
+                          <Calendar className="h-4 w-4" />
+                          <span>Registration deadline</span>
+                          <span className="font-medium text-foreground">{new Date(hackathon.registration_deadline).toLocaleDateString()}</span>
+                        </div>
+                      )}
                       {isAuthenticated ? (
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2">Register Now</Button>
+                        isRegistered ? (
+                          <Button 
+                            variant="outline"
+                            onClick={handleUnregister}
+                            disabled={registering}
+                            className="w-full hover:bg-red-50 hover:border-red-200 hover:text-red-600 mt-2"
+                          >
+                            {registering ? 'Processing...' : 'Unregister'}
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={handleRegister}
+                            disabled={registering || checkingRegistration}
+                            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2"
+                          >
+                            {registering ? 'Registering...' : checkingRegistration ? 'Loading...' : 'Register Now'}
+                          </Button>
+                        )
                       ) : (
                         <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2" asChild>
                           <Link href={`/auth/signin?returnUrl=${encodeURIComponent(`/hackathons/${slug}`)}`}>
@@ -691,7 +808,7 @@ export default function HackathonDetailPage() {
               {/* Sidebar (Hackathon Details, Registration, Need Help) */}
               <div className="space-y-6">
                 {/* Registration Card (desktop only) */}
-                {hackathon?.registration_required && hackathon?.status === 'live' && (
+                {(hackathon?.status === 'live' || hackathon?.status === 'published') && (
                   <div className="hidden lg:block">
                     <div className="bg-white dark:bg-background border border-primary/10 rounded-xl shadow-md p-6">
                       <div className="text-lg font-semibold mb-2">Registration</div>
@@ -699,13 +816,32 @@ export default function HackathonDetailPage() {
                         <Users className="h-4 w-4" />
                         <span>{hackathon?.registered ?? 0} participants registered</span>
                       </div>
-                      <div className="flex items-center gap-2 text-muted-foreground mb-4">
-                        <Calendar className="h-4 w-4" />
-                        <span>Registration deadline</span>
-                        <span className="font-medium text-foreground">{hackathon?.registration_deadline ? new Date(hackathon.registration_deadline).toLocaleDateString() : '-'}</span>
-                      </div>
+                      {hackathon?.registration_deadline && (
+                        <div className="flex items-center gap-2 text-muted-foreground mb-4">
+                          <Calendar className="h-4 w-4" />
+                          <span>Registration deadline</span>
+                          <span className="font-medium text-foreground">{new Date(hackathon.registration_deadline).toLocaleDateString()}</span>
+                        </div>
+                      )}
                       {isAuthenticated ? (
-                        <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2">Register Now</Button>
+                        isRegistered ? (
+                          <Button 
+                            variant="outline"
+                            onClick={handleUnregister}
+                            disabled={registering}
+                            className="w-full hover:bg-red-50 hover:border-red-200 hover:text-red-600 mt-2"
+                          >
+                            {registering ? 'Processing...' : 'Unregister'}
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={handleRegister}
+                            disabled={registering || checkingRegistration}
+                            className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2"
+                          >
+                            {registering ? 'Registering...' : checkingRegistration ? 'Loading...' : 'Register Now'}
+                          </Button>
+                        )
                       ) : (
                         <Button className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2" asChild>
                           <Link href={`/auth/signin?returnUrl=${encodeURIComponent(`/hackathons/${slug}`)}`}>

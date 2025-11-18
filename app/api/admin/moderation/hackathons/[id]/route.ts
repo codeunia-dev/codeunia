@@ -76,7 +76,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       updateData.approval_status = 'approved'
       updateData.approved_by = user.id
       updateData.approved_at = new Date().toISOString()
-      updateData.status = 'published'
+      updateData.status = 'live'
       updateData.rejection_reason = null
     } else if (action === 'reject') {
       updateData.approval_status = 'rejected'
