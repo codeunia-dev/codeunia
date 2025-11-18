@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -23,11 +24,27 @@ export async function POST(
       )
     }
 
-    // Increment click count
-    const { error: updateError } = await supabase
+    console.log('Tracking click for hackathon:', {
+      hackathonId: hackathon.id,
+      currentClicks: hackathon.clicks,
+      newClicks: (hackathon.clicks || 0) + 1
+    })
+
+    // Increment click count using service role client to bypass RLS
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data: updatedHackathon, error: updateError } = await supabaseAdmin
       .from('hackathons')
-      .update({ clicks: (hackathon.clicks || 0) + 1 })
+      .update({ 
+        clicks: (hackathon.clicks || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', hackathon.id)
+      .select('clicks')
+      .single()
 
     if (updateError) {
       console.error('Error updating click count:', updateError)
@@ -36,6 +53,8 @@ export async function POST(
         { status: 500 }
       )
     }
+
+    console.log('Successfully updated click count to:', updatedHackathon?.clicks)
 
     // Update company analytics if hackathon has a company
     if (hackathon.company_id) {

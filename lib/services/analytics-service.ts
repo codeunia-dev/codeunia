@@ -117,6 +117,32 @@ export class AnalyticsService {
   }
 
   /**
+   * Track a registration for a hackathon
+   */
+  static async trackHackathonRegistration(hackathonId: string): Promise<void> {
+    const supabase = await createClient()
+
+    const { data: hackathon, error: hackathonError } = await supabase
+      .from('hackathons')
+      .select('id, company_id')
+      .eq('id', hackathonId)
+      .single()
+
+    if (hackathonError || !hackathon) {
+      throw new Error('Hackathon not found')
+    }
+
+    // Update company analytics if hackathon has a company
+    if (hackathon.company_id) {
+      await this.incrementCompanyAnalytics(
+        hackathon.company_id,
+        'total_registrations',
+        1
+      )
+    }
+  }
+
+  /**
    * Track a view for a hackathon
    */
   static async trackHackathonView(hackathonId: string): Promise<void> {

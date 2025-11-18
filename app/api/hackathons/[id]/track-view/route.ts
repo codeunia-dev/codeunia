@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 export async function POST(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -23,11 +24,27 @@ export async function POST(
       )
     }
 
-    // Increment view count
-    const { error: updateError } = await supabase
+    console.log('Tracking view for hackathon:', {
+      hackathonId: hackathon.id,
+      currentViews: hackathon.views,
+      newViews: (hackathon.views || 0) + 1
+    })
+
+    // Increment view count using service role client to bypass RLS
+    const supabaseAdmin = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
+    const { data: updatedHackathon, error: updateError } = await supabaseAdmin
       .from('hackathons')
-      .update({ views: (hackathon.views || 0) + 1 })
+      .update({ 
+        views: (hackathon.views || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', hackathon.id)
+      .select('views')
+      .single()
 
     if (updateError) {
       console.error('Error updating view count:', updateError)
@@ -36,6 +53,8 @@ export async function POST(
         { status: 500 }
       )
     }
+
+    console.log('Successfully updated view count to:', updatedHackathon?.views)
 
     // Update company analytics if hackathon has a company
     if (hackathon.company_id) {

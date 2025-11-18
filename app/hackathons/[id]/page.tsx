@@ -141,6 +141,7 @@ export default function HackathonDetailPage() {
     const checkRegistrationStatus = async () => {
       if (!isAuthenticated || !hackathon?.id) {
         setCheckingRegistration(false)
+        setIsRegistered(false)
         return
       }
 
@@ -150,20 +151,30 @@ export default function HackathonDetailPage() {
         
         if (!user) {
           setCheckingRegistration(false)
+          setIsRegistered(false)
           return
         }
 
-        const { data } = await supabase
+        // Check for this specific hackathon registration
+        const { data, error } = await supabase
           .from('master_registrations')
           .select('id')
           .eq('user_id', user.id)
           .eq('activity_type', 'hackathon')
           .eq('activity_id', hackathon.id.toString())
-          .single()
+          .maybeSingle()
 
+        // If there's an error (other than not found), log it
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking registration:', error)
+        }
+
+        // Set registration status based on whether data exists
         setIsRegistered(!!data)
       } catch (error) {
         console.error('Error checking registration:', error)
+        // On error, assume not registered
+        setIsRegistered(false)
       } finally {
         setCheckingRegistration(false)
       }
@@ -187,19 +198,21 @@ export default function HackathonDetailPage() {
         },
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to register')
+        throw new Error(result.error || 'Failed to register')
       }
 
-      toast.success('Successfully registered for the hackathon!')
+      // Update state immediately
       setIsRegistered(true)
+      setCheckingRegistration(false)
+      toast.success('Successfully registered for the hackathon!')
       
-      // Refresh hackathon data to update registered count
-      window.location.reload()
+      // Force a hard reload to clear any cached state
+      window.location.href = window.location.href
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to register')
-    } finally {
       setRegistering(false)
     }
   }
@@ -213,19 +226,21 @@ export default function HackathonDetailPage() {
         method: 'DELETE',
       })
 
+      const result = await response.json()
+
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to unregister')
+        throw new Error(result.error || 'Failed to unregister')
       }
 
-      toast.success('Successfully unregistered from the hackathon')
+      // Update state immediately
       setIsRegistered(false)
+      setCheckingRegistration(false)
+      toast.success('Successfully unregistered from the hackathon')
       
-      // Refresh hackathon data to update registered count
-      window.location.reload()
+      // Force a hard reload to clear any cached state
+      window.location.href = window.location.href
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to unregister')
-    } finally {
       setRegistering(false)
     }
   }
