@@ -94,7 +94,7 @@
     "dompurify": "^3.2.6",
     "dotenv": "^17.2.1",
     "framer-motion": "^12.17.3",
-    "glob": "^11.0.3",
+    "glob": "^11.0.4",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "ioredis": "^5.7.0",
@@ -137,7 +137,8 @@
     "puppeteer_skip_chromium_download": true
   },
   "overrides": {
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^4.1.1",
+    "glob": "^11.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
