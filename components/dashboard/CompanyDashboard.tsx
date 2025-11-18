@@ -189,13 +189,28 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       const totalRegistrations = eventRegistrations + hackathonRegistrations
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
-      // Calculate separate metrics for events and hackathons from analytics
-      // Note: The analytics API doesn't currently separate views/clicks by type
-      // For now, we'll use the registration counts from the actual data
-      // and split views/clicks proportionally based on the number of each type
-      const totalItems = approvedEvents.length + approvedHackathons.length
-      const eventRatio = totalItems > 0 ? approvedEvents.length / totalItems : 0.5
-      const hackathonRatio = totalItems > 0 ? approvedHackathons.length / totalItems : 0.5
+      // Calculate actual views and clicks from events and hackathons
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const eventViews = eventsData.events?.reduce(
+        (sum: number, e: any) => sum + (e.views || 0),
+        0
+      ) || 0
+
+      const eventClicks = eventsData.events?.reduce(
+        (sum: number, e: any) => sum + (e.clicks || 0),
+        0
+      ) || 0
+
+      const hackathonViews = hackathonsData.hackathons?.reduce(
+        (sum: number, h: any) => sum + (h.views || 0),
+        0
+      ) || 0
+
+      const hackathonClicks = hackathonsData.hackathons?.reduce(
+        (sum: number, h: any) => sum + (h.clicks || 0),
+        0
+      ) || 0
+      /* eslint-enable @typescript-eslint/no-explicit-any */
 
       const totalViews = analyticsData.summary?.total_views || 0
       const totalClicks = analyticsData.summary?.total_clicks || 0
@@ -208,14 +223,14 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         totalClicks: totalClicks,
         pendingApprovals: pendingEvents.length,
         eventMetrics: {
-          views: Math.round(totalViews * eventRatio),
+          views: eventViews,
           registrations: eventRegistrations,
-          clicks: Math.round(totalClicks * eventRatio),
+          clicks: eventClicks,
         },
         hackathonMetrics: {
-          views: Math.round(totalViews * hackathonRatio),
+          views: hackathonViews,
           registrations: hackathonRegistrations,
-          clicks: Math.round(totalClicks * hackathonRatio),
+          clicks: hackathonClicks,
         },
         recentChange: {
           events: 0, // Could calculate from analytics
