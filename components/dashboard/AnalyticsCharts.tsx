@@ -515,11 +515,57 @@ interface EventPerformanceComparisonProps {
 }
 
 function EventPerformanceComparison({ analytics }: EventPerformanceComparisonProps) {
-  // Calculate performance metrics
-  const totalEvents = analytics.reduce((sum, record) => sum + record.events_published, 0)
-  const totalViews = analytics.reduce((sum, record) => sum + record.total_views, 0)
-  const totalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
-  const totalRegistrations = analytics.reduce((sum, record) => sum + record.total_registrations, 0)
+  const [eventStats, setEventStats] = React.useState<{
+    totalEvents: number
+    totalViews: number
+    totalClicks: number
+    totalRegistrations: number
+  } | null>(null)
+
+  React.useEffect(() => {
+    // Fetch actual event data from the API
+    const fetchEventStats = async () => {
+      try {
+        // Get company slug from URL
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        const response = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        if (!response.ok) return
+        
+        const data = await response.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const approvedEvents = data.events?.filter((e: any) => e.approval_status === 'approved') || []
+        
+        // Calculate actual totals from events table
+        const totalViews = approvedEvents.reduce((sum: number, e: any) => sum + (e.views || 0), 0)
+        const totalClicks = approvedEvents.reduce((sum: number, e: any) => sum + (e.clicks || 0), 0)
+        
+        // Get registrations count
+        const regResponse = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        const regData = await regResponse.json()
+        const totalRegistrations = regData.events?.reduce((sum: number, e: any) => sum + (e.registered || 0), 0) || 0
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setEventStats({
+          totalEvents: approvedEvents.length,
+          totalViews,
+          totalClicks,
+          totalRegistrations
+        })
+      } catch (error) {
+        console.error('Error fetching event stats:', error)
+      }
+    }
+    
+    fetchEventStats()
+  }, [])
+
+  // Use fetched stats if available, otherwise fall back to analytics data
+  const totalEvents = eventStats?.totalEvents ?? analytics.reduce((sum, record) => sum + record.events_published, 0)
+  const totalViews = eventStats?.totalViews ?? 0
+  const totalClicks = eventStats?.totalClicks ?? 0
+  const totalRegistrations = eventStats?.totalRegistrations ?? 0
 
   // Calculate averages per event
   const avgViewsPerEvent = totalEvents > 0 ? Math.round(totalViews / totalEvents) : 0
@@ -621,11 +667,53 @@ interface HackathonPerformanceComparisonProps {
 }
 
 function HackathonPerformanceComparison({ analytics }: HackathonPerformanceComparisonProps) {
-  // Calculate performance metrics
-  const totalHackathons = analytics.reduce((sum, record) => sum + record.hackathons_published, 0)
-  const totalViews = analytics.reduce((sum, record) => sum + record.total_views, 0)
-  const totalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
-  const totalRegistrations = analytics.reduce((sum, record) => sum + record.total_registrations, 0)
+  const [hackathonStats, setHackathonStats] = React.useState<{
+    totalHackathons: number
+    totalViews: number
+    totalClicks: number
+    totalRegistrations: number
+  } | null>(null)
+
+  React.useEffect(() => {
+    // Fetch actual hackathon data from the API
+    const fetchHackathonStats = async () => {
+      try {
+        // Get company slug from URL
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        const response = await fetch(`/api/companies/${companySlug}/hackathons?status=all&limit=100`)
+        if (!response.ok) return
+        
+        const data = await response.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const approvedHackathons = data.hackathons?.filter((h: any) => h.approval_status === 'approved') || []
+        
+        // Calculate actual totals from hackathons table
+        const totalViews = approvedHackathons.reduce((sum: number, h: any) => sum + (h.views || 0), 0)
+        const totalClicks = approvedHackathons.reduce((sum: number, h: any) => sum + (h.clicks || 0), 0)
+        const totalRegistrations = approvedHackathons.reduce((sum: number, h: any) => sum + (h.registered || 0), 0)
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setHackathonStats({
+          totalHackathons: approvedHackathons.length,
+          totalViews,
+          totalClicks,
+          totalRegistrations
+        })
+      } catch (error) {
+        console.error('Error fetching hackathon stats:', error)
+      }
+    }
+    
+    fetchHackathonStats()
+  }, [])
+
+  // Use fetched stats if available, otherwise fall back to analytics data
+  const totalHackathons = hackathonStats?.totalHackathons ?? analytics.reduce((sum, record) => sum + record.hackathons_published, 0)
+  const totalViews = hackathonStats?.totalViews ?? 0
+  const totalClicks = hackathonStats?.totalClicks ?? 0
+  const totalRegistrations = hackathonStats?.totalRegistrations ?? 0
 
   // Calculate averages per hackathon
   const avgViewsPerHackathon = totalHackathons > 0 ? Math.round(totalViews / totalHackathons) : 0
