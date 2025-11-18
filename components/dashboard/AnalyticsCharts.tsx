@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CompanyAnalytics } from '@/types/company'
 import { format } from 'date-fns'
-import { TrendingUp, Eye, MousePointerClick, Users, Calendar, Download } from 'lucide-react'
+import { TrendingUp, Eye, MousePointerClick, Users, Calendar, Download, Trophy } from 'lucide-react'
 
 interface AnalyticsChartsProps {
   analytics: CompanyAnalytics[]
@@ -40,6 +40,8 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
     registrations: record.total_registrations,
     eventsCreated: record.events_created,
     eventsPublished: record.events_published,
+    hackathonsCreated: record.hackathons_created,
+    hackathonsPublished: record.hackathons_published,
   }))
 
   // Calculate totals
@@ -50,8 +52,10 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
       registrations: acc.registrations + record.total_registrations,
       eventsCreated: acc.eventsCreated + record.events_created,
       eventsPublished: acc.eventsPublished + record.events_published,
+      hackathonsCreated: acc.hackathonsCreated + record.hackathons_created,
+      hackathonsPublished: acc.hackathonsPublished + record.hackathons_published,
     }),
-    { views: 0, clicks: 0, registrations: 0, eventsCreated: 0, eventsPublished: 0 }
+    { views: 0, clicks: 0, registrations: 0, eventsCreated: 0, eventsPublished: 0, hackathonsCreated: 0, hackathonsPublished: 0 }
   )
 
   // Calculate averages
@@ -70,7 +74,7 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
   return (
     <div className="space-y-6">
       {/* Summary Stats */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <SummaryCard
           title="Total Views"
           value={totals.views}
@@ -97,7 +101,14 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
           value={totals.eventsPublished}
           subtitle={`${totals.eventsCreated} created`}
           icon={Calendar}
-          iconColor="text-yellow-400"
+          iconColor="text-purple-400"
+        />
+        <SummaryCard
+          title="Hackathons Published"
+          value={totals.hackathonsPublished}
+          subtitle={`${totals.hackathonsCreated} created`}
+          icon={Trophy}
+          iconColor="text-orange-400"
         />
       </div>
 
@@ -131,8 +142,11 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
         </Card>
       </div>
 
-      {/* Event Performance Comparison */}
-      <EventPerformanceComparison analytics={analytics} />
+      {/* Event and Hackathon Performance Comparison */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <EventPerformanceComparison analytics={analytics} />
+        <HackathonPerformanceComparison analytics={analytics} />
+      </div>
 
       {/* Main Charts */}
       <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700">
@@ -187,8 +201,9 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
         <CardContent>
           <Tabs defaultValue="engagement" className="space-y-4">
             <TabsList className="bg-zinc-800 border-zinc-700">
-              <TabsTrigger value="engagement">Engagement</TabsTrigger>
+              <TabsTrigger value="engagement">Overall Engagement</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
+              <TabsTrigger value="hackathons">Hackathons</TabsTrigger>
             </TabsList>
 
             <TabsContent value="engagement" className="space-y-4">
@@ -304,10 +319,10 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
                     <Line
                       type="monotone"
                       dataKey="eventsPublished"
-                      stroke="#22c55e"
+                      stroke="#a855f7"
                       strokeWidth={2}
                       name="Events Published"
-                      dot={{ fill: '#22c55e', r: 3 }}
+                      dot={{ fill: '#a855f7', r: 3 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -320,7 +335,7 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
                     <Bar dataKey="eventsCreated" fill="#eab308" name="Events Created" />
-                    <Bar dataKey="eventsPublished" fill="#22c55e" name="Events Published" />
+                    <Bar dataKey="eventsPublished" fill="#a855f7" name="Events Published" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -342,10 +357,82 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
                     <Area
                       type="monotone"
                       dataKey="eventsPublished"
-                      stroke="#22c55e"
-                      fill="#22c55e"
+                      stroke="#a855f7"
+                      fill="#a855f7"
                       fillOpacity={0.3}
                       name="Events Published"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </TabsContent>
+
+            <TabsContent value="hackathons" className="space-y-4">
+              {chartData.length === 0 ? (
+                <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                  <p>No data available for the selected date range</p>
+                </div>
+              ) : chartType === 'line' ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="date" stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="hackathonsCreated"
+                      stroke="#eab308"
+                      strokeWidth={2}
+                      name="Hackathons Created"
+                      dot={{ fill: '#eab308', r: 3 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="hackathonsPublished"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      name="Hackathons Published"
+                      dot={{ fill: '#f97316', r: 3 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : chartType === 'bar' ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="date" stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="hackathonsCreated" fill="#eab308" name="Hackathons Created" />
+                    <Bar dataKey="hackathonsPublished" fill="#f97316" name="Hackathons Published" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="date" stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#71717a" style={{ fontSize: '12px' }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Area
+                      type="monotone"
+                      dataKey="hackathonsCreated"
+                      stroke="#eab308"
+                      fill="#eab308"
+                      fillOpacity={0.3}
+                      name="Hackathons Created"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="hackathonsPublished"
+                      stroke="#f97316"
+                      fill="#f97316"
+                      fillOpacity={0.3}
+                      name="Hackathons Published"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -440,11 +527,27 @@ function EventPerformanceComparison({ analytics }: EventPerformanceComparisonPro
   const avgRegistrationsPerEvent = totalEvents > 0 ? Math.round(totalRegistrations / totalEvents) : 0
 
   if (totalEvents === 0) {
-    return null
+    return (
+      <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/50">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-purple-400" />
+            Event Performance Metrics
+          </CardTitle>
+          <CardDescription>Average performance per published event</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No events published in this period</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
-    <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700">
+    <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/50">
       <CardHeader>
         <CardTitle className="text-white flex items-center gap-2">
           <Calendar className="h-5 w-5 text-purple-400" />
@@ -454,38 +557,38 @@ function EventPerformanceComparison({ analytics }: EventPerformanceComparisonPro
       </CardHeader>
       <CardContent>
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700">
+          <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-700/30">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Avg Views per Event</p>
-              <Eye className="h-4 w-4 text-blue-400" />
+              <Eye className="h-4 w-4 text-purple-400" />
             </div>
             <p className="text-2xl font-bold text-white">{avgViewsPerEvent.toLocaleString()}</p>
             <p className="text-xs text-zinc-500 mt-1">
-              {totalViews.toLocaleString()} total views across {totalEvents} events
+              {totalViews.toLocaleString()} total views across {totalEvents} {totalEvents === 1 ? 'event' : 'events'}
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700">
+          <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-700/30">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Avg Clicks per Event</p>
               <MousePointerClick className="h-4 w-4 text-purple-400" />
             </div>
             <p className="text-2xl font-bold text-white">{avgClicksPerEvent.toLocaleString()}</p>
             <p className="text-xs text-zinc-500 mt-1">
-              {totalClicks.toLocaleString()} total clicks across {totalEvents} events
+              {totalClicks.toLocaleString()} total clicks across {totalEvents} {totalEvents === 1 ? 'event' : 'events'}
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-zinc-800/50 border border-zinc-700">
+          <div className="p-4 rounded-lg bg-purple-500/10 border border-purple-700/30">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-muted-foreground">Avg Registrations per Event</p>
-              <Users className="h-4 w-4 text-green-400" />
+              <Users className="h-4 w-4 text-purple-400" />
             </div>
             <p className="text-2xl font-bold text-white">
               {avgRegistrationsPerEvent.toLocaleString()}
             </p>
             <p className="text-xs text-zinc-500 mt-1">
-              {totalRegistrations.toLocaleString()} total registrations across {totalEvents} events
+              {totalRegistrations.toLocaleString()} total registrations across {totalEvents} {totalEvents === 1 ? 'event' : 'events'}
             </p>
           </div>
         </div>
@@ -503,6 +606,112 @@ function EventPerformanceComparison({ analytics }: EventPerformanceComparisonPro
                 {avgRegistrationsPerEvent > 10 && 'Strong registration rates indicate high engagement. '}
                 {avgClicksPerEvent < avgViewsPerEvent * 0.1 &&
                   'Consider improving your event descriptions to increase click-through rates.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Hackathon Performance Comparison Component
+interface HackathonPerformanceComparisonProps {
+  analytics: CompanyAnalytics[]
+}
+
+function HackathonPerformanceComparison({ analytics }: HackathonPerformanceComparisonProps) {
+  // Calculate performance metrics
+  const totalHackathons = analytics.reduce((sum, record) => sum + record.hackathons_published, 0)
+  const totalViews = analytics.reduce((sum, record) => sum + record.total_views, 0)
+  const totalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
+  const totalRegistrations = analytics.reduce((sum, record) => sum + record.total_registrations, 0)
+
+  // Calculate averages per hackathon
+  const avgViewsPerHackathon = totalHackathons > 0 ? Math.round(totalViews / totalHackathons) : 0
+  const avgClicksPerHackathon = totalHackathons > 0 ? Math.round(totalClicks / totalHackathons) : 0
+  const avgRegistrationsPerHackathon = totalHackathons > 0 ? Math.round(totalRegistrations / totalHackathons) : 0
+
+  if (totalHackathons === 0) {
+    return (
+      <Card className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 border-orange-700/50">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-orange-400" />
+            Hackathon Performance Metrics
+          </CardTitle>
+          <CardDescription>Average performance per published hackathon</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No hackathons published in this period</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 border-orange-700/50">
+      <CardHeader>
+        <CardTitle className="text-white flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-orange-400" />
+          Hackathon Performance Metrics
+        </CardTitle>
+        <CardDescription>Average performance per published hackathon</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-700/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Avg Views per Hackathon</p>
+              <Eye className="h-4 w-4 text-orange-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{avgViewsPerHackathon.toLocaleString()}</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {totalViews.toLocaleString()} total views across {totalHackathons} {totalHackathons === 1 ? 'hackathon' : 'hackathons'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-700/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Avg Clicks per Hackathon</p>
+              <MousePointerClick className="h-4 w-4 text-orange-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">{avgClicksPerHackathon.toLocaleString()}</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {totalClicks.toLocaleString()} total clicks across {totalHackathons} {totalHackathons === 1 ? 'hackathon' : 'hackathons'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-700/30">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-muted-foreground">Avg Registrations per Hackathon</p>
+              <Users className="h-4 w-4 text-orange-400" />
+            </div>
+            <p className="text-2xl font-bold text-white">
+              {avgRegistrationsPerHackathon.toLocaleString()}
+            </p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {totalRegistrations.toLocaleString()} total registrations across {totalHackathons} {totalHackathons === 1 ? 'hackathon' : 'hackathons'}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4 p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+          <div className="flex items-start gap-3">
+            <TrendingUp className="h-5 w-5 text-orange-400 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-white">Performance Insights</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {totalHackathons === 1
+                  ? 'You have published 1 hackathon in this period.'
+                  : `You have published ${totalHackathons} hackathons in this period.`}{' '}
+                {avgViewsPerHackathon > 150 && 'Your hackathons are attracting strong interest! '}
+                {avgRegistrationsPerHackathon > 15 && 'Excellent team registration rates! '}
+                {avgClicksPerHackathon < avgViewsPerHackathon * 0.1 &&
+                  'Consider enhancing your hackathon descriptions to boost engagement.'}
               </p>
             </div>
           </div>

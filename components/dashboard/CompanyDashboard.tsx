@@ -32,6 +32,16 @@ interface CompanyDashboardStats {
   totalViews: number
   totalClicks: number
   pendingApprovals: number
+  eventMetrics: {
+    views: number
+    registrations: number
+    clicks: number
+  }
+  hackathonMetrics: {
+    views: number
+    registrations: number
+    clicks: number
+  }
   recentChange?: {
     events: number
     registrations: number
@@ -41,7 +51,7 @@ interface CompanyDashboardStats {
 
 interface RecentActivity {
   id: string
-  type: 'event_created' | 'event_approved' | 'event_rejected' | 'registration' | 'member_joined'
+  type: 'event_created' | 'event_approved' | 'event_rejected' | 'hackathon_created' | 'hackathon_approved' | 'hackathon_rejected' | 'registration' | 'member_joined'
   title: string
   description: string
   timestamp: string
@@ -60,6 +70,17 @@ interface UpcomingEvent {
   approval_status: string
 }
 
+interface UpcomingHackathon {
+  id: string
+  title: string
+  slug: string
+  date: string
+  mode: string
+  registrations: number
+  max_team_size: number
+  approval_status: string
+}
+
 interface CompanyDashboardProps {
   company: Company
 }
@@ -69,6 +90,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
   const [stats, setStats] = useState<CompanyDashboardStats | null>(null)
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([])
+  const [upcomingHackathons, setUpcomingHackathons] = useState<UpcomingHackathon[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -94,6 +116,8 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
 
       const analyticsData = await analyticsResponse.json()
 
+      console.log('Analytics data:', analyticsData)
+
       // Fetch events for upcoming events and pending approvals
       const eventsResponse = await fetch(
         `/api/companies/${company.slug}/events?limit=100`
@@ -115,6 +139,9 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       }
 
       const hackathonsData = await hackathonsResponse.json()
+
+      console.log('Hackathons data:', hackathonsData)
+      console.log('Hackathons array:', hackathonsData.hackathons)
 
       // Calculate stats
       /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -138,6 +165,16 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 5) || []
 
+      const upcomingHackathonsData = hackathonsData.hackathons
+        ?.filter((h: any) => {
+          const hackathonDate = new Date(h.date)
+          return hackathonDate > new Date() && h.approval_status === 'approved'
+        })
+        .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 5) || []
+
+      console.log('Upcoming hackathons data:', upcomingHackathonsData)
+
       // Calculate total registrations from both events and hackathons
       const eventRegistrations = eventsData.events?.reduce(
         (sum: number, e: any) => sum + (e.registered || 0),
@@ -152,13 +189,34 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       const totalRegistrations = eventRegistrations + hackathonRegistrations
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
+      // Calculate separate metrics for events and hackathons from analytics
+      // Note: The analytics API doesn't currently separate views/clicks by type
+      // For now, we'll use the registration counts from the actual data
+      // and split views/clicks proportionally based on the number of each type
+      const totalItems = approvedEvents.length + approvedHackathons.length
+      const eventRatio = totalItems > 0 ? approvedEvents.length / totalItems : 0.5
+      const hackathonRatio = totalItems > 0 ? approvedHackathons.length / totalItems : 0.5
+
+      const totalViews = analyticsData.summary?.total_views || 0
+      const totalClicks = analyticsData.summary?.total_clicks || 0
+
       setStats({
         totalEvents: approvedEvents.length,
         totalHackathons: approvedHackathons.length,
         totalRegistrations: totalRegistrations,
-        totalViews: analyticsData.summary?.total_views || 0,
-        totalClicks: analyticsData.summary?.total_clicks || 0,
+        totalViews: totalViews,
+        totalClicks: totalClicks,
         pendingApprovals: pendingEvents.length,
+        eventMetrics: {
+          views: Math.round(totalViews * eventRatio),
+          registrations: eventRegistrations,
+          clicks: Math.round(totalClicks * eventRatio),
+        },
+        hackathonMetrics: {
+          views: Math.round(totalViews * hackathonRatio),
+          registrations: hackathonRegistrations,
+          clicks: Math.round(totalClicks * hackathonRatio),
+        },
         recentChange: {
           events: 0, // Could calculate from analytics
           registrations: 0,
@@ -167,8 +225,9 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       })
 
       setUpcomingEvents(upcomingEventsData)
+      setUpcomingHackathons(upcomingHackathonsData)
 
-      // Generate recent activity from events
+      // Generate recent activity from events and hackathons
       const activities: RecentActivity[] = []
 
       // Add recent events
@@ -202,6 +261,42 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
             title: 'Event Rejected',
             description: `${event.title} was rejected`,
             timestamp: event.updated_at as string,
+            icon: AlertCircle,
+            iconColor: 'text-red-400',
+          })
+        }
+      })
+
+      // Add recent hackathons
+      const recentHackathons = hackathonsData.hackathons?.slice(0, 3) || []
+      recentHackathons.forEach((hackathon: any) => {
+        if (hackathon.approval_status === 'approved') {
+          activities.push({
+            id: hackathon.id as string,
+            type: 'hackathon_approved',
+            title: 'Hackathon Approved',
+            description: `${hackathon.title} was approved and is now live`,
+            timestamp: (hackathon.approved_at || hackathon.created_at) as string,
+            icon: Trophy,
+            iconColor: 'text-orange-400',
+          })
+        } else if (hackathon.approval_status === 'pending') {
+          activities.push({
+            id: hackathon.id as string,
+            type: 'hackathon_created',
+            title: 'Hackathon Created',
+            description: `${hackathon.title} is pending approval`,
+            timestamp: hackathon.created_at as string,
+            icon: Clock,
+            iconColor: 'text-yellow-400',
+          })
+        } else if (hackathon.approval_status === 'rejected') {
+          activities.push({
+            id: hackathon.id as string,
+            type: 'hackathon_rejected',
+            title: 'Hackathon Rejected',
+            description: `${hackathon.title} was rejected`,
+            timestamp: hackathon.updated_at as string,
             icon: AlertCircle,
             iconColor: 'text-red-400',
           })
@@ -257,7 +352,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
+      {/* Overview Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard
           title="Total Events"
@@ -300,6 +395,113 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         />
       </div>
 
+      {/* Separate Event and Hackathon Metrics */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Event Metrics Card */}
+        <Card className="bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-purple-700/50">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-purple-400" />
+              Event Metrics
+            </CardTitle>
+            <CardDescription>Performance data for your events</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-purple-400" />
+                  <span className="text-sm text-zinc-300">Views</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.eventMetrics.views.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-purple-400" />
+                  <span className="text-sm text-zinc-300">Registrations</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.eventMetrics.registrations.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-purple-400" />
+                  <span className="text-sm text-zinc-300">Clicks</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.eventMetrics.clicks.toLocaleString()}
+                </span>
+              </div>
+              {stats.eventMetrics.views > 0 && (
+                <div className="pt-2 border-t border-purple-700/30">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-zinc-400">Conversion Rate</span>
+                    <span className="text-purple-300 font-medium">
+                      {((stats.eventMetrics.registrations / stats.eventMetrics.views) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hackathon Metrics Card */}
+        <Card className="bg-gradient-to-br from-orange-900/20 to-orange-800/10 border-orange-700/50">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-orange-400" />
+              Hackathon Metrics
+            </CardTitle>
+            <CardDescription>Performance data for your hackathons</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-orange-400" />
+                  <span className="text-sm text-zinc-300">Views</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.hackathonMetrics.views.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-orange-400" />
+                  <span className="text-sm text-zinc-300">Registrations</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.hackathonMetrics.registrations.toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-orange-400" />
+                  <span className="text-sm text-zinc-300">Clicks</span>
+                </div>
+                <span className="text-lg font-semibold text-white">
+                  {stats.hackathonMetrics.clicks.toLocaleString()}
+                </span>
+              </div>
+              {stats.hackathonMetrics.views > 0 && (
+                <div className="pt-2 border-t border-orange-700/30">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-zinc-400">Conversion Rate</span>
+                    <span className="text-orange-300 font-medium">
+                      {((stats.hackathonMetrics.registrations / stats.hackathonMetrics.views) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Main Content Grid */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Recent Activity */}
@@ -311,7 +513,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
                   <Activity className="h-5 w-5 text-purple-400" />
                   Recent Activity
                 </CardTitle>
-                <CardDescription>Latest updates and events</CardDescription>
+                <CardDescription>Latest updates from events and hackathons</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -320,7 +522,7 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>No recent activity</p>
-                <p className="text-sm">Create your first event to get started</p>
+                <p className="text-sm">Create your first event or hackathon to get started</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -375,6 +577,50 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upcoming Hackathons */}
+      <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-orange-400" />
+                Upcoming Hackathons
+              </CardTitle>
+              <CardDescription>Your next scheduled hackathons</CardDescription>
+            </div>
+            <Button asChild size="sm" variant="ghost">
+              <Link href={`/dashboard/company/${company.slug}/hackathons`}>
+                View All
+              </Link>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {upcomingHackathons.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Trophy className="h-12 w-12 mx-auto mb-2 opacity-50" />
+              <p>No upcoming hackathons</p>
+              <Button asChild className="mt-4" size="sm">
+                <Link href={`/dashboard/company/${company.slug}/hackathons/create`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Hackathon
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {upcomingHackathons.map((hackathon) => (
+                <UpcomingHackathonItem
+                  key={hackathon.id}
+                  hackathon={hackathon}
+                  companySlug={company.slug}
+                />
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Quick Actions */}
       <Card className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700">
@@ -534,6 +780,43 @@ function UpcomingEventItem({ event }: UpcomingEventItemProps) {
         </div>
       )}
     </div>
+  )
+}
+
+// Upcoming Hackathon Item Component
+interface UpcomingHackathonItemProps {
+  hackathon: UpcomingHackathon
+  companySlug: string
+}
+
+function UpcomingHackathonItem({ hackathon, companySlug }: UpcomingHackathonItemProps) {
+  return (
+    <Link
+      href={`/dashboard/company/${companySlug}/hackathons/${hackathon.id}`}
+      className="block p-4 rounded-lg border border-zinc-800 hover:border-orange-500 hover:bg-zinc-800/50 transition-all group"
+    >
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 transition-colors">
+          <Trophy className="h-5 w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-white truncate group-hover:text-orange-300 transition-colors">
+            {hackathon.title}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {format(new Date(hackathon.date), 'MMM dd, yyyy')}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="secondary" className="text-xs capitalize">
+              {hackathon.mode || 'Online'}
+            </Badge>
+            <span className="text-xs text-zinc-500">
+              {hackathon.registrations || 0} teams registered
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
   )
 }
 
