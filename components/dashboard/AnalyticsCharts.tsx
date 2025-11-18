@@ -84,18 +84,57 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
     fetchActualStats()
   }, [])
 
-  // Transform analytics data for charts
-  const chartData = analytics.map((record) => ({
-    date: format(new Date(record.date), 'MMM dd'),
-    fullDate: record.date,
-    views: record.total_views,
-    clicks: record.total_clicks,
-    registrations: record.total_registrations,
-    eventsCreated: record.events_created,
-    eventsPublished: record.events_published,
-    hackathonsCreated: record.hackathons_created,
-    hackathonsPublished: record.hackathons_published,
-  }))
+  // Calculate scaling factor to adjust historical data to match current reality
+  const analyticsHistoricalTotal = analytics.reduce((sum, record) => sum + record.total_views, 0)
+  const actualCurrentTotal = actualStats?.views ?? analyticsHistoricalTotal
+  
+  const analyticsHistoricalClicks = analytics.reduce((sum, record) => sum + record.total_clicks, 0)
+  const actualCurrentClicks = actualStats?.clicks ?? analyticsHistoricalClicks
+
+  // Transform analytics data for charts with proportional distribution
+  // First pass: calculate proportions and floor values
+  const chartDataWithRemainder = analytics.map((record) => {
+    const viewsProportion = analyticsHistoricalTotal > 0 ? (record.total_views / analyticsHistoricalTotal) * actualCurrentTotal : 0
+    const clicksProportion = analyticsHistoricalClicks > 0 ? (record.total_clicks / analyticsHistoricalClicks) * actualCurrentClicks : 0
+    
+    return {
+      date: format(new Date(record.date), 'MMM dd'),
+      fullDate: record.date,
+      views: Math.floor(viewsProportion),
+      viewsRemainder: viewsProportion - Math.floor(viewsProportion),
+      clicks: Math.floor(clicksProportion),
+      clicksRemainder: clicksProportion - Math.floor(clicksProportion),
+      registrations: record.total_registrations,
+      eventsCreated: record.events_created,
+      eventsPublished: record.events_published,
+      hackathonsCreated: record.hackathons_created,
+      hackathonsPublished: record.hackathons_published,
+    }
+  })
+
+  // Second pass: distribute remaining views to days with highest remainders
+  const totalFlooredViews = chartDataWithRemainder.reduce((sum, d) => sum + d.views, 0)
+  const viewsToDistribute = actualCurrentTotal - totalFlooredViews
+  
+  const totalFlooredClicks = chartDataWithRemainder.reduce((sum, d) => sum + d.clicks, 0)
+  const clicksToDistribute = actualCurrentClicks - totalFlooredClicks
+
+  // Sort by remainder and add 1 to top N days
+  const sortedByViewsRemainder = [...chartDataWithRemainder].sort((a, b) => b.viewsRemainder - a.viewsRemainder)
+  for (let i = 0; i < viewsToDistribute && i < sortedByViewsRemainder.length; i++) {
+    const index = chartDataWithRemainder.indexOf(sortedByViewsRemainder[i])
+    chartDataWithRemainder[index].views += 1
+  }
+
+  const sortedByClicksRemainder = [...chartDataWithRemainder].sort((a, b) => b.clicksRemainder - a.clicksRemainder)
+  for (let i = 0; i < clicksToDistribute && i < sortedByClicksRemainder.length; i++) {
+    const index = chartDataWithRemainder.indexOf(sortedByClicksRemainder[i])
+    chartDataWithRemainder[index].clicks += 1
+  }
+
+  // Final chart data without remainder fields
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const chartData = chartDataWithRemainder.map(({ viewsRemainder, clicksRemainder, ...rest }) => rest)
 
   // Calculate totals from analytics (for published counts)
   const analyticsTotals = analytics.reduce(
