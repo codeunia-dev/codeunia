@@ -111,6 +111,15 @@ export async function POST(
       console.error('Error updating registered count:', updateError)
     }
 
+    // Track registration in analytics
+    try {
+      const { AnalyticsService } = await import('@/lib/services/analytics-service')
+      await AnalyticsService.trackHackathonRegistration(hackathon.id)
+    } catch (error) {
+      console.error('Error tracking registration in analytics:', error)
+      // Don't fail the registration if analytics tracking fails
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Successfully registered for hackathon',

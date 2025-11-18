@@ -105,6 +105,17 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
 
       const eventsData = await eventsResponse.json()
 
+      // Fetch hackathons for total count
+      const hackathonsResponse = await fetch(
+        `/api/companies/${company.slug}/hackathons?limit=100`
+      )
+
+      if (!hackathonsResponse.ok) {
+        throw new Error('Failed to fetch hackathons')
+      }
+
+      const hackathonsData = await hackathonsResponse.json()
+
       // Calculate stats
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const pendingEvents = eventsData.events?.filter(
@@ -115,6 +126,10 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         (e: any) => e.approval_status === 'approved'
       ) || []
 
+      const approvedHackathons = hackathonsData.hackathons?.filter(
+        (h: any) => h.approval_status === 'approved'
+      ) || []
+
       const upcomingEventsData = eventsData.events
         ?.filter((e: any) => {
           const eventDate = new Date(e.date)
@@ -122,12 +137,25 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
         })
         .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 5) || []
+
+      // Calculate total registrations from both events and hackathons
+      const eventRegistrations = eventsData.events?.reduce(
+        (sum: number, e: any) => sum + (e.registered || 0),
+        0
+      ) || 0
+
+      const hackathonRegistrations = hackathonsData.hackathons?.reduce(
+        (sum: number, h: any) => sum + (h.registered || 0),
+        0
+      ) || 0
+
+      const totalRegistrations = eventRegistrations + hackathonRegistrations
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
       setStats({
         totalEvents: approvedEvents.length,
-        totalHackathons: company.total_hackathons || 0,
-        totalRegistrations: analyticsData.summary?.total_registrations || 0,
+        totalHackathons: approvedHackathons.length,
+        totalRegistrations: totalRegistrations,
         totalViews: analyticsData.summary?.total_views || 0,
         totalClicks: analyticsData.summary?.total_clicks || 0,
         pendingApprovals: pendingEvents.length,
