@@ -58,37 +58,7 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Track a click for an event (e.g., registration button)
-   */
-  static async trackEventClick(eventSlug: string): Promise<void> {
-    const supabase = await createClient()
 
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('id, company_id, clicks')
-      .eq('slug', eventSlug)
-      .single()
-
-    if (eventError || !event) {
-      throw new Error('Event not found')
-    }
-
-    // Increment click count
-    await supabase
-      .from('events')
-      .update({ clicks: (event.clicks || 0) + 1 })
-      .eq('id', event.id)
-
-    // Update company analytics if event has a company
-    if (event.company_id) {
-      await this.incrementCompanyAnalytics(
-        event.company_id,
-        'total_clicks',
-        1
-      )
-    }
-  }
 
   /**
    * Track a registration for an event
@@ -174,37 +144,7 @@ export class AnalyticsService {
     }
   }
 
-  /**
-   * Track a click for a hackathon
-   */
-  static async trackHackathonClick(hackathonId: string): Promise<void> {
-    const supabase = await createClient()
 
-    const { data: hackathon, error: hackathonError } = await supabase
-      .from('hackathons')
-      .select('id, company_id, clicks')
-      .eq('id', hackathonId)
-      .single()
-
-    if (hackathonError || !hackathon) {
-      throw new Error('Hackathon not found')
-    }
-
-    // Increment click count
-    await supabase
-      .from('hackathons')
-      .update({ clicks: (hackathon.clicks || 0) + 1 })
-      .eq('id', hackathon.id)
-
-    // Update company analytics if hackathon has a company
-    if (hackathon.company_id) {
-      await this.incrementCompanyAnalytics(
-        hackathon.company_id,
-        'total_clicks',
-        1
-      )
-    }
-  }
 
   /**
    * Increment a specific field in company analytics

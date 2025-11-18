@@ -4,7 +4,6 @@ interface UseAnalyticsTrackingOptions {
   eventSlug?: string
   hackathonId?: string
   trackView?: boolean
-  trackClick?: boolean
 }
 
 // Helper to get or create session ID
@@ -44,12 +43,10 @@ export function useAnalyticsTracking({
   eventSlug,
   hackathonId,
   trackView = true,
-  trackClick = false,
 }: UseAnalyticsTrackingOptions) {
   const viewTracked = useRef(false)
-  const clickTracked = useRef(false)
 
-  console.log('[Analytics Hook] Initialized with:', { eventSlug, hackathonId, trackView, trackClick })
+  console.log('[Analytics Hook] Initialized with:', { eventSlug, hackathonId, trackView })
 
   // Track view on mount with session-based deduplication
   useEffect(() => {
@@ -125,27 +122,4 @@ export function useAnalyticsTracking({
 
     return () => clearTimeout(timer)
   }, [eventSlug, hackathonId, trackView])
-
-  // Function to track click
-  const trackClickEvent = async () => {
-    if (clickTracked.current) return
-
-    try {
-      if (eventSlug) {
-        await fetch(`/api/events/${eventSlug}/track-click`, {
-          method: 'POST',
-        })
-        clickTracked.current = true
-      } else if (hackathonId) {
-        await fetch(`/api/hackathons/${hackathonId}/track-click`, {
-          method: 'POST',
-        })
-        clickTracked.current = true
-      }
-    } catch (error) {
-      console.error('Error tracking click:', error)
-    }
-  }
-
-  return { trackClick: trackClickEvent }
 }
