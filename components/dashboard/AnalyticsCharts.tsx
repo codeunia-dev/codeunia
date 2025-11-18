@@ -30,6 +30,59 @@ interface AnalyticsChartsProps {
 
 export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsChartsProps) {
   const [chartType, setChartType] = useState<'line' | 'bar' | 'area'>('line')
+  const [actualStats, setActualStats] = React.useState<{
+    views: number
+    clicks: number
+    registrations: number
+    eventsPublished: number
+    eventsCreated: number
+    hackathonsPublished: number
+    hackathonsCreated: number
+  } | null>(null)
+
+  // Fetch actual stats from events and hackathons tables
+  React.useEffect(() => {
+    const fetchActualStats = async () => {
+      try {
+        const pathParts = window.location.pathname.split('/')
+        const companySlug = pathParts[pathParts.indexOf('company') + 1]
+        
+        // Fetch events
+        const eventsRes = await fetch(`/api/companies/${companySlug}/events?status=all&limit=100`)
+        const eventsData = await eventsRes.json()
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        const allEvents = eventsData.events || []
+        const approvedEvents = allEvents.filter((e: any) => e.approval_status === 'approved')
+        const eventViews = approvedEvents.reduce((sum: number, e: any) => sum + (e.views || 0), 0)
+        const eventClicks = approvedEvents.reduce((sum: number, e: any) => sum + (e.clicks || 0), 0)
+        const eventRegs = approvedEvents.reduce((sum: number, e: any) => sum + (e.registered || 0), 0)
+        
+        // Fetch hackathons
+        const hackathonsRes = await fetch(`/api/companies/${companySlug}/hackathons?status=all&limit=100`)
+        const hackathonsData = await hackathonsRes.json()
+        const allHackathons = hackathonsData.hackathons || []
+        const approvedHackathons = allHackathons.filter((h: any) => h.approval_status === 'approved')
+        const hackathonViews = approvedHackathons.reduce((sum: number, h: any) => sum + (h.views || 0), 0)
+        const hackathonClicks = approvedHackathons.reduce((sum: number, h: any) => sum + (h.clicks || 0), 0)
+        const hackathonRegs = approvedHackathons.reduce((sum: number, h: any) => sum + (h.registered || 0), 0)
+        /* eslint-enable @typescript-eslint/no-explicit-any */
+        
+        setActualStats({
+          views: eventViews + hackathonViews,
+          clicks: eventClicks + hackathonClicks,
+          registrations: eventRegs + hackathonRegs,
+          eventsPublished: approvedEvents.length,
+          eventsCreated: allEvents.length,
+          hackathonsPublished: approvedHackathons.length,
+          hackathonsCreated: allHackathons.length,
+        })
+      } catch (error) {
+        console.error('Error fetching actual stats:', error)
+      }
+    }
+    
+    fetchActualStats()
+  }, [])
 
   // Transform analytics data for charts
   const chartData = analytics.map((record) => ({
@@ -44,8 +97,8 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
     hackathonsPublished: record.hackathons_published,
   }))
 
-  // Calculate totals
-  const totals = analytics.reduce(
+  // Calculate totals from analytics (for published counts)
+  const analyticsTotals = analytics.reduce(
     (acc, record) => ({
       views: acc.views + record.total_views,
       clicks: acc.clicks + record.total_clicks,
@@ -57,6 +110,17 @@ export function AnalyticsCharts({ analytics, dateRange, onExport }: AnalyticsCha
     }),
     { views: 0, clicks: 0, registrations: 0, eventsCreated: 0, eventsPublished: 0, hackathonsCreated: 0, hackathonsPublished: 0 }
   )
+
+  // Use actual stats if available, otherwise fall back to analytics
+  const totals = {
+    views: actualStats?.views ?? analyticsTotals.views,
+    clicks: actualStats?.clicks ?? analyticsTotals.clicks,
+    registrations: actualStats?.registrations ?? analyticsTotals.registrations,
+    eventsCreated: actualStats?.eventsCreated ?? analyticsTotals.eventsCreated,
+    eventsPublished: actualStats?.eventsPublished ?? analyticsTotals.eventsPublished,
+    hackathonsCreated: actualStats?.hackathonsCreated ?? analyticsTotals.hackathonsCreated,
+    hackathonsPublished: actualStats?.hackathonsPublished ?? analyticsTotals.hackathonsPublished,
+  }
 
   // Calculate averages
   const avgViews = analytics.length > 0 ? Math.round(totals.views / analytics.length) : 0

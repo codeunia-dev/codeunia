@@ -212,8 +212,9 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
       ) || 0
       /* eslint-enable @typescript-eslint/no-explicit-any */
 
-      const totalViews = analyticsData.summary?.total_views || 0
-      const totalClicks = analyticsData.summary?.total_clicks || 0
+      // Use actual views and clicks from events/hackathons tables, not analytics
+      const totalViews = eventViews + hackathonViews
+      const totalClicks = eventClicks + hackathonClicks
 
       setStats({
         totalEvents: approvedEvents.length,
