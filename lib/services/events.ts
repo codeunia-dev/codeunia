@@ -2,6 +2,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Event, EventsFilters, EventsResponse } from '@/types/events'
 import { companyService } from './company-service'
+import { AnalyticsService } from './analytics-service'
 
 // Re-export types for convenience
 export type { Event, EventsFilters, EventsResponse }
@@ -57,7 +58,7 @@ class EventsService {
     }
 
     const supabase = await createClient()
-    
+
     let query = supabase
       .from('events')
       .select(`
@@ -160,7 +161,7 @@ class EventsService {
     }
 
     const supabase = await createClient()
-    
+
     const { data: event, error } = await supabase
       .from('events')
       .select(`
@@ -204,7 +205,7 @@ class EventsService {
     }
 
     const supabase = await createClient()
-    
+
     const { data: event, error } = await supabase
       .from('events')
       .select(`
@@ -244,7 +245,7 @@ class EventsService {
 
     try {
       const supabase = await createClient()
-      
+
       const { data: events, error } = await supabase
         .from('events')
         .select(`
@@ -356,12 +357,12 @@ class EventsService {
     // Payment constraint: if price is "Free", payment must be "Not Required"
     // if price is not "Free", payment must be "Required"
     const paymentValue = eventData.price === 'Free' ? 'Not Required' : (eventData.payment || 'Required')
-    
+
     // Remove status field - events start as draft by default
     // They can be submitted for approval later via submitForApproval
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { status, ...eventDataWithoutStatus } = eventData
-    
+
     const eventPayload = {
       ...eventDataWithoutStatus,
       company_id: companyId,
@@ -391,6 +392,18 @@ class EventsService {
     if (error) {
       console.error('Error creating event:', error)
       throw new EventError('Failed to create event', EventErrorCodes.NOT_FOUND, 500)
+    }
+
+    // Track analytics for event creation
+    try {
+      await AnalyticsService.incrementCompanyAnalytics(
+        companyId,
+        'events_created',
+        1
+      )
+    } catch (analyticsError) {
+      console.error('Error tracking event creation analytics:', analyticsError)
+      // Don't fail the event creation if analytics tracking fails
     }
 
     clearCache()
@@ -438,7 +451,7 @@ class EventsService {
     // Check if this is an approved event being edited
     // If so, reset to pending status for re-approval
     const needsReapproval = existingEvent.approval_status === 'approved'
-    
+
     // Update the updated_at timestamp
     const updatePayload: Record<string, unknown> = {
       ...updateData,
@@ -479,17 +492,17 @@ class EventsService {
       // Import notification service dynamically to avoid circular dependencies
       const { NotificationService } = await import('./notification-service')
       const { moderationService } = await import('./moderation-service')
-      
+
       // Log the edit action
       await moderationService.logModerationAction('edited', id, undefined, userId, 'Event edited after approval - requires re-approval')
-      
+
       // Notify admins about the updated event
       // Get all admin users
       const { data: adminUsers } = await supabase
         .from('profiles')
         .select('id')
         .eq('role', 'admin')
-      
+
       if (adminUsers && adminUsers.length > 0) {
         // Create notifications for all admins
         const notifications = adminUsers.map(admin => ({
@@ -506,11 +519,11 @@ class EventsService {
             event_slug: existingEvent.slug
           }
         }))
-        
+
         await supabase.from('notifications').insert(notifications)
         console.log(`📧 Notified ${adminUsers.length} admin(s) about updated event`)
       }
-      
+
       // Notify company members about the status change
       if (existingEvent.company_id) {
         await NotificationService.notifyCompanyMembers(existingEvent.company_id, {

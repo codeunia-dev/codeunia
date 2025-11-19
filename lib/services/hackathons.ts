@@ -1,6 +1,7 @@
 // Server-side service for hackathons
 import { createClient } from '@/lib/supabase/server'
 import { Hackathon, HackathonsFilters, HackathonsResponse } from '@/types/hackathons'
+import { AnalyticsService } from './analytics-service'
 
 // Re-export types for convenience
 export type { Hackathon, HackathonsFilters, HackathonsResponse }
@@ -30,7 +31,7 @@ class HackathonsService {
     }
 
     const supabase = await createClient()
-    
+
     let query = supabase
       .from('hackathons')
       .select(`
@@ -118,7 +119,7 @@ class HackathonsService {
     }
 
     const supabase = await createClient()
-    
+
     const { data: hackathon, error } = await supabase
       .from('hackathons')
       .select(`
@@ -149,7 +150,7 @@ class HackathonsService {
 
     try {
       const supabase = await createClient()
-      
+
       const { data: hackathons, error } = await supabase
         .from('hackathons')
         .select(`
@@ -180,7 +181,7 @@ class HackathonsService {
 
   async createHackathon(hackathonData: Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>): Promise<Hackathon> {
     const supabase = await createClient()
-    
+
     const { data: hackathon, error } = await supabase
       .from('hackathons')
       .insert([hackathonData])
@@ -192,18 +193,32 @@ class HackathonsService {
       throw new Error('Failed to create hackathon')
     }
 
+    // Track analytics for hackathon creation
+    if (hackathonData.company_id) {
+      try {
+        await AnalyticsService.incrementCompanyAnalytics(
+          hackathonData.company_id,
+          'hackathons_created',
+          1
+        )
+      } catch (analyticsError) {
+        console.error('Error tracking hackathon creation analytics:', analyticsError)
+        // Don't fail the hackathon creation if analytics tracking fails
+      }
+    }
+
     // Clear cache after creating new hackathon
     cache.clear()
     return hackathon
   }
 
   async updateHackathon(
-    slug: string, 
+    slug: string,
     hackathonData: Partial<Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>>,
     userId?: string
   ): Promise<Hackathon> {
     const supabase = await createClient()
-    
+
     // Get existing hackathon first
     const existingHackathon = await this.getHackathonBySlug(slug)
     if (!existingHackathon) {
@@ -212,7 +227,7 @@ class HackathonsService {
 
     // Check if this is an approved hackathon being edited
     const needsReapproval = existingHackathon.approval_status === 'approved'
-    
+
     // Prepare update payload
     const updatePayload: Record<string, unknown> = {
       ...hackathonData,
@@ -253,16 +268,16 @@ class HackathonsService {
       // Import services dynamically to avoid circular dependencies
       const { NotificationService } = await import('./notification-service')
       const { moderationService } = await import('./moderation-service')
-      
+
       // Log the edit action
       await moderationService.logModerationAction('edited', undefined, hackathonId, userId, 'Hackathon edited after approval - requires re-approval')
-      
+
       // Notify admins about the updated hackathon
       const { data: adminUsers } = await supabase
         .from('profiles')
         .select('id')
         .eq('role', 'admin')
-      
+
       if (adminUsers && adminUsers.length > 0) {
         const notifications = adminUsers.map(admin => ({
           user_id: admin.id,
@@ -278,11 +293,11 @@ class HackathonsService {
             hackathon_slug: existingHackathon.slug
           }
         }))
-        
+
         await supabase.from('notifications').insert(notifications)
         console.log(`📧 Notified ${adminUsers.length} admin(s) about updated hackathon`)
       }
-      
+
       // Notify company members about the status change
       if (existingHackathon.company_id) {
         await NotificationService.notifyCompanyMembers(existingHackathon.company_id, {
@@ -309,9 +324,9 @@ class HackathonsService {
 
   async deleteHackathon(slug: string) {
     const supabase = await createClient()
-    
+
     console.log('🗑️ Deleting hackathon with slug:', slug)
-    
+
     const { data, error } = await supabase
       .from('hackathons')
       .delete()
