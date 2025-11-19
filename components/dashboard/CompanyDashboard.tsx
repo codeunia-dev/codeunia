@@ -160,7 +160,11 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
           return eventDate > new Date() && e.approval_status === 'approved'
         })
         .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 5) || []
+        .slice(0, 5)
+        .map((e: any) => ({
+          ...e,
+          registrations: e.registered || 0, // Map 'registered' to 'registrations'
+        })) || []
 
       const upcomingHackathonsData = hackathonsData.hackathons
         ?.filter((h: any) => {
@@ -168,7 +172,11 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
           return hackathonDate > new Date() && h.approval_status === 'approved'
         })
         .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 5) || []
+        .slice(0, 5)
+        .map((h: any) => ({
+          ...h,
+          registrations: h.registered || 0, // Map 'registered' to 'registrations'
+        })) || []
 
       console.log('Upcoming hackathons data:', upcomingHackathonsData)
 
@@ -595,7 +603,6 @@ export function CompanyDashboard({ company }: CompanyDashboardProps) {
                 <UpcomingHackathonItem
                   key={hackathon.id}
                   hackathon={hackathon}
-                  companySlug={company.slug}
                 />
               ))}
             </div>
@@ -673,9 +680,8 @@ function StatsCard({
 
   return (
     <Card
-      className={`bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700 ${
-        highlight ? 'ring-2 ring-yellow-400/50' : ''
-      }`}
+      className={`bg-gradient-to-br from-zinc-900 to-zinc-800 border-zinc-700 ${highlight ? 'ring-2 ring-yellow-400/50' : ''
+        }`}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-zinc-200">{title}</CardTitle>
@@ -687,9 +693,8 @@ function StatsCard({
           <p className="text-xs text-muted-foreground">{description}</p>
           {change !== undefined && change !== 0 && (
             <div
-              className={`flex items-center text-xs ${
-                isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-zinc-400'
-              }`}
+              className={`flex items-center text-xs ${isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-zinc-400'
+                }`}
             >
               {isPositive && <ArrowUpRight className="h-3 w-3" />}
               {isNegative && <ArrowDownRight className="h-3 w-3" />}
@@ -767,21 +772,19 @@ function UpcomingEventItem({ event }: UpcomingEventItemProps) {
 // Upcoming Hackathon Item Component
 interface UpcomingHackathonItemProps {
   hackathon: UpcomingHackathon
-  companySlug: string
 }
 
-function UpcomingHackathonItem({ hackathon, companySlug }: UpcomingHackathonItemProps) {
+function UpcomingHackathonItem({ hackathon }: UpcomingHackathonItemProps) {
   return (
-    <Link
-      href={`/dashboard/company/${companySlug}/hackathons/${hackathon.id}`}
-      className="block p-4 rounded-lg border border-zinc-800 hover:border-orange-500 hover:bg-zinc-800/50 transition-all group"
+    <div
+      className="block p-4 rounded-lg border border-zinc-800 bg-zinc-900/50"
     >
       <div className="flex items-start gap-3">
-        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 transition-colors">
+        <div className="p-2 rounded-lg bg-orange-500/10 text-orange-400">
           <Trophy className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white truncate group-hover:text-orange-300 transition-colors">
+          <p className="text-sm font-medium text-white truncate">
             {hackathon.title}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -792,12 +795,12 @@ function UpcomingHackathonItem({ hackathon, companySlug }: UpcomingHackathonItem
               {hackathon.mode || 'Online'}
             </Badge>
             <span className="text-xs text-zinc-500">
-              {hackathon.registrations || 0} teams registered
+              {hackathon.registrations || 0} participants
             </span>
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }
 
