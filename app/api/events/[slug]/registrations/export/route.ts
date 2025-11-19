@@ -73,34 +73,33 @@ export async function GET(
             'Full Name',
             'Email',
             'Phone',
-            'Institution',
-            'Department',
-            'Year of Study',
-            'Experience Level',
             'Status',
             'Payment Status',
             'Payment Amount',
-            'Registration Date',
-            'Created At'
+            'Registered On'
         ];
 
         const csvRows = [headers.join(',')];
 
         registrations?.forEach(reg => {
+            // Format date to be more readable (e.g., "Nov 19 2025")
+            const registeredDate = reg.created_at 
+                ? new Date(reg.created_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                }).replace(/,/g, '')
+                : '';
+
             const row = [
                 reg.id,
                 `"${reg.full_name || ''}"`,
                 `"${reg.email || ''}"`,
                 `"${reg.phone || ''}"`,
-                `"${reg.institution || ''}"`,
-                `"${reg.department || ''}"`,
-                `"${reg.year_of_study || ''}"`,
-                `"${reg.experience_level || ''}"`,
                 reg.status,
                 reg.payment_status,
-                reg.payment_amount || '',
-                reg.registration_date,
-                reg.created_at
+                reg.payment_amount ? `₹${reg.payment_amount / 100}` : 'N/A',
+                `"${registeredDate}"`
             ];
             csvRows.push(row.join(','));
         });
