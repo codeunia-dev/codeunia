@@ -31,18 +31,20 @@ interface Hackathon {
   description: string
   excerpt: string
   image?: string
-  start_date: string
-  end_date: string
-  location: string
-  mode: string
+  date: string
+  registration_deadline?: string
+  location?: string
+  mode?: string
   prize_pool?: string
-  max_team_size: number
-  min_team_size: number
-  registered_teams: number
-  max_teams: number
+  max_team_size?: number
+  min_team_size?: number
+  registered?: number
+  capacity?: number
   status: string
   tags: string[]
-  organizer: string
+  organizer?: string
+  total_registrations?: number
+  duration?: string
 }
 
 export default function CompanyHackathonsPage() {
@@ -336,27 +338,30 @@ export default function CompanyHackathonsPage() {
                         <div className="grid grid-cols-2 gap-2 text-xs mb-2">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(hackathon.start_date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
+                            {hackathon.date && !isNaN(new Date(hackathon.date).getTime())
+                              ? new Date(hackathon.date).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                })
+                              : "TBA"}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {Math.ceil(
-                              (new Date(hackathon.end_date).getTime() -
-                                new Date(hackathon.start_date).getTime()) /
-                                (1000 * 60 * 60 * 24)
-                            )}{" "}
-                            days
+                            {hackathon.registration_deadline && !isNaN(new Date(hackathon.registration_deadline).getTime())
+                              ? `Reg: ${new Date(hackathon.registration_deadline).toLocaleDateString("en-US", {
+                                  month: "short",
+                                  day: "numeric",
+                                })}`
+                              : hackathon.duration || "TBA"}
                           </div>
                           <div className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {hackathon.mode}
+                            {hackathon.location || hackathon.mode || "TBA"}
                           </div>
                           <div className="flex items-center gap-1">
                             <Users className="h-3 w-3" />
-                            {hackathon.registered_teams}/{hackathon.max_teams} teams
+                            {hackathon.registered || 0} registered
                           </div>
                         </div>
 
