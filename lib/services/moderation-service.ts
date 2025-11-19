@@ -4,6 +4,7 @@ import { Event } from '@/types/events'
 import { Hackathon } from '@/types/hackathons'
 import { companyService } from './company-service'
 import { SUBSCRIPTION_LIMITS } from '@/types/company'
+import { AnalyticsService } from './analytics-service'
 
 // Moderation log entry interface
 export interface ModerationLog {
@@ -391,6 +392,20 @@ class ModerationService {
     // Log the moderation action
     await this.logModerationAction('approved', eventId, undefined, adminId, notes)
 
+    // Track analytics for event publication
+    if (updatedEvent.company_id) {
+      try {
+        await AnalyticsService.incrementCompanyAnalytics(
+          updatedEvent.company_id,
+          'events_published',
+          1
+        )
+      } catch (analyticsError) {
+        console.error('Error tracking event publication analytics:', analyticsError)
+        // Don't fail the approval if analytics tracking fails
+      }
+    }
+
     return updatedEvent as Event
   }
 
@@ -618,6 +633,20 @@ class ModerationService {
 
     // Log the moderation action
     await this.logModerationAction('approved', undefined, hackathonId, adminId, notes)
+
+    // Track analytics for hackathon publication
+    if (updatedHackathon.company_id) {
+      try {
+        await AnalyticsService.incrementCompanyAnalytics(
+          updatedHackathon.company_id,
+          'hackathons_published',
+          1
+        )
+      } catch (analyticsError) {
+        console.error('Error tracking hackathon publication analytics:', analyticsError)
+        // Don't fail the approval if analytics tracking fails
+      }
+    }
 
     return updatedHackathon as Hackathon
   }

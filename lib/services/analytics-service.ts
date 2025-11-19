@@ -149,7 +149,7 @@ export class AnalyticsService {
   /**
    * Increment a specific field in company analytics
    */
-  private static async incrementCompanyAnalytics(
+  static async incrementCompanyAnalytics(
     companyId: string,
     field: string,
     increment: number
