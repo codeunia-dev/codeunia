@@ -37,7 +37,7 @@ export default function CompanyEventsPage() {
       setLoading(true)
       // Fetch all events (not just approved) for company members
       const response = await fetch(`/api/companies/${currentCompany.slug}/events?status=all&limit=100`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch events')
       }
@@ -66,7 +66,7 @@ export default function CompanyEventsPage() {
   const handleDeleteEvent = async (eventSlug: string) => {
     try {
       setDeletingEventSlug(eventSlug)
-      
+
       const response = await fetch(`/api/events/${eventSlug}`, {
         method: 'DELETE',
       })
@@ -76,7 +76,7 @@ export default function CompanyEventsPage() {
       }
 
       toast.success('Event deleted successfully')
-      
+
       // Refresh the events list
       await fetchEvents()
     } catch (error) {
@@ -129,11 +129,22 @@ export default function CompanyEventsPage() {
     }
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'live':
-      case 'published':
+  const getStatusBadge = (status: string, approvalStatus: string) => {
+    // Only show "Live" if the event is published AND approved
+    if ((status === 'live' || status === 'published')) {
+      if (approvalStatus === 'approved') {
         return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Live</Badge>
+      } else if (approvalStatus === 'pending') {
+        return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">Pending Review</Badge>
+      } else if (approvalStatus === 'rejected') {
+        return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>
+      } else if (approvalStatus === 'changes_requested') {
+        return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">Changes Requested</Badge>
+      }
+    }
+
+    // For other statuses, use the original logic
+    switch (status) {
       case 'draft':
         return <Badge variant="outline">Draft</Badge>
       case 'cancelled':
@@ -289,7 +300,7 @@ export default function CompanyEventsPage() {
                     <TableCell>
                       <Badge variant="outline">{event.category}</Badge>
                     </TableCell>
-                    <TableCell>{getStatusBadge(event.status)}</TableCell>
+                    <TableCell>{getStatusBadge(event.status, event.approval_status)}</TableCell>
                     <TableCell>{getApprovalBadge(event.approval_status)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -314,8 +325,8 @@ export default function CompanyEventsPage() {
                         )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               disabled={deletingEventSlug === event.slug}
                             >
