@@ -130,40 +130,42 @@ export default function CompanyHackathonsPage() {
     approved: hackathons.filter(h => h.approval_status === 'approved').length,
     pending: hackathons.filter(h => h.approval_status === 'pending').length,
     draft: hackathons.filter(h => h.status === 'draft').length,
+    totalViews: hackathons.reduce((sum, h) => sum + (h.views || 0), 0),
+    totalRegistrations: hackathons.reduce((sum, h) => sum + (h.registered || 0), 0),
   }
 
   const getApprovalBadge = (status: string) => {
     switch (status) {
       case 'approved':
         return (
-          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 pointer-events-none">
             <CheckCircle className="h-3 w-3 mr-1" />
             Approved
           </Badge>
         )
       case 'pending':
         return (
-          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 pointer-events-none">
             <Clock className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         )
       case 'rejected':
         return (
-          <Badge className="bg-red-500/10 text-red-600 border-red-500/20">
+          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 pointer-events-none">
             <XCircle className="h-3 w-3 mr-1" />
             Rejected
           </Badge>
         )
       case 'changes_requested':
         return (
-          <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">
+          <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 pointer-events-none">
             <AlertCircle className="h-3 w-3 mr-1" />
             Changes Requested
           </Badge>
         )
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="pointer-events-none">{status}</Badge>
     }
   }
 
@@ -172,15 +174,15 @@ export default function CompanyHackathonsPage() {
     if (hackathon.approval_status !== 'approved') {
       switch (hackathon.approval_status) {
         case 'pending':
-          return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">Pending Review</Badge>
+          return <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 pointer-events-none">Pending Review</Badge>
         case 'draft':
-          return <Badge variant="outline">Draft</Badge>
+          return <Badge variant="outline" className="pointer-events-none">Draft</Badge>
         case 'rejected':
-          return <Badge className="bg-red-500/10 text-red-600 border-red-500/20">Rejected</Badge>
+          return <Badge className="bg-red-500/10 text-red-600 border-red-500/20 pointer-events-none">Rejected</Badge>
         case 'changes_requested':
-          return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">Changes Requested</Badge>
+          return <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 pointer-events-none">Changes Requested</Badge>
         default:
-          return <Badge variant="outline">{hackathon.approval_status}</Badge>
+          return <Badge variant="outline" className="pointer-events-none">{hackathon.approval_status}</Badge>
       }
     }
     
@@ -188,15 +190,15 @@ export default function CompanyHackathonsPage() {
     switch (hackathon.status) {
       case 'live':
       case 'published':
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Live</Badge>
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 pointer-events-none">Live</Badge>
       case 'draft':
-        return <Badge variant="outline">Draft</Badge>
+        return <Badge variant="outline" className="pointer-events-none">Draft</Badge>
       case 'cancelled':
-        return <Badge variant="outline" className="text-gray-500">Cancelled</Badge>
+        return <Badge variant="outline" className="text-gray-500 pointer-events-none">Cancelled</Badge>
       case 'completed':
-        return <Badge variant="outline" className="text-gray-500">Completed</Badge>
+        return <Badge variant="outline" className="text-gray-500 pointer-events-none">Completed</Badge>
       default:
-        return <Badge variant="outline">{hackathon.status}</Badge>
+        return <Badge variant="outline" className="pointer-events-none">{hackathon.status}</Badge>
     }
   }
 
@@ -229,7 +231,7 @@ export default function CompanyHackathonsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Hackathons</CardTitle>
@@ -264,6 +266,24 @@ export default function CompanyHackathonsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.draft}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalViews}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
+            <CheckCircle className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">{stats.totalRegistrations}</div>
           </CardContent>
         </Card>
       </div>
@@ -346,7 +366,18 @@ export default function CompanyHackathonsPage() {
                         {hackathon.views || 0}
                       </div>
                     </TableCell>
-                    <TableCell>{hackathon.registered || 0}</TableCell>
+                    <TableCell>
+                      {hackathon.registered && hackathon.registered > 0 ? (
+                        <Link
+                          href={`/dashboard/company/${currentCompany.slug}/hackathons/${hackathon.slug}/registrations`}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline"
+                        >
+                          {hackathon.registered}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">0</span>
+                      )}
+                    </TableCell>
                     {canManageEvents ? (
                       <TableCell>
                         <div className="flex items-center gap-2">
