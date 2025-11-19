@@ -41,7 +41,7 @@ export default function CompanyEventsPage() {
       setLoading(true)
       // Fetch all events (not just approved) for company members
       const response = await fetch(`/api/companies/${currentCompany.slug}/events?status=all&limit=100`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch events')
       }
@@ -78,7 +78,7 @@ export default function CompanyEventsPage() {
   const handleDeleteEvent = async (eventSlug: string) => {
     try {
       setDeletingEventSlug(eventSlug)
-      
+
       const response = await fetch(`/api/events/${eventSlug}`, {
         method: 'DELETE',
       })
@@ -88,7 +88,7 @@ export default function CompanyEventsPage() {
       }
 
       toast.success('Event deleted successfully')
-      
+
       // Refresh the events list
       await fetchEvents()
     } catch (error) {
@@ -104,40 +104,42 @@ export default function CompanyEventsPage() {
     approved: events.filter(e => e.approval_status === 'approved').length,
     pending: events.filter(e => e.approval_status === 'pending').length,
     draft: events.filter(e => e.status === 'draft').length,
+    totalViews: events.reduce((sum, e) => sum + (e.views || 0), 0),
+    totalRegistrations: events.reduce((sum, e) => sum + (e.registered || 0), 0),
   }
 
   const getApprovalBadge = (status: string) => {
     switch (status) {
       case 'approved':
         return (
-          <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+          <Badge className="bg-green-500/10 text-green-600 border-green-500/20 pointer-events-none">
             <CheckCircle className="h-3 w-3 mr-1" />
             Approved
           </Badge>
         )
       case 'pending':
         return (
-          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20">
+          <Badge className="bg-yellow-500/10 text-yellow-600 border-yellow-500/20 pointer-events-none">
             <Clock className="h-3 w-3 mr-1" />
             Pending
           </Badge>
         )
       case 'rejected':
         return (
-          <Badge className="bg-red-500/10 text-red-600 border-red-500/20">
+          <Badge className="bg-red-500/10 text-red-600 border-red-500/20 pointer-events-none">
             <XCircle className="h-3 w-3 mr-1" />
             Rejected
           </Badge>
         )
       case 'changes_requested':
         return (
-          <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20">
+          <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 pointer-events-none">
             <AlertCircle className="h-3 w-3 mr-1" />
             Changes Requested
           </Badge>
         )
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="pointer-events-none">{status}</Badge>
     }
   }
 
@@ -145,15 +147,15 @@ export default function CompanyEventsPage() {
     switch (status) {
       case 'live':
       case 'published':
-        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">Live</Badge>
+        return <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20 pointer-events-none">Live</Badge>
       case 'draft':
-        return <Badge variant="outline">Draft</Badge>
+        return <Badge variant="outline" className="pointer-events-none">Draft</Badge>
       case 'cancelled':
-        return <Badge variant="outline" className="text-gray-500">Cancelled</Badge>
+        return <Badge variant="outline" className="text-gray-500 pointer-events-none">Cancelled</Badge>
       case 'completed':
-        return <Badge variant="outline" className="text-gray-500">Completed</Badge>
+        return <Badge variant="outline" className="text-gray-500 pointer-events-none">Completed</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline" className="pointer-events-none">{status}</Badge>
     }
   }
 
@@ -186,7 +188,7 @@ export default function CompanyEventsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
@@ -221,6 +223,24 @@ export default function CompanyEventsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.draft}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalViews}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
+            <CheckCircle className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">{stats.totalRegistrations}</div>
           </CardContent>
         </Card>
       </div>
@@ -311,7 +331,18 @@ export default function CompanyEventsPage() {
                         {event.views || 0}
                       </div>
                     </TableCell>
-                    <TableCell>{event.registered || 0}</TableCell>
+                    <TableCell>
+                      {event.registered && event.registered > 0 ? (
+                        <Link
+                          href={`/dashboard/company/${currentCompany.slug}/events/${event.slug}/registrations`}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline"
+                        >
+                          {event.registered}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">0</span>
+                      )}
+                    </TableCell>
                     {canManageEvents ? (
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -329,8 +360,8 @@ export default function CompanyEventsPage() {
                           )}
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 disabled={deletingEventSlug === event.slug}
                               >
