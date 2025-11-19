@@ -85,6 +85,21 @@ export async function GET(
             );
         }
 
+        // Get user profiles for registrations that have user_id
+        const userIds = registrations
+            ?.filter(r => r.user_id)
+            .map(r => r.user_id) || [];
+
+        let profiles: { id: string; first_name: string | null; last_name: string | null; email: string | null }[] = [];
+        if (userIds.length > 0) {
+            const { data: profilesData } = await supabase
+                .from('profiles')
+                .select('id, first_name, last_name, email')
+                .in('id', userIds);
+
+            profiles = profilesData || [];
+        }
+
         // Convert to CSV
         const headers = [
             'ID',
@@ -100,6 +115,14 @@ export async function GET(
         const csvRows = [headers.join(',')];
 
         registrations?.forEach(reg => {
+            // Get profile data if available
+            const profile = profiles.find(p => p.id === reg.user_id);
+            const profileName = profile
+                ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim()
+                : null;
+            const displayName = profileName || reg.full_name || '';
+            const displayEmail = profile?.email || reg.email || '';
+
             // Format date to be more readable (e.g., "Nov 19 2025")
             const registeredDate = reg.created_at 
                 ? new Date(reg.created_at).toLocaleDateString('en-US', { 
@@ -111,8 +134,8 @@ export async function GET(
 
             const row = [
                 reg.id,
-                `"${reg.full_name || ''}"`,
-                `"${reg.email || ''}"`,
+                `"${displayName}"`,
+                `"${displayEmail}"`,
                 `"${reg.phone || ''}"`,
                 reg.status,
                 reg.payment_status,
