@@ -331,7 +331,18 @@ export default function CompanyEventsPage() {
                         {event.views || 0}
                       </div>
                     </TableCell>
-                    <TableCell>{event.registered || 0}</TableCell>
+                    <TableCell>
+                      {event.registered && event.registered > 0 ? (
+                        <Link
+                          href={`/dashboard/company/${currentCompany.slug}/events/${event.slug}/registrations`}
+                          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline"
+                        >
+                          {event.registered}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-500">0</span>
+                      )}
+                    </TableCell>
                     {canManageEvents ? (
                       <TableCell>
                         <div className="flex items-center gap-2">
