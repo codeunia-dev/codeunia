@@ -44,6 +44,7 @@ export interface Company {
   total_participants: number
   total_registrations: number
   approved_events_count?: number // Count of approved events only (for public display)
+  approved_hackathons_count?: number // Count of approved hackathons only (for public display)
 }
 
 export interface CompanyAddress {

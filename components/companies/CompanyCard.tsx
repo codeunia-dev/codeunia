@@ -79,13 +79,19 @@ export function CompanyCard({
         {showStats && (
           <CardFooter className="border-t pt-4">
             <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                <span>{company.approved_events_count ?? company.total_events ?? 0} events</span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{company.approved_events_count ?? company.total_events ?? 0} events</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <span>{company.approved_hackathons_count ?? company.total_hackathons ?? 0} hackathons</span>
+                </div>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />
-                <span>{company.total_participants} participants</span>
+                <span>{company.total_participants ?? 0} participants</span>
               </div>
             </div>
           </CardFooter>

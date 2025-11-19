@@ -71,24 +71,49 @@ export async function GET(
       }
     }
 
-    // Get count of approved events for this company
+    // Get count of approved events and hackathons for this company
     const supabase = await createClient()
-    const { count: approvedCount } = await supabase
+    const { count: approvedEventsCount } = await supabase
       .from('events')
       .select('*', { count: 'exact', head: true })
       .eq('company_id', company.id)
       .eq('approval_status', 'approved')
 
-    // Add approved_events_count to company object
-    const companyWithApprovedCount = {
+    const { count: approvedHackathonsCount } = await supabase
+      .from('hackathons')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', company.id)
+      .eq('approval_status', 'approved')
+
+    // Get total participants from events
+    const { data: events } = await supabase
+      .from('events')
+      .select('registered')
+      .eq('company_id', company.id)
+      .eq('approval_status', 'approved')
+
+    // Get total participants from hackathons
+    const { data: hackathons } = await supabase
+      .from('hackathons')
+      .select('registered')
+      .eq('company_id', company.id)
+      .eq('approval_status', 'approved')
+
+    const eventParticipants = events?.reduce((sum, event) => sum + (event.registered || 0), 0) || 0
+    const hackathonParticipants = hackathons?.reduce((sum, hackathon) => sum + (hackathon.registered || 0), 0) || 0
+
+    // Add calculated fields to company object
+    const enrichedCompany = {
       ...company,
-      approved_events_count: approvedCount || 0,
+      approved_events_count: approvedEventsCount || 0,
+      approved_hackathons_count: approvedHackathonsCount || 0,
+      total_participants: eventParticipants + hackathonParticipants,
     }
 
     // Cache the result
-    await UnifiedCache.set(cacheKey, { company: companyWithApprovedCount }, 'API_STANDARD')
+    await UnifiedCache.set(cacheKey, { company: enrichedCompany }, 'API_STANDARD')
 
-    return UnifiedCache.createResponse({ company: companyWithApprovedCount }, 'API_STANDARD')
+    return UnifiedCache.createResponse({ company: enrichedCompany }, 'API_STANDARD')
   } catch (error) {
     console.error('Error in GET /api/companies/[slug]:', error)
 
