@@ -141,6 +141,39 @@ class HackathonsService {
     return hackathon
   }
 
+  async getHackathonByIdOrSlug(idOrSlug: string): Promise<Hackathon | null> {
+    const cacheKey = `hackathon:${idOrSlug}`
+    const cached = getCachedData(cacheKey)
+    if (cached) {
+      return cached as Hackathon
+    }
+
+    const supabase = await createClient()
+
+    // Check if idOrSlug is a number (ID) or string (slug)
+    const isNumeric = /^\d+$/.test(idOrSlug)
+
+    const { data: hackathon, error } = await supabase
+      .from('hackathons')
+      .select(`
+        *,
+        company:companies(*)
+      `)
+      .eq(isNumeric ? 'id' : 'slug', isNumeric ? parseInt(idOrSlug) : idOrSlug)
+      .single()
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null // Hackathon not found
+      }
+      console.error('Error fetching hackathon:', error)
+      throw new Error('Failed to fetch hackathon')
+    }
+
+    setCachedData(cacheKey, hackathon)
+    return hackathon
+  }
+
   async getFeaturedHackathons(limit: number = 5) {
     const cacheKey = `featured_hackathons:${limit}`
     const cached = getCachedData(cacheKey)
@@ -213,14 +246,14 @@ class HackathonsService {
   }
 
   async updateHackathon(
-    slug: string,
+    idOrSlug: string,
     hackathonData: Partial<Omit<Hackathon, 'id' | 'created_at' | 'updated_at'>>,
     userId?: string
   ): Promise<Hackathon> {
     const supabase = await createClient()
 
-    // Get existing hackathon first
-    const existingHackathon = await this.getHackathonBySlug(slug)
+    // Get existing hackathon first (handles both ID and slug)
+    const existingHackathon = await this.getHackathonByIdOrSlug(idOrSlug)
     if (!existingHackathon) {
       throw new Error('Hackathon not found')
     }
@@ -245,7 +278,7 @@ class HackathonsService {
     const { data: hackathon, error } = await supabase
       .from('hackathons')
       .update(updatePayload)
-      .eq('slug', slug)
+      .eq('id', existingHackathon.id)
       .select(`
         *,
         company:companies(*)
@@ -322,15 +355,21 @@ class HackathonsService {
     return hackathon
   }
 
-  async deleteHackathon(slug: string) {
+  async deleteHackathon(idOrSlug: string) {
     const supabase = await createClient()
 
-    console.log('🗑️ Deleting hackathon with slug:', slug)
+    console.log('🗑️ Deleting hackathon with ID or slug:', idOrSlug)
+
+    // Get existing hackathon first to get the ID
+    const existingHackathon = await this.getHackathonByIdOrSlug(idOrSlug)
+    if (!existingHackathon) {
+      throw new Error('Hackathon not found')
+    }
 
     const { data, error } = await supabase
       .from('hackathons')
       .delete()
-      .eq('slug', slug)
+      .eq('id', existingHackathon.id)
       .select()
 
     if (error) {

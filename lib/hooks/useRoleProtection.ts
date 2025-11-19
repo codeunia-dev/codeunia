@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-export function useRoleProtection(requiredRole: 'student' | 'company_member') {
+export function useRoleProtection(
+  requiredRole: 'student' | 'company_member',
+  options?: { skipRedirect?: boolean }
+) {
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
@@ -16,7 +19,9 @@ export function useRoleProtection(requiredRole: 'student' | 'company_member') {
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          router.push('/auth/signin')
+          if (!options?.skipRedirect) {
+            router.push('/auth/signin')
+          }
           return
         }
 
@@ -37,20 +42,24 @@ export function useRoleProtection(requiredRole: 'student' | 'company_member') {
         if (requiredRole === 'company_member') {
           if (!isCompanyMember) {
             // User is a student trying to access company routes
-            router.push('/protected')
+            if (!options?.skipRedirect) {
+              router.push('/protected')
+            }
             return
           }
         } else if (requiredRole === 'student') {
           if (isCompanyMember) {
             // User is a company member trying to access student routes
             // Redirect to their company dashboard with the correct slug
-            const company = companyMembership.company as unknown as { slug: string } | null
-            const companySlug = company?.slug
-            if (companySlug) {
-              router.push(`/dashboard/company/${companySlug}`)
-            } else {
-              // Fallback if slug is not available
-              router.push('/dashboard/company')
+            if (!options?.skipRedirect) {
+              const company = companyMembership.company as unknown as { slug: string } | null
+              const companySlug = company?.slug
+              if (companySlug) {
+                router.push(`/dashboard/company/${companySlug}`)
+              } else {
+                // Fallback if slug is not available
+                router.push('/dashboard/company')
+              }
             }
             return
           }
@@ -59,14 +68,16 @@ export function useRoleProtection(requiredRole: 'student' | 'company_member') {
         setIsAuthorized(true)
       } catch (error) {
         console.error('Error checking role:', error)
-        router.push('/auth/signin')
+        if (!options?.skipRedirect) {
+          router.push('/auth/signin')
+        }
       } finally {
         setIsChecking(false)
       }
     }
 
     checkRole()
-  }, [requiredRole, router])
+  }, [requiredRole, router, options?.skipRedirect])
 
   return { isChecking, isAuthorized }
 }
