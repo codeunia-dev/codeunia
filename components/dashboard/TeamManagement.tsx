@@ -90,8 +90,9 @@ export function TeamManagement({
   // Check if current user can manage team
   const canManageTeam = ['owner', 'admin'].includes(currentUserRole)
   const canUpdateRoles = currentUserRole === 'owner'
-  const canRemoveMembers = currentUserRole === 'owner'
-  
+  // Admins can remove members (except owner), owners can remove anyone
+  const canRemoveMembers = ['owner', 'admin'].includes(currentUserRole)
+
   // Debug logging
   console.log('TeamManagement - currentUserRole:', currentUserRole)
   console.log('TeamManagement - canManageTeam:', canManageTeam)
@@ -141,7 +142,7 @@ export function TeamManagement({
 
       if (!response.ok) {
         console.error('Invite error response:', data)
-        
+
         // Check if it's a team limit error
         if (data.upgrade_required) {
           toast.error('Team Member Limit Reached', {
@@ -299,8 +300,8 @@ export function TeamManagement({
             <div>
               <CardTitle className="text-white">Team Members</CardTitle>
               <CardDescription>
-                {canManageTeam 
-                  ? 'Manage your team members and their roles' 
+                {canManageTeam
+                  ? 'Manage your team members and their roles'
                   : 'View your team members and their roles'}
               </CardDescription>
             </div>
@@ -411,7 +412,8 @@ export function TeamManagement({
                                   Update Role
                                 </DropdownMenuItem>
                               )}
-                              {canRemoveMembers && (
+                              {/* Admins can remove members except owner, owners can remove anyone */}
+                              {canRemoveMembers && (currentUserRole === 'owner' || member.role !== 'owner') && (
                                 <DropdownMenuItem
                                   onClick={() => openRemoveDialog(member)}
                                   className="text-red-500 hover:bg-zinc-800 hover:text-red-400"

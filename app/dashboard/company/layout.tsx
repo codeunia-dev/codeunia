@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CompanySidebar } from '@/components/dashboard/CompanySidebar'
 import { CompanyHeader } from '@/components/dashboard/CompanyHeader'
@@ -35,9 +35,19 @@ export default function CompanyDashboardLayout({
   children: React.ReactNode
 }) {
   const { user, loading, error } = useAuth()
-  const { isChecking, isAuthorized } = useRoleProtection('company_member')
   const params = useParams()
+  const pathname = usePathname()
   const companySlug = params?.slug as string | undefined
+
+  // Check if this is the accept-invitation page
+  // Users with pending invitations should be able to access this page
+  const isAcceptInvitationPage = pathname?.includes('/accept-invitation') ?? false
+
+  // Only apply role protection if NOT on the accept-invitation page
+  // Skip redirects on accept-invitation page to allow pending users to access it
+  const { isChecking, isAuthorized } = useRoleProtection('company_member', {
+    skipRedirect: isAcceptInvitationPage
+  })
 
   // Prevent hydration mismatch by using a consistent initial state
   const [mounted, setMounted] = useState(false)
@@ -54,7 +64,7 @@ export default function CompanyDashboardLayout({
     )
   }
 
-  if (loading || isChecking) {
+  if (loading || (!isAcceptInvitationPage && isChecking)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -78,7 +88,8 @@ export default function CompanyDashboardLayout({
     )
   }
 
-  if (!user || !isAuthorized) {
+  // Skip authorization check for accept-invitation page
+  if (!user || (!isAcceptInvitationPage && !isAuthorized)) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4 bg-black">
         <div className="text-center max-w-md">
@@ -130,7 +141,7 @@ function CompanyDashboardContent({
   useEffect(() => {
     async function fetchProfile() {
       if (!user?.id) return
-      
+
       try {
         const supabase = createClient()
         const { data, error } = await supabase
@@ -138,7 +149,7 @@ function CompanyDashboardContent({
           .select('id, email, first_name, last_name, avatar_url')
           .eq('id', user.id)
           .single()
-        
+
         if (!error && data) {
           setUserProfile(data)
         }
@@ -146,7 +157,7 @@ function CompanyDashboardContent({
         console.error('Error fetching user profile:', error)
       }
     }
-    
+
     fetchProfile()
   }, [user?.id])
 
@@ -187,7 +198,7 @@ function CompanyDashboardContent({
   // Generate sidebar items with dynamic company slug
   // Use currentCompany.slug as fallback when companySlug from params is undefined
   const effectiveSlug = companySlug || currentCompany.slug
-  
+
   const sidebarItems: SidebarGroupType[] = [
     {
       title: 'Dashboard',

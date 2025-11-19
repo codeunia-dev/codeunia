@@ -122,7 +122,7 @@ export async function PUT(
       .eq('id', user.id)
       .single()
 
-    const changedByName = requestingUserProfile?.first_name 
+    const changedByName = requestingUserProfile?.first_name
       ? `${requestingUserProfile.first_name} ${requestingUserProfile.last_name || ''}`.trim()
       : 'a team administrator'
 
@@ -130,7 +130,7 @@ export async function PUT(
     if (memberProfile?.email && oldRole !== role) {
       const memberName = memberProfile.first_name || memberProfile.email.split('@')[0]
       const dashboardUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://codeunia.com'}/dashboard/company/${company.slug}`
-      
+
       const emailContent = getRoleChangeEmail({
         memberName,
         companyName: company.name,
@@ -226,14 +226,14 @@ export async function DELETE(
       )
     }
 
-    // Check if user is owner (only owners can remove members)
+    // Check if user is owner or admin (both can remove members)
     const requestingMember = await companyMemberService.checkMembership(user.id, company.id)
 
-    if (!requestingMember || requestingMember.role !== 'owner') {
+    if (!requestingMember || !['owner', 'admin'].includes(requestingMember.role)) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Insufficient permissions: Owner role required to remove members',
+          error: 'Insufficient permissions: Owner or Admin role required to remove members',
         },
         { status: 403 }
       )
@@ -249,6 +249,17 @@ export async function DELETE(
           error: 'Member not found in this company',
         },
         { status: 404 }
+      )
+    }
+
+    // Prevent admins from removing owners (only owners can remove owners)
+    if (requestingMember.role === 'admin' && targetMember.role === 'owner') {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Insufficient permissions: Only owners can remove other owners',
+        },
+        { status: 403 }
       )
     }
 
@@ -277,7 +288,7 @@ export async function DELETE(
       .eq('id', user.id)
       .single()
 
-    const removedByName = requestingUserProfile?.first_name 
+    const removedByName = requestingUserProfile?.first_name
       ? `${requestingUserProfile.first_name} ${requestingUserProfile.last_name || ''}`.trim()
       : 'a team administrator'
 
@@ -287,7 +298,7 @@ export async function DELETE(
     // Send removal notification email
     if (memberProfile?.email) {
       const memberName = memberProfile.first_name || memberProfile.email.split('@')[0]
-      
+
       const emailContent = getMemberRemovedEmail({
         memberName,
         companyName: company.name,
