@@ -371,11 +371,27 @@ class CompanyService {
       )
     }
 
+    // For each company, get the count of approved events
+    const companiesWithApprovedCount = await Promise.all(
+      (companies || []).map(async (company) => {
+        const { count: approvedCount } = await supabase
+          .from('events')
+          .select('*', { count: 'exact', head: true })
+          .eq('company_id', company.id)
+          .eq('approval_status', 'approved')
+
+        return {
+          ...company,
+          approved_events_count: approvedCount || 0,
+        }
+      })
+    )
+
     const total = count || 0
     const hasMore = offset + limit < total
 
     const result = {
-      companies: (companies || []) as Company[],
+      companies: companiesWithApprovedCount as Company[],
       total,
       hasMore,
     }

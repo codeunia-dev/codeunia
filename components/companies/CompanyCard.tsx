@@ -14,11 +14,11 @@ interface CompanyCardProps {
   className?: string
 }
 
-export function CompanyCard({ 
-  company, 
-  showStats = true, 
+export function CompanyCard({
+  company,
+  showStats = true,
   showVerificationBadge = true,
-  className 
+  className
 }: CompanyCardProps) {
   return (
     <Link href={`/companies/${company.slug}`}>
@@ -81,7 +81,7 @@ export function CompanyCard({
             <div className="flex items-center justify-between w-full text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
-                <span>{company.total_events} events</span>
+                <span>{company.approved_events_count ?? company.total_events ?? 0} events</span>
               </div>
               <div className="flex items-center gap-1">
                 <Users className="h-3.5 w-3.5" />

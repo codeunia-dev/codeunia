@@ -71,10 +71,24 @@ export async function GET(
       }
     }
 
-    // Cache the result
-    await UnifiedCache.set(cacheKey, { company }, 'API_STANDARD')
+    // Get count of approved events for this company
+    const supabase = await createClient()
+    const { count: approvedCount } = await supabase
+      .from('events')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', company.id)
+      .eq('approval_status', 'approved')
 
-    return UnifiedCache.createResponse({ company }, 'API_STANDARD')
+    // Add approved_events_count to company object
+    const companyWithApprovedCount = {
+      ...company,
+      approved_events_count: approvedCount || 0,
+    }
+
+    // Cache the result
+    await UnifiedCache.set(cacheKey, { company: companyWithApprovedCount }, 'API_STANDARD')
+
+    return UnifiedCache.createResponse({ company: companyWithApprovedCount }, 'API_STANDARD')
   } catch (error) {
     console.error('Error in GET /api/companies/[slug]:', error)
 

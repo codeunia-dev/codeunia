@@ -28,7 +28,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
       {/* Banner and Logo Section */}
       <Card className="overflow-hidden">
         {/* Banner */}
-        <div 
+        <div
           className="h-56 sm:h-64 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20"
           style={company.banner_url ? {
             backgroundImage: `url(${company.banner_url})`,
@@ -36,7 +36,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
             backgroundPosition: 'center',
           } : undefined}
         />
-        
+
         <CardHeader className="relative -mt-20 pb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
             {/* Logo */}
@@ -51,10 +51,10 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
             <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <CardTitle className="text-3xl">{company.name}</CardTitle>
-                <VerificationBadge 
-                  status={company.verification_status} 
-                  size="lg" 
-                  showLabel 
+                <VerificationBadge
+                  status={company.verification_status}
+                  size="lg"
+                  showLabel
                 />
               </div>
               {company.legal_name && company.legal_name !== company.name && (
@@ -120,7 +120,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="space-y-1">
                 <p className="text-2xl font-bold text-primary">
-                  {company.total_events || 0}
+                  {company.approved_events_count ?? company.total_events ?? 0}
                 </p>
                 <p className="text-xs text-muted-foreground">Events Hosted</p>
               </div>
@@ -151,7 +151,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                 <Globe className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">Website</p>
-                  <a 
+                  <a
                     href={company.website}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -168,7 +168,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                 <Mail className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">Email</p>
-                  <a 
+                  <a
                     href={`mailto:${company.email}`}
                     className="text-sm text-primary hover:underline break-all"
                   >
@@ -183,7 +183,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                 <Phone className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground mb-1">Phone</p>
-                  <a 
+                  <a
                     href={`tel:${company.phone}`}
                     className="text-sm text-primary hover:underline"
                   >
@@ -230,7 +230,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                   <div className="flex flex-wrap gap-2">
                     {company.socials.linkedin && (
                       <Button variant="outline" size="sm" asChild>
-                        <a 
+                        <a
                           href={company.socials.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -241,7 +241,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                     )}
                     {company.socials.twitter && (
                       <Button variant="outline" size="sm" asChild>
-                        <a 
+                        <a
                           href={company.socials.twitter}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -252,7 +252,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                     )}
                     {company.socials.facebook && (
                       <Button variant="outline" size="sm" asChild>
-                        <a 
+                        <a
                           href={company.socials.facebook}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -263,7 +263,7 @@ export function CompanyProfile({ company, isOwner = false, className }: CompanyP
                     )}
                     {company.socials.instagram && (
                       <Button variant="outline" size="sm" asChild>
-                        <a 
+                        <a
                           href={company.socials.instagram}
                           target="_blank"
                           rel="noopener noreferrer"
