@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
+
+// Create Supabase client with service role key to bypass RLS for master_registrations
+const getServiceRoleClient = () => {
+    return createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            }
+        }
+    );
+};
 
 // GET: Export registrations as CSV
 export async function GET(
@@ -10,10 +25,10 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const supabase = await createClient();
-
-        // Get the current user
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        // Use server client for authentication
+        const serverClient = await createServerClient();
+        const { data: { user }, error: authError } = await serverClient.auth.getUser();
 
         if (authError || !user) {
             return NextResponse.json(
@@ -21,6 +36,9 @@ export async function GET(
                 { status: 401 }
             );
         }
+
+        // Use service role client for querying (bypasses RLS)
+        const supabase = getServiceRoleClient();
 
         // Get the hackathon by slug
         const { data: hackathon, error: hackathonError } = await supabase
@@ -73,34 +91,33 @@ export async function GET(
             'Full Name',
             'Email',
             'Phone',
-            'Institution',
-            'Department',
-            'Year of Study',
-            'Experience Level',
             'Status',
             'Payment Status',
             'Payment Amount',
-            'Registration Date',
-            'Created At'
+            'Registered On'
         ];
 
         const csvRows = [headers.join(',')];
 
         registrations?.forEach(reg => {
+            // Format date to be more readable (e.g., "Nov 19 2025")
+            const registeredDate = reg.created_at 
+                ? new Date(reg.created_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                }).replace(/,/g, '')
+                : '';
+
             const row = [
                 reg.id,
                 `"${reg.full_name || ''}"`,
                 `"${reg.email || ''}"`,
                 `"${reg.phone || ''}"`,
-                `"${reg.institution || ''}"`,
-                `"${reg.department || ''}"`,
-                `"${reg.year_of_study || ''}"`,
-                `"${reg.experience_level || ''}"`,
                 reg.status,
                 reg.payment_status,
-                reg.payment_amount || '',
-                reg.registration_date,
-                reg.created_at
+                reg.payment_amount ? `₹${reg.payment_amount / 100}` : 'N/A',
+                `"${registeredDate}"`
             ];
             csvRows.push(row.join(','));
         });

@@ -94,11 +94,6 @@ export async function GET(
             query = query.eq('payment_status', paymentStatus);
         }
 
-        // Apply search (search in full_name, email, phone)
-        if (search) {
-            query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
-        }
-
         // Apply pagination
         query = query.range(offset, offset + limit - 1);
 
@@ -155,9 +150,26 @@ export async function GET(
             };
         });
 
+        // Apply search filter after enrichment (search in profile_name, full_name, email, phone)
+        let filteredRegistrations = enrichedRegistrations || [];
+        if (search) {
+            const searchLower = search.toLowerCase();
+            filteredRegistrations = filteredRegistrations.filter(reg => {
+                const profileName = reg.profile_name?.toLowerCase() || '';
+                const fullName = reg.full_name?.toLowerCase() || '';
+                const email = reg.email?.toLowerCase() || '';
+                const phone = reg.phone?.toLowerCase() || '';
+                
+                return profileName.includes(searchLower) ||
+                       fullName.includes(searchLower) ||
+                       email.includes(searchLower) ||
+                       phone.includes(searchLower);
+            });
+        }
+
         return NextResponse.json({
-            registrations: enrichedRegistrations || [],
-            total: count || 0,
+            registrations: filteredRegistrations,
+            total: search ? filteredRegistrations.length : (count || 0),
             event: {
                 id: event.id,
                 title: event.title,
