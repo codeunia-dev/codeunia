@@ -14,7 +14,7 @@ export const GET = withPlatformAdmin(async (request: NextRequest) => {
     const limit = parseInt(searchParams.get('limit') || '20')
     const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Get pending events from moderation service
+    // Get pending and deleted events from moderation service
     const { events, total } = await moderationService.getPendingEvents({
       limit,
       offset,

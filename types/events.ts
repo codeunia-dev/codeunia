@@ -55,7 +55,7 @@ export interface Event {
   company_id?: string
   company?: Company
   created_by?: string
-  approval_status: 'pending' | 'approved' | 'rejected' | 'changes_requested'
+  approval_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'deleted'
   approved_by?: string
   approved_at?: string
   rejection_reason?: string

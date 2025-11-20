@@ -29,7 +29,7 @@ interface Hackathon {
   excerpt: string
   category: string
   status: string
-  approval_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested'
+  approval_status: 'draft' | 'pending' | 'approved' | 'rejected' | 'changes_requested' | 'deleted'
   date: string
   time: string
   duration: string
@@ -57,7 +57,7 @@ export default function CompanyHackathonsPage() {
       setLoading(true)
       // Fetch all hackathons (not just approved) for company members
       const response = await fetch(`/api/companies/${currentCompany.slug}/hackathons?status=all&limit=100`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch hackathons')
       }
@@ -101,7 +101,7 @@ export default function CompanyHackathonsPage() {
       toast.success('Hackathon deleted successfully')
       setDeleteDialogOpen(false)
       setHackathonToDelete(null)
-      
+
       // Refresh the list
       fetchHackathons()
     } catch (error) {
@@ -125,13 +125,16 @@ export default function CompanyHackathonsPage() {
     hackathon.category?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  // Filter out deleted items for stats (summary cards should only show active items)
+  const activeHackathons = hackathons.filter(h => h.approval_status !== 'deleted')
+
   const stats = {
-    total: hackathons.length,
-    approved: hackathons.filter(h => h.approval_status === 'approved').length,
-    pending: hackathons.filter(h => h.approval_status === 'pending').length,
-    draft: hackathons.filter(h => h.status === 'draft').length,
-    totalViews: hackathons.reduce((sum, h) => sum + (h.views || 0), 0),
-    totalRegistrations: hackathons.reduce((sum, h) => sum + (h.registered || 0), 0),
+    total: activeHackathons.length,
+    approved: activeHackathons.filter(h => h.approval_status === 'approved').length,
+    pending: activeHackathons.filter(h => h.approval_status === 'pending').length,
+    draft: activeHackathons.filter(h => h.status === 'draft').length,
+    totalViews: activeHackathons.reduce((sum, h) => sum + (h.views || 0), 0),
+    totalRegistrations: activeHackathons.reduce((sum, h) => sum + (h.registered || 0), 0),
   }
 
   const getApprovalBadge = (status: string) => {
@@ -164,6 +167,13 @@ export default function CompanyHackathonsPage() {
             Changes Requested
           </Badge>
         )
+      case 'deleted':
+        return (
+          <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20 pointer-events-none">
+            <Trash2 className="h-3 w-3 mr-1" />
+            Deleted
+          </Badge>
+        )
       default:
         return <Badge variant="outline" className="pointer-events-none">{status}</Badge>
     }
@@ -185,7 +195,7 @@ export default function CompanyHackathonsPage() {
           return <Badge variant="outline" className="pointer-events-none">{hackathon.approval_status}</Badge>
       }
     }
-    
+
     // If approved, show event status
     switch (hackathon.status) {
       case 'live':
@@ -393,9 +403,9 @@ export default function CompanyHackathonsPage() {
                               </Button>
                             </Link>
                           )}
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleDeleteClick(hackathon)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
                             title="Delete hackathon"
@@ -429,7 +439,7 @@ export default function CompanyHackathonsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the hackathon &quot;{hackathonToDelete?.title}&quot;. 
+              This will permanently delete the hackathon &quot;{hackathonToDelete?.title}&quot;.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

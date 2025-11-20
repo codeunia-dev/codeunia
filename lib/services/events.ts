@@ -550,18 +550,73 @@ class EventsService {
   /**
    * Delete an event
    * @param id Event ID
-   * @param _userId ID of the user deleting the event
+   * @param _userId ID of the user deleting the event (unused but kept for API consistency)
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async deleteEvent(id: number, _userId: string): Promise<void> {
+  async deleteEvent(id: number, _userId: string): Promise<{ soft_delete: boolean }> {
     const supabase = await createClient()
 
-    // Get existing event to verify ownership
+    // Get existing event to verify ownership and check approval status
     const existingEvent = await this.getEventById(id)
     if (!existingEvent) {
       throw new EventError('Event not found', EventErrorCodes.NOT_FOUND, 404)
     }
 
+    // Check if event is approved (live) - use soft delete
+    if (existingEvent.approval_status === 'approved') {
+      console.log('🔄 Event is approved - marking for deletion (soft delete)')
+
+      // Mark as deleted instead of hard deleting
+      const { error: updateError } = await supabase
+        .from('events')
+        .update({
+          approval_status: 'deleted',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+
+      if (updateError) {
+        console.error('❌ Error marking event for deletion:', updateError)
+        throw new EventError('Failed to mark event for deletion', EventErrorCodes.NOT_FOUND, 500)
+      }
+
+      console.log('✅ Event marked for deletion - requires admin approval')
+
+      // Notify admins about the deletion request
+      const eventId = existingEvent.id
+      if (eventId) {
+        const { data: adminUsers } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          const notifications = adminUsers.map(admin => ({
+            user_id: admin.id,
+            company_id: existingEvent.company_id,
+            type: 'event_deleted' as const,
+            title: 'Event Deletion Request',
+            message: `"${existingEvent.title}" has been marked for deletion and requires approval`,
+            action_url: `/admin/moderation/events/${eventId}`,
+            action_label: 'Review Deletion',
+            event_id: eventId.toString(),
+            metadata: {
+              event_title: existingEvent.title,
+              event_slug: existingEvent.slug
+            }
+          }))
+
+          await supabase.from('notifications').insert(notifications)
+          console.log(`📧 Notified ${adminUsers.length} admin(s) about deletion request`)
+        }
+      }
+
+      clearCache()
+      return { soft_delete: true }
+    }
+
+    // For draft/pending events, allow hard delete
+    console.log('🗑️ Event is draft/pending - performing hard delete')
     const { error } = await supabase
       .from('events')
       .delete()
@@ -573,6 +628,7 @@ class EventsService {
     }
 
     clearCache()
+    return { soft_delete: false }
   }
 
   /**
