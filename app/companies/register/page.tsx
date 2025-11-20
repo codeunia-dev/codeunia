@@ -72,11 +72,11 @@ export default function CompanyRegisterPage() {
               </CardHeader>
               <CardContent className="text-center space-y-6">
                 <p className="text-sm text-muted-foreground">
-                  You need to be signed in to register your company. This helps us track your 
+                  You need to be signed in to register your company. This helps us track your
                   application and provide better support throughout the verification process.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button 
+                  <Button
                     className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
                     asChild
                   >
@@ -131,7 +131,7 @@ export default function CompanyRegisterPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-4">
                       <div className="flex-shrink-0">
                         <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
@@ -145,7 +145,7 @@ export default function CompanyRegisterPage() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-4">
                       <div className="flex-shrink-0">
                         <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
@@ -232,14 +232,14 @@ export default function CompanyRegisterPage() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight">Register Your Company</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join CodeUnia&apos;s marketplace and start hosting hackathons and events for the developer community
+              Join Codeunia&apos;s marketplace and start hosting hackathons and events for the developer community
             </p>
           </div>
 
           {/* Benefits */}
           <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
             <CardContent className="p-6">
-              <h3 className="font-semibold text-lg mb-4">Why host events on CodeUnia?</h3>
+              <h3 className="font-semibold text-lg mb-4">Why host events on Codeunia?</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />

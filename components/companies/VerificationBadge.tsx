@@ -16,7 +16,7 @@ const statusConfig = {
     label: 'Verified',
     variant: 'default' as const,
     className: 'bg-green-500 hover:bg-green-600 text-white border-green-600',
-    tooltip: 'This company has been verified by CodeUnia',
+    tooltip: 'This company has been verified by Codeunia',
   },
   pending: {
     icon: Clock,
@@ -49,18 +49,18 @@ const sizeClasses = {
   },
 }
 
-export function VerificationBadge({ 
-  status, 
-  size = 'md', 
+export function VerificationBadge({
+  status,
+  size = 'md',
   showLabel = false,
-  className 
+  className
 }: VerificationBadgeProps) {
   const config = statusConfig[status]
   const sizes = sizeClasses[size]
   const Icon = config.icon
 
   const badge = (
-    <Badge 
+    <Badge
       variant={config.variant}
       className={cn(
         sizes.badge,
