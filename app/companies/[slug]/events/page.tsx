@@ -356,8 +356,19 @@ export default function CompanyEventsPage() {
                       {/* Card Content */}
                       <div className="flex-1 flex flex-col p-4">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {event.organizer.split(" ").map((n: string) => n[0]).join("")}
+                          {/* Company Logo/Badge */}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden">
+                            {company?.logo_url ? (
+                              <Image
+                                src={company.logo_url}
+                                alt={company.name}
+                                width={40}
+                                height={40}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              company?.name.substring(0, 2).toUpperCase()
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
@@ -413,11 +424,10 @@ export default function CompanyEventsPage() {
                           </div>
                           <Badge
                             variant="outline"
-                            className={`text-xs ${
-                              event.payment === "Required" || event.payment === "Paid"
+                            className={`text-xs ${event.payment === "Required" || event.payment === "Paid"
                                 ? "border-green-200 text-green-700 bg-green-50"
                                 : "border-blue-200 text-blue-700 bg-blue-50"
-                            }`}
+                              }`}
                           >
                             {event.payment === "Required" || event.payment === "Paid" ? "Paid" : "Free"}
                           </Badge>

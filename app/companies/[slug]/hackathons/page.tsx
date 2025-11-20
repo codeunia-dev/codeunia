@@ -309,8 +309,19 @@ export default function CompanyHackathonsPage() {
                       {/* Card Content */}
                       <div className="flex-1 flex flex-col p-4">
                         <div className="flex items-center gap-3 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-lg">
-                            <Trophy className="h-5 w-5" />
+                          {/* Company Logo/Badge */}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg overflow-hidden">
+                            {company?.logo_url ? (
+                              <Image
+                                src={company.logo_url}
+                                alt={company.name}
+                                width={40}
+                                height={40}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              company?.name.substring(0, 2).toUpperCase()
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
@@ -340,19 +351,19 @@ export default function CompanyHackathonsPage() {
                             <Calendar className="h-3 w-3" />
                             {hackathon.date && !isNaN(new Date(hackathon.date).getTime())
                               ? new Date(hackathon.date).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
                               : "TBA"}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {hackathon.registration_deadline && !isNaN(new Date(hackathon.registration_deadline).getTime())
                               ? `Reg: ${new Date(hackathon.registration_deadline).toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                })}`
+                                month: "short",
+                                day: "numeric",
+                              })}`
                               : hackathon.duration || "TBA"}
                           </div>
                           <div className="flex items-center gap-1">
@@ -387,7 +398,7 @@ export default function CompanyHackathonsPage() {
                             className="font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg"
                             asChild
                           >
-                            <Link href={`/hackathons/${hackathon.id}`}>
+                            <Link href={`/hackathons/${hackathon.slug}`}>
                               View Details <ArrowRight className="ml-1 h-5 w-5" />
                             </Link>
                           </Button>

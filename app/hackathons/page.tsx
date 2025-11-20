@@ -1,4 +1,4 @@
-"use client" 
+"use client"
 
 import { useState, useEffect, useRef } from "react"
 
@@ -26,7 +26,7 @@ import type { Company } from "@/types/company"
 const hackathonCategories = [
   "All",
   "Web Development",
-  "Mobile Apps", 
+  "Mobile Apps",
   "AI/ML",
   "Blockchain",
   "IoT",
@@ -80,7 +80,7 @@ export default function HackathonsPage() {
         if (response.ok) {
           const data = await response.json()
           setCompanies(data.companies || [])
-          
+
           // Extract unique industries from companies
           const uniqueIndustries = Array.from(
             new Set(data.companies.map((c: Company) => c.industry).filter(Boolean))
@@ -263,98 +263,98 @@ export default function HackathonsPage() {
 
   return (
     <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10">
-       <Header/>
-      
+      <Header />
+
       {/* Hero Section */}
       <section className="py-20 md:py-32 relative overflow-hidden">
-                <div
-                    className={cn(
-                        "absolute inset-0",
-                        "[background-size:20px_20px]",
-                        "[background-image:linear-gradient(to_right,rgba(99,102,241,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.8)_1px,transparent_1px)]",
-                        "dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.8)_1px,transparent_1px)]"
-                    )}
-                />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 animate-gradient"></div>
-                <div className="absolute inset-0">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <div
-                        className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
-                        style={{ animationDelay: "2s" }}
-                    ></div>
-                </div>
+        <div
+          className={cn(
+            "absolute inset-0",
+            "[background-size:20px_20px]",
+            "[background-image:linear-gradient(to_right,rgba(99,102,241,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.8)_1px,transparent_1px)]",
+            "dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.8)_1px,transparent_1px)]"
+          )}
+        />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 animate-gradient"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
+            style={{ animationDelay: "2s" }}
+          ></div>
+        </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="container px-4 mx-auto relative z-10"
-                >
-                    <div className="max-w-4xl mx-auto text-center space-y-8">
-                        <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <div className="flex flex-col items-center justify-center gap-4">
-                                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
-                                    <span className="absolute inset-0 overflow-hidden rounded-full">
-                                        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                    </span>
-                                    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-                                        <span>Hackathons & Competitions </span>
-                                        <span>
-                                            <Sparkles className="w-3 h-3" />
-                                        </span>
-                                    </div>
-                                    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-                                </button>
-                            </div>
-                        </motion.div>
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
-                        >
-                            Code, Compete,{" "}
-                            <motion.span
-                                className="gradient-text inline-block"
-                                animate={{
-                                    backgroundPosition: [
-                                        "0% 50%",
-                                        "100% 50%",
-                                        "0% 50%",
-                                    ],
-                                }}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                }}
-                                style={{
-                                    background:
-                                        "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
-                                    backgroundSize: "300% 100%",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                }}
-                            >
-                                Win
-                            </motion.span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
-                            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
-                        >
-                            Discover exciting hackathons and coding competitions. Build innovative solutions, collaborate with talented developers, and win amazing prizes!
-                        </motion.p>
-                    </div>
-                </motion.div>
-            </section>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="container px-4 mx-auto relative z-10"
+        >
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex flex-col items-center justify-center gap-4">
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                    <span>Hackathons & Competitions </span>
+                    <span>
+                      <Sparkles className="w-3 h-3" />
+                    </span>
+                  </div>
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+            >
+              Code, Compete,{" "}
+              <motion.span
+                className="gradient-text inline-block"
+                animate={{
+                  backgroundPosition: [
+                    "0% 50%",
+                    "100% 50%",
+                    "0% 50%",
+                  ],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{
+                  background:
+                    "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                  backgroundSize: "300% 100%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Win
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            >
+              Discover exciting hackathons and coding competitions. Build innovative solutions, collaborate with talented developers, and win amazing prizes!
+            </motion.p>
+          </div>
+        </motion.div>
+      </section>
 
       {/* Search and Filters - Redesigned */}
       <section className="py-8 bg-gradient-to-b from-muted/30 to-background relative border-b border-primary/10">
@@ -620,7 +620,7 @@ export default function HackathonsPage() {
       {filteredFeaturedHackathons.length > 0 && (
         <section className="py-16 relative">
           <div className="container px-4 mx-auto relative">
-            <motion.div 
+            <motion.div
               className="text-center space-y-4 mb-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -705,16 +705,6 @@ export default function HackathonsPage() {
                           className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                           priority={index < 2}
                         />
-                      ) : hackathon.company?.logo_url ? (
-                        <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-muted to-muted/50 p-8">
-                          <Image
-                            src={hackathon.company.logo_url}
-                            alt={hackathon.company.name || 'Company logo'}
-                            width={120}
-                            height={120}
-                            className="object-contain"
-                          />
-                        </div>
                       ) : (
                         <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-muted to-muted/50">
                           <Calendar className="h-16 w-16 text-muted-foreground opacity-40" />
@@ -729,13 +719,13 @@ export default function HackathonsPage() {
                         </CardTitle>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           <button
-                            onClick={() => handleCopyLink(hackathon.slug, String (hackathon.id))}
+                            onClick={() => handleCopyLink(hackathon.slug, String(hackathon.id))}
                             className="p-1 bg-background/80 rounded-full border border-primary/20 hover:bg-primary/10 transition-colors"
                             title="Copy hackathon link"
                           >
                             <LinkIcon className="h-4 w-4 text-primary" />
                           </button>
-                          {copiedHackathonId === String (hackathon.id) && (
+                          {copiedHackathonId === String(hackathon.id) && (
                             <span className="text-xs text-primary bg-background/90 px-2 py-1 rounded shadow">Link copied!</span>
                           )}
                         </div>
@@ -743,9 +733,9 @@ export default function HackathonsPage() {
                       {/* Company Badge */}
                       {hackathon.company && (
                         <div className="mt-2">
-                          <CompanyBadge 
-                            company={hackathon.company} 
-                            size="sm" 
+                          <CompanyBadge
+                            company={hackathon.company}
+                            size="sm"
                             showVerification={true}
                           />
                         </div>
@@ -837,7 +827,7 @@ export default function HackathonsPage() {
       {/* All Hackathons - Redesigned */}
       <section className="py-16 bg-gradient-to-b from-muted/30 to-background relative">
         <div className="container px-4 mx-auto">
-          <motion.div 
+          <motion.div
             className="flex items-center justify-between mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -878,16 +868,6 @@ export default function HackathonsPage() {
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                         priority={index < 6}
                       />
-                    ) : hackathon.company?.logo_url ? (
-                      <div className="flex items-center justify-center w-full h-full p-4">
-                        <Image
-                          src={hackathon.company.logo_url}
-                          alt={hackathon.company.name || 'Company logo'}
-                          width={80}
-                          height={80}
-                          className="object-contain"
-                        />
-                      </div>
                     ) : (
                       <div className="flex items-center justify-center w-full h-full">
                         <Calendar className="h-12 w-12 text-muted-foreground opacity-40" />
@@ -931,9 +911,9 @@ export default function HackathonsPage() {
                         {/* Company Badge */}
                         {hackathon.company ? (
                           <div className="mb-2">
-                            <CompanyBadge 
-                              company={hackathon.company} 
-                              size="sm" 
+                            <CompanyBadge
+                              company={hackathon.company}
+                              size="sm"
                               showVerification={true}
                             />
                           </div>
@@ -996,7 +976,7 @@ export default function HackathonsPage() {
           </div>
 
           {regularHackathons.length === 0 && (
-            <motion.div 
+            <motion.div
               className="text-center py-20"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1023,7 +1003,7 @@ export default function HackathonsPage() {
         </div>
       </section>
 
-      <Footer/>
+      <Footer />
     </div>
   )
 }
