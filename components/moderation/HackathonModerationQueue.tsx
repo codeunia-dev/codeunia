@@ -34,6 +34,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
@@ -44,7 +45,7 @@ interface HackathonWithCompany extends Hackathon {
 }
 
 interface ModerationAction {
-  type: "approve" | "reject"
+  type: "approve" | "reject" | "delete"
   hackathonId: number
   reason?: string
 }
@@ -90,7 +91,7 @@ export function HackathonModerationQueue() {
     fetchHackathons()
   }, [fetchHackathons])
 
-  const handleAction = (type: "approve" | "reject", hackathonId: number) => {
+  const handleAction = (type: "approve" | "reject" | "delete", hackathonId: number) => {
     setPendingAction({ type, hackathonId })
     setActionReason("")
     setShowActionDialog(true)
@@ -119,7 +120,9 @@ export function HackathonModerationQueue() {
       toast.success(
         pendingAction.type === "approve"
           ? "Hackathon approved successfully"
-          : "Hackathon rejected"
+          : pendingAction.type === "delete"
+            ? "Hackathon permanently deleted"
+            : "Hackathon rejected"
       )
 
       // Refresh the list
@@ -232,28 +235,48 @@ export function HackathonModerationQueue() {
                         <Eye className="h-4 w-4" />
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAction("approve", hackathon.id!)}
-                      disabled={actionLoading === hackathon.id}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      {actionLoading === hackathon.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAction("reject", hackathon.id!)}
-                      disabled={actionLoading === hackathon.id}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <XCircle className="h-4 w-4" />
-                    </Button>
+                    {hackathon.approval_status === 'deleted' ? (
+                      // Show delete button for soft-deleted items
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAction("delete", hackathon.id!)}
+                        disabled={actionLoading === hackathon.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        {actionLoading === hackathon.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    ) : (
+                      // Show approve/reject buttons for pending items
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction("approve", hackathon.id!)}
+                          disabled={actionLoading === hackathon.id}
+                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                        >
+                          {actionLoading === hackathon.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction("reject", hackathon.id!)}
+                          disabled={actionLoading === hackathon.id}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -299,7 +322,9 @@ export function HackathonModerationQueue() {
             <AlertDialogDescription>
               {pendingAction?.type === "approve"
                 ? "This hackathon will be published and visible to all users."
-                : "This hackathon will be rejected and the company will be notified."}
+                : pendingAction?.type === "delete"
+                  ? "This will permanently delete the hackathon. This action cannot be undone."
+                  : "This hackathon will be rejected and the company will be notified."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {pendingAction?.type === "reject" && (
@@ -325,7 +350,7 @@ export function HackathonModerationQueue() {
                   : "bg-red-600 hover:bg-red-700"
               }
             >
-              {pendingAction?.type === "approve" ? "Approve" : "Reject"}
+              {pendingAction?.type === "approve" ? "Approve" : pendingAction?.type === "delete" ? "Permanently Delete" : "Reject"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

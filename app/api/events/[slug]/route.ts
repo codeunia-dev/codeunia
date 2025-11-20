@@ -18,7 +18,7 @@ export async function GET(
     // Try to get from cache first
     const cacheKey = `event:${slug}`;
     const cached = await UnifiedCache.get(cacheKey);
-    
+
     if (cached) {
       return UnifiedCache.createResponse(cached, 'API_STANDARD');
     }
@@ -40,7 +40,7 @@ export async function GET(
 
   } catch (error) {
     console.error('Error in GET /api/events/[slug]:', error);
-    
+
     if (error instanceof EventError) {
       return NextResponse.json(
         { error: error.message, code: error.code },
@@ -112,7 +112,7 @@ export async function PUT(
 
   } catch (error) {
     console.error('Error in PUT /api/events/[slug]:', error);
-    
+
     if (error instanceof EventError) {
       return NextResponse.json(
         { error: error.message, code: error.code },
@@ -167,19 +167,26 @@ export async function DELETE(
     }
 
     // Delete event using service
-    await eventsService.deleteEvent(existingEvent.id, user.id);
+    const result = await eventsService.deleteEvent(existingEvent.id, user.id)
 
     // Invalidate caches
-    await UnifiedCache.purgeByTags(['content', 'api']);
+    await UnifiedCache.purgeByTags(['content', 'api'])
 
     return NextResponse.json(
-      { message: 'Event deleted successfully' },
+      {
+        success: true,
+        message: result.soft_delete
+          ? 'Event marked for deletion. Admin approval required.'
+          : 'Event deleted successfully',
+        soft_delete: result.soft_delete
+      },
       { status: 200 }
-    );
+    )
+      ;
 
   } catch (error) {
     console.error('Error in DELETE /api/events/[slug]:', error);
-    
+
     if (error instanceof EventError) {
       return NextResponse.json(
         { error: error.message, code: error.code },

@@ -23,7 +23,7 @@ export const GET = withPlatformAdmin(async (request: NextRequest) => {
         *,
         company:companies(*)
       `, { count: 'exact' })
-      .eq('approval_status', 'pending')
+      .in('approval_status', ['pending', 'deleted'])
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 

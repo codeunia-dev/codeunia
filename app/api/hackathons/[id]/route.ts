@@ -182,13 +182,71 @@ export async function DELETE(_request: NextRequest, { params }: RouteContext) {
       )
     }
 
-    console.log('🗑️ Attempting to delete hackathon...')
+    // Check if hackathon is approved (live) - use soft delete
+    if (existingHackathon.approval_status === 'approved') {
+      console.log('🔄 Hackathon is approved - marking for deletion (soft delete)')
+
+      // Mark as deleted instead of hard deleting
+      const { error: updateError } = await supabase
+        .from('hackathons')
+        .update({
+          approval_status: 'deleted',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingHackathon.id)
+
+      if (updateError) {
+        console.error('❌ Error marking hackathon for deletion:', updateError)
+        throw new Error('Failed to mark hackathon for deletion')
+      }
+
+      console.log('✅ Hackathon marked for deletion - requires admin approval')
+
+      // Notify admins about the deletion request
+      const hackathonId = existingHackathon.id
+      if (hackathonId) {
+        const { data: adminUsers } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('role', 'admin')
+
+        if (adminUsers && adminUsers.length > 0) {
+          const notifications = adminUsers.map(admin => ({
+            user_id: admin.id,
+            company_id: existingHackathon.company_id,
+            type: 'hackathon_deleted' as const,
+            title: 'Hackathon Deletion Request',
+            message: `"${existingHackathon.title}" has been marked for deletion and requires approval`,
+            action_url: `/admin/moderation/hackathons/${hackathonId}`,
+            action_label: 'Review Deletion',
+            hackathon_id: hackathonId.toString(),
+            metadata: {
+              hackathon_title: existingHackathon.title,
+              hackathon_slug: existingHackathon.slug
+            }
+          }))
+
+          await supabase.from('notifications').insert(notifications)
+          console.log(`📧 Notified ${adminUsers.length} admin(s) about deletion request`)
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Hackathon marked for deletion. Admin approval required.',
+        soft_delete: true
+      })
+    }
+
+    // For draft/pending hackathons, allow hard delete
+    console.log('🗑️ Hackathon is draft/pending - performing hard delete')
     await hackathonsService.deleteHackathon(id)
     console.log('✅ Hackathon deleted successfully')
 
     return NextResponse.json({
       success: true,
-      message: 'Hackathon deleted successfully'
+      message: 'Hackathon deleted successfully',
+      soft_delete: false
     })
   } catch (error) {
     console.error('❌ Error in DELETE /api/hackathons/[id]:', error)

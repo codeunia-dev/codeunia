@@ -99,13 +99,16 @@ export default function CompanyEventsPage() {
     }
   }
 
+  // Filter out deleted items for stats (summary cards should only show active items)
+  const activeEvents = events.filter(e => e.approval_status !== 'deleted')
+
   const stats = {
-    total: events.length,
-    approved: events.filter(e => e.approval_status === 'approved').length,
-    pending: events.filter(e => e.approval_status === 'pending').length,
-    draft: events.filter(e => e.status === 'draft').length,
-    totalViews: events.reduce((sum, e) => sum + (e.views || 0), 0),
-    totalRegistrations: events.reduce((sum, e) => sum + (e.registered || 0), 0),
+    total: activeEvents.length,
+    approved: activeEvents.filter(e => e.approval_status === 'approved').length,
+    pending: activeEvents.filter(e => e.approval_status === 'pending').length,
+    draft: activeEvents.filter(e => e.status === 'draft').length,
+    totalViews: activeEvents.reduce((sum, e) => sum + (e.views || 0), 0),
+    totalRegistrations: activeEvents.reduce((sum, e) => sum + (e.registered || 0), 0),
   }
 
   const getApprovalBadge = (status: string) => {
@@ -136,6 +139,13 @@ export default function CompanyEventsPage() {
           <Badge className="bg-orange-500/10 text-orange-600 border-orange-500/20 pointer-events-none">
             <AlertCircle className="h-3 w-3 mr-1" />
             Changes Requested
+          </Badge>
+        )
+      case 'deleted':
+        return (
+          <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20 pointer-events-none">
+            <Trash2 className="h-3 w-3 mr-1" />
+            Deleted
           </Badge>
         )
       default:
