@@ -210,6 +210,12 @@ export function CompanyRegistrationForm({ onSuccess, onError, initialData, compa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Only allow submission on the final step
+    if (currentStep !== totalSteps) {
+      console.log('Not on final step, preventing submission');
+      return;
+    }
+
     if (!validateStep(currentStep)) {
       return;
     }
@@ -248,7 +254,7 @@ export function CompanyRegistrationForm({ onSuccess, onError, initialData, compa
 
       // Add verification documents
       formData.verification_documents.forEach((file, index) => {
-        submitData.append(`verification_document_${index}`, file);
+        submitData.append(`verification_document_${index} `, file);
       });
 
       const response = await fetch("/api/companies/register", {
@@ -295,7 +301,17 @@ export function CompanyRegistrationForm({ onSuccess, onError, initialData, compa
         <Progress value={progress} className="h-2" />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
+        onKeyDown={(e) => {
+          // Prevent Enter key from submitting the form unless on final step
+          if (e.key === 'Enter' && currentStep !== totalSteps) {
+            e.preventDefault();
+            console.log('Enter key pressed, but not on final step - preventing submission');
+          }
+        }}
+      >
         {/* Step 1: Company Information */}
         {currentStep === 1 && (
           <motion.div
