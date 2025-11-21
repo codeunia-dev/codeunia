@@ -60,6 +60,69 @@ function CompanyRegisterContent() {
     console.error("Registration error:", error);
   };
 
+  // Check if user already has a company
+  useEffect(() => {
+    const checkExistingCompany = async () => {
+      console.log('🔍 Checking for existing company...', { user: !!user, resubmitId });
+
+      if (!user || resubmitId) {
+        console.log('⏭️ Skipping check - user:', !!user, 'resubmitId:', resubmitId);
+        return; // Skip if already in resubmit mode
+      }
+
+      try {
+        console.log('📡 Fetching /api/companies/me...');
+        const response = await fetch('/api/companies/me');
+        console.log('📡 Response status:', response.status);
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('📦 API Response:', result);
+
+          if (result.companies && result.companies.length > 0) {
+            console.log('🏢 Found companies:', result.companies.length);
+
+            // Get the company where user is owner
+            const companyMember = result.companies.find((c: { role: string; company: CompanyData }) => c.role === 'owner');
+            console.log('👤 Owner company member:', companyMember);
+
+            // Check if company member exists AND the company object is not null
+            if (companyMember && companyMember.company && companyMember.company.id) {
+              const company = companyMember.company; // Extract the actual company data
+              console.log('✅ Company found - status:', company.verification_status, 'id:', company.id);
+
+              // If company is rejected, redirect to resubmit flow
+              if (company.verification_status === 'rejected') {
+                console.log('🔄 User has rejected company, redirecting to resubmit flow');
+                router.push(`/companies/register?resubmit=${company.id}`);
+                return;
+              }
+
+              // If company is pending or verified, show message
+              if (company.verification_status === 'pending' || company.verification_status === 'verified') {
+                console.log('ℹ️ User already has a company');
+                toast.info('You already have a registered company');
+                router.push('/protected');
+                return;
+              }
+            } else {
+              console.log('❌ No valid owner company found (company may have been deleted)');
+            }
+          } else {
+            console.log('📭 No companies found for user');
+          }
+        } else {
+          console.log('❌ API request failed:', response.status);
+        }
+      } catch (error) {
+        console.error('❌ Error checking existing company:', error);
+        // Continue to show registration form if check fails
+      }
+    };
+
+    checkExistingCompany();
+  }, [user, resubmitId, router]);
+
   // Fetch company data for resubmission
   useEffect(() => {
     const fetchResubmitData = async () => {
