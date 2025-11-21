@@ -96,8 +96,56 @@ export async function POST(request: NextRequest) {
       socials: body.socials as Record<string, string> | undefined,
     }
 
-    // Create company
-    const company = await companyService.createCompany(registrationData, user.id)
+    // Check if this is a resubmission (updating existing rejected company)
+    const companyId = body.companyId as string | undefined
+    let company
+
+    if (companyId) {
+      // Resubmission flow - update existing company
+      const { data: existingCompany, error: fetchError } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', companyId)
+        .single()
+
+      if (fetchError || !existingCompany) {
+        return NextResponse.json(
+          { error: 'Company not found for resubmission' },
+          { status: 404 }
+        )
+      }
+
+      // Verify the user is the company owner
+      if (existingCompany.owner_id !== user.id) {
+        return NextResponse.json(
+          { error: 'Forbidden: You are not the owner of this company' },
+          { status: 403 }
+        )
+      }
+
+      // Verify company is in rejected status
+      if (existingCompany.verification_status !== 'rejected') {
+        return NextResponse.json(
+          { error: 'Company is not in rejected status and cannot be resubmitted' },
+          { status: 400 }
+        )
+      }
+
+      // Update company with new data and reset verification status
+      const updateData: Partial<typeof existingCompany> = {
+        ...registrationData,
+        verification_status: 'pending' as const,
+        verification_notes: null,
+        verified_by: null,
+        updated_at: new Date().toISOString(),
+      }
+
+      company = await companyService.updateCompany(companyId, updateData)
+    } else {
+      // New registration flow
+      company = await companyService.createCompany(registrationData, user.id)
+    }
+
 
     // Upload verification documents if provided
     let uploadedDocuments: string[] = []

@@ -9,12 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Building2, 
-  FileText, 
-  CheckCircle2, 
-  Upload, 
-  X, 
+import {
+  Building2,
+  FileText,
+  CheckCircle2,
+  Upload,
+  X,
   Loader2,
   ArrowRight,
   ArrowLeft,
@@ -33,6 +33,32 @@ import { HelpTooltip, CompanyHelpTooltips } from "@/components/help/HelpTooltip"
 interface CompanyRegistrationFormProps {
   onSuccess?: (company: unknown) => void;
   onError?: (error: Error) => void;
+  initialData?: CompanyData;
+  companyId?: string;
+}
+
+interface CompanyData {
+  name: string;
+  legal_name?: string;
+  email: string;
+  phone?: string;
+  website: string;
+  industry: string;
+  company_size: string;
+  description: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zip: string;
+  };
+  socials?: {
+    linkedin: string;
+    twitter: string;
+    facebook: string;
+    instagram: string;
+  };
 }
 
 interface FormData extends CompanyRegistrationData {
@@ -60,26 +86,26 @@ const COMPANY_SIZES = [
   { value: "enterprise", label: "Enterprise (1000+ employees)" }
 ];
 
-export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrationFormProps) {
+export function CompanyRegistrationForm({ onSuccess, onError, initialData, companyId }: CompanyRegistrationFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
-    name: "",
-    legal_name: "",
-    email: "",
-    website: "",
-    industry: "",
-    company_size: "",
-    description: "",
-    phone: "",
-    address: {
+    name: initialData?.name || "",
+    legal_name: initialData?.legal_name || "",
+    email: initialData?.email || "",
+    website: initialData?.website || "",
+    industry: initialData?.industry || "",
+    company_size: initialData?.company_size || "",
+    description: initialData?.description || "",
+    phone: initialData?.phone || "",
+    address: initialData?.address || {
       street: "",
       city: "",
       state: "",
       country: "",
       zip: ""
     },
-    socials: {
+    socials: initialData?.socials || {
       linkedin: "",
       twitter: "",
       facebook: "",
@@ -108,24 +134,24 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     // Validate file types
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
     const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
-    
+
     if (invalidFiles.length > 0) {
       toast.error("Only PDF, JPEG, and PNG files are allowed");
       return;
     }
-    
+
     // Validate file sizes (max 5MB each)
     const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
-    
+
     if (oversizedFiles.length > 0) {
       toast.error("Each file must be less than 5MB");
       return;
     }
-    
+
     setFormData((prev) => ({
       ...prev,
       verification_documents: [...prev.verification_documents, ...files]
@@ -155,17 +181,17 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
           return false;
         }
         return true;
-      
+
       case 2:
         if (!formData.description || formData.description.length < 50) {
           toast.error("Description must be at least 50 characters");
           return false;
         }
         return true;
-      
+
       case 3:
         return true; // Verification documents are optional
-      
+
       default:
         return true;
     }
@@ -183,7 +209,7 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateStep(currentStep)) {
       return;
     }
@@ -193,7 +219,7 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
     try {
       // Prepare FormData for file upload
       const submitData = new FormData();
-      
+
       // Add company data
       submitData.append("name", formData.name);
       submitData.append("email", formData.email);
@@ -201,20 +227,25 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
       submitData.append("industry", formData.industry);
       submitData.append("company_size", formData.company_size);
       submitData.append("description", formData.description);
-      
+
+      // Add companyId if resubmitting
+      if (companyId) {
+        submitData.append("companyId", companyId);
+      }
+
       if (formData.legal_name) submitData.append("legal_name", formData.legal_name);
       if (formData.phone) submitData.append("phone", formData.phone);
-      
+
       // Add address if any field is filled
       if (formData.address && Object.values(formData.address).some(v => v)) {
         submitData.append("address", JSON.stringify(formData.address));
       }
-      
+
       // Add socials if any field is filled
       if (formData.socials && Object.values(formData.socials).some(v => v)) {
         submitData.append("socials", JSON.stringify(formData.socials));
       }
-      
+
       // Add verification documents
       formData.verification_documents.forEach((file, index) => {
         submitData.append(`verification_document_${index}`, file);
@@ -231,8 +262,12 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
         throw new Error(result.error || "Failed to register company");
       }
 
-      toast.success("Company registered successfully! We'll review your application within 48 hours.");
-      
+      toast.success(
+        companyId
+          ? "Company information updated successfully! We'll review your resubmission within 48 hours."
+          : "Company registered successfully! We'll review your application within 48 hours."
+      );
+
       if (onSuccess) {
         onSuccess(result.company);
       }
@@ -240,7 +275,7 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
       console.error("Error submitting form:", error);
       const errorMessage = error instanceof Error ? error.message : "Failed to register company";
       toast.error(errorMessage);
-      
+
       if (onError) {
         onError(error instanceof Error ? error : new Error(errorMessage));
       }
@@ -633,7 +668,7 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
 
                   <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <p className="text-sm text-blue-900 dark:text-blue-100">
-                      <strong>Recommended documents:</strong> Business registration certificate, 
+                      <strong>Recommended documents:</strong> Business registration certificate,
                       tax ID, or other official documents that verify your company&apos;s legitimacy.
                     </p>
                   </div>
@@ -656,7 +691,7 @@ export function CompanyRegistrationForm({ onSuccess, onError }: CompanyRegistrat
               Previous
             </Button>
           )}
-          
+
           {currentStep < totalSteps ? (
             <Button
               type="button"

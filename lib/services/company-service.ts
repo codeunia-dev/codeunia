@@ -80,6 +80,7 @@ class CompanyService {
       industry: data.industry,
       company_size: data.company_size,
       phone: data.phone,
+      owner_id: userId, // Set the owner_id for ownership verification
       verification_status: 'pending' as const,
       subscription_tier: 'free' as const,
       status: 'active' as const,
