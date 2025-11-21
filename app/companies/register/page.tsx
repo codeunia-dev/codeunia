@@ -1,20 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CompanyRegistrationForm } from "@/components/companies/CompanyRegistrationForm";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { Building2, CheckCircle2, Clock, Mail, ArrowRight } from "lucide-react";
+import { Building2, CheckCircle2, Clock, Mail, ArrowRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
-export default function CompanyRegisterPage() {
+interface CompanyData {
+  id: string;
+  name: string;
+  email: string;
+  legal_name?: string;
+  phone?: string;
+  website: string;
+  industry: string;
+  company_size: string;
+  description: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    zip: string;
+  };
+  socials?: {
+    linkedin: string;
+    twitter: string;
+    facebook: string;
+    instagram: string;
+  };
+  verification_status: string;
+  verification_notes?: string;
+  logo_url?: string;
+}
+
+function CompanyRegisterContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [registrationComplete, setRegistrationComplete] = useState(false);
   const [companyData, setCompanyData] = useState<{ name: string; email: string } | null>(null);
+  const [resubmitData, setResubmitData] = useState<CompanyData | null>(null);
+  const [loadingResubmit, setLoadingResubmit] = useState(false);
+  const [resubmitError, setResubmitError] = useState<string | null>(null);
+  const resubmitId = searchParams.get("resubmit");
 
   const handleSuccess = (company: unknown) => {
     const companyObj = company as { name: string; email: string };
@@ -26,8 +60,50 @@ export default function CompanyRegisterPage() {
     console.error("Registration error:", error);
   };
 
-  // Show loading state while checking authentication
-  if (authLoading) {
+  // Fetch company data for resubmission
+  useEffect(() => {
+    const fetchResubmitData = async () => {
+      if (!resubmitId) {
+        console.log('⏭️ No resubmit ID');
+        return;
+      }
+
+      if (!user) {
+        console.log('⏭️ No user yet, waiting for auth...');
+        return;
+      }
+
+      console.log('🔄 Fetching resubmit data for company:', resubmitId);
+      setLoadingResubmit(true);
+      setResubmitError(null);
+      try {
+        const response = await fetch(`/api/companies/resubmit/${resubmitId}`);
+        console.log('📡 Response status:', response.status);
+        const result = await response.json();
+        console.log('📦 Response data:', result);
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to fetch company data");
+        }
+
+        setResubmitData(result.company);
+        console.log('✅ Successfully loaded company data');
+      } catch (error) {
+        console.error("❌ Error fetching resubmit data:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to load company data";
+        setResubmitError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setLoadingResubmit(false);
+        console.log('🏁 Fetch complete');
+      }
+    };
+
+    fetchResubmitData();
+  }, [resubmitId, user]);
+
+  // Show loading state while checking authentication or loading resubmit data
+  if (authLoading || loadingResubmit) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
         <div className="max-w-4xl mx-auto">
@@ -40,7 +116,53 @@ export default function CompanyRegisterPage() {
               <CardContent className="p-8 text-center">
                 <div className="flex flex-col items-center space-y-4">
                   <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-muted-foreground">Loading...</p>
+                  <p className="text-muted-foreground">
+                    {loadingResubmit ? "Loading company data..." : "Loading..."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if resubmit data fetch failed
+  if (resubmitId && resubmitError && !loadingResubmit) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+              <CardHeader className="text-center pb-6">
+                <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-red-500 to-orange-500 mb-4 w-fit">
+                  <AlertCircle className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Access Denied</CardTitle>
+                <CardDescription className="text-base">
+                  {resubmitError}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-center space-y-6">
+                <p className="text-sm text-muted-foreground">
+                  You can only update companies that you own. If you believe this is an error,
+                  please contact support.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                    onClick={() => router.push("/protected")}
+                  >
+                    Go to Dashboard
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/companies">Browse Companies</Link>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -109,9 +231,11 @@ export default function CompanyRegisterPage() {
                 <div className="mx-auto p-4 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 mb-4 w-fit">
                   <CheckCircle2 className="h-12 w-12 text-white" />
                 </div>
-                <CardTitle className="text-3xl font-bold">Registration Successful!</CardTitle>
+                <CardTitle className="text-3xl font-bold">
+                  {resubmitData ? "Resubmission Successful!" : "Registration Successful!"}
+                </CardTitle>
                 <CardDescription className="text-base">
-                  Your company registration has been submitted for review
+                  Your company {resubmitData ? "has been resubmitted" : "registration has been submitted"} for review
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-8">
@@ -230,44 +354,75 @@ export default function CompanyRegisterPage() {
             <div className="mx-auto p-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 mb-4 w-fit">
               <Building2 className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold tracking-tight">Register Your Company</h1>
+            <h1 className="text-4xl font-bold tracking-tight">
+              {resubmitData ? "Update Company Information" : "Register Your Company"}
+            </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join Codeunia&apos;s marketplace and start hosting hackathons and events for the developer community
+              {resubmitData
+                ? "Update your company information and resubmit for verification"
+                : "Join Codeunia's marketplace and start hosting hackathons and events for the developer community"
+              }
             </p>
           </div>
 
+          {/* Rejection Feedback Banner */}
+          {resubmitData?.verification_notes && (
+            <Card className="border-2 border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-900/20">
+              <CardHeader>
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <CardTitle className="text-base text-orange-900 dark:text-orange-100">
+                      Verification Feedback
+                    </CardTitle>
+                    <CardDescription className="text-sm text-orange-800 dark:text-orange-200 mt-2 whitespace-pre-wrap">
+                      {resubmitData.verification_notes}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          )}
+
           {/* Benefits */}
-          <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-lg mb-4">Why host events on Codeunia?</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Reach Developers</p>
-                    <p className="text-xs text-muted-foreground">Connect with thousands of talented developers</p>
+          {!resubmitData && (
+            <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-4">Why host events on Codeunia?</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">Reach Developers</p>
+                      <p className="text-xs text-muted-foreground">Connect with thousands of talented developers</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">Easy Management</p>
+                      <p className="text-xs text-muted-foreground">Intuitive dashboard for event and team management</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">Analytics & Insights</p>
+                      <p className="text-xs text-muted-foreground">Track engagement and measure event success</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Easy Management</p>
-                    <p className="text-xs text-muted-foreground">Intuitive dashboard for event and team management</p>
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium text-sm">Analytics & Insights</p>
-                    <p className="text-xs text-muted-foreground">Track engagement and measure event success</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Registration Form */}
-          <CompanyRegistrationForm onSuccess={handleSuccess} onError={handleError} />
+          <CompanyRegistrationForm
+            onSuccess={handleSuccess}
+            onError={handleError}
+            initialData={resubmitData || undefined}
+            companyId={resubmitData?.id}
+          />
 
           {/* Help Text */}
           <Card className="border-0 shadow-lg bg-muted/50">
@@ -287,5 +442,26 @@ export default function CompanyRegisterPage() {
         </motion.div>
       </div>
     </div>
+  );
+}
+
+export default function CompanyRegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-0 shadow-2xl bg-background/60 backdrop-blur-xl">
+            <CardContent className="p-8 text-center">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground">Loading...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    }>
+      <CompanyRegisterContent />
+    </Suspense>
   );
 }
