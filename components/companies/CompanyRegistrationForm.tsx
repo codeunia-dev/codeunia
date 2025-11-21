@@ -302,13 +302,11 @@ export function CompanyRegistrationForm({ onSuccess, onError, initialData, compa
       </div>
 
       <form
-        onSubmit={handleSubmit}
         className="space-y-6"
         onKeyDown={(e) => {
           // Prevent Enter key from submitting the form unless on final step
-          if (e.key === 'Enter' && currentStep !== totalSteps) {
+          if (e.key === 'Enter') {
             e.preventDefault();
-            console.log('Enter key pressed, but not on final step - preventing submission');
           }
         }}
       >
@@ -720,7 +718,8 @@ export function CompanyRegistrationForm({ onSuccess, onError, initialData, compa
             </Button>
           ) : (
             <Button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="ml-auto bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
             >
