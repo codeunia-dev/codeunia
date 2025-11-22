@@ -64,7 +64,7 @@ export default function Header() {
     return pathname.startsWith(path)
   }
 
-  
+
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
@@ -92,19 +92,17 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-sm font-medium transition-colors relative group ${
-                  isActive(item.href)
+                className={`text-sm font-medium transition-colors relative group ${isActive(item.href)
                     ? "text-primary"
                     : "text-foreground hover:text-primary"
-                }`}
+                  }`}
               >
                 {item.label}
                 <span
-                  className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
-                    isActive(item.href)
+                  className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${isActive(item.href)
                       ? "w-full"
                       : "w-0 group-hover:w-full"
-                  }`}
+                    }`}
                 ></span>
               </Link>
             ))}
@@ -114,9 +112,14 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-3 flex-shrink-0">
             {/* <ThemeToggle /> */}
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading...</div>
-            ) : user ? (
               <div className="flex items-center space-x-3">
+                {/* Skeleton for Sign In button */}
+                <div className="w-[70px] h-[34px] bg-muted/50 rounded-md animate-pulse" />
+                {/* Skeleton for Sign Up button */}
+                <div className="w-[75px] h-[34px] bg-muted/50 rounded-md animate-pulse" />
+              </div>
+            ) : user ? (
+              <div className="flex items-center space-x-3" key={user.id}>
                 <PremiumButton user={user} />
                 <UserDisplay userId={user.id} showCodeuniaId={false} />
                 <UserIcon />
@@ -143,9 +146,8 @@ export default function Header() {
               variant="ghost"
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`hover:scale-105 transition-all duration-200 ml-1 w-8 h-8 ${
-                isMenuOpen ? 'bg-muted/50' : ''
-              }`}
+              className={`hover:scale-105 transition-all duration-200 ml-1 w-8 h-8 ${isMenuOpen ? 'bg-muted/50' : ''
+                }`}
             >
               {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
@@ -157,11 +159,11 @@ export default function Header() {
       {isMenuOpen && (
         <>
           {/* Backdrop overlay */}
-          <div 
+          <div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] md:hidden animate-in fade-in duration-200"
             onClick={() => setIsMenuOpen(false)}
           />
-          
+
           {/* Side drawer */}
           <div className="mobile-menu-container fixed top-0 right-0 bottom-0 w-[280px] max-w-[85vw] bg-background border-l shadow-2xl z-[70] md:hidden animate-in slide-in-from-right duration-300">
             <nav className="flex flex-col h-full">
@@ -186,11 +188,10 @@ export default function Header() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className={`block text-sm font-medium transition-colors py-2.5 px-3 rounded-md relative ${
-                        isActive(item.href)
+                      className={`block text-sm font-medium transition-colors py-2.5 px-3 rounded-md relative ${isActive(item.href)
                           ? "text-primary font-semibold bg-primary/10"
                           : "text-foreground hover:text-primary hover:bg-muted/50"
-                      }`}
+                        }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.label}
@@ -213,7 +214,7 @@ export default function Header() {
                       <Shield className="h-4 w-4" />
                       <span>Dashboard</span>
                     </Link>
-                    
+
                     {/* Logout Button */}
                     <button
                       onClick={handleLogout}

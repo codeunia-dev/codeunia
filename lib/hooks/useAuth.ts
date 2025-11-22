@@ -12,7 +12,6 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isHydrated, setIsHydrated] = useState(false)
   const [is_admin, setIsAdmin] = useState(false)
 
   // Optimized profile fetching with caching
@@ -40,21 +39,15 @@ export function useAuth() {
   }, [])
 
   useEffect(() => {
-    setIsHydrated(true)
-  }, [])
-
-  useEffect(() => {
-    if (!isHydrated) return
-
     let mounted = true
 
     const initializeAuth = async () => {
       try {
         const supabase = createClient()
-        
+
         // Get initial session first
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        
+
         if (mounted) {
           if (sessionError) {
             console.error('Session error:', sessionError)
@@ -62,7 +55,7 @@ export function useAuth() {
             setIsAdmin(false)
           } else {
             setUser(session?.user ?? null)
-            
+
             // Check admin status from profiles table with caching
             if (session?.user) {
               const profile = await fetchUserProfile(session.user.id)
@@ -79,7 +72,7 @@ export function useAuth() {
           async (event, session) => {
             if (mounted) {
               setUser(session?.user ?? null)
-              
+
               // Check admin status from profiles table with caching
               if (session?.user) {
                 const profile = await fetchUserProfile(session.user.id)
@@ -87,7 +80,7 @@ export function useAuth() {
               } else {
                 setIsAdmin(false)
               }
-              
+
               setLoading(false)
             }
           }
@@ -108,16 +101,11 @@ export function useAuth() {
     return () => {
       mounted = false
     }
-  }, [isHydrated, fetchUserProfile])
+  }, [fetchUserProfile])
 
-  // Return loading state during hydration
-  if (!isHydrated) {
-    return { user: null, loading: true, error: null, is_admin: false }
-  }
-
-  return { 
-    user, 
-    loading, 
+  return {
+    user,
+    loading,
     error,
     is_admin
   }
