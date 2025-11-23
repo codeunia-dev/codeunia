@@ -20,15 +20,7 @@ export async function GET(
   try {
     const { slug } = await params
 
-    // Try to get from cache first
-    const cacheKey = `company:${slug}`
-    const cached = await UnifiedCache.get(cacheKey)
-
-    if (cached) {
-      return UnifiedCache.createResponse(cached, 'API_STANDARD')
-    }
-
-    // Fetch company
+    // Fetch company - no caching to prevent stale data
     const company = await companyService.getCompanyBySlug(slug)
 
     if (!company) {
@@ -110,10 +102,8 @@ export async function GET(
       total_participants: eventParticipants + hackathonParticipants,
     }
 
-    // Cache the result
-    await UnifiedCache.set(cacheKey, { company: enrichedCompany }, 'API_STANDARD')
-
-    return UnifiedCache.createResponse({ company: enrichedCompany }, 'API_STANDARD')
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse({ company: enrichedCompany }, 'USER_PRIVATE')
   } catch (error) {
     console.error('Error in GET /api/companies/[slug]:', error)
 

@@ -131,10 +131,6 @@ const nextConfig: NextConfig = {
             key: 'Vary',
             value: 'Accept-Encoding',
           },
-          {
-            key: 'Cache-Tag',
-            value: 'static',
-          },
         ],
       },
 
@@ -152,144 +148,64 @@ const nextConfig: NextConfig = {
             key: 'CDN-Cache-Control',
             value: isProd ? 'public, max-age=2592000, immutable' : 'no-cache',
           },
-          {
-            key: 'Cache-Tag',
-            value: 'media',
-          },
         ],
       },
 
-      // HOMEPAGE: No caching to ensure auth state is always fresh
+      // ALL DYNAMIC PAGES: No caching to prevent stale data
       {
-        source: '/',
+        source: '/((?!_next|api).*)',
         headers: [
           {
             key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'CDN-Cache-Control',
             value: 'no-cache, no-store, must-revalidate',
           },
           {
-            key: 'CDN-Cache-Control',
+            key: 'Pragma',
             value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'Vary',
+            value: 'Cookie, Accept-Encoding, Authorization',
+          },
+          {
+            key: 'X-Build-ID',
+            value: buildId,
+          },
+        ],
+      },
+
+      // API ROUTES: No caching for dynamic data
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'CDN-Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
           },
           {
             key: 'Pragma',
             value: 'no-cache',
           },
           {
-            key: 'Vary',
-            value: 'Cookie, Accept-Encoding',
-          },
-          {
-            key: 'X-Build-ID',
-            value: buildId,
-          },
-        ],
-      },
-
-      // DYNAMIC CONTENT: Dynamic pages (events, hackathons, etc.)
-      {
-        source: '/(hackathons|events|leaderboard|opportunities)/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: isDev
-              ? 'no-cache, no-store, must-revalidate'
-              : 'public, max-age=60, stale-while-revalidate=300', // 1min cache, 5min SWR
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: isProd ? 'public, max-age=60, stale-while-revalidate=300' : 'no-cache',
-          },
-          {
-            key: 'X-Build-ID',
-            value: buildId,
-          },
-          {
-            key: 'Cache-Tag',
-            value: 'content',
+            key: 'Expires',
+            value: '0',
           },
           {
             key: 'Vary',
-            value: 'Cookie, Accept-Encoding',
+            value: 'Cookie, Accept-Encoding, Authorization',
           },
-        ],
-      },
-
-      // DATABASE QUERIES: API routes that query database
-      {
-        source: '/api/(hackathons|leaderboard|tests|verify-certificate)/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: isDev
-              ? 'no-cache, no-store, must-revalidate'
-              : 'public, max-age=300, stale-while-revalidate=600', // 5min cache, 10min SWR
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: isProd ? 'public, max-age=300, stale-while-revalidate=600' : 'no-cache',
-          },
-          {
-            key: 'Cache-Tag',
-            value: 'api',
-          },
-          {
-            key: 'X-Build-ID',
-            value: buildId,
-          },
-        ],
-      },
-
-      // USER PRIVATE: Auth and user-specific routes
-      {
-        source: '/(protected|admin|profile|dashboard|auth)/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'private, no-cache, no-store, must-revalidate',
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: 'no-cache',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-        ],
-      },
-
-      // API STANDARD: General API routes and public pages
-      {
-        source: '/((?!_next|protected|admin|profile|dashboard|auth).*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: isDev
-              ? 'no-cache, no-store, must-revalidate'
-              : 'public, max-age=0, must-revalidate', // Always revalidate HTML
-          },
-          {
-            key: 'CDN-Cache-Control',
-            value: isProd ? 'public, max-age=60, stale-while-revalidate=300' : 'no-cache',
-          },
-          {
-            key: 'Cache-Tag',
-            value: 'pages',
-          },
-          {
-            key: 'X-Build-ID',
-            value: buildId,
-          },
-          {
-            key: 'Vary',
-            value: 'Cookie, Accept-Encoding',
-          },
-          // Security headers
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
         ],
       },
     ]

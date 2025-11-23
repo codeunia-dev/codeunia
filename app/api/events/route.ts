@@ -68,21 +68,11 @@ export async function GET(request: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0')
     };
 
-    // Try to get from cache first
-    const cacheKey = `events:${JSON.stringify(filters)}`;
-    const cached = await UnifiedCache.get(cacheKey);
-    
-    if (cached) {
-      return UnifiedCache.createResponse(cached, 'API_STANDARD');
-    }
-
-    // Fetch from database
+    // Fetch from database - no caching to prevent stale data
     const result = await eventsService.getEvents(filters);
-    
-    // Cache the result
-    await UnifiedCache.set(cacheKey, result, 'API_STANDARD');
 
-    return UnifiedCache.createResponse(result, 'API_STANDARD');
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse(result, 'USER_PRIVATE');
 
   } catch (error) {
     console.error('Error in GET /api/events:', error);

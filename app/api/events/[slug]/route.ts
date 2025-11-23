@@ -15,15 +15,7 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    // Try to get from cache first
-    const cacheKey = `event:${slug}`;
-    const cached = await UnifiedCache.get(cacheKey);
-
-    if (cached) {
-      return UnifiedCache.createResponse(cached, 'API_STANDARD');
-    }
-
-    // Fetch from database
+    // Fetch from database - no caching to prevent stale data
     const event = await eventsService.getEventBySlug(slug);
 
     if (!event) {
@@ -33,10 +25,8 @@ export async function GET(
       );
     }
 
-    // Cache the result
-    await UnifiedCache.set(cacheKey, event, 'API_STANDARD');
-
-    return UnifiedCache.createResponse(event, 'API_STANDARD');
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse(event, 'USER_PRIVATE');
 
   } catch (error) {
     console.error('Error in GET /api/events/[slug]:', error);

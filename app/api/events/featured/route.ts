@@ -12,21 +12,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '5');
 
-    // Try to get from cache first
-    const cacheKey = `featured_events:${limit}`;
-    const cached = await UnifiedCache.get(cacheKey);
-    
-    if (cached) {
-      return UnifiedCache.createResponse({ events: cached }, 'API_STANDARD');
-    }
-
-    // Fetch from database
+    // Fetch from database - no caching to prevent stale data
     const events = await eventsService.getFeaturedEvents(limit);
-    
-    // Cache the result
-    await UnifiedCache.set(cacheKey, events, 'API_STANDARD');
 
-    return UnifiedCache.createResponse({ events }, 'API_STANDARD');
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse({ events }, 'USER_PRIVATE');
 
   } catch (error) {
     console.error('Error in GET /api/events/featured:', error);

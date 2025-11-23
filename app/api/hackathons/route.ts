@@ -66,25 +66,17 @@ export async function GET(request: NextRequest) {
       offset: searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined,
     };
 
-    // Create cache key based on filters
-    const cacheKey = `hackathons-${JSON.stringify(filters)}`;
+    // Fetch from database - no caching to prevent stale data
+    // Add timeout to prevent hanging requests
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Request timeout')), 8000);
+    });
 
-    // Use unified cache system with DYNAMIC_CONTENT strategy for fast updates
-    const result = await UnifiedCache.cachedQuery(
-      cacheKey,
-      async () => {
-        // Add timeout to prevent hanging requests
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout')), 8000);
-        });
+    const resultPromise = hackathonsService.getHackathons(filters);
+    const result = await Promise.race([resultPromise, timeoutPromise]);
 
-        const resultPromise = hackathonsService.getHackathons(filters);
-        return await Promise.race([resultPromise, timeoutPromise]);
-      },
-      'DYNAMIC_CONTENT' // Use dynamic content strategy for hackathons
-    );
-
-    return UnifiedCache.createResponse(result, 'DYNAMIC_CONTENT');
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse(result, 'USER_PRIVATE');
     
   } catch (error) {
     console.error('Error in GET /api/hackathons:', error);
