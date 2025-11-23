@@ -5,6 +5,11 @@ import { createClient } from '@/lib/supabase/server';
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
+// Force dynamic rendering to prevent stale data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 interface UsernamePageProps {
   params: Promise<{
     username: string;

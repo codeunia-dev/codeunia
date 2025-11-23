@@ -21,19 +21,11 @@ export async function GET(request: NextRequest) {
     const timeRange = searchParams.get('timeRange') || 'all';
     const badge = searchParams.get('badge') || null;
 
-    // Create cache key based on parameters
-    const cacheKey = `leaderboard-${page}-${limit}-${timeRange}-${badge || 'all'}`;
+    // Fetch from database - no caching to prevent stale data
+    const data = await fetchLeaderboardData(page, limit, timeRange, badge);
 
-    // Use unified cache system
-    const data = await UnifiedCache.cachedQuery(
-      cacheKey,
-      async () => {
-        return await fetchLeaderboardData(page, limit, timeRange, badge);
-      },
-      'API_STANDARD'
-    );
-
-    return UnifiedCache.createResponse(data, 'API_STANDARD');
+    // Return with no-cache headers to prevent stale data
+    return UnifiedCache.createResponse(data, 'USER_PRIVATE');
     
   } catch (error) {
     console.error('Leaderboard API error:', error);
