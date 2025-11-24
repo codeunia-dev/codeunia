@@ -116,6 +116,12 @@ export default function Footer() {
                   About Us
                 </Link>
                 <Link
+                  href="/companies"
+                  className="block text-sm text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
+                >
+                  Browse Companies
+                </Link>
+                <Link
                   href="/hackathons"
                   className="block text-sm text-foreground/80 hover:text-primary transition-colors hover:translate-x-1 transform duration-200"
                 >

@@ -8,6 +8,8 @@ import { motion } from "framer-motion"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { CompanyCard } from "@/components/companies/CompanyCard"
+import { CompanyStatsBanner } from "@/components/companies/CompanyStatsBanner"
+import { CompanyRegistrationCTA } from "@/components/companies/CompanyRegistrationCTA"
 import { Company } from "@/types/company"
 import { cn } from "@/lib/utils"
 import {
@@ -189,11 +191,14 @@ export default function CompaniesPage() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             >
-              Explore verified companies hosting amazing events, workshops, and hackathons for the developer community.
+              Discover verified companies hosting events, hackathons, and workshops. Connect with industry leaders, participate in tech challenges, and grow your career.
             </motion.p>
           </div>
         </motion.div>
       </section>
+
+      {/* Stats Banner */}
+      <CompanyStatsBanner totalCompanies={total} />
 
       {/* Search and Filters */}
       <section className="py-8 bg-gradient-to-b from-muted/30 to-background relative border-b border-primary/10">
@@ -382,6 +387,9 @@ export default function CompaniesPage() {
           )}
         </div>
       </section>
+
+      {/* Company Registration CTA */}
+      <CompanyRegistrationCTA />
 
       <Footer />
     </div>

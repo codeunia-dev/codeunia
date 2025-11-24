@@ -72,6 +72,21 @@ const SponsorsSection = dynamic(() => import("@/components/home/SponsorsSection"
   ssr: false
 });
 
+// New: OrganizationsSection for company hosting
+const OrganizationsSection = dynamic(() => import("@/components/home/OrganizationsSection").then(mod => ({ default: mod.OrganizationsSection })), {
+  loading: () => (
+    <div className="py-20">
+      <div className="container px-4 mx-auto">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
+
 const Footer = dynamic(() => import("@/components/footer"), {
   loading: () => (
     <footer className="border-t border-border/40 bg-gradient-to-b from-background/95 via-background to-background/95">
@@ -90,7 +105,7 @@ export default function Home() {
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-between">
-        <Header/>
+        <Header />
         <div className="w-full max-w-[2000px]">
           <Suspense fallback={<div className="min-h-[600px] flex items-center justify-center"><div className="animate-pulse text-primary">Loading...</div></div>}>
             <HeroSection2 />
@@ -98,6 +113,11 @@ export default function Home() {
 
           <Suspense fallback={<div className="py-24"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <FeaturesSection />
+          </Suspense>
+
+          {/* New: Organizations Section for company hosting */}
+          <Suspense fallback={<div className="py-20"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
+            <OrganizationsSection />
           </Suspense>
 
           <Suspense fallback={<div className="py-16"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
@@ -113,7 +133,7 @@ export default function Home() {
             <LatestContentPreview />
           </Suspense>
         </div>
-        <Footer/>
+        <Footer />
       </main>
     </>
   )
