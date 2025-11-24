@@ -36,6 +36,12 @@ export interface Company {
   subscription_expires_at?: string
   settings?: Record<string, unknown>
   status: 'active' | 'suspended' | 'deleted'
+  // Notification preferences
+  email_new_registration?: boolean
+  email_event_approved?: boolean
+  email_event_rejected?: boolean
+  email_team_member_joined?: boolean
+  email_subscription_expiring?: boolean
   created_at: string
   updated_at: string
   created_by?: string
@@ -119,6 +125,14 @@ export interface CompanyFilters {
   verification_status?: string
   limit?: number
   offset?: number
+}
+
+export interface CompanyNotificationPreferences {
+  email_new_registration: boolean
+  email_event_approved: boolean
+  email_event_rejected: boolean
+  email_team_member_joined: boolean
+  email_subscription_expiring: boolean
 }
 
 export interface SubscriptionTierLimits {

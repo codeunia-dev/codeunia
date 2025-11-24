@@ -75,6 +75,8 @@ export default function CompanySettingsPage() {
     email_team_member_joined: true,
     email_subscription_expiring: true,
   })
+  const [loadingNotifications, setLoadingNotifications] = useState(false)
+  const [savingNotifications, setSavingNotifications] = useState(false)
 
   // Update form data when company changes
   React.useEffect(() => {
@@ -103,6 +105,28 @@ export default function CompanySettingsPage() {
         },
       })
     }
+  }, [currentCompany])
+
+  // Fetch notification preferences when company changes
+  React.useEffect(() => {
+    const fetchNotificationPreferences = async () => {
+      if (!currentCompany) return
+
+      setLoadingNotifications(true)
+      try {
+        const response = await fetch(`/api/companies/${currentCompany.slug}/notifications`)
+        if (response.ok) {
+          const result = await response.json()
+          setNotificationPrefs(result.data)
+        }
+      } catch (error) {
+        console.error('Error fetching notification preferences:', error)
+      } finally {
+        setLoadingNotifications(false)
+      }
+    }
+
+    fetchNotificationPreferences()
   }, [currentCompany])
 
   if (contextLoading || isPendingInvitation) {
@@ -944,7 +968,12 @@ export default function CompanySettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="space-y-4">
+              {loadingNotifications ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="email_new_registration" className="text-zinc-200">
@@ -1054,18 +1083,55 @@ export default function CompanySettingsPage() {
                   />
                 </div>
               </div>
+              )}
 
               <div className="flex justify-end">
                 <Button
-                  onClick={() => {
-                    toast({
-                      title: 'Success',
-                      description: 'Notification preferences saved',
-                    })
+                  onClick={async () => {
+                    if (!currentCompany) return
+
+                    setSavingNotifications(true)
+                    try {
+                      const response = await fetch(`/api/companies/${currentCompany.slug}/notifications`, {
+                        method: 'PUT',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(notificationPrefs),
+                      })
+
+                      if (!response.ok) {
+                        throw new Error('Failed to save notification preferences')
+                      }
+
+                      toast({
+                        title: 'Success',
+                        description: 'Notification preferences saved successfully',
+                      })
+                    } catch (error) {
+                      console.error('Error saving notification preferences:', error)
+                      toast({
+                        title: 'Error',
+                        description: 'Failed to save notification preferences',
+                        variant: 'destructive',
+                      })
+                    } finally {
+                      setSavingNotifications(false)
+                    }
                   }}
+                  disabled={savingNotifications || loadingNotifications}
                 >
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Preferences
+                  {savingNotifications ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Preferences
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
