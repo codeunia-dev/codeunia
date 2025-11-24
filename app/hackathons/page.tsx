@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { useHackathons, useFeaturedHackathons } from "@/hooks/useHackathons"
 import { CompanyBadge } from "@/components/companies/CompanyBadge"
 import type { Company } from "@/types/company"
+import { useMasterRegistrations } from "@/hooks/useMasterRegistrations"
+import { CheckCircle } from "lucide-react"
 
 // Hackathon categories for dropdown
 const hackathonCategories = [
@@ -71,6 +73,14 @@ export default function HackathonsPage() {
   // Extract hackathons from the response
   const hackathons = hackathonsData?.hackathons || []
   const isLoading = hackathonsLoading || featuredLoading
+
+  // Fetch user registrations to check registration status
+  const { registrations } = useMasterRegistrations({ activity_type: 'hackathon' })
+
+  // Helper function to check if user is registered for a hackathon
+  const isUserRegistered = (hackathonId: string | number) => {
+    return registrations.some(reg => reg.activity_id === String(hackathonId))
+  }
 
   // Fetch companies for filter
   useEffect(() => {
@@ -790,33 +800,61 @@ export default function HackathonsPage() {
                             <span className="text-sm font-medium">{hackathon.price}</span>
                           </div>
                         </div>
-                        <Button
-                          variant="default"
-                          size="lg"
-                          className="
-                            font-semibold 
-                            px-4 py-2 
-                            text-sm 
-                            rounded-full 
-                            bg-gradient-to-r from-primary to-purple-600 
-                            hover:from-primary/90 hover:to-purple-600/90 
-                            shadow-lg 
-                            transition-transform duration-200 
-                            transform-gpu hover:scale-105 
-                            focus:ring-2 focus:ring-primary/40 
-                            w-full sm:w-fit
-                            text-center
-                            max-w-full
-                          "
-                          asChild
-                        >
-                          <Link
-                            href={`/hackathons/${hackathon.slug}`}
-                            className="flex items-center justify-center whitespace-nowrap"
+                        {isUserRegistered(hackathon.id) ? (
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="
+                              font-semibold 
+                              px-4 py-2 
+                              text-sm 
+                              rounded-full 
+                              border-2 border-green-500 text-green-600 hover:bg-green-50
+                              shadow-lg 
+                              transition-transform duration-200 
+                              transform-gpu hover:scale-105 
+                              w-full sm:w-fit
+                              text-center
+                              max-w-full
+                            "
+                            asChild
                           >
-                            Join Now <ArrowRight className="ml-1 h-4 w-4 flex-shrink-0" />
-                          </Link>
-                        </Button>
+                            <Link
+                              href={`/hackathons/${hackathon.slug}`}
+                              className="flex items-center justify-center whitespace-nowrap"
+                            >
+                              <CheckCircle className="mr-1 h-4 w-4 flex-shrink-0" /> Registered
+                            </Link>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="lg"
+                            className="
+                              font-semibold 
+                              px-4 py-2 
+                              text-sm 
+                              rounded-full 
+                              bg-gradient-to-r from-primary to-purple-600 
+                              hover:from-primary/90 hover:to-purple-600/90 
+                              shadow-lg 
+                              transition-transform duration-200 
+                              transform-gpu hover:scale-105 
+                              focus:ring-2 focus:ring-primary/40 
+                              w-full sm:w-fit
+                              text-center
+                              max-w-full
+                            "
+                            asChild
+                          >
+                            <Link
+                              href={`/hackathons/${hackathon.slug}`}
+                              className="flex items-center justify-center whitespace-nowrap"
+                            >
+                              Join Now <ArrowRight className="ml-1 h-4 w-4 flex-shrink-0" />
+                            </Link>
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -961,16 +999,29 @@ export default function HackathonsPage() {
                     </div>
                     {/* Action Button */}
                     <div className="mt-auto pt-2 flex justify-end">
-                      <Button
-                        variant="default"
-                        size="lg"
-                        className="font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105 focus:ring-2 focus:ring-primary/40"
-                        asChild
-                      >
-                        <Link href={`/hackathons/${hackathon.slug}`}>
-                          Join Now <ArrowRight className="ml-1 h-5 w-5" />
-                        </Link>
-                      </Button>
+                      {isUserRegistered(hackathon.id) ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="font-semibold px-6 py-2 rounded-full text-base border-2 border-green-500 text-green-600 hover:bg-green-50 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105"
+                          asChild
+                        >
+                          <Link href={`/hackathons/${hackathon.slug}`}>
+                            <CheckCircle className="mr-1 h-5 w-5" /> Registered
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105 focus:ring-2 focus:ring-primary/40"
+                          asChild
+                        >
+                          <Link href={`/hackathons/${hackathon.slug}`}>
+                            Join Now <ArrowRight className="ml-1 h-5 w-5" />
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>

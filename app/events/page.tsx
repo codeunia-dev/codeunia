@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 import { useEvents } from "@/hooks/useEvents"
 import { CompanyBadge } from "@/components/companies/CompanyBadge"
 import type { Company } from "@/types/company"
+import { useMasterRegistrations } from "@/hooks/useMasterRegistrations"
+import { CheckCircle } from "lucide-react"
 
 // Event categories for dropdown
 const eventCategories = [
@@ -63,6 +65,9 @@ export default function EventsPage() {
   // const { loading: featuredLoading } = useFeaturedEvents(5)
   const featuredLoading = false
 
+  // Fetch user registrations to check registration status
+  const { registrations } = useMasterRegistrations({ activity_type: 'event' })
+
   // Fetch companies for filter
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -88,6 +93,11 @@ export default function EventsPage() {
   // Extract events from the response
   const events = eventsData?.events || []
   const isLoading = eventsLoading || featuredLoading
+
+  // Helper function to check if user is registered for an event
+  const isUserRegistered = (eventId: string | number) => {
+    return registrations.some(reg => reg.activity_id === String(eventId))
+  }
 
   // Debug logging
   console.log('Events Page Debug:', {
@@ -589,16 +599,29 @@ export default function EventsPage() {
                     </div>
                     {/* Action Button */}
                     <div className="mt-auto pt-2 flex justify-end">
-                      <Button
-                        variant="default"
-                        size="lg"
-                        className="font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105 focus:ring-2 focus:ring-primary/40"
-                        asChild
-                      >
-                        <Link href={`/events/${event.slug}`}>
-                          Join Now <ArrowRight className="ml-1 h-5 w-5" />
-                        </Link>
-                      </Button>
+                      {isUserRegistered(event.id) ? (
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="font-semibold px-6 py-2 rounded-full text-base border-2 border-green-500 text-green-600 hover:bg-green-50 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105"
+                          asChild
+                        >
+                          <Link href={`/events/${event.slug}`}>
+                            <CheckCircle className="mr-1 h-5 w-5" /> Registered
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="default"
+                          size="lg"
+                          className="font-semibold px-6 py-2 rounded-full text-base bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg transition-transform duration-200 transform-gpu hover:scale-105 focus:ring-2 focus:ring-primary/40"
+                          asChild
+                        >
+                          <Link href={`/events/${event.slug}`}>
+                            Join Now <ArrowRight className="ml-1 h-5 w-5" />
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </Card>
