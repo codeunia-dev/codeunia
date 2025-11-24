@@ -5,13 +5,13 @@ import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  Users, 
-  DollarSign, 
-  CheckCircle, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  Users,
+  DollarSign,
+  CheckCircle,
   XCircle,
   ArrowLeft,
   ExternalLink,
@@ -89,11 +89,11 @@ export default function EventPage() {
   const [copied, setCopied] = useState(false)
   const [registering, setRegistering] = useState(false)
 
-  const { 
-    isRegistered, 
-    registration, 
-    loading: statusLoading, 
-    refetch: refetchStatus 
+  const {
+    isRegistered,
+    registration,
+    loading: statusLoading,
+    refetch: refetchStatus
   } = useRegistrationStatus('event', event?.id?.toString() || '')
 
   // Track analytics
@@ -109,11 +109,11 @@ export default function EventPage() {
       try {
         setLoading(true)
         const response = await fetch(`/api/events/${slug}`)
-        
+
         if (!response.ok) {
           throw new Error('Event not found')
         }
-        
+
         const data = await response.json()
         setEvent(data)
       } catch (err) {
@@ -208,9 +208,12 @@ export default function EventPage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'live':
-        return 'bg-green-100 text-green-800 border-green-200'
       case 'published':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0'
+      case 'upcoming':
+        return 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white border-0'
+      case 'ongoing':
+        return 'bg-gradient-to-r from-purple-500 to-violet-600 text-white border-0'
       case 'draft':
         return 'bg-gray-100 text-gray-800 border-gray-200'
       default:
@@ -220,7 +223,7 @@ export default function EventPage() {
 
   const getPaymentBadge = () => {
     if (!event) return null
-    
+
     if (event.payment === 'Required' || event.payment === 'Paid') {
       return (
         <Badge className="bg-purple-100 text-purple-800 border-purple-200">
@@ -229,9 +232,9 @@ export default function EventPage() {
         </Badge>
       )
     }
-    
+
     return (
-      <Badge className="bg-green-100 text-green-800 border-green-200">
+      <Badge className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100 hover:text-green-800">
         <CheckCircle className="h-3 w-3 mr-1" />
         Free Event
       </Badge>
@@ -288,8 +291,8 @@ export default function EventPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <Header />
-      
-      <div className="container mx-auto px-4 py-8">
+
+      <div className="container mx-auto px-4 pt-24 pb-8">
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -298,7 +301,7 @@ export default function EventPage() {
           className="mb-6"
         >
           <Link href="/events">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" className="text-foreground hover:text-primary">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Events
             </Button>
@@ -318,13 +321,13 @@ export default function EventPage() {
                 {/* Background decoration */}
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5"></div>
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/10 to-transparent rounded-full -translate-y-16 translate-x-16"></div>
-                
+
                 <CardHeader className="relative">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-4">
                         <Badge className={`${getStatusColor(event.status)} font-medium`}>
-                          {event.status}
+                          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                         </Badge>
                         {getPaymentBadge()}
                         {event.featured && (
@@ -340,9 +343,9 @@ export default function EventPage() {
                       {event.company ? (
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">Hosted by</span>
-                          <CompanyBadge 
-                            company={event.company} 
-                            size="lg" 
+                          <CompanyBadge
+                            company={event.company}
+                            size="lg"
                             showVerification={true}
                           />
                         </div>
@@ -363,7 +366,7 @@ export default function EventPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="relative">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
@@ -372,15 +375,15 @@ export default function EventPage() {
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Date</p>
-                        <p className="font-semibold">{new Date(event.date).toLocaleDateString('en-US', { 
-                          weekday: 'long', 
-                          year: 'numeric', 
-                          month: 'long', 
-                          day: 'numeric' 
+                        <p className="font-semibold">{new Date(event.date).toLocaleDateString('en-US', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
                         })}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="p-2 rounded-full bg-primary/10">
                         <Clock className="h-5 w-5 text-primary" />
@@ -390,7 +393,7 @@ export default function EventPage() {
                         <p className="font-semibold">{event.time}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="p-2 rounded-full bg-primary/10">
                         <MapPin className="h-5 w-5 text-primary" />
@@ -400,7 +403,7 @@ export default function EventPage() {
                         <p className="font-semibold">{event.location}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="p-2 rounded-full bg-primary/10">
                         <Users className="h-5 w-5 text-primary" />
@@ -435,14 +438,14 @@ export default function EventPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-start gap-4">
-                      <CompanyBadge 
-                        company={event.company} 
-                        size="lg" 
+                      <CompanyBadge
+                        company={event.company}
+                        size="lg"
                         showVerification={true}
                         showName={false}
                       />
                       <div className="flex-1">
-                        <Link 
+                        <Link
                           href={`/companies/${event.company.slug}`}
                           className="text-lg font-semibold hover:text-primary transition-colors"
                         >
@@ -462,7 +465,7 @@ export default function EventPage() {
                             </span>
                           )}
                           {event.company.website && (
-                            <a 
+                            <a
                               href={event.company.website}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -542,7 +545,7 @@ export default function EventPage() {
                         {event.category}
                       </Badge>
                     </div>
-                    
+
                     <div className="p-4 rounded-lg bg-muted/30 border border-muted/50">
                       <h4 className="font-semibold mb-3 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -550,7 +553,7 @@ export default function EventPage() {
                       </h4>
                       <p className="text-muted-foreground font-medium">{event.duration}</p>
                     </div>
-                    
+
                     <div className="p-4 rounded-lg bg-muted/30 border border-muted/50">
                       <h4 className="font-semibold mb-3 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -564,7 +567,7 @@ export default function EventPage() {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="p-4 rounded-lg bg-muted/30 border border-muted/50">
                       <h4 className="font-semibold mb-3 flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-primary"></div>
@@ -664,11 +667,11 @@ export default function EventPage() {
                           </div>
                           <h3 className="font-semibold text-red-800 mb-2">Registration Closed</h3>
                           <p className="text-sm text-muted-foreground">
-                            {event.registered >= event.capacity 
+                            {event.registered >= event.capacity
                               ? 'Event is at full capacity'
                               : event.registration_deadline && new Date(event.registration_deadline) <= new Date()
-                              ? 'Registration deadline has passed'
-                              : 'Registration is not available'
+                                ? 'Registration deadline has passed'
+                                : 'Registration is not available'
                             }
                           </p>
                         </div>
@@ -709,7 +712,7 @@ export default function EventPage() {
                               </div>
                             )}
                           </Button>
-                          
+
                           {event.payment === 'Required' || event.payment === 'Paid' ? (
                             <p className="text-xs text-center text-muted-foreground">
                               Secure payment powered by Razorpay
@@ -734,7 +737,7 @@ export default function EventPage() {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   )

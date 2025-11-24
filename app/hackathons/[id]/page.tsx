@@ -31,7 +31,7 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
   if (!sponsors || sponsors.length === 0) {
     return null;
   }
-  
+
   const shouldAnimate = sponsors.length > 4;
 
   return (
@@ -40,11 +40,11 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
         <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse"></span>
         Our Sponsors
       </h3>
-      
+
       {/* Mobile Animation - Horizontal Scroll */}
       <div className="md:hidden relative w-full overflow-hidden">
         <div className={`flex gap-4 py-2 ${shouldAnimate ? 'animate-scroll' : ''}`}
-             style={{ minWidth: shouldAnimate ? '200%' : undefined }}>
+          style={{ minWidth: shouldAnimate ? '200%' : undefined }}>
           {(shouldAnimate ? [...sponsors, ...sponsors] : sponsors).map((sponsor, idx) => (
             <motion.div
               key={sponsor.name + idx}
@@ -78,12 +78,12 @@ const RotatingSponsorsGrid = ({ sponsors }: { sponsors?: Sponsor[] }) => {
               className="w-full h-[200px] rounded-xl border border-primary/10 bg-background/50 backdrop-blur-sm p-4 flex flex-col items-center justify-center gap-4 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ 
-                duration: 0.5, 
+              transition={{
+                duration: 0.5,
                 delay: idx * 0.1,
                 ease: "easeOut"
               }}
-              whileHover={{ 
+              whileHover={{
                 y: -8,
                 scale: 1.02,
                 transition: { duration: 0.2 }
@@ -115,7 +115,7 @@ export default function HackathonDetailPage() {
   const [registering, setRegistering] = useState(false)
   const [checkingRegistration, setCheckingRegistration] = useState(true)
   const params = useParams()
-  
+
   const slug = params?.id as string
 
   // Use custom hook for fetching hackathon
@@ -148,7 +148,7 @@ export default function HackathonDetailPage() {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        
+
         if (!user) {
           setCheckingRegistration(false)
           setIsRegistered(false)
@@ -205,7 +205,7 @@ export default function HackathonDetailPage() {
       setIsRegistered(true)
       setCheckingRegistration(false)
       toast.success('Successfully registered for the hackathon!')
-      
+
       // Force a hard reload to clear any cached state
       window.location.href = window.location.href
     } catch (err) {
@@ -233,7 +233,7 @@ export default function HackathonDetailPage() {
       setIsRegistered(false)
       setCheckingRegistration(false)
       toast.success('Successfully unregistered from the hackathon')
-      
+
       // Force a hard reload to clear any cached state
       window.location.href = window.location.href
     } catch (err) {
@@ -268,11 +268,14 @@ export default function HackathonDetailPage() {
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "upcoming":
+    switch (status.toLowerCase()) {
+      case "live":
+      case "published":
         return "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-      case "ongoing":
+      case "upcoming":
         return "bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+      case "ongoing":
+        return "bg-gradient-to-r from-purple-500 to-violet-600 text-white"
       case "completed":
         return "bg-gradient-to-r from-gray-500 to-slate-600 text-white"
       case "cancelled":
@@ -299,27 +302,27 @@ export default function HackathonDetailPage() {
         </div>
       )
     }
-    
+
     return (
-    <div className="space-y-6">
-      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <Calendar className="h-6 w-6 text-primary" />
-          About the Hackathon
-        </h2>
-        <p className="text-lg leading-relaxed mb-6">{hackathon?.description}</p>
-        <div className="flex flex-wrap gap-2 pt-6 border-t border-primary/10">
+      <div className="space-y-6">
+        <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Calendar className="h-6 w-6 text-primary" />
+            About the Hackathon
+          </h2>
+          <p className="text-lg leading-relaxed mb-6">{hackathon?.description}</p>
+          <div className="flex flex-wrap gap-2 pt-6 border-t border-primary/10">
             {hackathon?.tags?.map((tag: string) => (
-            <Badge key={tag} variant="outline" className="text-sm bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
-              #{tag}
-            </Badge>
-          ))}
+              <Badge key={tag} variant="outline" className="text-sm bg-background/50 backdrop-blur-sm border-primary/20 hover:bg-primary/10 transition-colors">
+                #{tag}
+              </Badge>
+            ))}
+          </div>
         </div>
+        {/* Sponsors Grid */}
+        <RotatingSponsorsGrid sponsors={hackathon?.sponsors} />
       </div>
-      {/* Sponsors Grid */}
-      <RotatingSponsorsGrid sponsors={hackathon?.sponsors} />
-    </div>
-  )
+    )
   }
 
   const renderRules = () => {
@@ -337,7 +340,7 @@ export default function HackathonDetailPage() {
         </div>
       )
     }
-    
+
     let rulesArray: string[] = [];
     if (Array.isArray(hackathon?.rules)) {
       rulesArray = hackathon.rules;
@@ -361,50 +364,50 @@ export default function HackathonDetailPage() {
         </div>
       );
     }
-    
+
     return (
-    <div className="space-y-6">
-      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <svg className="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Hackathon Rules & Guidelines
-        </h2>
-        <div className="mb-6">
-          <p className="text-muted-foreground mb-4">
-            To ensure a fair and enjoyable experience for all participants, please follow these rules and guidelines:
-          </p>
-        </div>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h3 className="font-semibold mb-3 text-primary">General Rules</h3>
-            <ul className="list-disc pl-5 space-y-2 text-sm">
-              {rulesArray.slice(0, Math.ceil(rulesArray.length / 2)).map((rule, index) => (
-                <li key={index} className="text-muted-foreground">{rule}</li>
-              ))}
+      <div className="space-y-6">
+        <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <svg className="h-6 w-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Hackathon Rules & Guidelines
+          </h2>
+          <div className="mb-6">
+            <p className="text-muted-foreground mb-4">
+              To ensure a fair and enjoyable experience for all participants, please follow these rules and guidelines:
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold mb-3 text-primary">General Rules</h3>
+              <ul className="list-disc pl-5 space-y-2 text-sm">
+                {rulesArray.slice(0, Math.ceil(rulesArray.length / 2)).map((rule, index) => (
+                  <li key={index} className="text-muted-foreground">{rule}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-3 text-primary">Additional Guidelines</h3>
+              <ul className="list-disc pl-5 space-y-2 text-sm">
+                {rulesArray.slice(Math.ceil(rulesArray.length / 2)).map((rule, index) => (
+                  <li key={index} className="text-muted-foreground">{rule}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="mt-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+            <h3 className="font-semibold mb-2 text-yellow-600">⚠️ Important Reminders:</h3>
+            <ul className="text-sm text-muted-foreground space-y-1">
+              <li>• Violation of rules may result in disqualification</li>
+              <li>• Questions about rules should be asked before the event starts</li>
+              <li>• Organizers reserve the right to modify rules if necessary</li>
             </ul>
           </div>
-          <div>
-            <h3 className="font-semibold mb-3 text-primary">Additional Guidelines</h3>
-            <ul className="list-disc pl-5 space-y-2 text-sm">
-              {rulesArray.slice(Math.ceil(rulesArray.length / 2)).map((rule, index) => (
-                <li key={index} className="text-muted-foreground">{rule}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div className="mt-6 p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-          <h3 className="font-semibold mb-2 text-yellow-600">⚠️ Important Reminders:</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Violation of rules may result in disqualification</li>
-            <li>• Questions about rules should be asked before the event starts</li>
-            <li>• Organizers reserve the right to modify rules if necessary</li>
-          </ul>
         </div>
       </div>
-    </div>
-  )
+    )
   }
 
   const renderSchedule = () => {
@@ -422,7 +425,7 @@ export default function HackathonDetailPage() {
         </div>
       )
     }
-    
+
     let scheduleArray: { date: string, label: string }[] = [];
     if (Array.isArray(hackathon?.schedule)) {
       scheduleArray = hackathon.schedule;
@@ -495,10 +498,10 @@ export default function HackathonDetailPage() {
         </div>
       )
     }
-    
+
     const prizeAmount = hackathon?.prize || hackathon?.price || "";
     const prizeDetails = hackathon?.prize_details || "";
-    
+
     // If no prize information is provided at all
     if (!prizeAmount && !prizeDetails) {
       return (
@@ -513,31 +516,31 @@ export default function HackathonDetailPage() {
         </div>
       );
     }
-    
+
     return (
-    <div className="space-y-6">
-      <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
-        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <DollarSign className="h-6 w-6 text-primary" />
-          Prizes & Rewards
-        </h2>
-        
-        {/* Main Prize */}
-        <div className="text-center mb-8 p-6 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
-          {prizeAmount && (
-            <div className="text-4xl font-bold text-primary mb-2">{prizeAmount}</div>
-          )}
-          {prizeDetails ? (
-            <div className="text-muted-foreground text-left mt-4 whitespace-pre-line">
-              {prizeDetails}
-            </div>
-          ) : prizeAmount && (
-            <p className="text-muted-foreground mt-2">Detailed prize breakdown coming soon!</p>
-          )}
+      <div className="space-y-6">
+        <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <DollarSign className="h-6 w-6 text-primary" />
+            Prizes & Rewards
+          </h2>
+
+          {/* Main Prize */}
+          <div className="text-center mb-8 p-6 bg-gradient-to-r from-primary/10 to-purple-500/10 rounded-xl border border-primary/20">
+            {prizeAmount && (
+              <div className="text-4xl font-bold text-primary mb-2">{prizeAmount}</div>
+            )}
+            {prizeDetails ? (
+              <div className="text-muted-foreground text-left mt-4 whitespace-pre-line">
+                {prizeDetails}
+              </div>
+            ) : prizeAmount && (
+              <p className="text-muted-foreground mt-2">Detailed prize breakdown coming soon!</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  )
+    )
   }
 
   const renderFAQ = () => {
@@ -556,7 +559,7 @@ export default function HackathonDetailPage() {
         </div>
       )
     }
-    
+
     let faqArray: { question: string, answer: string }[] = [];
     if (Array.isArray(hackathon?.faq)) {
       faqArray = hackathon.faq;
@@ -578,7 +581,7 @@ export default function HackathonDetailPage() {
         </div>
       );
     }
-    
+
     return (
       <div className="space-y-6">
         <div className="bg-background/50 backdrop-blur-sm p-8 rounded-2xl border border-primary/10 shadow-xl">
@@ -602,7 +605,7 @@ export default function HackathonDetailPage() {
               </div>
             ))}
           </div>
-          
+
           <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10">
             <h3 className="font-semibold mb-2 text-primary">Still have questions?</h3>
             <p className="text-sm text-muted-foreground mb-3">
@@ -641,7 +644,7 @@ export default function HackathonDetailPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
-        <motion.div 
+        <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -706,7 +709,7 @@ export default function HackathonDetailPage() {
                 {/* Hackathon Header */}
                 <div className="space-y-4">
                   <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">{hackathon?.title}</h1>
-                  
+
                   {/* Hosted by Section */}
                   {hackathon?.company ? (
                     <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border border-primary/10">
@@ -714,9 +717,9 @@ export default function HackathonDetailPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm text-muted-foreground">Hosted by</span>
                         <Link href={`/companies/${hackathon.company.slug}`} className="hover:opacity-80 transition-opacity">
-                          <CompanyBadge 
-                            company={hackathon.company} 
-                            size="md" 
+                          <CompanyBadge
+                            company={hackathon.company}
+                            size="md"
                             showVerification={true}
                           />
                         </Link>
@@ -725,12 +728,12 @@ export default function HackathonDetailPage() {
                   ) : hackathon?.organizer && (
                     <div className="text-base md:text-lg text-muted-foreground font-bold mt-1">by {hackathon.organizer}</div>
                   )}
-                  
+
                   <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">{hackathon?.excerpt}</p>
                   <div className="flex items-center gap-3 flex-wrap mt-2">
                     <Badge className={`${getCategoryColor(hackathon?.category || '')} shadow-lg`} variant="secondary">{hackathon?.category}</Badge>
                     {hackathon?.featured && (<Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg"><Star className="h-3 w-3 mr-1" />Featured</Badge>)}
-                    <Badge className={`${getStatusColor(hackathon?.status || '')} shadow-lg`} variant="secondary">{hackathon?.status}</Badge>
+                    <Badge className={`${getStatusColor(hackathon?.status || '')} shadow-lg`} variant="secondary">{hackathon?.status ? hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1) : ''}</Badge>
                   </div>
                 </div>
                 {/* Registration Card (mobile only) */}
@@ -751,7 +754,7 @@ export default function HackathonDetailPage() {
                       )}
                       {isAuthenticated ? (
                         isRegistered ? (
-                          <Button 
+                          <Button
                             variant="outline"
                             onClick={handleUnregister}
                             disabled={registering}
@@ -760,7 +763,7 @@ export default function HackathonDetailPage() {
                             {registering ? 'Processing...' : 'Unregister'}
                           </Button>
                         ) : (
-                          <Button 
+                          <Button
                             onClick={handleRegister}
                             disabled={registering || checkingRegistration}
                             className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2"
@@ -837,7 +840,7 @@ export default function HackathonDetailPage() {
                       )}
                       {isAuthenticated ? (
                         isRegistered ? (
-                          <Button 
+                          <Button
                             variant="outline"
                             onClick={handleUnregister}
                             disabled={registering}
@@ -846,7 +849,7 @@ export default function HackathonDetailPage() {
                             {registering ? 'Processing...' : 'Unregister'}
                           </Button>
                         ) : (
-                          <Button 
+                          <Button
                             onClick={handleRegister}
                             disabled={registering || checkingRegistration}
                             className="w-full bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg mt-2"
@@ -877,9 +880,9 @@ export default function HackathonDetailPage() {
                       {hackathon?.team_size ? (
                         Array.isArray(hackathon.team_size) && hackathon.team_size.length === 2
                           ? `${hackathon.team_size[0]}-${hackathon.team_size[1]} members`
-                          : typeof hackathon.team_size === 'object' && hackathon.team_size.min && hackathon.team_size.max 
+                          : typeof hackathon.team_size === 'object' && hackathon.team_size.min && hackathon.team_size.max
                             ? `${hackathon.team_size.min}-${hackathon.team_size.max} members`
-                            : typeof hackathon.team_size === 'number' 
+                            : typeof hackathon.team_size === 'number'
                               ? `${hackathon.team_size} member${hackathon.team_size > 1 ? 's' : ''}`
                               : hackathon.team_size
                       ) : '-'}
@@ -906,44 +909,44 @@ export default function HackathonDetailPage() {
                 <div className="bg-white dark:bg-background border border-primary/10 rounded-xl shadow-md p-6">
                   <div className="text-lg font-semibold mb-2">Need Help?</div>
                   <div className="text-sm text-muted-foreground mb-2">Have questions about this hackathon? Contact the organizers or check the FAQ section.</div>
-                  
+
                   {/* Social Icons Row */}
                   {hackathon?.socials && Object.keys(hackathon.socials).length > 0 && (
                     <div className="flex flex-wrap justify-center gap-3 mb-4">
                       {hackathon.socials.linkedin && (
                         <a href={hackathon.socials.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="rounded-full bg-blue-100 dark:bg-blue-900/30 p-3 hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M8 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><circle cx="8" cy="8" r="1" fill="currentColor"/><path d="M12 16v-3a2 2 0 0 1 4 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="4" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M8 11v5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="8" cy="8" r="1" fill="currentColor" /><path d="M12 16v-3a2 2 0 0 1 4 0v3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
                         </a>
                       )}
                       {hackathon.socials.twitter && (
                         <a href={hackathon.socials.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter/X" className="rounded-full bg-slate-100 dark:bg-slate-900/30 p-3 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                         </a>
                       )}
                       {hackathon.socials.discord && (
                         <a href={hackathon.socials.discord} target="_blank" rel="noopener noreferrer" aria-label="Discord" className="rounded-full bg-indigo-100 dark:bg-indigo-900/30 p-3 hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                          <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" /></svg>
                         </a>
                       )}
                       {hackathon.socials.website && (
                         <a href={hackathon.socials.website} target="_blank" rel="noopener noreferrer" aria-label="Website" className="rounded-full bg-gray-100 dark:bg-gray-900/30 p-3 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path strokeWidth="2" d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                         </a>
                       )}
                       {hackathon.socials.whatsapp && (
                         <a href={hackathon.socials.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="rounded-full bg-green-100 dark:bg-green-900/30 p-3 hover:bg-green-200 dark:hover:bg-green-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 1.85.504 3.59 1.38 5.08L2 22l5.09-1.36A9.953 9.953 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2Zm0 18a7.95 7.95 0 0 1-4.09-1.13l-.29-.17-3.02.8.81-2.95-.19-.3A7.96 7.96 0 1 1 20 12c0 4.411-3.589 8-8 8Zm4.29-5.38c-.22-.11-1.3-.64-1.5-.71-.2-.07-.35-.11-.5.11-.15.22-.57.71-.7.86-.13.15-.26.16-.48.05-.22-.11-.93-.34-1.77-1.09-.66-.59-1.1-1.31-1.23-1.53-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.07-.11-.5-1.21-.68-1.66-.18-.44-.36-.38-.5-.39-.13-.01-.28-.01-.43-.01-.15 0-.39.06-.6.28-.21.22-.8.78-.8 1.9 0 1.12.82 2.2.93 2.35.11.15 1.62 2.48 3.93 3.38.55.19.98.3 1.31.38.55.14 1.05.12 1.44.07.44-.07 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.42-.25Z"/></svg>
+                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12c0 1.85.504 3.59 1.38 5.08L2 22l5.09-1.36A9.953 9.953 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2Zm0 18a7.95 7.95 0 0 1-4.09-1.13l-.29-.17-3.02.8.81-2.95-.19-.3A7.96 7.96 0 1 1 20 12c0 4.411-3.589 8-8 8Zm4.29-5.38c-.22-.11-1.3-.64-1.5-.71-.2-.07-.35-.11-.5.11-.15.22-.57.71-.7.86-.13.15-.26.16-.48.05-.22-.11-.93-.34-1.77-1.09-.66-.59-1.1-1.31-1.23-1.53-.13-.22-.01-.34.1-.45.1-.1.22-.26.33-.39.11-.13.15-.22.22-.37.07-.15.04-.28-.02-.39-.07-.11-.5-1.21-.68-1.66-.18-.44-.36-.38-.5-.39-.13-.01-.28-.01-.43-.01-.15 0-.39.06-.6.28-.21.22-.8.78-.8 1.9 0 1.12.82 2.2.93 2.35.11.15 1.62 2.48 3.93 3.38.55.19.98.3 1.31.38.55.14 1.05.12 1.44.07.44-.07 1.3-.53 1.48-1.04.18-.51.18-.95.13-1.04-.05-.09-.2-.14-.42-.25Z" /></svg>
                         </a>
                       )}
                       {hackathon.socials.instagram && (
                         <a href={hackathon.socials.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="rounded-full bg-pink-100 dark:bg-pink-900/30 p-3 hover:bg-pink-200 dark:hover:bg-pink-800 transition-colors shadow">
-                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/></svg>
+                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="5" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="2" /><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" /></svg>
                         </a>
                       )}
                     </div>
                   )}
-                  
-                  <Button 
+
+                  <Button
                     className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold rounded-xl py-3 px-4 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 border-0 group relative overflow-hidden"
                     onClick={() => {
                       const phoneNumber = hackathon?.organizer_contact?.phone || '+91 86990 25107';
@@ -978,8 +981,8 @@ export default function HackathonDetailPage() {
           </div>
         </div>
       </div>
-      
-      <Footer/>
+
+      <Footer />
     </div>
   )
 }
