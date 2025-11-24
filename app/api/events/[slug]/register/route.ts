@@ -125,9 +125,17 @@ export async function POST(
       const { sendEventRegistrationEmails } = await import('@/lib/email/event-emails');
 
       // Get company email if available
-      const companyEmail = Array.isArray(event.companies) && event.companies.length > 0
-        ? event.companies[0]?.email
-        : undefined;
+      console.log('Event companies data:', event.companies);
+
+      let companyEmail: string | undefined;
+
+      if (Array.isArray(event.companies)) {
+        companyEmail = event.companies[0]?.email;
+      } else if (event.companies && typeof event.companies === 'object') {
+        companyEmail = (event.companies as { email?: string }).email;
+      }
+
+      console.log('Extracted company email:', companyEmail);
 
       await sendEventRegistrationEmails({
         userEmail: user.email!,
