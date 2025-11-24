@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Building2, Users, ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
+import { CardSpotlight } from "@/components/ui/card-spotlight"
 
 const features = [
     {
@@ -76,29 +77,43 @@ export function OrganizationsSection() {
                             transition={{ duration: 0.6, delay: index * 0.1 }}
                             viewport={{ once: true }}
                             whileHover={{ y: -8, transition: { duration: 0.3 } }}
-                            className="relative"
                         >
-                            <div className="h-full bg-background/50 backdrop-blur-sm border border-primary/10 rounded-2xl p-8 space-y-6 hover:border-primary/20 transition-all duration-300 hover:shadow-lg group">
-                                <motion.div
-                                    className={cn(
-                                        "w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg",
-                                        `bg-gradient-to-br ${feature.gradient}`
-                                    )}
-                                    whileHover={{
-                                        rotate: [0, -10, 10, 0],
-                                        transition: { duration: 0.5 },
-                                    }}
-                                >
-                                    <feature.icon className="h-8 w-8 text-white" />
-                                </motion.div>
+                            <CardSpotlight
+                                className="relative h-full bg-white/50 dark:bg-background/50 backdrop-blur-md border border-primary/10 overflow-hidden rounded-2xl"
+                                color="rgba(99, 102, 241, 0.15)"
+                            >
+                                <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.7)_0%,_rgba(255,255,255,0)_60%)] dark:bg-none" />
 
-                                <div className="space-y-3">
-                                    <h3 className="text-2xl font-bold">{feature.title}</h3>
-                                    <p className="text-muted-foreground leading-relaxed">
+                                <div className="relative z-10 space-y-4">
+                                    <div className="flex items-start space-x-4">
+                                        <motion.div
+                                            className={cn(
+                                                "w-14 h-14 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden flex-shrink-0",
+                                                `bg-gradient-to-br ${feature.gradient}`
+                                            )}
+                                            whileHover={{
+                                                rotate: [0, -10, 10, 0],
+                                                transition: { duration: 0.5 },
+                                            }}
+                                        >
+                                            <feature.icon className="h-7 w-7 text-white relative z-10" />
+                                            <motion.div
+                                                className="absolute inset-0 bg-white/20"
+                                                initial={{ scale: 0, opacity: 0 }}
+                                                whileHover={{
+                                                    scale: 1,
+                                                    opacity: 1,
+                                                    transition: { duration: 0.3 },
+                                                }}
+                                            />
+                                        </motion.div>
+                                        <h3 className="text-xl font-bold text-zinc-900 dark:text-white pt-1">{feature.title}</h3>
+                                    </div>
+                                    <p className="text-zinc-800 dark:text-foreground/80 leading-relaxed text-sm">
                                         {feature.description}
                                     </p>
                                 </div>
-                            </div>
+                            </CardSpotlight>
                         </motion.div>
                     ))}
                 </div>
@@ -137,6 +152,6 @@ export function OrganizationsSection() {
                     </p>
                 </motion.div>
             </div>
-        </section>
+        </section >
     )
 }
