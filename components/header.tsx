@@ -68,6 +68,7 @@ export default function Header() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
+    { href: "/companies", label: "Companies" },
     { href: "/opportunities", label: "Opportunities" },
     { href: "/zenith-hall", label: "Zenith Hall" },
     { href: "/blog", label: "Blog" },
@@ -93,15 +94,15 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 className={`text-sm font-medium transition-colors relative group ${isActive(item.href)
-                    ? "text-primary"
-                    : "text-foreground hover:text-primary"
+                  ? "text-primary"
+                  : "text-foreground hover:text-primary"
                   }`}
               >
                 {item.label}
                 <span
                   className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${isActive(item.href)
-                      ? "w-full"
-                      : "w-0 group-hover:w-full"
+                    ? "w-full"
+                    : "w-0 group-hover:w-full"
                     }`}
                 ></span>
               </Link>
@@ -189,8 +190,8 @@ export default function Header() {
                       key={item.href}
                       href={item.href}
                       className={`block text-sm font-medium transition-colors py-2.5 px-3 rounded-md relative ${isActive(item.href)
-                          ? "text-primary font-semibold bg-primary/10"
-                          : "text-foreground hover:text-primary hover:bg-muted/50"
+                        ? "text-primary font-semibold bg-primary/10"
+                        : "text-foreground hover:text-primary hover:bg-muted/50"
                         }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
