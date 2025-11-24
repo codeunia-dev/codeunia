@@ -13,7 +13,7 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    
+
     // Check environment variables before creating Supabase client
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       return NextResponse.json(
@@ -21,7 +21,7 @@ export async function POST(
         { status: 503 }
       );
     }
-    
+
     let supabase;
     try {
       supabase = await createClient();
@@ -31,10 +31,10 @@ export async function POST(
         { status: 503 }
       );
     }
-    
+
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -45,7 +45,7 @@ export async function POST(
     // Get the event by slug
     const { data: event, error: eventError } = await supabase
       .from('events')
-      .select('id, title, capacity, registered, registration_required, price, payment')
+      .select('id, title, slug, capacity, registered, registration_required, price, payment, date, time, location, organizer, company_id, companies(email)')
       .eq('slug', slug)
       .single();
 
@@ -105,7 +105,7 @@ export async function POST(
     // Update event registration count
     await supabase
       .from('events')
-      .update({ 
+      .update({
         registered: event.registered + 1,
         updated_at: new Date().toISOString()
       })
@@ -118,6 +118,36 @@ export async function POST(
     } catch (error) {
       console.error('Error tracking registration in analytics:', error);
       // Don't fail the registration if analytics tracking fails
+    }
+
+    // Send confirmation emails
+    try {
+      const { sendEventRegistrationEmails } = await import('@/lib/email/event-emails');
+
+      // Get company email if available
+      const companyEmail = Array.isArray(event.companies) && event.companies.length > 0
+        ? event.companies[0]?.email
+        : undefined;
+
+      await sendEventRegistrationEmails({
+        userEmail: user.email!,
+        userName: user.user_metadata?.full_name || user.email!,
+        event: {
+          title: event.title,
+          date: event.date,
+          time: event.time,
+          location: event.location,
+          slug: event.slug,
+          organizer: event.organizer,
+          capacity: event.capacity,
+          registered: event.registered + 1,
+          organizerEmail: companyEmail
+        },
+        registrationId: registration.id.toString()
+      });
+    } catch (emailError) {
+      console.error('Error sending registration emails:', emailError);
+      // Don't fail the registration if email sending fails
     }
 
     return NextResponse.json({
@@ -142,7 +172,7 @@ export async function DELETE(
 ) {
   try {
     const { slug } = await params;
-    
+
     // Check environment variables before creating Supabase client
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       return NextResponse.json(
@@ -150,7 +180,7 @@ export async function DELETE(
         { status: 503 }
       );
     }
-    
+
     let supabase;
     try {
       supabase = await createClient();
@@ -160,10 +190,10 @@ export async function DELETE(
         { status: 503 }
       );
     }
-    
+
     // Get the current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Authentication required' },
@@ -195,7 +225,7 @@ export async function DELETE(
     // Update event registration count
     await supabase
       .from('events')
-      .update({ 
+      .update({
         registered: Math.max(0, event.registered - 1),
         updated_at: new Date().toISOString()
       })
