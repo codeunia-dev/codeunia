@@ -179,6 +179,14 @@ const nextConfig: NextConfig = {
             key: 'X-Build-ID',
             value: buildId,
           },
+          {
+            key: 'Cross-Origin-Resource-Policy',
+            value: 'cross-origin',
+          },
+          {
+            key: 'Cross-Origin-Embedder-Policy',
+            value: 'unsafe-none',
+          },
         ],
       },
 
