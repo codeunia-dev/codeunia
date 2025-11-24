@@ -52,4 +52,6 @@ next-env.d.ts
 !README.md
 !readme.md
 *.sql
+!supabase_snapshot/*.sql
+*.dump
 .env.local

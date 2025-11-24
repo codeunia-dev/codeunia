@@ -1,0 +1,103 @@
+name: Supabase Disaster Recovery Backup
+
+on:
+  # Run daily at 02:00 IST (20:30 UTC previous day)
+  schedule:
+    - cron: '30 20 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install PostgreSQL client tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Verify tools installation
+        run: |
+          psql --version
+          pg_dump --version
+          pg_restore --version
+      
+      - name: Create backup directory
+        run: mkdir -p supabase_snapshot
+      
+      - name: Run backup script
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          chmod +x backup.sh
+          ./backup.sh
+      
+      - name: List backup files
+        run: |
+          echo "Backup files created:"
+          ls -lh supabase_snapshot/
+      
+      - name: Upload backup artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_number }}-${{ github.run_attempt }}
+          path: supabase_snapshot/
+          retention-days: 30
+          compression-level: 9
+      
+      - name: Commit SQL files to repository (optional)
+        if: success()
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # Add only SQL files (exclude large binary dump)
+          git add supabase_snapshot/*.sql || true
+          git add supabase_snapshot/backup_info.txt || true
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update Supabase backup SQL files [skip ci]"
+            git push
+          fi
+      
+      - name: Generate job summary
+        if: always()
+        run: |
+          echo "# Supabase Backup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f supabase_snapshot/backup_info.txt ]; then
+            echo "## Backup Information" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat supabase_snapshot/backup_info.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Backup Files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+          
+          for file in supabase_snapshot/*; do
+            if [ -f "$file" ]; then
+              filename=$(basename "$file")
+              size=$(du -h "$file" | cut -f1)
+              echo "| $filename | $size |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Backup completed successfully!" >> $GITHUB_STEP_SUMMARY
