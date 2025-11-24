@@ -224,11 +224,14 @@ export default function HackathonsPage() {
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "upcoming":
+    switch (status.toLowerCase()) {
+      case "live":
+      case "published":
         return "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-      case "ongoing":
+      case "upcoming":
         return "bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+      case "ongoing":
+        return "bg-gradient-to-r from-purple-500 to-violet-600 text-white"
       case "completed":
         return "bg-gradient-to-r from-gray-500 to-slate-600 text-white"
       case "cancelled":
@@ -750,7 +753,7 @@ export default function HackathonsPage() {
                           Featured
                         </Badge>
                         <Badge className={`${getStatusColor(hackathon.status)} shadow-lg`} variant="secondary">
-                          {hackathon.status}
+                          {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
                         </Badge>
                       </div>
                       <CardDescription className="text-sm leading-relaxed min-h-[48px] max-h-[48px] overflow-hidden line-clamp-2">
@@ -882,7 +885,7 @@ export default function HackathonsPage() {
                     {/* Status Badge */}
                     <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
                       <Badge className={`${getStatusColor(hackathon.status)} shadow-lg text-xs`} variant="secondary">
-                        {hackathon.status}
+                        {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
                       </Badge>
                     </div>
                   </div>

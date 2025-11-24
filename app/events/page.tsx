@@ -1,4 +1,4 @@
-"use client" 
+"use client"
 
 import React, { useState, useEffect, useRef } from "react"
 
@@ -24,7 +24,7 @@ import type { Company } from "@/types/company"
 const eventCategories = [
   "All",
   "Workshop",
-  "Conference", 
+  "Conference",
   "Meetup",
   "Webinar",
   "Training",
@@ -55,7 +55,7 @@ export default function EventsPage() {
     company_industry: selectedIndustry !== "All" ? selectedIndustry : undefined,
     company_size: selectedCompanySize !== "All" ? selectedCompanySize : undefined
   }), [searchTerm, selectedCategory, dateFilter, selectedCompany, selectedIndustry, selectedCompanySize])
-  
+
   // Use custom hooks for data fetching
   const { data: eventsData, loading: eventsLoading, error: eventsError } = useEvents(eventsParams)
 
@@ -71,7 +71,7 @@ export default function EventsPage() {
         if (response.ok) {
           const data = await response.json()
           setCompanies(data.companies || [])
-          
+
           // Extract unique industries from companies
           const uniqueIndustries = Array.from(
             new Set(data.companies.map((c: Company) => c.industry).filter(Boolean))
@@ -88,7 +88,7 @@ export default function EventsPage() {
   // Extract events from the response
   const events = eventsData?.events || []
   const isLoading = eventsLoading || featuredLoading
-  
+
   // Debug logging
   console.log('Events Page Debug:', {
     eventsLoading,
@@ -204,11 +204,14 @@ export default function EventsPage() {
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "upcoming":
+    switch (status.toLowerCase()) {
+      case "live":
+      case "published":
         return "bg-gradient-to-r from-green-500 to-emerald-600 text-white"
-      case "ongoing":
+      case "upcoming":
         return "bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
+      case "ongoing":
+        return "bg-gradient-to-r from-purple-500 to-violet-600 text-white"
       case "completed":
         return "bg-gradient-to-r from-gray-500 to-slate-600 text-white"
       case "cancelled":
@@ -228,7 +231,7 @@ export default function EventsPage() {
   }
 
   console.log('About to check isLoading:', isLoading)
-  
+
   if (isLoading) {
     console.log('Rendering loading spinner')
     return (
@@ -240,103 +243,103 @@ export default function EventsPage() {
       </div>
     )
   }
-  
+
   console.log('Rendering main content with', events.length, 'events')
 
   return (
     <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10">
-       <Header/>
-      
+      <Header />
+
       {/* Hero Section */}
       <section className="py-20 md:py-32 relative overflow-hidden">
-                <div
-                    className={cn(
-                        "absolute inset-0",
-                        "[background-size:20px_20px]",
-                        "[background-image:linear-gradient(to_right,rgba(99,102,241,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.8)_1px,transparent_1px)]",
-                        "dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.8)_1px,transparent_1px)]"
-                    )}
-                />
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 animate-gradient"></div>
-                <div className="absolute inset-0">
-                    <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
-                    <div
-                        className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
-                        style={{ animationDelay: "2s" }}
-                    ></div>
-                </div>
+        <div
+          className={cn(
+            "absolute inset-0",
+            "[background-size:20px_20px]",
+            "[background-image:linear-gradient(to_right,rgba(99,102,241,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(99,102,241,0.8)_1px,transparent_1px)]",
+            "dark:[background-image:linear-gradient(to_right,rgba(139,92,246,0.8)_1px,transparent_1px),linear-gradient(to_bottom,rgba(139,92,246,0.8)_1px,transparent_1px)]"
+          )}
+        />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-background [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 animate-gradient"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-slow"></div>
+          <div
+            className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"
+            style={{ animationDelay: "2s" }}
+          ></div>
+        </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="container px-4 mx-auto relative z-10"
-                >
-                    <div className="max-w-4xl mx-auto text-center space-y-8">
-                        <motion.div
-                            initial={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <div className="flex flex-col items-center justify-center gap-4">
-                                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
-                                    <span className="absolute inset-0 overflow-hidden rounded-full">
-                                        <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                                    </span>
-                                    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-                                        <span>Events & Conferences </span>
-                                        <span>
-                                            <Sparkles className="w-3 h-3" />
-                                        </span>
-                                    </div>
-                                    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-                                </button>
-                            </div>
-                        </motion.div>
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
-                        >
-                            Learn, Network,{" "}
-                            <motion.span
-                                className="gradient-text inline-block"
-                                animate={{
-                                    backgroundPosition: [
-                                        "0% 50%",
-                                        "100% 50%",
-                                        "0% 50%",
-                                    ],
-                                }}
-                                transition={{
-                                    duration: 4,
-                                    repeat: Infinity,
-                                    ease: "linear",
-                                }}
-                                style={{
-                                    background:
-                                        "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
-                                    backgroundSize: "300% 100%",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                }}
-                            >
-                                Grow
-                            </motion.span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
-                            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
-                        >
-                            Discover amazing events, workshops, and conferences. Connect with industry experts, learn new skills, and expand your professional network!
-                        </motion.p>
-                    </div>
-                </motion.div>
-            </section>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="container px-4 mx-auto relative z-10"
+        >
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex flex-col items-center justify-center gap-4">
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                    <span>Events & Conferences </span>
+                    <span>
+                      <Sparkles className="w-3 h-3" />
+                    </span>
+                  </div>
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
+            >
+              Learn, Network,{" "}
+              <motion.span
+                className="gradient-text inline-block"
+                animate={{
+                  backgroundPosition: [
+                    "0% 50%",
+                    "100% 50%",
+                    "0% 50%",
+                  ],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{
+                  background:
+                    "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4, #6366f1)",
+                  backgroundSize: "300% 100%",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Grow
+              </motion.span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            >
+              Discover amazing events, workshops, and conferences. Connect with industry experts, learn new skills, and expand your professional network!
+            </motion.p>
+          </div>
+        </motion.div>
+      </section>
 
       {/* Search and Filters */}
       <section className="py-8 bg-gradient-to-b from-muted/30 to-background relative border-b border-primary/10">
@@ -434,7 +437,7 @@ export default function EventsPage() {
       {/* All Events */}
       <section className="py-16 bg-gradient-to-b from-muted/30 to-background relative">
         <div className="container px-4 mx-auto">
-          <motion.div 
+          <motion.div
             className="flex items-center justify-between mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -489,7 +492,7 @@ export default function EventsPage() {
                     {/* Status Badge */}
                     <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1">
                       <Badge className={`${getStatusColor(event.status)} shadow-lg text-xs`} variant="secondary">
-                        {event.status}
+                        {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
                       </Badge>
                     </div>
                   </div>
@@ -518,9 +521,9 @@ export default function EventsPage() {
                         {/* Company Badge */}
                         {event.company ? (
                           <div className="mb-2">
-                            <CompanyBadge 
-                              company={event.company} 
-                              size="sm" 
+                            <CompanyBadge
+                              company={event.company}
+                              size="sm"
                               showVerification={true}
                             />
                           </div>
@@ -550,7 +553,7 @@ export default function EventsPage() {
                         {event.registered}/{event.capacity}
                       </div>
                     </div>
-                    
+
                     {/* Payment Information */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1">
@@ -559,13 +562,12 @@ export default function EventsPage() {
                           {event.payment === 'Required' || event.payment === 'Paid' ? event.price : 'Free'}
                         </span>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${
-                          event.payment === 'Required' || event.payment === 'Paid' 
-                            ? 'border-green-200 text-green-700 bg-green-50' 
-                            : 'border-blue-200 text-blue-700 bg-blue-50'
-                        }`}
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${event.payment === 'Required' || event.payment === 'Paid'
+                          ? 'border-green-200 text-green-700 bg-green-50'
+                          : 'border-blue-200 text-blue-700 bg-blue-50'
+                          }`}
                       >
                         {event.payment === 'Required' || event.payment === 'Paid' ? 'Paid' : 'Free'}
                       </Badge>
@@ -605,7 +607,7 @@ export default function EventsPage() {
           </div>
 
           {eventsError && (
-            <motion.div 
+            <motion.div
               className="text-center py-20"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -629,7 +631,7 @@ export default function EventsPage() {
           )}
 
           {!eventsError && regularEvents.length === 0 && (
-            <motion.div 
+            <motion.div
               className="text-center py-20"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -660,7 +662,7 @@ export default function EventsPage() {
         </div>
       </section>
 
-      <Footer/>
+      <Footer />
     </div>
   )
 }
