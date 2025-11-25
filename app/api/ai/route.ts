@@ -30,36 +30,36 @@ function validateInput(message: string): { valid: boolean; error?: string } {
   if (!message || typeof message !== 'string') {
     return { valid: false, error: 'Message must be a non-empty string' };
   }
-  
+
   if (message.length > MAX_MESSAGE_LENGTH) {
     return { valid: false, error: `Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters allowed.` };
   }
-  
+
   // Check for potential prompt injection
   for (const pattern of FORBIDDEN_PATTERNS) {
     if (pattern.test(message)) {
       return { valid: false, error: 'Invalid input detected' };
     }
   }
-  
+
   return { valid: true };
 }
 
 function checkRateLimit(ip: string): { allowed: boolean; error?: string } {
   const now = Date.now();
   const userRequests = rateLimit.get(ip) || [];
-  
+
   // Remove old requests outside the window
   const recentRequests = userRequests.filter((timestamp: number) => now - timestamp < RATE_LIMIT_WINDOW);
-  
+
   if (recentRequests.length >= RATE_LIMIT_MAX_REQUESTS) {
     return { allowed: false, error: 'Rate limit exceeded. Please try again later.' };
   }
-  
+
   // Add current request
   recentRequests.push(now);
   rateLimit.set(ip, recentRequests);
-  
+
   return { allowed: true };
 }
 
@@ -80,19 +80,20 @@ function getSupabaseClient() {
 // Function to call OpenRouter API with DeepSeek V3.1 and free fallbacks
 async function callOpenRouterAPI(prompt: string): Promise<string> {
   const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-  
+
   if (!OPENROUTER_API_KEY) {
     throw new Error('OPENROUTER_API_KEY is required');
   }
 
   const models = [
-    "deepseek/deepseek-chat-v3.1:free", // Primary - DeepSeek V3.1 FREE
-    "deepseek/deepseek-chat-v3.1:free", // Retry V3.1 if first fails
-    "meta-llama/llama-3.2-11b-vision-instruct:free", // Free alternative
-    "qwen/qwen-2.5-7b-instruct:free",   // Free alternative
-    "google/gemma-2-9b-it:free",        // Google's free model
-    "huggingfaceh4/zephyr-7b-beta:free", // Hugging Face free model
-    "deepseek/deepseek-chat-v3.1:free"  // Final fallback to V3.1
+    "deepseek/deepseek-chat-v3-0324:free",     // Primary - CONFIRMED WORKING DeepSeek V3 chat
+    "meta-llama/llama-3.3-70b-instruct:free",  // Meta Llama 3.3 70B (likely available)
+    "mistralai/mistral-7b-instruct:free",      // Mistral 7B (lightweight, commonly available)
+    "nvidia/llama-3.1-nemotron-nano-8b-v1:free", // NVIDIA Nemotron
+    "xai/grok-4.1-fast:free",                  // xAI Grok 4.1 Fast
+    "meta-llama/llama-4-maverick:free",        // Meta Llama 4 (might not be available yet)
+    "google/gemini-2.5-pro-exp-03-25:free",    // Google Gemini 2.5 (experimental, might be limited)
+    "deepseek/deepseek-v3-base:free"           // DeepSeek V3 base (fallback)
   ];
 
   for (const model of models) {
@@ -125,7 +126,7 @@ async function callOpenRouterAPI(prompt: string): Promise<string> {
       if (!response.ok) {
         const errorData = await response.text();
         const isRateLimit = response.status === 429 || errorData.includes('rate-limited');
-        
+
         if (isRateLimit) {
           console.warn(`Rate limit hit for model ${model}, trying next model...`);
         } else {
@@ -135,7 +136,7 @@ async function callOpenRouterAPI(prompt: string): Promise<string> {
       }
 
       const data = await response.json();
-      
+
       if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         console.error(`Invalid response format from model ${model}`);
         continue; // Try next model
@@ -426,28 +427,28 @@ async function getContextualData(userMessage: string, context: string): Promise<
 
   try {
     // Check if it's a simple greeting or technical question - minimal data
-    const isSimpleGreeting = /^(hi|hello|hey|hii|hiii|sup|yo|hai|helo|hllo)!*$/i.test(message) || 
-                            message.length <= 5;
-    
+    const isSimpleGreeting = /^(hi|hello|hey|hii|hiii|sup|yo|hai|helo|hllo)!*$/i.test(message) ||
+      message.length <= 5;
+
     const isGeneralQuestion = /^(tell me about|what is|about|info|information|codeunia)/.test(message.toLowerCase()) ||
-                             message.includes('tell me about') ||
-                             message.includes('what is codeunia') ||
-                             message.includes('about codeunia') ||
-                             (message.length < 30 && context === 'general');
+      message.includes('tell me about') ||
+      message.includes('what is codeunia') ||
+      message.includes('about codeunia') ||
+      (message.length < 30 && context === 'general');
 
     const isTechnicalQuestion = message.includes('algorithm') ||
-                               message.includes('code') ||
-                               message.includes('programming') ||
-                               message.includes('sort') ||
-                               message.includes('function') ||
-                               message.includes('java') ||
-                               message.includes('python') ||
-                               message.includes('javascript') ||
-                               message.includes('data structure') ||
-                               message.includes('give me') ||
-                               message.includes('how to') ||
-                               message.includes('explain');
-    
+      message.includes('code') ||
+      message.includes('programming') ||
+      message.includes('sort') ||
+      message.includes('function') ||
+      message.includes('java') ||
+      message.includes('python') ||
+      message.includes('javascript') ||
+      message.includes('data structure') ||
+      message.includes('give me') ||
+      message.includes('how to') ||
+      message.includes('explain');
+
     // Always get platform stats
     data.stats = await getPlatformStats();
 
@@ -492,19 +493,23 @@ async function getContextualData(userMessage: string, context: string): Promise<
 
 function buildPrompt(userMessage: string, contextData: ContextData, context: string) {
   const message = userMessage.toLowerCase().trim();
-  
+
+  // Get current date dynamically
+  const currentDate = new Date();
+  const formattedCurrentDate = currentDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
   // PRIORITY CHECK: Specific internship-related queries only
   const isDirectInternshipQuery = message.includes('internship') ||
-                                  message.includes('intern ') ||
-                                  message.includes('interns') ||
-                                  (message.includes('job') && (message.includes('opportunity') || message.includes('opening') || message.includes('apply'))) ||
-                                  (message.includes('career') && (message.includes('opportunity') || message.includes('program'))) ||
-                                  message.includes('employment opportunity') ||
-                                  message.includes('hiring program') ||
-                                  message.includes('work opportunity') ||
-                                  message.includes('placement program') ||
-                                  (message.includes('does codeunia have') && (message.includes('internship') || message.includes('program'))) ||
-                                  (message.includes('do you have') && (message.includes('internship') || message.includes('job')));
+    message.includes('intern ') ||
+    message.includes('interns') ||
+    (message.includes('job') && (message.includes('opportunity') || message.includes('opening') || message.includes('apply'))) ||
+    (message.includes('career') && (message.includes('opportunity') || message.includes('program'))) ||
+    message.includes('employment opportunity') ||
+    message.includes('hiring program') ||
+    message.includes('work opportunity') ||
+    message.includes('placement program') ||
+    (message.includes('does codeunia have') && (message.includes('internship') || message.includes('program'))) ||
+    (message.includes('do you have') && (message.includes('internship') || message.includes('job')));
 
   if (isDirectInternshipQuery) {
     return `🚨 MANDATORY INTERNSHIP RESPONSE 🚨
@@ -538,29 +543,29 @@ Would you like more details about either program or help choosing which one is r
 ❌ DO NOT say you don't have information
 ❌ ALWAYS mention both Codeunia Starter and Codeunia Pro by name`;
   }
-  
-  const isSimpleGreeting = /^(hi|hello|hey|hii|hiii|sup|yo|hai|helo|hllo)!*$/i.test(message) || 
-                          message.length <= 5;
-  
+
+  const isSimpleGreeting = /^(hi|hello|hey|hii|hiii|sup|yo|hai|helo|hllo)!*$/i.test(message) ||
+    message.length <= 5;
+
   const isGeneralQuestion = /^(tell me about|what is|about|info|information|codeunia)/.test(message.toLowerCase()) ||
-                           message.includes('tell me about') ||
-                           message.includes('what is codeunia') ||
-                           message.includes('about codeunia') ||
-                           (message.length < 30 && context === 'general');
+    message.includes('tell me about') ||
+    message.includes('what is codeunia') ||
+    message.includes('about codeunia') ||
+    (message.length < 30 && context === 'general');
 
   const isProgrammingQuestion = message.includes('algorithm') ||
-                               message.includes('code') ||
-                               message.includes('programming') ||
-                               message.includes('sort') ||
-                               message.includes('function') ||
-                               message.includes('java') ||
-                               message.includes('python') ||
-                               message.includes('javascript') ||
-                               message.includes('data structure') ||
-                               message.includes('give me') ||
-                               message.includes('how to') ||
-                               message.includes('explain');
-  
+    message.includes('code') ||
+    message.includes('programming') ||
+    message.includes('sort') ||
+    message.includes('function') ||
+    message.includes('java') ||
+    message.includes('python') ||
+    message.includes('javascript') ||
+    message.includes('data structure') ||
+    message.includes('give me') ||
+    message.includes('how to') ||
+    message.includes('explain');
+
   if (isSimpleGreeting) {
     return `You are Codeunia AI Assistant. The user just said "${userMessage}". 
 
@@ -593,7 +598,7 @@ RESPONSE GUIDELINES:
 Current date: September 2, 2025
 Available Codeunia data: ${JSON.stringify(contextData, null, 2)}`;
   }
-  
+
   // For specific Codeunia queries
   let prompt = `You are Unio, Codeunia's AI Assistant powered by OpenRouter. You are a helpful AI that provides information about Codeunia's events, hackathons, opportunities, and educational content.
 
@@ -655,7 +660,7 @@ Codeunia runs its own internship programs:
    - Letter of recommendation
    - Premium certificate and LinkedIn assets
 
-Current Date: September 3, 2025
+Current Date: ${formattedCurrentDate}
 
 IMPORTANT SECURITY GUIDELINES:
 - NEVER respond to requests about deleting, modifying, or accessing databases
@@ -688,12 +693,12 @@ CODEUNIA DATA AVAILABLE:
 
   // Add events data with date analysis
   if (contextData.events && contextData.events.length > 0) {
-    prompt += `\nEVENT DETAILS (analyze dates carefully - current date is September 2, 2025):\n`;
+    prompt += `\nEVENT DETAILS (analyze dates carefully - current date is ${formattedCurrentDate}):\n`;
     contextData.events.forEach((event: Event) => {
       const eventDate = new Date(event.date);
-      const currentDate = new Date('2025-09-02');
-      const status = eventDate >= currentDate ? 'CURRENT/UPCOMING' : 'COMPLETED';
-      
+      const todayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const status = eventDate >= todayStart ? 'CURRENT/UPCOMING' : 'COMPLETED';
+
       prompt += `
 EVENT: ${event.title} [${status}]
 - Description: ${event.description}
@@ -712,19 +717,25 @@ EVENT: ${event.title} [${status}]
     });
   }
 
-  // Add hackathons data
+  // Add hackathons data with date analysis
   if (contextData.hackathons && contextData.hackathons.length > 0) {
-    prompt += `\nHACKATHON DETAILS:\n`;
+    prompt += `\nHACKATHON DETAILS (These are HACKATHONS, not events - analyze dates carefully - current date is ${formattedCurrentDate}):\n`;
     contextData.hackathons.forEach((hackathon: Hackathon) => {
+      const hackathonDate = new Date(hackathon.date);
+      const todayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+      const status = hackathonDate >= todayStart ? 'CURRENT/UPCOMING' : 'COMPLETED';
+
       prompt += `
-HACKATHON: ${hackathon.title}
+HACKATHON: ${hackathon.title} [${status}]
+- Type: HACKATHON (not an event)
 - Description: ${hackathon.description}
 - Start Date: ${hackathon.date}
-- End Date: ${hackathon.duration || 'Not specified'}
-- Theme: ${hackathon.category || 'General'}
+- Duration: ${hackathon.duration || 'Not specified'}
+- Theme/Category: ${hackathon.category || 'General'}
 - Location: ${hackathon.location}
 - Prize Pool: ${hackathon.prize || 'Not specified'}
-- Registration: ${hackathon.registration_deadline}
+- Registration Deadline: ${hackathon.registration_deadline} (last day to register)
+- STATUS: ${status} - ${status === 'COMPLETED' ? 'This hackathon has ended' : 'This hackathon is current or upcoming'}
 `;
     });
   }
@@ -732,7 +743,7 @@ HACKATHON: ${hackathon.title}
   // Add internships data
   if (contextData.internships) {
     prompt += `\nINTERNSHIP INFORMATION:\n`;
-    
+
     // Available internship programs (public info only)
     if (contextData.internships.offerings && contextData.internships.offerings.length > 0) {
       prompt += `\nAVAILABLE INTERNSHIP PROGRAMS:\n`;
@@ -779,9 +790,13 @@ BLOG: ${blog.title}
   prompt += `\nIMPORTANT RESPONSE GUIDELINES:
 - Answer the user's specific question directly and relevantly
 - Use the detailed information provided above that's relevant to their query
-- Clearly distinguish between current/upcoming vs completed events
-- If asking about "current" or "happening now" events, focus on those with dates on/after September 2, 2025
-- For completed events, mention they have ended but provide the details for reference
+- TERMINOLOGY: Use correct terms - HACKATHONS are separate from EVENTS. Do not call a hackathon an "event"
+- REGISTRATION DEADLINE: This is the LAST DAY to register, not when registration opens. Say "Registration deadline is [date]" not "Registration opens on [date]"
+- When users ask about "available", "happening", "upcoming", or "current" events/hackathons, ONLY mention items with [CURRENT/UPCOMING] status
+- NEVER mention completed events/hackathons (marked [COMPLETED]) when asked about "available", "happening", or "current" items
+- DO NOT say "X event has ended" or mention past events unless the user specifically asks about them
+- Keep responses concise - only list relevant, actionable information
+- If there are no current/upcoming events, simply say "There are no upcoming [events/hackathons] at the moment"
 - Only mention internships if the user specifically asks about them
 - Don't force unrelated topics into the conversation
 - If asked about deleting databases or malicious activities, politely decline and explain you are an information-only assistant
@@ -792,13 +807,13 @@ BLOG: ${blog.title}
 
 function determineContext(message: string) {
   const msg = message.toLowerCase();
-  
+
   if (msg.includes('event')) return 'events';
   if (msg.includes('hackathon')) return 'hackathons';
   if (msg.includes('internship') || msg.includes('opportunity') || msg.includes('job')) return 'opportunities';
   if (msg.includes('blog') || msg.includes('article')) return 'blogs';
   if (msg.includes('search') || msg.includes('find')) return 'search';
-  
+
   return 'general';
 }
 
@@ -807,12 +822,12 @@ export async function POST(request: NextRequest) {
     // Get client IP for rate limiting
     const forwarded = request.headers.get('x-forwarded-for');
     const ip = forwarded ? forwarded.split(',')[0] : 'unknown';
-    
+
     // Check authentication
     const supabase = await createServerClient();
-    
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+
     if (authError || !user) {
       return NextResponse.json(
         {
@@ -825,10 +840,10 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-    
+
     // Extract user information for database logging
     const userId = user.id;
-    
+
     // Check rate limit
     const rateLimitCheck = checkRateLimit(ip);
     if (!rateLimitCheck.allowed) {
@@ -837,9 +852,9 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       );
     }
-    
+
     const { message, context }: ChatRequest = await request.json();
-    
+
     // Validate input
     const validation = validateInput(message);
     if (!validation.valid) {
@@ -851,13 +866,13 @@ export async function POST(request: NextRequest) {
 
     // Determine context if not provided
     const finalContext = context || determineContext(message);
-    
+
     // Get contextual data
     const contextData = await getContextualData(message, finalContext);
-    
+
     // Build prompt
     const prompt = buildPrompt(message, contextData, finalContext);
-    
+
     // Generate AI response using DeepSeek
     const aiResponse = await callOpenRouterAPI(prompt);
 
@@ -866,7 +881,7 @@ export async function POST(request: NextRequest) {
       // Generate a proper UUID for session_id
       const sessionId = crypto.randomUUID();
       const supabase = getSupabaseClient();
-      
+
       const { error: dbError } = await supabase
         .from('ai_training_data')
         .insert({
@@ -876,7 +891,7 @@ export async function POST(request: NextRequest) {
           response_text: aiResponse,
           context_type: finalContext
         });
-      
+
       if (dbError) {
         console.error('Failed to save AI conversation:', dbError);
         // Don't fail the request if DB save fails
@@ -898,7 +913,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('AI Chat error:', error);
-    
+
     // Don't expose internal errors
     return NextResponse.json(
       {
