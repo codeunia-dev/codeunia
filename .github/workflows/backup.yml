@@ -26,6 +26,10 @@ jobs:
           sudo apt-get update
           # Install PostgreSQL 17 client tools
           sudo apt-get install -y postgresql-client-17
+          # Set up alternatives to use PostgreSQL 17 by default
+          sudo update-alternatives --install /usr/bin/psql psql /usr/lib/postgresql/17/bin/psql 100
+          sudo update-alternatives --install /usr/bin/pg_dump pg_dump /usr/lib/postgresql/17/bin/pg_dump 100
+          sudo update-alternatives --install /usr/bin/pg_restore pg_restore /usr/lib/postgresql/17/bin/pg_restore 100
       
       - name: Verify tools installation
         run: |
@@ -55,6 +59,8 @@ jobs:
           chmod +x backup.sh
           # Explicitly export the environment variable
           export SUPABASE_DB_URL="${SUPABASE_DB_URL}"
+          # Ensure PostgreSQL 17 binaries are in PATH
+          export PATH="/usr/lib/postgresql/17/bin:$PATH"
           ./backup.sh
       
       - name: List backup files
