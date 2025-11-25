@@ -68,13 +68,40 @@ jobs:
           echo "Backup files created:"
           ls -lh supabase_snapshot/
       
-      - name: Upload backup artifacts
+      - name: Encrypt backup files
+        env:
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+        run: |
+          echo "🔒 Encrypting backup files..."
+          
+          # Check if encryption key is set
+          if [ -z "$BACKUP_ENCRYPTION_KEY" ]; then
+            echo "❌ ERROR: BACKUP_ENCRYPTION_KEY is not set!"
+            echo "Please add BACKUP_ENCRYPTION_KEY to your repository secrets."
+            echo "This is required to encrypt backups in a public repository."
+            exit 1
+          fi
+          
+          # Create encrypted archive
+          tar -czf supabase_snapshot.tar.gz supabase_snapshot/
+          
+          # Encrypt using GPG with symmetric encryption
+          echo "$BACKUP_ENCRYPTION_KEY" | gpg --batch --yes --passphrase-fd 0 --symmetric --cipher-algo AES256 -o supabase_snapshot.tar.gz.gpg supabase_snapshot.tar.gz
+          
+          # Remove unencrypted files
+          rm -rf supabase_snapshot/
+          rm supabase_snapshot.tar.gz
+          
+          echo "✅ Backup encrypted successfully"
+          ls -lh supabase_snapshot.tar.gz.gpg
+      
+      - name: Upload encrypted backup artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: supabase-backup-${{ github.run_number }}-${{ github.run_attempt }}
-          path: supabase_snapshot/
+          name: supabase-backup-encrypted-${{ github.run_number }}-${{ github.run_attempt }}
+          path: supabase_snapshot.tar.gz.gpg
           retention-days: 30
-          compression-level: 9
+          compression-level: 0
       
       - name: Generate job summary
         if: always()
@@ -83,27 +110,24 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Date:** $(date)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔒 **Security:** Backup is encrypted with AES256" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [ -f supabase_snapshot/backup_info.txt ]; then
-            echo "## Backup Information" >> $GITHUB_STEP_SUMMARY
-            echo '```' >> $GITHUB_STEP_SUMMARY
-            cat supabase_snapshot/backup_info.txt >> $GITHUB_STEP_SUMMARY
+          if [ -f supabase_snapshot.tar.gz.gpg ]; then
+            echo "## Encrypted Backup File" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|------|" >> $GITHUB_STEP_SUMMARY
+            size=$(du -h supabase_snapshot.tar.gz.gpg | cut -f1)
+            echo "| supabase_snapshot.tar.gz.gpg | $size |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## How to Decrypt" >> $GITHUB_STEP_SUMMARY
+            echo '```bash' >> $GITHUB_STEP_SUMMARY
+            echo "# Download the artifact, then run:" >> $GITHUB_STEP_SUMMARY
+            echo "gpg --decrypt supabase_snapshot.tar.gz.gpg > supabase_snapshot.tar.gz" >> $GITHUB_STEP_SUMMARY
+            echo "tar -xzf supabase_snapshot.tar.gz" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Backup Files" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| File | Size |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|------|" >> $GITHUB_STEP_SUMMARY
-          
-          for file in supabase_snapshot/*; do
-            if [ -f "$file" ]; then
-              filename=$(basename "$file")
-              size=$(du -h "$file" | cut -f1)
-              echo "| $filename | $size |" >> $GITHUB_STEP_SUMMARY
-            fi
-          done
           
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "✅ Backup completed successfully!" >> $GITHUB_STEP_SUMMARY
