@@ -153,6 +153,81 @@ async function callOpenRouterAPI(prompt: string): Promise<string> {
   throw new Error('AI service is temporarily experiencing high demand. Please try again in a few moments.');
 }
 
+// Streaming version of OpenRouter API call
+async function callOpenRouterAPIStream(prompt: string): Promise<ReadableStream> {
+  const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+  if (!OPENROUTER_API_KEY) {
+    throw new Error('OPENROUTER_API_KEY is required');
+  }
+
+  const models = [
+    "deepseek/deepseek-chat-v3-0324:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "mistralai/mistral-7b-instruct:free",
+    "nvidia/llama-3.1-nemotron-nano-8b-v1:free",
+    "xai/grok-4.1-fast:free",
+    "meta-llama/llama-4-maverick:free",
+    "google/gemini-2.5-pro-exp-03-25:free",
+    "deepseek/deepseek-v3-base:free"
+  ];
+
+  for (const model of models) {
+    try {
+      const response = await fetch(OPENROUTER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://codeunia.com',
+          'X-Title': 'Codeunia AI Assistant'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+          top_p: 0.9,
+          frequency_penalty: 0.1,
+          presence_penalty: 0.1,
+          stream: true, // Enable streaming
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        const isRateLimit = response.status === 429 || errorData.includes('rate-limited');
+
+        if (isRateLimit) {
+          console.warn(`Rate limit hit for model ${model}, trying next model...`);
+        } else {
+          console.error(`OpenRouter API Error for model ${model}:`, response.status, errorData);
+        }
+        continue;
+      }
+
+      console.log(`Successfully using streaming model: ${model}`);
+
+      // Return the stream directly
+      if (!response.body) {
+        throw new Error('No response body');
+      }
+
+      return response.body;
+    } catch (error) {
+      console.error(`Error with streaming model ${model}:`, error);
+      continue;
+    }
+  }
+
+  throw new Error('AI service is temporarily experiencing high demand. Please try again in a few moments.');
+}
+
 interface ChatRequest {
   message: string;
   context?: string;
@@ -873,43 +948,141 @@ export async function POST(request: NextRequest) {
     // Build prompt
     const prompt = buildPrompt(message, contextData, finalContext);
 
-    // Generate AI response using DeepSeek
-    const aiResponse = await callOpenRouterAPI(prompt);
+    // Check if streaming is requested (default to streaming for better UX)
+    const useStreaming = request.headers.get('x-use-streaming') !== 'false';
 
-    // Save conversation to database for training and analytics
-    try {
-      // Generate a proper UUID for session_id
-      const sessionId = crypto.randomUUID();
-      const supabase = getSupabaseClient();
+    if (useStreaming) {
+      // STREAMING MODE
+      const encoder = new TextEncoder();
+      let fullResponse = '';
 
-      const { error: dbError } = await supabase
-        .from('ai_training_data')
-        .insert({
-          user_id: userId || null, // Use actual user ID when available
-          session_id: sessionId,
-          query_text: message,
-          response_text: aiResponse,
-          context_type: finalContext
-        });
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            const openrouterStream = await callOpenRouterAPIStream(prompt);
+            const reader = openrouterStream.getReader();
+            const decoder = new TextDecoder();
 
-      if (dbError) {
-        console.error('Failed to save AI conversation:', dbError);
-        // Don't fail the request if DB save fails
-      } else {
-        const userInfo = userId ? `(User: ${userId})` : '(Anonymous)';
-        console.log(`AI conversation saved successfully to database ${userInfo}`);
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) {
+                // Send completion event
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+
+                // Save to database after stream completes
+                try {
+                  const sessionId = crypto.randomUUID();
+                  const supabase = getSupabaseClient();
+
+                  await supabase
+                    .from('ai_training_data')
+                    .insert({
+                      user_id: userId,
+                      session_id: sessionId,
+                      query_text: message,
+                      response_text: fullResponse,
+                      context_type: finalContext
+                    });
+
+                  console.log(`Streaming conversation saved to database (User: ${userId})`);
+                } catch (dbError) {
+                  console.error('Error saving streaming conversation:', dbError);
+                }
+
+                controller.close();
+                break;
+              }
+
+              // Parse SSE chunks from OpenRouter
+              const chunk = decoder.decode(value);
+              const lines = chunk.split('\n');
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6);
+
+                  if (data === '[DONE]') {
+                    continue;
+                  }
+
+                  try {
+                    const parsed = JSON.parse(data);
+                    const content = parsed.choices?.[0]?.delta?.content;
+
+                    if (content) {
+                      fullResponse += content;
+
+                      // Send chunk to client
+                      controller.enqueue(
+                        encoder.encode(`data: ${JSON.stringify({
+                          content,
+                          context: finalContext
+                        })}\n\n`)
+                      );
+                    }
+                  } catch {
+                    // Ignore parse errors for malformed chunks
+                    continue;
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Streaming error:', error);
+            controller.enqueue(
+              encoder.encode(`data: ${JSON.stringify({
+                error: 'Stream error occurred'
+              })}\n\n`)
+            );
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    } else {
+      // NON-STREAMING MODE (original behavior)
+      const aiResponse = await callOpenRouterAPI(prompt);
+
+      // Save conversation to database for training and analytics
+      try {
+        const sessionId = crypto.randomUUID();
+        const supabase = getSupabaseClient();
+
+        const { error: dbError } = await supabase
+          .from('ai_training_data')
+          .insert({
+            user_id: userId || null,
+            session_id: sessionId,
+            query_text: message,
+            response_text: aiResponse,
+            context_type: finalContext
+          });
+
+        if (dbError) {
+          console.error('Failed to save AI conversation:', dbError);
+        } else {
+          const userInfo = userId ? `(User: ${userId})` : '(Anonymous)';
+          console.log(`AI conversation saved successfully to database ${userInfo}`);
+        }
+      } catch (dbSaveError) {
+        console.error('Error saving to database:', dbSaveError);
       }
-    } catch (dbSaveError) {
-      console.error('Error saving to database:', dbSaveError);
-      // Continue with response even if DB save fails
-    }
 
-    return NextResponse.json({
-      success: true,
-      response: aiResponse,
-      context: finalContext,
-      timestamp: new Date().toISOString()
-    });
+      return NextResponse.json({
+        success: true,
+        response: aiResponse,
+        context: finalContext,
+        timestamp: new Date().toISOString()
+      });
+    }
 
   } catch (error) {
     console.error('AI Chat error:', error);
