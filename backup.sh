@@ -287,7 +287,7 @@ Supabase Backup Information
 Backup Date: $(date)
 Timestamp: $TIMESTAMP
 
-Database Connection: ${SUPABASE_DB_URL%%@*}@***
+Database Connection: [REDACTED]
 
 Files Generated:
 - extensions.sql    : Database extensions
