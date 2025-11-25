@@ -32,11 +32,25 @@ jobs:
       - name: Create backup directory
         run: mkdir -p supabase_snapshot
       
+      - name: Verify SUPABASE_DB_URL is set
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "❌ ERROR: SUPABASE_DB_URL is not set!"
+            echo "Please add SUPABASE_DB_URL to your repository secrets."
+            exit 1
+          else
+            echo "✅ SUPABASE_DB_URL is set (length: ${#SUPABASE_DB_URL} characters)"
+          fi
+      
       - name: Run backup script
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           chmod +x backup.sh
+          # Explicitly export the environment variable
+          export SUPABASE_DB_URL="${SUPABASE_DB_URL}"
           ./backup.sh
       
       - name: List backup files
