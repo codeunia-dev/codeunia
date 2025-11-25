@@ -106,7 +106,113 @@ Backups are stored as GitHub Actions artifacts:
 2. Click on a completed workflow run
 3. Download the artifact (valid for 30 days)
 
-SQL files are also committed to the repository for version control.
+### 🔒 Encrypted Backups (Public Repositories)
+
+**For security**, backups are encrypted with AES256 before being uploaded as artifacts. This protects sensitive user data in public repositories.
+
+#### Downloading Encrypted Backups
+
+1. Go to **Actions** tab in your repository
+2. Click on a completed workflow run
+3. Scroll to **Artifacts** section
+4. Download `supabase-backup-encrypted-XXX`
+5. You'll get a file named `supabase_snapshot.tar.gz.gpg`
+
+#### Decrypting Backups
+
+**Prerequisites**: Install GPG (GnuPG)
+```bash
+# macOS
+brew install gnupg
+
+# Ubuntu/Debian
+sudo apt-get install gnupg
+
+# Windows
+# Download from https://www.gnupg.org/download/
+```
+
+**Decryption Steps**:
+
+```bash
+# 1. Navigate to the directory with the encrypted file
+cd ~/Downloads
+
+# 2. Decrypt the backup (will prompt for password)
+gpg --decrypt supabase_snapshot.tar.gz.gpg > supabase_snapshot.tar.gz
+
+# Enter the BACKUP_ENCRYPTION_KEY when prompted
+
+# 3. Extract the archive
+tar -xzf supabase_snapshot.tar.gz
+
+# 4. You now have the supabase_snapshot/ directory with all backup files
+cd supabase_snapshot/
+ls -lh
+```
+
+**Files inside the decrypted backup**:
+- `extensions.sql` - Database extensions
+- `schema.sql` - Complete database schema
+- `policies.sql` - RLS policies
+- `functions.sql` - Custom SQL functions
+- `triggers.sql` - Database triggers
+- `complete_backup.dump` - Full binary backup with all data
+- `backup_info.txt` - Backup metadata
+
+#### Restoring from Encrypted Backup
+
+After decrypting:
+
+```bash
+# 1. Set your NEW Supabase database URL
+export SUPABASE_DB_URL="postgresql://postgres:password@db.xxx.supabase.co:6543/postgres"
+
+# 2. Restore extensions first
+psql "$SUPABASE_DB_URL" -f extensions.sql
+
+# 3. Restore schema
+psql "$SUPABASE_DB_URL" -f schema.sql
+
+# 4. Restore full data using pg_restore
+pg_restore --dbname="$SUPABASE_DB_URL" \
+  --no-owner \
+  --no-privileges \
+  --clean \
+  --if-exists \
+  complete_backup.dump
+
+# 5. Restore RLS policies
+psql "$SUPABASE_DB_URL" -f policies.sql
+
+# 6. Restore functions
+psql "$SUPABASE_DB_URL" -f functions.sql
+
+# 7. Restore triggers
+psql "$SUPABASE_DB_URL" -f triggers.sql
+```
+
+**Or use the restore script** (if available in the backup):
+```bash
+cd supabase_snapshot/
+export SUPABASE_DB_URL="your-new-connection-string"
+./restore.sh
+```
+
+#### Security Notes
+
+- 🔑 **Keep your encryption key safe!** Store `BACKUP_ENCRYPTION_KEY` in a password manager
+- 🔒 **Without the key, backups cannot be decrypted** - there's no recovery method
+- 👥 **Share the key** with trusted team members who may need to restore
+- 🔄 **Rotate keys periodically** and update the GitHub secret
+
+#### Why Encryption?
+
+Since this repository is public, anyone can view workflow runs and download artifacts. Encryption ensures:
+- ✅ User data remains private
+- ✅ Passwords (even hashed) are protected
+- ✅ Compliance with data protection regulations
+- ✅ Peace of mind for your users
 
 ## 📝 Configuration
 
