@@ -41,7 +41,7 @@ export default function AIPage() {
   const router = useRouter();
   const [profile, setProfile] = useState<{ first_name: string; last_name: string } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +61,7 @@ export default function AIPage() {
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
-      
+
       try {
         const supabase = createClient();
         const { data, error } = await supabase
@@ -184,11 +184,28 @@ export default function AIPage() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    // setIsTyping(true); // Typing indicator disabled
     setShowSuggestions(false);
 
-    // Don't add typing message to the messages array anymore
-    // We'll handle it with a separate state
+    // Show immediate typing indicator while waiting for stream to start
+    const thinkingId = `page-thinking-${Date.now()}`;
+    const thinkingMessage: Message = {
+      id: thinkingId,
+      text: '',
+      sender: 'ai',
+      timestamp: new Date(),
+      isTyping: true
+    };
+    setMessages(prev => [...prev, thinkingMessage]);
+
+    // Create streaming message placeholder (will replace thinking indicator)
+    const streamingId = `page-streaming-${Date.now()}`;
+    const streamingMessage: Message = {
+      id: streamingId,
+      text: '',
+      sender: 'ai',
+      timestamp: new Date(),
+      isTyping: false
+    };
 
     try {
       const response = await fetch('/api/ai', {
@@ -203,26 +220,87 @@ export default function AIPage() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data: AIResponse = await response.json();
-      
-      // setIsTyping(false); // Typing indicator disabled
-      
-      if (data.success) {
-        const aiMessage: Message = {
-          id: `page-ai-${Date.now() + 1}`,
-          text: data.response,
-          sender: 'ai',
-          timestamp: new Date(),
-          context: data.context
-        };
-        setMessages(prev => [...prev, aiMessage]);
+      // Check if response is streaming (SSE) or regular JSON
+      const contentType = response.headers.get('content-type');
+
+      if (contentType?.includes('text/event-stream')) {
+        // STREAMING MODE
+        // Replace thinking indicator with streaming message
+        setMessages(prev => prev.filter(m => m.id !== thinkingId).concat(streamingMessage));
+
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedText = '';
+        let currentContext = '';
+
+        if (!reader) throw new Error('No reader available');
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+
+              try {
+                const parsed = JSON.parse(data);
+
+                if (parsed.done) {
+                  break;
+                }
+
+                if (parsed.error) {
+                  throw new Error(parsed.error);
+                }
+
+                if (parsed.content) {
+                  accumulatedText += parsed.content;
+                  currentContext = parsed.context || currentContext;
+
+                  // Update the streaming message in real-time
+                  setMessages(prev =>
+                    prev.map(msg =>
+                      msg.id === streamingId
+                        ? { ...msg, text: accumulatedText, context: currentContext }
+                        : msg
+                    )
+                  );
+                }
+              } catch {
+                // Ignore malformed JSON
+                continue;
+              }
+            }
+          }
+        }
       } else {
-        throw new Error(data.error || 'AI response was not successful');
+        // NON-STREAMING MODE (fallback)
+        const data: AIResponse = await response.json();
+
+        if (data.success) {
+          const aiMessage: Message = {
+            id: `page-ai-${Date.now() + 1}`,
+            text: data.response,
+            sender: 'ai',
+            timestamp: new Date(),
+            context: data.context
+          };
+          setMessages(prev => [...prev, aiMessage]);
+        } else {
+          throw new Error(data.error || 'AI response was not successful');
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      // setIsTyping(false); // Typing indicator disabled
-      
+
+      // Remove both thinking indicator and streaming message if present
+      setMessages(prev => prev.filter(m => m.id !== thinkingId && m.id !== streamingId));
+
       const errorMessage: Message = {
         id: `page-error-${Date.now() + 1}`,
         text: 'Sorry, I\'m having trouble connecting to the AI service. Please try again later.',
@@ -309,27 +387,27 @@ export default function AIPage() {
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
               <Link href="/">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="text-gray-400 hover:bg-gray-800 hover:text-gray-300 rounded-lg h-8 w-8 sm:h-9 sm:w-9 p-0"
                   title="Go to Homepage"
                 >
                   <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Button>
               </Link>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-gray-400 hover:bg-gray-800 hover:text-gray-300 rounded-lg h-8 w-8 sm:h-9 sm:w-9 p-0"
                 onClick={() => window.location.reload()}
                 title="Refresh Chat"
               >
                 <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="text-gray-400 hover:bg-gray-800 hover:text-gray-300 rounded-lg h-8 w-8 sm:h-9 sm:w-9 p-0"
                 title="More Options"
               >
@@ -343,7 +421,7 @@ export default function AIPage() {
       {/* Responsive Messages Container for All Screen Sizes */}
       <div className="flex-1 overflow-hidden bg-gray-900">
         <div className="max-w-6xl mx-auto h-full flex flex-col">
-          
+
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 sm:py-8">
             <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
@@ -361,26 +439,24 @@ export default function AIPage() {
                   </p>
                 </div>
               )}
-              
+
               {messages.slice(1).map((message) => (
                 <div
                   key={message.id}
-                  className={`flex gap-3 sm:gap-4 group ${
-                    message.sender === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
+                  className={`flex gap-3 sm:gap-4 group ${message.sender === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
                 >
                   {message.sender === 'ai' && (
                     <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0 mt-1">
                       <CodeuniaLogo size="sm" showText={false} noLink={true} instanceId={`ai-msg-${message.id}`} />
                     </div>
                   )}
-                  
+
                   <div
-                    className={`max-w-[80%] sm:max-w-[85%] group transition-all duration-200 ${
-                      message.sender === 'user'
-                        ? 'bg-gray-700 text-white rounded-2xl rounded-br-md'
-                        : 'bg-transparent text-gray-100 rounded-2xl'
-                    } px-4 sm:px-5 py-3 sm:py-4 relative`}
+                    className={`max-w-[80%] sm:max-w-[85%] group transition-all duration-200 ${message.sender === 'user'
+                      ? 'bg-gray-700 text-white rounded-2xl rounded-br-md'
+                      : 'bg-transparent text-gray-100 rounded-2xl'
+                      } px-4 sm:px-5 py-3 sm:py-4 relative`}
                   >
                     {message.isTyping ? (
                       <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-3">
@@ -414,28 +490,28 @@ export default function AIPage() {
                         ) : (
                           <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{message.text}</p>
                         )}
-                        
+
                         <div className="flex items-center justify-between mt-2 sm:mt-3 gap-2 sm:gap-3">
-                          <span className={`text-xs ${message.sender === 'user' ? 'text-gray-300' : 'text-gray-500'}`}>
+                          <span className={`text-xs ${message.sender === 'user' ? 'text-gray-300' : 'text-gray-500'
+                            }`}>
                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          
+
                           <div className="flex items-center gap-1.5 sm:gap-2">
                             {message.context && message.sender === 'ai' && (
-                              <Badge variant="secondary" className={`text-xs bg-gray-800 text-gray-300 border-gray-700`}>
+                              <Badge variant="secondary" className="text-xs bg-gray-800 text-gray-300 border-gray-700">
                                 {message.context}
                               </Badge>
                             )}
-                            
-                            <div className={`opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1`}>
+
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className={`h-6 w-6 p-0 rounded-lg transition-all duration-200 ${
-                                  message.sender === 'user' 
-                                    ? 'text-gray-300 hover:text-white hover:bg-gray-600' 
-                                    : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
-                                }`}
+                                className={`h-6 w-6 p-0 rounded-lg transition-all duration-200 ${message.sender === 'user'
+                                  ? 'text-gray-300 hover:text-white hover:bg-gray-600'
+                                  : 'text-gray-500 hover:text-gray-300 hover:bg-gray-800'
+                                  }`}
                                 onClick={() => copyMessage(message.text)}
                                 title="Copy message"
                               >
@@ -458,7 +534,7 @@ export default function AIPage() {
                       </>
                     )}
                   </div>
-                  
+
                   {message.sender === 'user' && (
                     <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0 mt-1">
                       <User className="w-4 h-4 text-gray-300" />
@@ -493,7 +569,7 @@ export default function AIPage() {
                   </div>
                 </div>
               )}
-              
+
               <div className="relative">
                 <Textarea
                   ref={textareaRef}
@@ -508,7 +584,7 @@ export default function AIPage() {
                   className="resize-none min-h-[52px] sm:min-h-[60px] max-h-[140px] sm:max-h-[160px] w-full rounded-2xl sm:rounded-3xl border-2 border-gray-700 focus:border-gray-600 focus:ring-0 bg-gray-800 text-gray-100 placeholder-gray-500 px-5 sm:px-6 py-4 sm:py-5 pr-14 sm:pr-16 text-base sm:text-lg leading-relaxed transition-all duration-200 hover:border-gray-600"
                   rows={1}
                 />
-                
+
                 <Button
                   onClick={handleSendClick}
                   disabled={isLoading || !input.trim()}
@@ -518,7 +594,7 @@ export default function AIPage() {
                   {isLoading ? <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin" /> : <Send className="w-5 h-5 sm:w-6 sm:h-6" />}
                 </Button>
               </div>
-              
+
               <div className="flex items-center justify-center mt-3 sm:mt-4 px-2">
                 <p className="text-xs text-gray-500 text-center leading-relaxed">
                   Unio may display inaccurate info, including about people, so double-check its responses.
