@@ -76,24 +76,6 @@ jobs:
           retention-days: 30
           compression-level: 9
       
-      - name: Commit SQL files to repository (optional)
-        if: success()
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          
-          # Add only SQL files (exclude large binary dump)
-          git add supabase_snapshot/*.sql || true
-          git add supabase_snapshot/backup_info.txt || true
-          
-          # Check if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "chore: update Supabase backup SQL files [skip ci]"
-            git push
-          fi
-      
       - name: Generate job summary
         if: always()
         run: |
