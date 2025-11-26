@@ -436,11 +436,24 @@ interface ContextData {
   };
 }
 
+// Helper function to extract search terms from user message
+function extractSearchTerms(message: string): string[] {
+  const stopWords = ['a', 'an', 'the', 'in', 'on', 'at', 'for', 'to', 'of', 'with', 'by', 'about', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 'show', 'me', 'tell', 'list', 'find', 'search', 'looking', 'any', 'some', 'all', 'what', 'where', 'when', 'who', 'why', 'how', 'event', 'events', 'hackathon', 'hackathons'];
+
+  const words = message.toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .split(/\s+/);
+
+  return words.filter(word => !stopWords.includes(word) && word.length > 2);
+}
+
 // Database service functions
-async function getEvents(limit = 10) {
+async function getEvents(limit = 10, searchTerms: string[] = []) {
   try {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const today = new Date().toISOString();
+
+    let query = supabase
       .from('events')
       .select(`
         id, slug, title, description, excerpt, date, time, duration,
@@ -448,7 +461,20 @@ async function getEvents(limit = 10) {
         capacity, registered, category, categories, tags, price, organizer
       `)
       .eq('status', 'live')
-      .order('date', { ascending: false })
+      .gte('date', today); // Only future events
+
+    // Apply search filters if terms exist
+    if (searchTerms.length > 0) {
+      const orConditions = searchTerms.map(term =>
+        `title.ilike.%${term}%,description.ilike.%${term}%,location.ilike.%${term}%`
+      ).join(',');
+
+      // Note: This is a simple OR search. For more complex search, we might need textSearch or RPC
+      query = query.or(orConditions);
+    }
+
+    const { data, error } = await query
+      .order('date', { ascending: true }) // Show nearest upcoming events first
       .limit(limit);
 
     if (error) throw error;
@@ -459,10 +485,12 @@ async function getEvents(limit = 10) {
   }
 }
 
-async function getHackathons(limit = 10) {
+async function getHackathons(limit = 10, searchTerms: string[] = []) {
   try {
     const supabase = getSupabaseClient();
-    const { data, error } = await supabase
+    const today = new Date().toISOString();
+
+    let query = supabase
       .from('hackathons')
       .select(`
         id, slug, title, description, excerpt, date, time, duration,
@@ -471,7 +499,19 @@ async function getHackathons(limit = 10) {
         price, organizer, prize, prize_details, team_size
       `)
       .eq('status', 'live')
-      .order('date', { ascending: true })
+      .gte('date', today); // Only future hackathons
+
+    // Apply search filters if terms exist
+    if (searchTerms.length > 0) {
+      const orConditions = searchTerms.map(term =>
+        `title.ilike.%${term}%,description.ilike.%${term}%,location.ilike.%${term}%`
+      ).join(',');
+
+      query = query.or(orConditions);
+    }
+
+    const { data, error } = await query
+      .order('date', { ascending: true }) // Show nearest upcoming hackathons first
       .limit(limit);
 
     if (error) throw error;
@@ -657,13 +697,18 @@ async function getContextualData(userMessage: string, context: string, userId?: 
       return data;
     }
 
+    // Extract search terms for smarter data retrieval
+    const searchTerms = extractSearchTerms(message);
+    console.log('🔍 Extracted search terms:', searchTerms);
+
     // Get specific data based on context and message content
     if (message.includes('event') || context === 'events') {
-      data.events = await getEvents(5);
+      data.events = await getEvents(5, searchTerms);
     }
 
     if (message.includes('hackathon') || context === 'hackathons') {
-      data.hackathons = await getHackathons(5);
+      data.hackathons = await getHackathons(5, searchTerms);
+      console.log(`🔍 Found ${data.hackathons.length} hackathons matching terms:`, searchTerms);
     }
 
     if (message.includes('internship') || message.includes('job') || message.includes('opportunity') || context === 'opportunities') {
@@ -676,8 +721,16 @@ async function getContextualData(userMessage: string, context: string, userId?: 
 
     // If no specific context, get a bit of everything for comprehensive answers EXCEPT internships
     if (context === 'general' && Object.keys(data).length === 1) {
-      data.events = await getEvents(3);
-      data.hackathons = await getHackathons(3);
+      // If we have specific search terms, try to find matching events/hackathons even in general context
+      if (searchTerms.length > 0) {
+        data.events = await getEvents(3, searchTerms);
+        data.hackathons = await getHackathons(3, searchTerms);
+        console.log(`🔍 General Search - Found ${data.events.length} events and ${data.hackathons.length} hackathons`);
+      } else {
+        data.events = await getEvents(3);
+        data.hackathons = await getHackathons(3);
+      }
+
       data.blogs = await getBlogs(3);
       // Only include internships if the message specifically mentions them
       if (message.includes('internship') || message.includes('job') || message.includes('opportunity')) {
@@ -841,18 +894,28 @@ Would you like more details about either program or help choosing which one is r
     message.includes('about codeunia') ||
     (message.length < 30 && context === 'general');
 
-  const isProgrammingQuestion = message.includes('algorithm') ||
-    message.includes('code') ||
+  const isProgrammingQuestion = (
+    message.includes('algorithm') ||
+    message.includes('code ') || // Space to avoid matching 'codeunia'
+    message.includes('coding') ||
     message.includes('programming') ||
     message.includes('sort') ||
     message.includes('function') ||
-    message.includes('java') ||
+    message.includes('java ') ||
     message.includes('python') ||
     message.includes('javascript') ||
     message.includes('data structure') ||
-    message.includes('give me') ||
+    message.includes('give me code') ||
     message.includes('how to') ||
-    message.includes('explain');
+    message.includes('explain')
+  ) && !(
+    message.includes('hackathon') ||
+    message.includes('event') ||
+    message.includes('internship') ||
+    message.includes('job') ||
+    message.includes('opportunity') ||
+    message.includes('register')
+  );
 
   // Check if user is asking for their name
   const isAskingName = message.includes('what is my name') ||
@@ -1001,53 +1064,42 @@ CODEUNIA DATA AVAILABLE:
 `;
   }
 
-  // Add events data with date analysis
+  // Add events data
   if (contextData.events && contextData.events.length > 0) {
-    prompt += `\nEVENT DETAILS (analyze dates carefully - current date is ${formattedCurrentDate}):\n`;
+    prompt += `\nCURRENTLY ACTIVE EVENTS (${contextData.events.length} found):\n`;
     contextData.events.forEach((event: Event) => {
-      const eventDate = new Date(event.date);
-      const todayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-      const status = eventDate >= todayStart ? 'CURRENT/UPCOMING' : 'COMPLETED';
-
       prompt += `
-EVENT: ${event.title} [${status}]
+EVENT: ${event.title}
+- ID: ${event.id}
 - Description: ${event.description}
-- Date: ${event.date} at ${event.time}
-- Duration: ${event.duration}
+- Date: ${event.date}
+- Time: ${event.time}
 - Location: ${event.location}
-- Status: ${event.status}
-- Type: ${Array.isArray(event.event_type) ? event.event_type.join(', ') : event.event_type}
-- Registration Deadline: ${event.registration_deadline}
-- Capacity: ${event.capacity} (${event.registered} registered)
-- Category: ${event.category}
-- Price: ${event.price}
-- Organizer: ${event.organizer}
+- Price: ${event.price || 'Free'}
+- STATUS: ${event.status === 'live' ? 'CURRENT/UPCOMING' : 'COMPLETED'}
 - Tags: ${Array.isArray(event.tags) ? event.tags.join(', ') : event.tags}
 `;
     });
   }
 
-  // Add hackathons data with date analysis
+  // Add hackathons data
   if (contextData.hackathons && contextData.hackathons.length > 0) {
-    prompt += `\nHACKATHON DETAILS (These are HACKATHONS, not events - analyze dates carefully - current date is ${formattedCurrentDate}):\n`;
+    prompt += `\nCURRENTLY ACTIVE HACKATHONS (${contextData.hackathons.length} found):\n`;
     contextData.hackathons.forEach((hackathon: Hackathon) => {
-      const hackathonDate = new Date(hackathon.date);
-      const todayStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
-      const status = hackathonDate >= todayStart ? 'CURRENT/UPCOMING' : 'COMPLETED';
-
       prompt += `
-HACKATHON: ${hackathon.title} [${status}]
-- Type: HACKATHON (not an event)
+HACKATHON: ${hackathon.title}
+- ID: ${hackathon.id}
 - Description: ${hackathon.description}
-- Start Date: ${hackathon.date}
-- Duration: ${hackathon.duration || 'Not specified'}
+- Date: ${hackathon.date}
 - Theme/Category: ${hackathon.category || 'General'}
 - Location: ${hackathon.location}
 - Prize Pool: ${hackathon.prize || 'Not specified'}
 - Registration Deadline: ${hackathon.registration_deadline} (last day to register)
-- STATUS: ${status} - ${status === 'COMPLETED' ? 'This hackathon has ended' : 'This hackathon is current or upcoming'}
+- STATUS: ${hackathon.status === 'live' ? 'CURRENT/UPCOMING' : 'COMPLETED'}
 `;
     });
+  } else if (message.includes('hackathon')) {
+    prompt += `\nNO ACTIVE HACKATHONS FOUND matching your search.\n`;
   }
 
   // Add internships data
