@@ -430,6 +430,10 @@ interface ContextData {
   hackathons?: Hackathon[];
   internships?: InternshipData;
   blogs?: Blog[];
+  userProfile?: {
+    first_name: string;
+    last_name: string;
+  };
 }
 
 // Database service functions
@@ -604,11 +608,25 @@ async function getBlogs(limit = 5) {
   }
 }
 
-async function getContextualData(userMessage: string, context: string): Promise<ContextData> {
+async function getContextualData(userMessage: string, context: string, userId?: string): Promise<ContextData> {
   const message = userMessage.toLowerCase().trim();
   const data: ContextData = {};
 
   try {
+    // Fetch user profile if userId is provided
+    if (userId) {
+      const supabase = getSupabaseClient();
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', userId)
+        .single();
+
+      if (profile) {
+        data.userProfile = profile;
+      }
+    }
+
     // Check if it's a simple greeting or technical question - minimal data
     const isSimpleGreeting = /^(hi|hello|hey|hii|hiii|sup|yo|hai|helo|hllo)!*$/i.test(message) ||
       message.length <= 5;
@@ -764,6 +782,10 @@ function buildPrompt(userMessage: string, contextData: ContextData, context: str
   const currentDate = new Date();
   const formattedCurrentDate = currentDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
+  // Get user name if available
+  const userName = contextData.userProfile?.first_name ? ` ${contextData.userProfile.first_name}` : '';
+  const userFullName = contextData.userProfile ? `${contextData.userProfile.first_name} ${contextData.userProfile.last_name}`.trim() : '';
+
   // PRIORITY CHECK: Specific internship-related queries only
   const isDirectInternshipQuery = message.includes('internship') ||
     message.includes('intern ') ||
@@ -782,7 +804,7 @@ function buildPrompt(userMessage: string, contextData: ContextData, context: str
 
             You MUST respond with this exact structure for ANY internship- related query:
 
-            "Yes! Codeunia runs its own comprehensive internship programs:
+            "Yes${userName}! Codeunia runs its own comprehensive internship programs:
 
 🆓 ** Codeunia Starter Internship(FREE) **:
             - Perfect for beginners and intermediate learners
@@ -803,7 +825,7 @@ Both programs are run BY Codeunia WITH Codeunia mentors ON Codeunia projects!
 
 These are Codeunia's own internship programs - we're not just a platform that connects you to external companies.We run comprehensive, hands - on internship programs internally with dedicated mentorship and real projects.
 
-Would you like more details about either program or help choosing which one is right for you ? "
+Would you like more details about either program or help choosing which one is right for you${userName}?"
 
 ❌ DO NOT suggest external programs
 ❌ DO NOT say you don't have information
@@ -832,16 +854,35 @@ Would you like more details about either program or help choosing which one is r
     message.includes('how to') ||
     message.includes('explain');
 
-  if (isSimpleGreeting) {
-    return `You are Codeunia AI Assistant.The user just said "${userMessage}". 
+  // Check if user is asking for their name
+  const isAskingName = message.includes('what is my name') ||
+    message.includes('who am i') ||
+    message.includes('do you know my name');
 
-Respond with a brief, friendly greeting(2 - 3 sentences max) and ask how you can help them with Codeunia's events, hackathons, or opportunities. 
+  if (isAskingName) {
+    if (userFullName) {
+      return `You are Codeunia AI Assistant. The user asked "What is my name?".
+      
+      Respond enthusiastically: "You are ${userFullName}! It's great to be chatting with you."
+      
+      Then briefly ask how you can help them today.`;
+    } else {
+      return `You are Codeunia AI Assistant. The user asked "What is my name?".
+      
+      Respond politely that you don't have their name in your current records, but you're happy to help them with anything related to Codeunia.`;
+    }
+  }
+
+  if (isSimpleGreeting) {
+    return `You are Codeunia AI Assistant.The user${userName ? ` (${userName})` : ''} just said "${userMessage}". 
+
+Respond with a brief, friendly greeting${userName ? ` using their name "${userName}"` : ''} (2 - 3 sentences max) and ask how you can help them with Codeunia's events, hackathons, or opportunities. 
 
 Keep it short, welcoming, and conversational.Don't provide detailed information unless specifically asked.`;
   }
 
   if (isGeneralQuestion) {
-    return `You are Codeunia AI Assistant. The user is asking "${userMessage}". 
+    return `You are Codeunia AI Assistant. The user${userName ? ` (${userName})` : ''} is asking "${userMessage}". 
 
 Give a brief, friendly overview of Codeunia (3-4 sentences max). Mention that Codeunia is a platform for coders with events, hackathons, and opportunities. Keep it conversational and invite them to ask about specific topics.
 
@@ -867,24 +908,27 @@ Available Codeunia data: ${JSON.stringify(contextData, null, 2)}`;
 
   // For specific Codeunia queries
   let prompt = `You are Unio, Codeunia's AI Assistant powered by OpenRouter. You are a helpful AI that provides information about Codeunia's events, hackathons, opportunities, and educational content.
+  
+  USER INFO:
+  - Name: ${userFullName || 'Unknown'}
+  
+  IMPORTANT: You are ONLY an information assistant. You CANNOT and WILL NOT:
+  - Delete, modify, or access any databases
+  - Execute any commands or scripts
+  - Perform any administrative actions
+  - Access or modify system files
+  - You can only provide information and answer questions
 
-IMPORTANT: You are ONLY an information assistant. You CANNOT and WILL NOT:
-- Delete, modify, or access any databases
-- Execute any commands or scripts
-- Perform any administrative actions
-- Access or modify system files
-- You can only provide information and answer questions
+  ABOUT CODEUNIA:
+  Codeunia is a comprehensive platform for programmers and coding enthusiasts that offers:
 
-ABOUT CODEUNIA:
-Codeunia is a comprehensive platform for programmers and coding enthusiasts that offers:
-
-🎯 CORE SERVICES:
-- Events & Workshops: Technical workshops, coding sessions, and educational events
-- Hackathons: Competitive programming events with prizes and recognition
-- Internship Programs: Codeunia offers its own internship programs (both free and paid)
-- Blog & Resources: Educational content, tutorials, and coding guides
-- Community Building: Networking and collaboration opportunities
-- Premium Memberships: Enhanced features and exclusive access
+  🎯 CORE SERVICES:
+  - Events & Workshops: Technical workshops, coding sessions, and educational events
+  - Hackathons: Competitive programming events with prizes and recognition
+  - Internship Programs: Codeunia offers its own internship programs (both free and paid)
+  - Blog & Resources: Educational content, tutorials, and coding guides
+  - Community Building: Networking and collaboration opportunities
+  - Premium Memberships: Enhanced features and exclusive access
 
 🏢 PLATFORM FEATURES:
 - User Profiles: Personalized dashboards for tracking progress
@@ -1134,7 +1178,7 @@ export async function POST(request: NextRequest) {
     const finalContext = context || determineContext(message);
 
     // Get contextual data
-    const contextData = await getContextualData(message, finalContext);
+    const contextData = await getContextualData(message, finalContext, userId);
 
     // Build prompt
     const prompt = buildPrompt(message, contextData, finalContext);
