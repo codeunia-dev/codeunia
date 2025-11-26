@@ -13,6 +13,24 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 
+// Action button types
+type ActionType =
+  | 'event_register'
+  | 'event_view'
+  | 'hackathon_view'
+  | 'hackathon_register'
+  | 'internship_apply'
+  | 'blog_read'
+  | 'learn_more';
+
+interface ActionButton {
+  type: ActionType;
+  label: string;
+  url: string;
+  metadata?: Record<string, unknown>;
+  variant?: 'primary' | 'secondary';
+}
+
 interface Message {
   id: string;
   text: string;
@@ -20,6 +38,7 @@ interface Message {
   timestamp: Date;
   context?: string;
   isTyping?: boolean;
+  actions?: ActionButton[];
 }
 
 interface AIResponse {
@@ -27,6 +46,7 @@ interface AIResponse {
   response: string;
   context: string;
   timestamp: string;
+  actions?: ActionButton[];
   error?: string;
 }
 
@@ -273,7 +293,16 @@ export default function AIChat() {
                 const parsed = JSON.parse(data);
 
                 if (parsed.done) {
-                  // Stream complete
+                  // Stream complete - attach actions if provided
+                  if (parsed.actions && parsed.actions.length > 0) {
+                    setMessages(prev =>
+                      prev.map(msg =>
+                        msg.id === streamingId
+                          ? { ...msg, actions: parsed.actions }
+                          : msg
+                      )
+                    );
+                  }
                   break;
                 }
 
@@ -311,7 +340,8 @@ export default function AIChat() {
             text: data.response,
             sender: 'ai',
             timestamp: new Date(),
-            context: data.context
+            context: data.context,
+            actions: data.actions
           };
           setMessages(prev => [...prev, aiMessage]);
         } else {
@@ -485,6 +515,27 @@ export default function AIChat() {
                             ) : (
                               <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.text}</p>
                             )}
+
+                            {/* Action Buttons */}
+                            {message.actions && message.actions.length > 0 && message.sender === 'ai' && (
+                              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-700/50">
+                                {message.actions.map((action, index) => (
+                                  <Button
+                                    key={index}
+                                    variant={action.variant === 'primary' ? 'default' : 'outline'}
+                                    size="sm"
+                                    className={action.variant === 'primary'
+                                      ? 'bg-blue-600 hover:bg-blue-700 text-white text-xs'
+                                      : 'border-gray-600 hover:bg-gray-800 text-gray-300 text-xs'
+                                    }
+                                    onClick={() => router.push(action.url)}
+                                  >
+                                    {action.label}
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+
                             <div className="flex items-center justify-between mt-2 gap-2">
                               <span className={`text-xs opacity-70 ${message.sender === 'user' ? 'text-gray-300' : 'text-gray-500'}`}>
                                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
