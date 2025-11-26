@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
+// Action button types
+type ActionType =
+  | 'event_register'
+  | 'event_view'
+  | 'hackathon_view'
+  | 'hackathon_register'
+  | 'internship_apply'
+  | 'blog_read'
+  | 'learn_more';
+
+interface ActionButton {
+  type: ActionType;
+  label: string;
+  url: string;
+  metadata?: Record<string, unknown>;
+  variant?: 'primary' | 'secondary';
+}
+
+
 // Rate limiting map (in production, use Redis or database)
 const rateLimit = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -243,6 +262,7 @@ interface PlatformStats {
 
 interface Event {
   id: string;
+  slug?: string;  // Optional for backwards compatibility
   title: string;
   description: string;
   excerpt?: string;
@@ -265,6 +285,7 @@ interface Event {
 
 interface Hackathon {
   id: string;
+  slug?: string;  // Optional for backwards compatibility
   title: string;
   description: string;
   excerpt?: string;
@@ -331,7 +352,7 @@ async function getEvents(limit = 10) {
     const { data, error } = await supabase
       .from('events')
       .select(`
-        id, title, description, excerpt, date, time, duration,
+        id, slug, title, description, excerpt, date, time, duration,
         location, locations, status, event_type, registration_deadline,
         capacity, registered, category, categories, tags, price, organizer
       `)
@@ -353,7 +374,7 @@ async function getHackathons(limit = 10) {
     const { data, error } = await supabase
       .from('hackathons')
       .select(`
-        id, title, description, excerpt, date, time, duration,
+        id, slug, title, description, excerpt, date, time, duration,
         registration_deadline, status, location, locations,
         capacity, registered, category, categories, tags,
         price, organizer, prize, prize_details, team_size
@@ -566,6 +587,89 @@ async function getContextualData(userMessage: string, context: string): Promise<
   }
 }
 
+// Detect actionable buttons based on AI response and context
+function detectActions(
+  userMessage: string,
+  aiResponse: string,
+  contextData: ContextData
+): ActionButton[] {
+  const actions: ActionButton[] = [];
+  const lowerResponse = aiResponse.toLowerCase();
+  const lowerMessage = userMessage.toLowerCase();
+
+  // Detect if user is asking about availability/details (not just browsing)
+  const isSeekingAction = lowerMessage.includes('available') ||
+    lowerMessage.includes('register') ||
+    lowerMessage.includes('join') ||
+    lowerMessage.includes('sign up') ||
+    lowerMessage.includes('happening') ||
+    lowerMessage.includes('upcoming') ||
+    lowerMessage.includes('what events') ||
+    lowerMessage.includes('show me') ||
+    lowerMessage.includes('tell me about');
+
+  console.log('🔍 detectActions called:', {
+    userMessage,
+    isSeekingAction,
+    hasEvents: !!contextData.events,
+    eventCount: contextData.events?.length || 0,
+    aiResponsePreview: aiResponse.substring(0, 100)
+  });
+
+  // Detect mentioned events
+  if (contextData.events && contextData.events.length > 0) {
+    contextData.events.forEach((event: Event) => {
+      // Check if event is mentioned in the response
+      const eventMentioned = lowerResponse.includes(event.title.toLowerCase());
+
+      console.log('🎯 Checking event:', {
+        eventTitle: event.title,
+        eventTitleLower: event.title.toLowerCase(),
+        eventMentioned,
+        isSeekingAction
+      });
+
+      if (eventMentioned && isSeekingAction) {
+        // Only add view button - registration happens on the event page itself
+        // Use slug if available, otherwise fall back to ID
+        const eventUrl = event.slug ? `/events/${event.slug}` : `/events/${event.id}`;
+        actions.push({
+          type: 'event_view',
+          label: `View ${event.title}`,
+          url: eventUrl,
+          metadata: { eventId: event.id, eventSlug: event.slug, eventTitle: event.title },
+          variant: 'primary'  // Make it primary since it's the main action
+        });
+      }
+    });
+  }
+
+  // Detect mentioned hackathons
+  if (contextData.hackathons && contextData.hackathons.length > 0) {
+    contextData.hackathons.forEach((hackathon: Hackathon) => {
+      const hackathonMentioned = lowerResponse.includes(hackathon.title.toLowerCase());
+
+      if (hackathonMentioned && isSeekingAction) {
+        // Only add view button - same as events
+        // Use slug if available, otherwise fall back to ID
+        const hackathonUrl = hackathon.slug ? `/hackathons/${hackathon.slug}` : `/hackathons/${hackathon.id}`;
+        actions.push({
+          type: 'hackathon_view',
+          label: `View ${hackathon.title}`,
+          url: hackathonUrl,
+          metadata: { hackathonId: hackathon.id, hackathonSlug: hackathon.slug, hackathonTitle: hackathon.title },
+          variant: 'primary'
+        });
+      }
+    });
+  }
+
+  // Limit to max 4 actions to avoid overwhelming UI
+  const finalActions = actions.slice(0, 4);
+  console.log('✅ detectActions returning:', finalActions.length, 'actions', finalActions);
+  return finalActions;
+}
+
 function buildPrompt(userMessage: string, contextData: ContextData, context: string) {
   const message = userMessage.toLowerCase().trim();
 
@@ -589,30 +693,30 @@ function buildPrompt(userMessage: string, contextData: ContextData, context: str
   if (isDirectInternshipQuery) {
     return `🚨 MANDATORY INTERNSHIP RESPONSE 🚨
 
-You MUST respond with this exact structure for ANY internship-related query:
+            You MUST respond with this exact structure for ANY internship- related query:
 
-"Yes! Codeunia runs its own comprehensive internship programs:
+            "Yes! Codeunia runs its own comprehensive internship programs:
 
-🆓 **Codeunia Starter Internship (FREE)**:
-- Perfect for beginners and intermediate learners
-- Real tasks with mentor check-ins
-- Certificate upon completion
-- Community access and weekly standups
-- Resume and GitHub review
+🆓 ** Codeunia Starter Internship(FREE) **:
+            - Perfect for beginners and intermediate learners
+              - Real tasks with mentor check - ins
+                - Certificate upon completion
+                  - Community access and weekly standups
+                    - Resume and GitHub review
 
-💰 **Codeunia Pro Internship (₹4999)**:
-- For intermediate and advanced developers
-- Production-grade projects with weekly reviews
-- 1:1 mentor sessions
-- Letter of recommendation
-- Premium certificate and LinkedIn assets
-- Priority career guidance
+💰 ** Codeunia Pro Internship(₹4999) **:
+          - For intermediate and advanced developers
+            - Production - grade projects with weekly reviews
+              - 1: 1 mentor sessions
+                - Letter of recommendation
+                  - Premium certificate and LinkedIn assets
+                    - Priority career guidance
 
 Both programs are run BY Codeunia WITH Codeunia mentors ON Codeunia projects!
 
-These are Codeunia's own internship programs - we're not just a platform that connects you to external companies. We run comprehensive, hands-on internship programs internally with dedicated mentorship and real projects.
+These are Codeunia's own internship programs - we're not just a platform that connects you to external companies.We run comprehensive, hands - on internship programs internally with dedicated mentorship and real projects.
 
-Would you like more details about either program or help choosing which one is right for you?"
+Would you like more details about either program or help choosing which one is right for you ? "
 
 ❌ DO NOT suggest external programs
 ❌ DO NOT say you don't have information
@@ -642,11 +746,11 @@ Would you like more details about either program or help choosing which one is r
     message.includes('explain');
 
   if (isSimpleGreeting) {
-    return `You are Codeunia AI Assistant. The user just said "${userMessage}". 
+    return `You are Codeunia AI Assistant.The user just said "${userMessage}". 
 
-Respond with a brief, friendly greeting (2-3 sentences max) and ask how you can help them with Codeunia's events, hackathons, or opportunities. 
+Respond with a brief, friendly greeting(2 - 3 sentences max) and ask how you can help them with Codeunia's events, hackathons, or opportunities. 
 
-Keep it short, welcoming, and conversational. Don't provide detailed information unless specifically asked.`;
+Keep it short, welcoming, and conversational.Don't provide detailed information unless specifically asked.`;
   }
 
   if (isGeneralQuestion) {
@@ -967,8 +1071,15 @@ export async function POST(request: NextRequest) {
               const { done, value } = await reader.read();
 
               if (done) {
-                // Send completion event
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+                // Detect actions after full response is accumulated
+                const detectedActions = detectActions(message, fullResponse, contextData);
+                console.log('🎯 Streaming complete, detected actions:', detectedActions);
+
+                // Send completion event with actions
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                  done: true,
+                  actions: detectedActions
+                })}\n\n`));
 
                 // Save to database after stream completes
                 try {
@@ -1076,10 +1187,15 @@ export async function POST(request: NextRequest) {
         console.error('Error saving to database:', dbSaveError);
       }
 
+      // Detect actions for non-streaming mode
+      const detectedActions = detectActions(message, aiResponse, contextData);
+      console.log('🎯 Non-streaming complete, detected actions:', detectedActions);
+
       return NextResponse.json({
         success: true,
         response: aiResponse,
         context: finalContext,
+        actions: detectedActions,
         timestamp: new Date().toISOString()
       });
     }
