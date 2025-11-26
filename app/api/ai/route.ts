@@ -82,6 +82,93 @@ function checkRateLimit(ip: string): { allowed: boolean; error?: string } {
   return { allowed: true };
 }
 
+// Filter function to determine if conversation should be saved
+async function shouldSaveConversation(message: string, userId: string): Promise<boolean> {
+  const trimmedMessage = message.trim().toLowerCase();
+
+  // Filter 1: Simple greetings
+  const simpleGreetings = [
+    /^hi!*$/,
+    /^hello!*$/,
+    /^hey!*$/,
+    /^hii+!*$/,
+    /^sup!*$/,
+    /^yo!*$/,
+    /^hai!*$/,
+    /^helo!*$/,
+    /^hllo!*$/,
+  ];
+
+  for (const pattern of simpleGreetings) {
+    if (pattern.test(trimmedMessage)) {
+      console.log(`Filtering out simple greeting: "${message}"`);
+      return false;
+    }
+  }
+
+  // Filter 2: Casual chit-chat (very short messages or common casual phrases)
+  const casualPhrases = [
+    /^thanks?!*$/,
+    /^thank you!*$/,
+    /^ok!*$/,
+    /^okay!*$/,
+    /^cool!*$/,
+    /^nice!*$/,
+    /^lol!*$/,
+    /^haha+!*$/,
+    /^yeah!*$/,
+    /^yep!*$/,
+    /^nope?!*$/,
+    /^sure!*$/,
+    /^k!*$/,
+  ];
+
+  for (const pattern of casualPhrases) {
+    if (pattern.test(trimmedMessage)) {
+      console.log(`Filtering out casual chit-chat: "${message}"`);
+      return false;
+    }
+  }
+
+  // Filter out very short messages (less than 10 characters)
+  if (trimmedMessage.length < 10) {
+    console.log(`Filtering out short message: "${message}" (${trimmedMessage.length} chars)`);
+    return false;
+  }
+
+  // Filter 3: Repeated questions (check if same user asked exact same question in last 24 hours)
+  try {
+    const supabase = getSupabaseClient();
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from('ai_training_data')
+      .select('query_text')
+      .eq('user_id', userId)
+      .eq('query_text', message)
+      .gte('created_at', twentyFourHoursAgo)
+      .limit(1);
+
+    if (error) {
+      console.error('Error checking for duplicate questions:', error);
+      // If there's an error, allow saving to be safe
+      return true;
+    }
+
+    if (data && data.length > 0) {
+      console.log(`Filtering out repeated question: "${message}"`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error in duplicate check:', error);
+    // If there's an error, allow saving to be safe
+    return true;
+  }
+
+  // If none of the filters matched, save the conversation
+  return true;
+}
+
 // Configure the runtime for this API route
 export const runtime = 'nodejs';
 
@@ -1083,20 +1170,27 @@ export async function POST(request: NextRequest) {
 
                 // Save to database after stream completes
                 try {
-                  const sessionId = crypto.randomUUID();
-                  const supabase = getSupabaseClient();
+                  // Check if conversation should be saved
+                  const shouldSave = await shouldSaveConversation(message, userId);
 
-                  await supabase
-                    .from('ai_training_data')
-                    .insert({
-                      user_id: userId,
-                      session_id: sessionId,
-                      query_text: message,
-                      response_text: fullResponse,
-                      context_type: finalContext
-                    });
+                  if (shouldSave) {
+                    const sessionId = crypto.randomUUID();
+                    const supabase = getSupabaseClient();
 
-                  console.log(`Streaming conversation saved to database (User: ${userId})`);
+                    await supabase
+                      .from('ai_training_data')
+                      .insert({
+                        user_id: userId,
+                        session_id: sessionId,
+                        query_text: message,
+                        response_text: fullResponse,
+                        context_type: finalContext
+                      });
+
+                    console.log(`Streaming conversation saved to database (User: ${userId})`);
+                  } else {
+                    console.log(`Streaming conversation filtered out (User: ${userId})`);
+                  }
                 } catch (dbError) {
                   console.error('Error saving streaming conversation:', dbError);
                 }
@@ -1164,24 +1258,31 @@ export async function POST(request: NextRequest) {
 
       // Save conversation to database for training and analytics
       try {
-        const sessionId = crypto.randomUUID();
-        const supabase = getSupabaseClient();
+        // Check if conversation should be saved
+        const shouldSave = await shouldSaveConversation(message, userId);
 
-        const { error: dbError } = await supabase
-          .from('ai_training_data')
-          .insert({
-            user_id: userId || null,
-            session_id: sessionId,
-            query_text: message,
-            response_text: aiResponse,
-            context_type: finalContext
-          });
+        if (shouldSave) {
+          const sessionId = crypto.randomUUID();
+          const supabase = getSupabaseClient();
 
-        if (dbError) {
-          console.error('Failed to save AI conversation:', dbError);
+          const { error: dbError } = await supabase
+            .from('ai_training_data')
+            .insert({
+              user_id: userId || null,
+              session_id: sessionId,
+              query_text: message,
+              response_text: aiResponse,
+              context_type: finalContext
+            });
+
+          if (dbError) {
+            console.error('Failed to save AI conversation:', dbError);
+          } else {
+            const userInfo = userId ? `(User: ${userId})` : '(Anonymous)';
+            console.log(`AI conversation saved successfully to database ${userInfo}`);
+          }
         } else {
-          const userInfo = userId ? `(User: ${userId})` : '(Anonymous)';
-          console.log(`AI conversation saved successfully to database ${userInfo}`);
+          console.log(`Non-streaming conversation filtered out (User: ${userId})`);
         }
       } catch (dbSaveError) {
         console.error('Error saving to database:', dbSaveError);
