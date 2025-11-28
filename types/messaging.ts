@@ -9,7 +9,8 @@ export interface Conversation {
   is_group: boolean
   group_name: string | null
   group_avatar_url: string | null
-  
+  conversation_type?: 'personal' | 'mentorship' | 'group'
+
   // Computed fields
   unread_count?: number
   other_user?: {
@@ -29,7 +30,7 @@ export interface ConversationParticipant {
   joined_at: string
   last_read_at: string
   is_admin: boolean
-  
+
   // User details
   user?: {
     id: string
@@ -51,7 +52,7 @@ export interface Message {
   is_deleted: boolean
   reply_to_id: string | null
   attachments: MessageAttachment[] | null
-  
+
   // Sender details
   sender?: {
     id: string
@@ -82,6 +83,7 @@ export interface CreateConversationData {
   participant_ids: string[]
   is_group?: boolean
   group_name?: string
+  conversation_type?: 'personal' | 'mentorship' | 'group'
   initial_message?: string
 }
 

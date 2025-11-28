@@ -22,7 +22,7 @@ export async function GET(req: Request) {
   const supabase = getSupabaseClient();
   let query = supabase
     .from("mentor_applications")
-    .select("id, first_name, last_name, company, occupation, expertise, expertise_areas, mentoring_types, linkedin, availability, created_at")
+    .select("id, user_id, first_name, last_name, company, occupation, expertise, expertise_areas, mentoring_types, linkedin, availability, created_at")
     .eq("status", "approved")
     .order("created_at", { ascending: false });
 
@@ -43,6 +43,6 @@ export async function GET(req: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  
+
   return NextResponse.json({ mentors: data });
 }
