@@ -9,7 +9,7 @@ export class ConversationService {
   // Decrypt message content via API
   private async decryptContent(encrypted: string | null): Promise<string | null> {
     if (!encrypted) return null
-    
+
     try {
       const response = await fetch('/api/messages/decrypt', {
         method: 'POST',
@@ -133,9 +133,9 @@ export class ConversationService {
     }
 
     if (!data) {
-      return { 
-        canMessage: false, 
-        reason: 'This user does not accept messages from you. You need to be mutual connections or they need to enable "Allow messages from anyone".' 
+      return {
+        canMessage: false,
+        reason: 'This user does not accept messages from you. You need to be mutual connections or they need to enable "Allow messages from anyone".'
       }
     }
 
@@ -171,7 +171,7 @@ export class ConversationService {
           .eq('conversation_id', conv.conversation_id)
 
         const participantIds = participants?.map(p => p.user_id) || []
-        
+
         // Check if it's a 1-on-1 with the target user
         if (
           participantIds.length === 2 &&
@@ -210,7 +210,8 @@ export class ConversationService {
       .from('conversations')
       .insert([{
         is_group: data.is_group || false,
-        group_name: data.group_name || null
+        group_name: data.group_name || null,
+        conversation_type: data.conversation_type || 'personal'
       }])
       .select()
       .single()
@@ -280,6 +281,57 @@ export class ConversationService {
     }
 
     return data || []
+  }
+
+  // Get or create a mentorship conversation with a mentor
+  async getOrCreateMentorshipConversation(mentorUserId: string): Promise<Conversation> {
+    const supabase = this.getSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    // Check if mentorship conversation already exists
+    const { data: existingConversations } = await supabase
+      .from('conversation_participants')
+      .select('conversation_id')
+      .eq('user_id', user.id)
+
+    if (existingConversations) {
+      for (const conv of existingConversations) {
+        const { data: conversation } = await supabase
+          .from('conversations')
+          .select('*')
+          .eq('id', conv.conversation_id)
+          .eq('conversation_type', 'mentorship')
+          .single()
+
+        if (conversation) {
+          const { data: participants } = await supabase
+            .from('conversation_participants')
+            .select('user_id')
+            .eq('conversation_id', conv.conversation_id)
+
+          const participantIds = participants?.map(p => p.user_id) || []
+
+          // Check if it's a 1-on-1 mentorship with the target mentor
+          if (
+            participantIds.length === 2 &&
+            participantIds.includes(user.id) &&
+            participantIds.includes(mentorUserId)
+          ) {
+            return conversation as Conversation
+          }
+        }
+      }
+    }
+
+    // Create new mentorship conversation
+    return this.createConversation({
+      participant_ids: [user.id, mentorUserId],
+      conversation_type: 'mentorship'
+    })
   }
 }
 
