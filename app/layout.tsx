@@ -27,6 +27,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <title>Codeunia | Bridge the gap between campus and career</title>
+        <meta name="description" content="Codeunia is a community platform connecting students with hackathons, events, internships, and career opportunities. Bridge the gap between campus and career." />
         {/* Critical CSS for above-the-fold content */}
         <style dangerouslySetInnerHTML={{
           __html: `
