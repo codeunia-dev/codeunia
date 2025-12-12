@@ -7,7 +7,7 @@ import { reservedUsernameEdgeService } from '@/lib/services/reserved-usernames-e
 async function awardDailyLoginPoints(userId: string, supabase: any) {
   try {
     const today = new Date().toISOString().split('T')[0];
-    
+
     // Check if user already got points today
     const { data: existing, error: checkError } = await supabase
       .from('user_activity_log')
@@ -71,7 +71,7 @@ async function awardDailyLoginPoints(userId: string, supabase: any) {
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
-  
+
   try {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -130,8 +130,8 @@ export async function middleware(req: NextRequest) {
     ];
 
     // Check if the current path is public first
-    const isPublicRoute = publicRoutes.some(route => 
-      req.nextUrl.pathname.startsWith(route) || 
+    const isPublicRoute = publicRoutes.some(route =>
+      req.nextUrl.pathname.startsWith(route) ||
       req.nextUrl.pathname.startsWith('/_next') ||
       req.nextUrl.pathname.startsWith('/api/') ||
       req.nextUrl.pathname.includes('.')
@@ -145,14 +145,14 @@ export async function middleware(req: NextRequest) {
     // Handle username-based routing (only for non-public routes)
     const pathname = req.nextUrl.pathname;
     const usernameMatch = pathname.match(/^\/([^\/]+)$/);
-    
+
     // Exclude admin routes from username routing
     const adminRoutes = ['/admin', '/admin/', '/admin/users', '/admin/tests', '/admin/events', '/admin/blog-posts', '/admin/certificates', '/admin/pending-payments', '/admin/reserved-usernames'];
     const isAdminRoute = adminRoutes.some(route => pathname.startsWith(route));
-    
+
     if (usernameMatch && !isAdminRoute) {
       const username = usernameMatch[1];
-      
+
       // Check if username is reserved
       try {
         const isReserved = await reservedUsernameEdgeService.isReservedUsername(username);
@@ -166,7 +166,7 @@ export async function middleware(req: NextRequest) {
           return NextResponse.rewrite(new URL('/_not-found', req.url));
         }
       }
-      
+
       // For non-reserved usernames, treat as public profile route
       // This allows public access to user profiles
       return res;
@@ -202,7 +202,7 @@ export async function middleware(req: NextRequest) {
       // User setup is not complete, redirect based on next step
       if (req.nextUrl.pathname !== '/setup' && req.nextUrl.pathname !== '/auth/confirm' && req.nextUrl.pathname !== '/auth/email-confirmation-required') {
         const redirectUrl = req.nextUrl.clone();
-        
+
         if (setupStatus.next_step === 'confirm_email') {
           // For email users who haven't confirmed, redirect to email confirmation page
           redirectUrl.pathname = '/auth/email-confirmation-required';
@@ -210,17 +210,52 @@ export async function middleware(req: NextRequest) {
           // For other incomplete setups, redirect to setup page
           redirectUrl.pathname = '/setup';
         }
-        
+
         return NextResponse.redirect(redirectUrl);
       }
     } else if (setupStatus && setupStatus.can_proceed) {
-      // If setup is complete and user is on setup page, redirect to dashboard
+      // Fetch user role for redirection
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Middleware: Error fetching profile role:', profileError);
+      } else {
+        console.log('Middleware: Fetched profile:', profile);
+      }
+
+      const role = profile?.role || 'student';
+      console.log('Middleware: Detected role:', role, 'for user:', user.email, 'ID:', user.id);
+
+      // If setup is complete and user is on setup page, redirect to appropriate dashboard
       if (req.nextUrl.pathname === '/setup') {
         const redirectUrl = req.nextUrl.clone();
-        redirectUrl.pathname = '/protected/dashboard';
+        redirectUrl.pathname = role === 'staff' ? '/staff/dashboard' : '/protected/dashboard';
         return NextResponse.redirect(redirectUrl);
       }
-      
+
+      // RBAC: Direct Access Control
+      // if (role === 'staff') {
+      //   // If staff tries to access student dashboard, redirect to staff dashboard
+      //   if (req.nextUrl.pathname.startsWith('/protected')) {
+      //     console.log('Middleware: Redirecting staff to /staff/dashboard');
+      //     const redirectUrl = req.nextUrl.clone();
+      //     redirectUrl.pathname = '/staff/dashboard';
+      //     return NextResponse.redirect(redirectUrl);
+      //   }
+      // } else {
+      //   // If student (or non-staff) tries to access staff dashboard, redirect to student dashboard
+      //   if (req.nextUrl.pathname.startsWith('/staff')) {
+      //     // console.log('Middleware: Redirecting student to /protected/dashboard');
+      //     const redirectUrl = req.nextUrl.clone();
+      //     redirectUrl.pathname = '/protected/dashboard';
+      //     return NextResponse.redirect(redirectUrl);
+      //   }
+      // }
+
       // Award daily login points (only once per day)
       try {
         await awardDailyLoginPoints(user.id, supabase);
@@ -231,7 +266,7 @@ export async function middleware(req: NextRequest) {
 
     // Apply production-grade cache headers before returning response
     let finalResponse = res;
-    
+
     return finalResponse;
   } catch (error) {
     console.error('Middleware error:', error);

@@ -208,12 +208,12 @@ export default function Header() {
                   <div className="pt-3 mt-3 border-t border-border space-y-1">
                     {/* Dashboard Link */}
                     <Link
-                      href="/protected"
+                      href={user?.user_metadata?.role === 'staff' ? "/staff/dashboard" : "/protected"}
                       className="flex items-center space-x-2 text-sm font-medium transition-colors py-2.5 px-3 rounded-md text-foreground hover:text-primary hover:bg-muted/50"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       <Shield className="h-4 w-4" />
-                      <span>Dashboard</span>
+                      <span>{user?.user_metadata?.role === 'staff' ? 'Staff Dashboard' : 'Dashboard'}</span>
                     </Link>
 
                     {/* Logout Button */}

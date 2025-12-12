@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Sidebar } from "@/components/admin/Sidebar"
 import {
   Code2,
+  Clock,
   LayoutDashboard,
   Users,
   FileText,
@@ -101,6 +102,11 @@ const sidebarItems: SidebarGroupType[] = [
         title: "Certificates",
         url: "/admin/certificates",
         icon: Award,
+      },
+      {
+        title: "Attendance",
+        url: "/admin/attendance",
+        icon: Clock,
       },
     ],
   },
