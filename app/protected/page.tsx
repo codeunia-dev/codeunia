@@ -7,6 +7,9 @@ function capitalize(word: string) {
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }
 
+// Staff content wrapper - Client Component would be better but keeping it simple for now
+import StaffDashboardPage from "../staff/dashboard/page";
+
 export default async function ProtectedPage() {
   const supabase = await createClient();
 
@@ -16,11 +19,18 @@ export default async function ProtectedPage() {
   }
 
   // Fetch user profile from profiles table
-  const { data: profile } = await supabase // Removed unused profileError
+  const { data: profile } = await supabase
     .from('profiles')
-    .select('first_name')
+    .select('first_name, role')
     .eq('id', data.user.id)
     .single();
+
+  // Role check logic
+  const isStaff = profile?.role === 'staff';
+
+  if (isStaff) {
+    redirect("/staff/dashboard");
+  }
 
   // Use first_name from profiles table, with fallback
   const displayName = profile?.first_name ? capitalize(profile.first_name) : "there";

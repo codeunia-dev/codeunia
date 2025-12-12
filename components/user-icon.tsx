@@ -3,15 +3,15 @@
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import {LogOut, Shield, UserCircle } from "lucide-react"
+import { LogOut, Shield, UserCircle } from "lucide-react"
 import { useAuth } from "@/lib/hooks/useAuth"
 
 export function UserIcon() {
@@ -55,7 +55,7 @@ export function UserIcon() {
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem> */}
-        <DropdownMenuItem onClick={() => router.push("/protected")}>
+        <DropdownMenuItem onClick={() => router.push(user?.user_metadata?.role === 'staff' ? "/staff/dashboard" : "/protected")}>
           <Shield className="mr-2 h-4 w-4" />
           <span>Dashboard</span>
         </DropdownMenuItem>

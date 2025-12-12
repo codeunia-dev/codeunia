@@ -1,6 +1,7 @@
 'use client'
-import type React from "react"
+import React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { StudentSidebar } from "@/components/users/StudentSidebar"
 import {
@@ -199,7 +200,7 @@ const sidebarItems: SidebarGroupType[] = [
   {
     title: "Support",
     items: [
-      
+
       {
         title: "Help Center",
         url: "/protected/help",
@@ -209,11 +210,32 @@ const sidebarItems: SidebarGroupType[] = [
   },
 ]
 
+// Staff imports removed
+// Staff Sidebar Items removed
+
 export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
-  const { isChecking, isAuthorized } = useRoleProtection('student')
+  const { isAuthorized } = useRoleProtection('student')
 
-  if (loading || isChecking) {
+  // Use state to handle client-side role check safely
+  const [role, setRole] = React.useState<string | null>(null)
+
+  const router = useRouter()
+
+  React.useEffect(() => {
+    if (user) {
+      const userRole = user.user_metadata?.role || 'student'
+
+      if (userRole === 'staff') {
+        router.push('/staff/dashboard')
+        return
+      }
+
+      setRole(userRole)
+    }
+  }, [user, router])
+
+  if (loading || role === null) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -221,7 +243,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     )
   }
 
-  if (!user || !isAuthorized) {
+  if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4">
         <div className="text-center max-w-md">
@@ -235,9 +257,18 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     )
   }
 
-  const avatar = user?.user_metadata?.first_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "S"
-  const name = user?.user_metadata?.first_name || user?.email || "Student"
-  const email = user?.email || "student@codeunia.com"
+  const avatar = user?.user_metadata?.first_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"
+  const name = user?.user_metadata?.first_name || user?.email || "User"
+  const email = user?.email || "user@codeunia.com"
+
+  // If somehow role is staff but didn't redirect yet (rare race condition), show spinner
+  if (role === 'staff') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   return (
     <StudentSidebar
