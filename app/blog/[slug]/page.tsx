@@ -88,7 +88,7 @@ export default function BlogPostPage() {
   const [likedByUser, setLikedByUser] = useState(false);
   const [views, setViews] = useState<number>(0);
   const params = useParams()
-  
+
   const slug = params?.slug as string
 
   useEffect(() => {
@@ -115,8 +115,8 @@ export default function BlogPostPage() {
           tags: Array.isArray(data.tags)
             ? data.tags
             : (typeof data.tags === 'string' && data.tags
-                ? (data.tags as string).split(',').map((t: string) => t.trim())
-                : []),
+              ? (data.tags as string).split(',').map((t: string) => t.trim())
+              : []),
         })
       }
       setIsLoading(false)
@@ -195,11 +195,89 @@ export default function BlogPostPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping"></div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+        <Header />
+        <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50 shadow-lg">
+          <div className="container px-4 mx-auto py-4">
+            <div className="flex items-center justify-between">
+              <div className="h-9 w-32 bg-muted/50 rounded-md animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="h-9 w-24 bg-muted/50 rounded-md animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+                <div className="h-9 w-16 bg-muted/50 rounded-md animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <article className="container px-4 mx-auto py-12">
+          <div className="max-w-4xl mx-auto">
+            {/* article header skeleton */}
+            <div className="space-y-6 mb-12">
+              <div className="flex items-center space-x-4">
+                <div className="h-6 w-24 bg-muted/50 rounded-full animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="h-12 w-3/4 bg-muted/50 rounded-lg animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+                <div className="h-12 w-1/2 bg-muted/50 rounded-lg animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="h-6 w-full bg-muted/30 rounded animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+                <div className="h-6 w-5/6 bg-muted/30 rounded animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-6 pt-4">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-8 w-24 bg-muted/50 rounded-full animate-pulse relative overflow-hidden" style={{ animationDelay: `${i * 100}ms` }}>
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 100}ms` }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* article image skeleton */}
+            <div className="mb-12">
+              <div className="aspect-[1280/1080] bg-muted/50 rounded-2xl animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+            </div>
+
+            {/* article content skeleton */}
+            <div className="space-y-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="space-y-3" style={{ animationDelay: `${i * 150}ms` }}>
+                  <div className="h-4 w-full bg-muted/40 rounded animate-pulse relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150}ms` }} />
+                  </div>
+                  <div className="h-4 w-full bg-muted/40 rounded animate-pulse relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150 + 50}ms` }} />
+                  </div>
+                  <div className="h-4 w-3/4 bg-muted/40 rounded animate-pulse relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150 + 100}ms` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </article>
+        <Footer />
       </div>
     )
   }
@@ -207,7 +285,7 @@ export default function BlogPostPage() {
   if (fetchError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
-        <motion.div 
+        <motion.div
           className="text-center space-y-4"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -232,7 +310,7 @@ export default function BlogPostPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* header */}
-      <Header/>
+      <Header />
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50 shadow-lg">
         <div className="container px-4 mx-auto py-4">
           <div className="flex items-center justify-between">
@@ -248,13 +326,13 @@ export default function BlogPostPage() {
                 </Link>
               </Button>
             </motion.div>
-            <motion.div 
+            <motion.div
               className="flex items-center space-x-4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              <ShareButton 
+              <ShareButton
                 url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/blog/${slug}`}
                 title={post?.title || ''}
                 description={post?.excerpt || ''}
@@ -270,7 +348,7 @@ export default function BlogPostPage() {
       <article className="container px-4 mx-auto py-12">
         <div className="max-w-4xl mx-auto">
           {/* article header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -286,15 +364,15 @@ export default function BlogPostPage() {
                 </Badge>
               )}
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
               {post?.title}
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
               {post?.excerpt}
             </p>
-            
+
             <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <User className="h-4 w-4" />
@@ -302,10 +380,10 @@ export default function BlogPostPage() {
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
                 <Calendar className="h-4 w-4" />
-                <span>{new Date(post?.date || '').toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                <span>{new Date(post?.date || '').toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}</span>
               </div>
               <div className="flex items-center space-x-2 bg-background/80 backdrop-blur-sm px-3 py-2 rounded-full">
@@ -324,7 +402,7 @@ export default function BlogPostPage() {
           </motion.div>
 
           {/* article image */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
@@ -355,7 +433,7 @@ export default function BlogPostPage() {
           </motion.div>
 
           {/* article content */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -369,7 +447,7 @@ export default function BlogPostPage() {
                     {post?.content}
                   </ReactMarkdown>
                 </div>
-                
+
                 {/* tags */}
                 <div className="flex flex-wrap gap-2 pt-8 border-t border-primary/10">
                   {post?.tags.map((tag: string) => (
@@ -387,7 +465,7 @@ export default function BlogPostPage() {
                     {post?.content.split('\n\n').slice(0, 3).join('\n\n')}
                   </ReactMarkdown>
                 </div>
-                
+
                 {/* authentication prompt */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -428,7 +506,7 @@ export default function BlogPostPage() {
           </motion.div>
         </div>
       </article>
-      <Footer/>
+      <Footer />
     </div>
   )
 }
