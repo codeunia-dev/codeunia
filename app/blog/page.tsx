@@ -1,4 +1,4 @@
-"use client" 
+"use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -48,8 +48,8 @@ export default function BlogPage() {
           tags: Array.isArray(post.tags)
             ? post.tags
             : (typeof post.tags === 'string' && post.tags
-                ? (post.tags as string).split(',').map((t) => t.trim())
-                : []),
+              ? (post.tags as string).split(',').map((t) => t.trim())
+              : []),
         }))
         // Fetch like counts in parallel
         const likeCounts = await Promise.all(
@@ -121,11 +121,102 @@ export default function BlogPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="relative">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
-          <div className="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping"></div>
-        </div>
+      <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10">
+        <Header />
+        {/* Hero Skeleton */}
+        <section className="py-20 md:py-32 relative overflow-hidden">
+          <div className="container px-4 mx-auto">
+            <div className="max-w-4xl mx-auto text-center space-y-8">
+              <div className="flex justify-center">
+                <div className="h-8 w-32 bg-muted/50 rounded-full animate-pulse relative overflow-hidden">
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                </div>
+              </div>
+              <div className="h-16 w-3/4 mx-auto bg-muted/50 rounded-lg animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+              <div className="h-8 w-2/3 mx-auto bg-muted/30 rounded-lg animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Search & Filter Skeleton */}
+        <section className="py-12 bg-gradient-to-b from-muted/30 to-background">
+          <div className="container px-4 mx-auto">
+            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+              <div className="h-10 w-full lg:w-96 bg-muted/50 rounded-md animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-9 w-20 bg-muted/50 rounded-md animate-pulse relative overflow-hidden" style={{ animationDelay: `${i * 100}ms` }}>
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 100}ms` }} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Blog Cards Skeleton */}
+        <section className="py-20 bg-gradient-to-b from-muted/30 to-background">
+          <div className="container px-4 mx-auto">
+            <div className="space-y-4 mb-16">
+              <div className="h-8 w-32 bg-muted/50 rounded-full animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+              <div className="h-12 w-64 bg-muted/50 rounded-lg animate-pulse relative overflow-hidden">
+                <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="rounded-xl overflow-hidden bg-gradient-to-br from-background to-muted/20 border border-muted/20" style={{ animationDelay: `${i * 150}ms` }}>
+                  {/* Image placeholder */}
+                  <div className="h-40 bg-muted/50 animate-pulse relative overflow-hidden">
+                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150}ms` }} />
+                    <div className="absolute top-3 left-3 h-6 w-20 bg-muted/70 rounded-full" />
+                    <div className="absolute bottom-3 left-3 h-6 w-16 bg-muted/70 rounded-full" />
+                  </div>
+                  {/* Content placeholder */}
+                  <div className="p-6 space-y-4">
+                    <div className="h-6 w-full bg-muted/50 rounded animate-pulse relative overflow-hidden">
+                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150}ms` }} />
+                    </div>
+                    <div className="h-4 w-5/6 bg-muted/40 rounded animate-pulse relative overflow-hidden">
+                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150 + 50}ms` }} />
+                    </div>
+                    <div className="h-4 w-4/6 bg-muted/30 rounded animate-pulse relative overflow-hidden">
+                      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" style={{ animationDelay: `${i * 150 + 100}ms` }} />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      {[1, 2, 3].map((j) => (
+                        <div key={j} className="h-5 w-14 bg-muted/40 rounded-full animate-pulse relative overflow-hidden">
+                          <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex items-center justify-between pt-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 bg-muted/50 rounded-full animate-pulse" />
+                        <div className="space-y-1">
+                          <div className="h-4 w-20 bg-muted/50 rounded animate-pulse" />
+                          <div className="h-3 w-16 bg-muted/30 rounded animate-pulse" />
+                        </div>
+                      </div>
+                      <div className="h-8 w-24 bg-muted/50 rounded-md animate-pulse relative overflow-hidden">
+                        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <Footer />
       </div>
     )
   }
@@ -144,7 +235,7 @@ export default function BlogPage() {
 
   return (
     <div className="flex flex-col overflow-hidden bg-gradient-to-br from-background via-background to-muted/10">
-       <Header/>
+      <Header />
       {/* Hero Section */}
       <section className="py-20 md:py-32 relative overflow-hidden">
         <div
@@ -166,7 +257,7 @@ export default function BlogPage() {
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: "4s" }}></div>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -179,7 +270,7 @@ export default function BlogPage() {
               transition={{ duration: 0.3 }}
             >
               <div className="flex flex-col items-center justify-center gap-4">
-                <motion.button 
+                <motion.button
                   className="bg-slate-800 no-underline group cursor-default relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -195,14 +286,14 @@ export default function BlogPage() {
                 </motion.button>
               </div>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-5xl md:text-6xl font-bold tracking-tight leading-tight"
             >
               Learn from the{" "}
-              <motion.span 
+              <motion.span
                 className="gradient-text inline-block"
                 animate={{
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
@@ -222,7 +313,7 @@ export default function BlogPage() {
                 Community
               </motion.span>
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
@@ -270,7 +361,7 @@ export default function BlogPage() {
               ))}
             </div>
           </div>
-          <motion.div 
+          <motion.div
             className="mt-4 text-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -288,7 +379,7 @@ export default function BlogPage() {
         <section className="py-20 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/10 to-background"></div>
           <div className="container px-4 mx-auto relative z-10">
-            <motion.div 
+            <motion.div
               className="text-center space-y-6 mb-16"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -298,24 +389,24 @@ export default function BlogPage() {
                 ⭐ Featured Articles
               </Badge> */}
               <div className="flex flex-col items-center justify-center gap-4">
-  <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
-    {/* Glow on hover */}
-    <span className="absolute inset-0 overflow-hidden rounded-full">
-      <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-    </span>
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+                  {/* Glow on hover */}
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
 
-    {/* Inner content */}
-    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-      <span>Featured Articles</span>
-      <span>
-        <Sparkles className="w-3 h-3 text-cyan-300" />
-      </span>
-    </div>
+                  {/* Inner content */}
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                    <span>Featured Articles</span>
+                    <span>
+                      <Sparkles className="w-3 h-3 text-cyan-300" />
+                    </span>
+                  </div>
 
-    {/* Underline glow */}
-    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-  </button>
-</div>
+                  {/* Underline glow */}
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
 
               <h2 className="text-4xl md:text-5xl font-bold">
                 Editor&apos;s <span className="gradient-text">Picks</span>
@@ -422,7 +513,7 @@ export default function BlogPage() {
       <section className="py-20 bg-gradient-to-b from-muted/30 to-background relative">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-purple-500/5"></div>
         <div className="container px-4 mx-auto relative z-10">
-          <motion.div 
+          <motion.div
             className="flex items-center justify-between mb-16"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -432,25 +523,25 @@ export default function BlogPage() {
               {/* <Badge variant="outline" className="px-3 py-1 bg-gradient-to-r from-primary/10 to-purple-500/10 border-primary/20">
                 📖 All Articles
               </Badge> */}
-             <div className="flex flex-col items-start gap-4"> {/* Changed from items-center to items-start */}
-  <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
-    {/* Glow on hover */}
-    <span className="absolute inset-0 overflow-hidden rounded-full">
-      <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-    </span>
+              <div className="flex flex-col items-start gap-4"> {/* Changed from items-center to items-start */}
+                <button className="bg-slate-800 no-underline group relative shadow-2xl shadow-zinc-900 rounded-full p-px text-sm font-semibold leading-6 text-white inline-block cursor-default">
+                  {/* Glow on hover */}
+                  <span className="absolute inset-0 overflow-hidden rounded-full">
+                    <span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                  </span>
 
-    {/* Inner content */}
-    <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-      <span>All Articles</span>
-      <span>
-        <Sparkles className="w-3 h-3 text-cyan-300" />
-      </span>
-    </div>
+                  {/* Inner content */}
+                  <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
+                    <span>All Articles</span>
+                    <span>
+                      <Sparkles className="w-3 h-3 text-cyan-300" />
+                    </span>
+                  </div>
 
-    {/* Underline glow */}
-    <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
-  </button>
-</div>
+                  {/* Underline glow */}
+                  <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+                </button>
+              </div>
 
               <h2 className="text-4xl md:text-5xl font-bold">
                 Latest <span className="gradient-text">Stories</span>
@@ -560,7 +651,7 @@ export default function BlogPage() {
           </div>
 
           {regularPosts.length === 0 && (
-            <motion.div 
+            <motion.div
               className="text-center py-20"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -588,7 +679,7 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <Footer/>
+      <Footer />
     </div>
   )
 }
