@@ -47,6 +47,11 @@ const sidebarItems: SidebarGroupType[] = [
                 url: "/staff/tasks",
                 icon: ClipboardList,
             },
+            {
+                title: "My Leaves",
+                url: "/staff/leaves",
+                icon: CalendarDays,
+            },
         ],
     },
     {
