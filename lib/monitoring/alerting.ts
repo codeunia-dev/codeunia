@@ -68,14 +68,14 @@ export class MonitoringAlerting {
    * Initialize alert channels based on configuration
    */
   private initializeAlertChannels(): void {
-    // Only use email alerts for now - disable Slack and Discord
-    // if (this.alertConfig.slack_webhook) {
-    //   this.alertChannels.push({
-    //     type: 'slack',
-    //     config: { webhook_url: this.alertConfig.slack_webhook },
-    //     enabled: false // Disabled as requested
-    //   });
-    // }
+    // Slack integration enabled
+    if (this.alertConfig.slack_webhook) {
+      this.alertChannels.push({
+        type: 'slack',
+        config: { webhook_url: this.alertConfig.slack_webhook },
+        enabled: true
+      });
+    }
 
     // if (this.alertConfig.discord_webhook) {
     //   this.alertChannels.push({
@@ -94,10 +94,10 @@ export class MonitoringAlerting {
     }
 
     // Always enable email alerts with the default recipient
-    const emailRecipients = this.alertConfig.email_recipients && this.alertConfig.email_recipients.length > 0 
-      ? this.alertConfig.email_recipients 
+    const emailRecipients = this.alertConfig.email_recipients && this.alertConfig.email_recipients.length > 0
+      ? this.alertConfig.email_recipients
       : ['connect@codeunia.com'];
-      
+
     this.alertChannels.push({
       type: 'email',
       config: { recipients: emailRecipients },
@@ -158,7 +158,7 @@ export class MonitoringAlerting {
     }
 
     // Check for high response times
-    const slowServices = results.checks.filter(check => 
+    const slowServices = results.checks.filter(check =>
       check.responseTime > this.alertConfig.alert_thresholds.response_time_ms
     );
     for (const service of slowServices) {
@@ -273,7 +273,7 @@ export class MonitoringAlerting {
         }
       })
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
       console.log(`[ALERTING] ${success ? 'SUCCESS' : 'FAILED'} - ${channelType}:`, logEntry)
     } else {
@@ -462,7 +462,7 @@ export class MonitoringAlerting {
    */
   private async sendEmailAlert(alert: Alert, config: Record<string, unknown>): Promise<void> {
     const emailRecipients = (config.emailRecipients as string) || process.env.ALERT_EMAIL_RECIPIENTS || 'connect@codeunia.com';
-    
+
     const emailContent = {
       subject: `[${alert.severity.toUpperCase()}] ${alert.title}`,
       html: `
@@ -520,7 +520,7 @@ Codeunia Monitoring System
       if (process.env.RESEND_API_KEY) {
         const { Resend } = await import('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
-        
+
         await resend.emails.send({
           from: 'alerts@codeunia.com',
           to: emailRecipients,
@@ -528,7 +528,7 @@ Codeunia Monitoring System
           html: emailContent.html,
           text: emailContent.text
         });
-        
+
         console.log(`📧 Email alert sent to ${emailRecipients}: ${alert.title}`);
       } else {
         // Fallback to console log if Resend is not configured

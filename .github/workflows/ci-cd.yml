@@ -560,6 +560,15 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"🚀 Production Deployment Successful\",\"html\":\"<h2>Production Deployment Successful</h2><p>Your Codeunia application has been successfully deployed to production.</p><p><strong>Deployment URL:</strong> <a href='${{ steps.deploy-production.outputs.deployment-url }}'>${{ steps.deploy-production.outputs.deployment-url }}</a></p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Deployed by:</strong> ${{ github.actor }}</p>\"}"
 
+      - name: Notify deployment success via Slack
+        if: success()
+        run: |
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"🚀 *Production Deployment Successful*\nURL: ${{ steps.deploy-production.outputs.deployment-url }}\nBranch: ${{ github.ref_name }}\nDeployed by: ${{ github.actor }}"}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "SLACK_WEBHOOK_URL not set, skipping Slack notification"
+          fi
+
   # Rollback on Failure
   rollback:
     name: Rollback on Failure
@@ -595,6 +604,14 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" \
             -H "Content-Type: application/json" \
             -d "{\"from\":\"alerts@codeunia.com\",\"to\":[\"connect@codeunia.com\"],\"subject\":\"⚠️ Production Deployment Failed - Rollback Initiated\",\"html\":\"<h2>Production Deployment Failed</h2><p>Your Codeunia application deployment failed and rollback has been initiated.</p><p><strong>Branch:</strong> ${{ github.ref_name }}</p><p><strong>Commit:</strong> ${{ github.sha }}</p><p><strong>Failed by:</strong> ${{ github.actor }}</p><p><strong>Action:</strong> Please check the deployment logs and fix the issues.</p>\"}"
+
+      - name: Notify rollback via Slack
+        run: |
+          if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            curl -X POST -H 'Content-type: application/json' --data '{"text":"⚠️ *Production Deployment Failed - Rollback Initiated*\nBranch: ${{ github.ref_name }}\nFailed by: ${{ github.actor }}\nCheck logs for details."}' ${{ secrets.SLACK_WEBHOOK_URL }}
+          else
+            echo "SLACK_WEBHOOK_URL not set, skipping Slack notification"
+          fi
 
   # Performance Monitoring
   performance:
