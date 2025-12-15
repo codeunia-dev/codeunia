@@ -24,11 +24,24 @@ type AttendanceRecord = {
     total_hours: number | null
     status?: string // 'Complete' | 'Pending'
     created_at: string
+    type: 'attendance'
+}
+
+type LeaveRecord = {
+    id: string
+    user_id: string
+    leave_type: string
+    start_date: string
+    end_date: string
+    reason: string
+    status: 'pending' | 'approved' | 'rejected'
+    created_at: string
+    type: 'leave'
 }
 
 export default function StaffHistoryPage() {
     const { user, loading: authLoading } = useAuth()
-    const [history, setHistory] = useState<AttendanceRecord[]>([])
+    const [history, setHistory] = useState<(AttendanceRecord | LeaveRecord)[]>([])
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
         totalHours: 0,
@@ -43,20 +56,38 @@ export default function StaffHistoryPage() {
 
         const fetchData = async () => {
             try {
-                const { data, error } = await supabase
+                // Fetch Attendance
+                const { data: attendanceData, error: attendanceError } = await supabase
                     .from("attendance_logs")
                     .select("*")
                     .eq("user_id", user.id)
-                    .order("check_in", { ascending: false })
 
-                if (error) throw error
+                if (attendanceError) throw attendanceError
 
-                const records = data || []
-                setHistory(records)
+                // Fetch Leaves
+                const { data: leaveData, error: leaveError } = await supabase
+                    .from("leave_requests")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .neq("status", "rejected") // Only show pending/approved
 
-                // Calculate stats
-                const totalHours = records.reduce((acc, curr) => acc + (curr.total_hours || 0), 0)
-                const daysPresent = records.length
+                if (leaveError) throw leaveError
+
+                const attendanceRecords: AttendanceRecord[] = (attendanceData || []).map(r => ({ ...r, type: 'attendance' }))
+                const leaveRecords: LeaveRecord[] = (leaveData || []).map(r => ({ ...r, type: 'leave' }))
+
+                // Merge and Sort
+                const mergedRecords = [...attendanceRecords, ...leaveRecords].sort((a, b) => {
+                    const dateA = a.type === 'attendance' ? new Date(a.check_in) : new Date(a.start_date)
+                    const dateB = b.type === 'attendance' ? new Date(b.check_in) : new Date(b.start_date)
+                    return dateB.getTime() - dateA.getTime() // Descending
+                })
+
+                setHistory(mergedRecords)
+
+                // Calculate stats (only from attendance)
+                const totalHours = attendanceRecords.reduce((acc, curr) => acc + (curr.total_hours || 0), 0)
+                const daysPresent = attendanceRecords.length
                 const averageHours = daysPresent > 0 ? totalHours / daysPresent : 0
 
                 setStats({
@@ -92,17 +123,9 @@ export default function StaffHistoryPage() {
                         Attendance <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">History</span>
                     </h1>
                     <p className="text-zinc-400">
-                        View and track your past attendance records.
+                        View and track your past attendance and leave records.
                     </p>
                 </div>
-                {/* <div className="flex gap-2">
-                    <Button variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300">
-                        <Filter className="mr-2 h-4 w-4" /> Filter
-                    </Button>
-                    <Button variant="outline" className="border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300">
-                        <Download className="mr-2 h-4 w-4" /> Export
-                    </Button>
-                </div> */}
             </header>
 
             {/* Stats Overview */}
@@ -167,55 +190,86 @@ export default function StaffHistoryPage() {
                             {history.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-6 py-12 text-center text-zinc-500">
-                                        No attendance records found.
+                                        No records found.
                                     </td>
                                 </tr>
                             ) : (
                                 history.map((record) => {
-                                    const date = new Date(record.check_in).toLocaleDateString(undefined, {
-                                        weekday: 'short',
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric'
-                                    })
-                                    const checkInTime = new Date(record.check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                    const checkOutTime = record.check_out
-                                        ? new Date(record.check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                        : '-'
+                                    if (record.type === 'leave') {
+                                        // Render Leave Row
+                                        const r = record as LeaveRecord
+                                        const date = new Date(r.start_date).toLocaleDateString(undefined, {
+                                            weekday: 'short',
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })
+                                        return (
+                                            <tr key={r.id} className="group hover:bg-zinc-800/30 transition-colors bg-blue-500/5 border-l-2 border-blue-500/20">
+                                                <td className="px-6 py-4 text-zinc-300 font-medium">{date}</td>
+                                                <td className="px-6 py-4 text-zinc-500">-</td>
+                                                <td className="px-6 py-4 text-zinc-500">-</td>
+                                                <td className="px-6 py-4">
+                                                    <span className="px-2.5 py-1 rounded font-mono text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                                        {r.leave_type} Leave
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-1.5 text-xs font-medium text-blue-400">
+                                                        <Calendar className="w-4 h-4" />
+                                                        On Leave
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    } else {
+                                        // Render Attendance Row
+                                        const r = record as AttendanceRecord
+                                        const date = new Date(r.check_in).toLocaleDateString(undefined, {
+                                            weekday: 'short',
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })
+                                        const checkInTime = new Date(r.check_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                        const checkOutTime = r.check_out
+                                            ? new Date(r.check_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            : '-'
 
-                                    const isComplete = !!record.check_out
+                                        const isComplete = !!r.check_out
 
-                                    return (
-                                        <tr key={record.id} className="group hover:bg-zinc-800/30 transition-colors">
-                                            <td className="px-6 py-4 text-zinc-300 font-medium">{date}</td>
-                                            <td className="px-6 py-4 text-zinc-400">{checkInTime}</td>
-                                            <td className="px-6 py-4 text-zinc-400">{checkOutTime}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2.5 py-1 rounded font-mono text-xs font-medium ${record.total_hours && record.total_hours >= 8
+                                        return (
+                                            <tr key={r.id} className="group hover:bg-zinc-800/30 transition-colors">
+                                                <td className="px-6 py-4 text-zinc-300 font-medium">{date}</td>
+                                                <td className="px-6 py-4 text-zinc-400">{checkInTime}</td>
+                                                <td className="px-6 py-4 text-zinc-400">{checkOutTime}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2.5 py-1 rounded font-mono text-xs font-medium ${r.total_hours && r.total_hours >= 8
                                                         ? "bg-green-500/10 text-green-400 border border-green-500/20"
                                                         : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
-                                                    }`}>
-                                                    {record.total_hours ? `${record.total_hours.toFixed(2)}h` : '-'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className={`flex items-center gap-1.5 text-xs font-medium ${isComplete ? "text-green-400" : "text-yellow-400"
-                                                    }`}>
-                                                    {isComplete ? (
-                                                        <>
-                                                            <CheckCircle2 className="w-4 h-4" />
-                                                            Completed
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Clock className="w-4 h-4" />
-                                                            Active
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
+                                                        }`}>
+                                                        {r.total_hours ? `${r.total_hours.toFixed(2)}h` : '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className={`flex items-center gap-1.5 text-xs font-medium ${isComplete ? "text-green-400" : "text-yellow-400"
+                                                        }`}>
+                                                        {isComplete ? (
+                                                            <>
+                                                                <CheckCircle2 className="w-4 h-4" />
+                                                                Completed
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Clock className="w-4 h-4" />
+                                                                Active
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    }
                                 })
                             )}
                         </tbody>
