@@ -68,7 +68,7 @@ export default function Header() {
   const navItems = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    { href: "/companies", label: "Companies" },
+    { href: "/open-source", label: "Open Source" },
     { href: "/opportunities", label: "Opportunities" },
     { href: "/zenith-hall", label: "Zenith Hall" },
     { href: "/blog", label: "Blog" },
