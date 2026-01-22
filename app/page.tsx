@@ -115,6 +115,7 @@ export default function Home() {
             <FeaturesSection />
           </Suspense>
 
+
           {/* New: Organizations Section for company hosting */}
           <Suspense fallback={<div className="py-20"><div className="container px-4 mx-auto"><div className="animate-pulse"><div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-4"></div><div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div></div></div></div>}>
             <OrganizationsSection />
