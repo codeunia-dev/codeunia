@@ -6,6 +6,7 @@ import { GlobalErrorHandler } from "@/components/GlobalErrorHandler";
 import AIProvider from "@/components/ai/AIProvider";
 import { getPageStructuredData } from "@/lib/seo/metadata";
 import { usePathname } from "next/navigation";
+import { Analytics } from '@vercel/analytics/react';
 
 // Only load dev tools in development
 const ReactDevTools = () => null;
@@ -88,6 +89,7 @@ export default function RootLayout({
 
             <ReactDevTools />
             <AuthDebug />
+            <Analytics />
           </ThemeProvider>
         </ErrorBoundary>
       </body>
